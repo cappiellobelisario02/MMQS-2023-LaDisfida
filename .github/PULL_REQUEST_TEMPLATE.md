@@ -1,27 +1,22 @@
-<!-- Ensure to provide github issue and task id in the title -->
-<!-- Choose between feat and fix in the title to differenciate a new feature from a fix -->
-<!-- Title format must be :
-feat: FEATURE TITLE - MEED-XXXX - meeds-io/meeds#1234
-or
-fix: Fix TITLE - MEED-XXXX - meeds-io/meeds#1234
--->
+## Description of the new Feature/Bugfix
 
-<!-- Description : describe the feature/the fix by answering theses questions : -->
-<!-- Why is this change needed?-->
-<!-- Prior to this change, ...-->
-<!-- How does it address the issue?-->
-<!-- This change ...-->
+Describe here how you fixed the bug, or implemented the new feature.
 
+Related Issue: #
 
-<!-- Tips : 
-Try To Limit Each Line to a Maximum Of 72 Characters
-Provide links or keys to any relevant tickets, articles or other resources
+## Unit-Tests for the new Feature/Bugfix
 
-Remember to
-- Capitalize the subject line
-- Use the imperative mood in the subject line
-- Do not end the subject line with a period
-- Separate subject from body with a blank line
-- Use the body to explain what and why vs. how
-- Can use multiple lines with "-" for bullet points in body
--->
+- [ ] Unit-Tests added to reproduce the bug
+- [ ] Unit-Tests added to the added feature
+
+## Compatibilities Issues
+
+Is anything broken because of the new code? Any changes in method signatures?
+
+## Your real name
+Please specify your full name here, so that we can verify your identity. 
+If you have a conflict of interest describe this here also.
+
+## Testing details
+
+Any other details about how to test the new feature or bugfix?
