@@ -91,7 +91,7 @@ public class DocumentFont extends BaseFont {
     private IntHashtable uni2byte = new IntHashtable();
     private IntHashtable diffmap;
     private float Ascender = 800;
-    private float CapHeight = 700;
+    private float CAPHEIGHT = 700;
     private float Descender = -200;
     private float ItalicAngle = 0;
     private float llx = -50;
