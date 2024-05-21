@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 4cb8aace43c68beaf3b77e351039a69431a39c32 SabboC <al439496@uji.es> 1716307533 +0200	clone: from https://github.com/cappiellobelisario02/MMQS-2023-LaDisfida.git
+4cb8aace43c68beaf3b77e351039a69431a39c32 931891cbc6af150cc0aaadb257c09a51b175f3c0 SabboC <al439496@uji.es> 1716308263 +0200	commit: 210524
+931891cbc6af150cc0aaadb257c09a51b175f3c0 2b65eb90f709dd9387316d9c5a0f3004e5f9d415 SabboC <al439496@uji.es> 1716309340 +0200	pull --ff --recurse-submodules --progress origin: Fast-forward
+2b65eb90f709dd9387316d9c5a0f3004e5f9d415 22fd3e940500b46ad28725438ce70b14fac90179 SabboC <al439496@uji.es> 1716310413 +0200	pull --ff --recurse-submodules --progress origin: Fast-forward
+22fd3e940500b46ad28725438ce70b14fac90179 a9fd41e549e858786f6d2dcbe6c51c2cd04e7ac1 SabboC <al439496@uji.es> 1716310889 +0200	commit: 210524
