@@ -81,9 +81,12 @@ public class MappedRandomAccessFile implements AutoCloseable {
             throws IOException {
 
         if (mode.equals("rw")) {
-            init(
-                    new java.io.RandomAccessFile(filename, mode).getChannel(),
-                    FileChannel.MapMode.READ_WRITE);
+            try (RandomAccessFile raf = new RandomAccessFile(filename, mode)) {
+                init(raf.getChannel(), FileChannel.MapMode.READ_WRITE);
+            }
+            catch(IOException e){
+                System.out.println("Error in RandomAccessFile.");
+            }
         } else {
             init(
                     new FileInputStream(filename).getChannel(),
