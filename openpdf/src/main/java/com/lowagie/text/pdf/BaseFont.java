@@ -367,7 +367,7 @@ public abstract class BaseFont {
     /**
      * true if the font is to be embedded in the PDF
      */
-    protected boolean embedded;
+    protected boolean EMBEDDED;
     /**
      * The compression level for the font stream.
      *
