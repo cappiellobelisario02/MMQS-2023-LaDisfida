@@ -1,0 +1,4 @@
+# pack-refs with: peeled fully-peeled sorted 
+c1129bbed0df9354f7924a49af7662b6b364b069 refs/remotes/origin/dependabot/maven/org.mockito-mockito-core-5.12.0
+fc89fb752c2e0cead2944dde742cf8d57fd07ebf refs/remotes/origin/dependabot/maven/org.verapdf-validation-model-1.26.1
+4cb8aace43c68beaf3b77e351039a69431a39c32 refs/remotes/origin/main
