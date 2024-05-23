@@ -3172,7 +3172,11 @@ public class PdfWriter extends DocWriter implements
             PdfTrailer trailer = new PdfTrailer(size(), root, info, encryption, fileID, prevxref);
             if (useNewXrefFormat) {
                 int mid = 8 - (Long.numberOfLeadingZeros(position) >> 3);
-                ByteBuffer buf = new ByteBuffer();
+                try{
+                    ByteBuffer buf = new ByteBuffer();
+                } catch (Exception e){
+                    System.out.println("ERROR ByteBuffer >> ", e);
+                }
 
                 for (PdfCrossReference xref : xrefs) {
                     entry = xref;
