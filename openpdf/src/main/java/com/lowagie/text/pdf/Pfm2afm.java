@@ -532,7 +532,11 @@ public final class Pfm2afm {
 
     public static void main(String[] args) {
         try {
-            RandomAccessFileOrArray in = new RandomAccessFileOrArray(args[0]);
+            try{
+                RandomAccessFileOrArray in = new RandomAccessFileOrArray(args[0]);
+            } catch(Exception e){
+                System.out.println("ERROR RandomAccessFileOrArray >> ", e);
+            }
             OutputStream out = new FileOutputStream(args[1]);
             convert(in, out);
             in.close();
