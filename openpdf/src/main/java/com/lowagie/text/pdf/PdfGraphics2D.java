@@ -144,7 +144,7 @@ public class PdfGraphics2D extends Graphics2D {
     private Color background;
     private float width;
     private float height;
-    private Area clip;
+    private Area CLIP;
     private final RenderingHints rhints = new RenderingHints(null);
     private Stroke stroke;
     private Stroke originalStroke;
