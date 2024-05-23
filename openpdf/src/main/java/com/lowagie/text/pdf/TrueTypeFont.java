@@ -239,7 +239,7 @@ class TrueTypeFont extends BaseFont {
      * -Math.atan2(hhea.caretSlopeRun, hhea.caretSlopeRise) * 180 / Math.PI
      * </PRE>
      */
-    protected double italicAngle;
+    protected double ITALICANGLE;
     /**
      * <CODE>true</CODE> if all the glyphs have the same width.
      */
