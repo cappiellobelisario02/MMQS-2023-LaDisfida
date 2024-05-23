@@ -138,7 +138,7 @@ class Type1Font extends BaseFont {
     /**
      * A variable.
      */
-    private int CapHeight = 700;
+    private int CAPHEIGHT = 700;
     /**
      * A variable.
      */
