@@ -1,0 +1,24 @@
+0000000000000000000000000000000000000000 4cb8aace43c68beaf3b77e351039a69431a39c32 SabboC <al439496@uji.es> 1716307533 +0200	clone: from https://github.com/cappiellobelisario02/MMQS-2023-LaDisfida.git
+4cb8aace43c68beaf3b77e351039a69431a39c32 931891cbc6af150cc0aaadb257c09a51b175f3c0 SabboC <al439496@uji.es> 1716308263 +0200	commit: 210524
+931891cbc6af150cc0aaadb257c09a51b175f3c0 2b65eb90f709dd9387316d9c5a0f3004e5f9d415 SabboC <al439496@uji.es> 1716309340 +0200	pull --ff --recurse-submodules --progress origin: Fast-forward
+2b65eb90f709dd9387316d9c5a0f3004e5f9d415 22fd3e940500b46ad28725438ce70b14fac90179 SabboC <al439496@uji.es> 1716310413 +0200	pull --ff --recurse-submodules --progress origin: Fast-forward
+22fd3e940500b46ad28725438ce70b14fac90179 a9fd41e549e858786f6d2dcbe6c51c2cd04e7ac1 SabboC <al439496@uji.es> 1716310889 +0200	commit: 210524
+a9fd41e549e858786f6d2dcbe6c51c2cd04e7ac1 913d92841592f25146957d91a5a37a6a52452bb3 SabboC <al439496@uji.es> 1716310984 +0200	commit: 210524
+913d92841592f25146957d91a5a37a6a52452bb3 7b6988e3fb2230f16827428122740b2cfcf60fa9 SabboC <al439496@uji.es> 1716476781 +0200	commit: 230524
+7b6988e3fb2230f16827428122740b2cfcf60fa9 3378059212a920edc911cbee1119bb4a9fe459f8 SabboC <al439496@uji.es> 1716477109 +0200	commit: 230524
+3378059212a920edc911cbee1119bb4a9fe459f8 84bb7e574f10f54ff82d4aa914b901f758ada721 SabboC <al439496@uji.es> 1716477137 +0200	pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+84bb7e574f10f54ff82d4aa914b901f758ada721 ea4d6f241a81f314e813933bb154413017c05b42 SabboC <al439496@uji.es> 1716477459 +0200	commit: 230524
+ea4d6f241a81f314e813933bb154413017c05b42 db4fc5cfa502c5a81cb69ae5a90215ada3d2a51a SabboC <al439496@uji.es> 1716477792 +0200	commit: 230524
+db4fc5cfa502c5a81cb69ae5a90215ada3d2a51a 0f946aa6256e0dcbb7d8e43a060b7a5577992c13 SabboC <al439496@uji.es> 1716477815 +0200	pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+0f946aa6256e0dcbb7d8e43a060b7a5577992c13 2206b7fcc2d3ed0ecca57f4c1d4452f2b37cd9cb SabboC <al439496@uji.es> 1716478066 +0200	commit: 230524
+2206b7fcc2d3ed0ecca57f4c1d4452f2b37cd9cb 9905c691f04b511adc4970525cdc52e502d90aff SabboC <al439496@uji.es> 1716478074 +0200	pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+9905c691f04b511adc4970525cdc52e502d90aff 7129b7f2864ef00cd899e7ad61729ac6cf3190c7 SabboC <al439496@uji.es> 1716478359 +0200	pull --ff --recurse-submodules --progress origin: Fast-forward
+7129b7f2864ef00cd899e7ad61729ac6cf3190c7 5ed5d84ff9c59f2f0a7ac5efe9da0e243f4a8c0b SabboC <al439496@uji.es> 1716478541 +0200	commit: 230524
+5ed5d84ff9c59f2f0a7ac5efe9da0e243f4a8c0b 05d7e354874f88dbafdacb0f3b6e2c7c93f77eea SabboC <al439496@uji.es> 1716478548 +0200	pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+05d7e354874f88dbafdacb0f3b6e2c7c93f77eea 8cdeac4ed9d29a92830a6e76bb7b3224452de583 SabboC <al439496@uji.es> 1716479067 +0200	pull --ff --recurse-submodules --progress origin: Fast-forward
+8cdeac4ed9d29a92830a6e76bb7b3224452de583 a7110dbb494b8a6b7ce9067220e63a634e14be6e SabboC <al439496@uji.es> 1716479075 +0200	commit: 230524
+a7110dbb494b8a6b7ce9067220e63a634e14be6e 197489c5e3272c74b7de0f10aa419a3a573651e1 SabboC <al439496@uji.es> 1716479250 +0200	pull --ff --recurse-submodules --progress origin: Fast-forward
+197489c5e3272c74b7de0f10aa419a3a573651e1 e7689cb44588a64c4dd12767ee14f3a6166035ca SabboC <al439496@uji.es> 1716479404 +0200	pull --ff --recurse-submodules --progress origin: Fast-forward
+e7689cb44588a64c4dd12767ee14f3a6166035ca 3a7a2afee182a4df3151662bd9196af588ecb151 SabboC <al439496@uji.es> 1716479408 +0200	commit: 230524
+3a7a2afee182a4df3151662bd9196af588ecb151 aa86b4ebd367d8b45d532ed331b3994fb8b100e0 SabboC <al439496@uji.es> 1716479578 +0200	commit: 230524
+aa86b4ebd367d8b45d532ed331b3994fb8b100e0 5f47e10f20bff0e4c76537bdda45447b1d6805e2 SabboC <al439496@uji.es> 1716481287 +0200	commit: 230524
