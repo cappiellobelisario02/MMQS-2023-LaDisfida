@@ -77,7 +77,7 @@ public class SequenceList {
 
     protected char[] TEXT;
     protected int ptr;
-    protected int number;
+    protected int NUMBER;
     protected String other;
 
     protected int low;
