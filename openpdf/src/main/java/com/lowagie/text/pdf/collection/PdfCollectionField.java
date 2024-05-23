@@ -45,7 +45,7 @@ public class PdfCollectionField extends PdfDictionary {
     /**
      * A possible type of collection field.
      */
-    public static final int SIZE = 7;
+    public static final int size = 7;
 
     /**
      * The type of the PDF collection field.
