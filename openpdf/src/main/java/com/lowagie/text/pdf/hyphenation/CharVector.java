@@ -79,10 +79,14 @@ public class CharVector implements Cloneable, Serializable {
         n = 0;
     }
 
-    public Object clone() {
-        CharVector cv = new CharVector(array.clone(), blockSize);
-        cv.n = this.n;
-        return cv;
+    public CharVector(CharVector original) {
+        this.array = original.array.clone();
+        this.blockSize = original.blockSize;
+        this.n = original.n;
+    }
+
+    public CharVector clone() {
+        return new CharVector(this);
     }
 
     public char[] getArray() {
