@@ -334,19 +334,18 @@ public class TernaryTree implements Cloneable, Serializable {
         return length;
     }
 
-    public Object clone() {
-        TernaryTree t = new TernaryTree();
-        t.lo = this.lo.clone();
-        t.hi = this.hi.clone();
-        t.eq = this.eq.clone();
-        t.sc = this.sc.clone();
-        t.kv = (CharVector) this.kv.clone();
-        t.root = this.root;
-        t.freenode = this.freenode;
-        t.length = this.length;
-
-        return t;
+    public TernaryTree(TernaryTree original){
+        this.lo = original.lo.clone();
+        this.hi = original.hi.clone();
+        this.eq = original.eq.clone();
+        this.sc = original.sc.clone();
+        this.kv = (CharVector) original.kv.clone();
+        this.root = original.root;
+        this.freenode = original.freenode;
+        this.length = original.length;
     }
+
+    
 
     /**
      * Recursively insert the median first and then the median of the lower and upper halves, and so on in order to get
