@@ -75,7 +75,7 @@ public class SequenceList {
     private static final int DIGIT2 = 3;
     private static final String NOT_OTHER = "-,!0123456789";
 
-    protected char[] text;
+    protected char[] TEXT;
     protected int ptr;
     protected int number;
     protected String other;
