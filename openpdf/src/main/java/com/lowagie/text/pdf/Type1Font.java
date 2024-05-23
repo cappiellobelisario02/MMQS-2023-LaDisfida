@@ -96,7 +96,7 @@ class Type1Font extends BaseFont {
     /**
      * The italic angle of the font, usually 0.0 or negative.
      */
-    private float ItalicAngle = 0.0f;
+    private float ITALICANGLE = 0.0f;
     /**
      * <CODE>true</CODE> if all the characters have the same
      * width.
