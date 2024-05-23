@@ -164,7 +164,11 @@ public class MetaDo {
         InputStream imgIn;
         byte[] data = null;
         if (image.getOriginalData() == null) {
-            imgIn = image.getUrl().openStream();
+            try{
+                imgIn = image.getUrl().openStream();
+            } catch(Exception e){
+                System.out.println("ERROR image.getUrl().openStream() >> ", e);
+            }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             int b = 0;
             while ((b = imgIn.read()) != -1) {
