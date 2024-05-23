@@ -151,11 +151,14 @@ public class PdfString extends PdfObject {
             b = crypto.encryptByteArray(b);
         }
         if (hexWriting) {
-            ByteBuffer buf = new ByteBuffer();
+            try (ByteBuffer buf = new ByteBuffer()) {
             buf.append('<');
             int len = b.length;
             for (byte b1 : b) {
                 buf.appendHex(b1);
+            }
+            } catch (IOException e) {
+
             }
             buf.append('>');
             os.write(buf.toByteArray());
