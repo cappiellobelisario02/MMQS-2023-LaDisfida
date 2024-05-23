@@ -523,7 +523,11 @@ class PdfStamperImp extends PdfWriter {
                 ar = new PdfArray();
                 pageN.put(PdfName.CONTENTS, ar);
             }
-            ByteBuffer out = new ByteBuffer();
+            try{
+                ByteBuffer out = new ByteBuffer();
+            } catch(Exception e){
+                System.out.println("ERROR ByteBuffer >> ", e);
+            }
             if (ps.under != null) {
                 out.append(PdfContents.SAVESTATE);
                 applyRotation(pageN, out);
