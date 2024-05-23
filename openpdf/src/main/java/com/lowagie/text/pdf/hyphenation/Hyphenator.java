@@ -121,7 +121,11 @@ public class Hyphenator {
             InputStream stream = null;
             File hyphenFile = new File(hyphenDir, key + ".xml");
             if (hyphenFile.canRead()) {
-                stream = new FileInputStream(hyphenFile);
+                try{
+                    stream = new FileInputStream(hyphenFile);
+                } catch (Exception e){
+                    System.out.println("ERROR FileInputStream >> ", e);
+                }
             }
             if (stream == null && key.length() > 2) {
                 hyphenFile = new File(hyphenDir, key.substring(0, 2) + ".xml");
