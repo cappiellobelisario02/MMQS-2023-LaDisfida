@@ -77,16 +77,8 @@ public class SequenceList {
 
     protected char[] TEXT;
     protected int ptr;
-<<<<<<< .mine
     protected int NUMBER;
     protected String OTHER;
-||||||| .r13
-    protected int number;
-    protected String other;
-=======
-    protected int NUMBER;
-    protected String other;
->>>>>>> .r15
 
     protected int low;
     protected int high;
