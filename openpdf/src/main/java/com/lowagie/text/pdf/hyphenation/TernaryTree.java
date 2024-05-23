@@ -537,11 +537,11 @@ public class TernaryTree implements Cloneable, Serializable {
                     case 1:
                         if (sc[i.parent] != 0) {
                             res = eq[i.parent];
-                            ns.push((Item) i.clone());
+                            ns.push(new Item(i));  // Usa il costruttore di copia
                             ks.append(sc[i.parent]);
                         } else {
                             i.child++;
-                            ns.push((Item) i.clone());
+                            ns.push(new Item(i));  // Usa il costruttore di copia
                             res = hi[i.parent];
                         }
                         climb = false;
@@ -549,7 +549,7 @@ public class TernaryTree implements Cloneable, Serializable {
 
                     case 2:
                         res = hi[i.parent];
-                        ns.push((Item) i.clone());
+                        ns.push(new Item(i));  // Usa il costruttore di copia
                         if (ks.length() > 0) {
                             ks.setLength(ks.length() - 1);    // pop
                         }
@@ -627,8 +627,9 @@ public class TernaryTree implements Cloneable, Serializable {
                 child = c;
             }
 
-            public Object clone() {
-                return new Item(parent, child);
+            public Item(Item item) {
+                this.parent = item.parent;
+                this.child = item.child;
             }
 
         }
