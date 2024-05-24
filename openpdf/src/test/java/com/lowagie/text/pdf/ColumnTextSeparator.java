@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ColumnTextSeparator {
 
@@ -67,7 +68,8 @@ public class ColumnTextSeparator {
         FileOutputStream fos = new FileOutputStream(RESULT);
         fos.write(baos.toByteArray());
         fos.close();
+
+        // Assertion to check if the file has been created
+        assertTrue(RESULT.exists());
     }
-
-
 }
