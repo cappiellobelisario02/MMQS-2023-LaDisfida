@@ -155,7 +155,7 @@ public final class SimpleXMLParser {
     /**
      * The handler to which we are going to forward comments.
      */
-    SimpleXMLDocHandlerComment comment;
+    SimpleXMLDocHandlerComment COMMENT;
     /**
      * Keeps track of the number of tags that are open.
      */
