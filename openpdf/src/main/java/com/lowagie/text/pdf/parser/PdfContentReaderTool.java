@@ -166,16 +166,15 @@ public class PdfContentReaderTool {
      * @throws IOException thrown when an I/O operation goes wrong
      * @since 2.1.5
      */
-    public static void listContentStream(File pdfFile, PrintWriter out)
-            throws IOException {
-        PdfReader reader = new PdfReader(pdfFile.getCanonicalPath());
+  public static void listContentStream(File pdfFile, PrintWriter out) throws IOException {
+        try(PdfReader reader = new PdfReader(pdfFile.getCanonicalPath())){
+        
+            int maxPageNum = reader.getNumberOfPages();
 
-        int maxPageNum = reader.getNumberOfPages();
-
-        for (int pageNum = 1; pageNum <= maxPageNum; pageNum++) {
-            listContentStreamForPage(reader, pageNum, out);
+            for (int pageNum = 1; pageNum <= maxPageNum; pageNum++) {
+                listContentStreamForPage(reader, pageNum, out);
+            }
         }
-
     }
 
     /**
