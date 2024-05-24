@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 
 class StandardFontsTest {
 
+
     @Test
     void createDocumentAllFonts() {
         try (// step 1: we create a writer that listens to the document
@@ -43,16 +44,20 @@ class StandardFontsTest {
             // this is for demonstration purposes only, use FontFactory!
             final List<StandardFonts> standardFonts = Arrays.stream(values())
                     .filter(f -> !f.isDeprecated()).collect(Collectors.toList());
+            assertThat(standardFonts).isNotEmpty();  // Assertion added here
             for (StandardFonts standardFont : standardFonts) {
                 // add the content
                 Font font = standardFont.create();
                 document.add(new Paragraph(
                         "quick brown fox jumps over the lazy dog. <= " + standardFont, font));
+                // additional assertion
+                assertNotNull(font);
             }
         } catch (DocumentException | IOException de) {
             de.printStackTrace();
         }
     }
+
 
     @Test
     void testNonDeprecatedFonts() {
