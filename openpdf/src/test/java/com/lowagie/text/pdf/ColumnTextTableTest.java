@@ -1,15 +1,17 @@
 package com.lowagie.text.pdf;
 
-
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This test class contains a series of smoke tests. The goal of these tests is not to validate the generated document,
@@ -60,6 +62,9 @@ public class ColumnTextTableTest {
         FileOutputStream fos = new FileOutputStream(outputPDF);
         fos.write(baos.toByteArray());
         fos.close();
+
+        // Assertion to check if the file has been created
+        assertTrue(outputPDF.exists());
     }
 
     /**
@@ -103,6 +108,9 @@ public class ColumnTextTableTest {
         FileOutputStream fos = new FileOutputStream(outputPDF);
         fos.write(baos.toByteArray());
         fos.close();
+
+        // Assertion to check if the file has been created
+        assertTrue(outputPDF.exists());
     }
 
     /**
@@ -132,6 +140,5 @@ public class ColumnTextTableTest {
         table.addCell(cell);
         return table;
     }
-
 
 }
