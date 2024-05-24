@@ -108,7 +108,7 @@ public class XmpWriter implements AutoCloseable {
     /**
      * You can add some extra space in the XMP packet; 1 unit in this variable represents 100 spaces and a newline.
      */
-    protected int extraSpace;
+    protected int EXTRASPACE;
     /**
      * The writer to which you can write bytes for the XMP stream.
      */
