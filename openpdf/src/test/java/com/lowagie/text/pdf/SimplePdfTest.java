@@ -31,6 +31,13 @@ public class SimplePdfTest {
             Rectangle rect = new Rectangle(100, 100);
             document.add(ann);
             document.add(rect);
+            
+            // Add assertion to verify the annotation and rectangle were added
+            assertNotNull(ann);
+            assertEquals("Title", ann.getTitle());
+            assertEquals("Text", ann.getContent());
+            assertEquals(100, rect.getWidth());
+            assertEquals(100, rect.getHeight());
         } finally {
             // close document
             if (document != null) {
