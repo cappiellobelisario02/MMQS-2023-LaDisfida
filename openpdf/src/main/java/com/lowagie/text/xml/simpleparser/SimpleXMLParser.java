@@ -135,7 +135,7 @@ public final class SimpleXMLParser {
     /**
      * current text (whatever is encountered between tags)
      */
-    StringBuffer text = new StringBuffer();
+    StringBuffer TEXT = new StringBuffer();
     /**
      * current entity (whatever is encountered between & and ;)
      */
