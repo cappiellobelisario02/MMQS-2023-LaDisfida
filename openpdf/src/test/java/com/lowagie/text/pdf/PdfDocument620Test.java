@@ -41,6 +41,9 @@ public class PdfDocument620Test {
                 "dsaffff ffffffffff fffffffffffffffff";
         createPdf("longLine", s, true);
         createPdf("longLine", s, false);
+        // Assertions
+        assertTrue(Files.exists(Paths.get("target", "longLineKeepTogetherTRUE.pdf")));
+        assertTrue(Files.exists(Paths.get("target", "longLineKeepTogetherFALSE.pdf")));
     }
 
     private void createPdf(String baseFileName, String lineToTest, boolean keepTogether) throws IOException {
