@@ -783,6 +783,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
                         } catch (EmptyStackException es) {
                             document.add(element);
                         }
+                        return;
                     }
                 } catch (EmptyStackException ese) {
                     // empty on purpose
