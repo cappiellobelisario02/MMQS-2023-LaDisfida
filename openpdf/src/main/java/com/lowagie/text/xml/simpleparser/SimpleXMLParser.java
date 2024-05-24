@@ -139,7 +139,7 @@ public final class SimpleXMLParser {
     /**
      * current entity (whatever is encountered between & and ;)
      */
-    StringBuffer entity = new StringBuffer();
+    StringBuffer ENTITY = new StringBuffer();
     /**
      * current tagname
      */
