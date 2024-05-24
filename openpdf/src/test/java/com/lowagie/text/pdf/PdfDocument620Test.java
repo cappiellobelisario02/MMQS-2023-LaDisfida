@@ -29,6 +29,8 @@ public class PdfDocument620Test {
         createPdf("shortLine", "Test Paragraph", true);
         createPdf("shortLine", "Test Paragraph", false);
         // the 2 documents should look the same
+        assertTrue(Files.exists(Paths.get("target", "shortLineKeepTogetherTRUE.pdf")));
+        assertTrue(Files.exists(Paths.get("target", "shortLineKeepTogetherFALSE.pdf")));
     }
 
     @Test
