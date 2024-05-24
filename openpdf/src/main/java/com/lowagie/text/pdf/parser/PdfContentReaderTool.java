@@ -205,12 +205,31 @@ public class PdfContentReaderTool {
                 return;
             }
 
-            PrintWriter writer = new PrintWriter(System.out);
-            if (args.length >= 2) {
-                if (args[1].compareToIgnoreCase("stdout") != 0) {
+           try (PrintWriter writer = args.length >= 2 && !args[1].equalsIgnoreCase("stdout")
+                    ? new PrintWriter(new FileOutputStream(new File(args[1])))
+                    : new PrintWriter(System.out)) {
+
+                if (args.length >= 2 && !args[1].equalsIgnoreCase("stdout")) {
                     System.out.println("Writing PDF content to " + args[1]);
-                    writer = new PrintWriter(new FileOutputStream(new File(args[1])));
                 }
+
+                int pageNum = -1;
+                if (args.length >= 3) {
+                    pageNum = Integer.parseInt(args[2]);
+                }
+
+                if (pageNum == -1) {
+                    listContentStream(new File(args[0]), writer);
+                } else {
+                    listContentStream(new File(args[0]), pageNum, writer);
+                }
+                writer.flush();
+
+                if (args.length >= 2 && !args[1].equalsIgnoreCase("stdout")) {
+                    System.out.println("Finished writing content to " + args[1]);
+                }
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
             }
 
             int pageNum = -1;
