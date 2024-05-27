@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 
 class StandardFontsTest {
 
+
     @Test
     void createDocumentAllFonts() {
         try (// step 1: we create a writer that listens to the document
@@ -56,6 +57,7 @@ class StandardFontsTest {
             de.printStackTrace();
         }
     }
+
     @Test
     void testNonDeprecatedFonts() {
         // given

@@ -63,15 +63,25 @@ public class CharVector implements Serializable {
         n = 0;
     }
 
+<<<<<<< Updated upstream
     /**
      * Copy constructor.
      *
      * @param original the CharVector to copy.
      */
+=======
+>>>>>>> Stashed changes
     public CharVector(CharVector original) {
         this.array = original.array.clone();
         this.blockSize = original.blockSize;
         this.n = original.n;
+<<<<<<< Updated upstream
+=======
+    }
+
+    public CharVector clone() {
+        return new CharVector(this);
+>>>>>>> Stashed changes
     }
 
     public char[] getArray() {
