@@ -545,6 +545,7 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     /**
      * @return Returns the width.
      */
+    @Override
     public float getWidth() {
         return width;
     }
@@ -636,6 +637,7 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     /**
      * @see com.lowagie.text.Element#type()
      */
+    @Override
     public int type() {
         return Element.CELL;
     }
