@@ -204,7 +204,6 @@ public class OcspClientBouncyCastle implements OcspClient {
         gen.addRequest(id);
 
         // create details for nonce extension
-        // Vector oids = new Vector();
         // Vector values = new Vector();
         // oids.add(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
         // values.add(new X509Extension(false, new DEROctetString(new
