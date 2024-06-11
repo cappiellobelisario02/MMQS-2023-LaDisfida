@@ -63,6 +63,11 @@ import java.util.StringTokenizer;
 
 public class Markup {
 
+    // Private constructor to prevent instantiation
+    private Markup() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     // iText specific
 
     /**
