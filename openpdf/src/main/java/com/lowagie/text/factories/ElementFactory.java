@@ -85,6 +85,11 @@ import java.util.StringTokenizer;
  */
 public class ElementFactory {
 
+    // Private constructor to prevent instantiation
+    private ElementFactory() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     /**
      * Creates a Chunk object based on a list of properties.
      *
