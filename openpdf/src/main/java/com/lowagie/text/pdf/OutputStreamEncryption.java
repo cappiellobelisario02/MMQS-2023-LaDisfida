@@ -107,6 +107,7 @@ public class OutputStreamEncryption extends OutputStream {
      *
      * @throws IOException if an I/O error occurs.
      */
+    @Override
     public void close() throws IOException {
         finish();
         out.close();
@@ -122,6 +123,7 @@ public class OutputStreamEncryption extends OutputStream {
      *
      * @throws IOException if an I/O error occurs.
      */
+    @Override
     public void flush() throws IOException {
         out.flush();
     }
@@ -135,6 +137,7 @@ public class OutputStreamEncryption extends OutputStream {
      * @throws IOException if an I/O error occurs.
      * @see java.io.OutputStream#write(byte[], int, int)
      */
+    @Override
     public void write(byte[] b) throws IOException {
         write(b, 0, b.length);
     }
@@ -178,6 +181,7 @@ public class OutputStreamEncryption extends OutputStream {
      * @throws IOException if an I/O error occurs. In particular, an <code>IOException</code> is thrown if the output
      *                     stream is closed.
      */
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         if (aes) {
             byte[] b2 = cipher.update(b, off, len);
