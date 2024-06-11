@@ -1388,7 +1388,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      *
      * @return an <CODE>Iterator</CODE>
      */
-    public Iterator iterator() {
+    public Iterator<String> iterator() {
         return rows.iterator();
     }
 
