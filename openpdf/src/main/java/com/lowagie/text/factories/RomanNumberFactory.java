@@ -53,6 +53,11 @@ package com.lowagie.text.factories;
  */
 public class RomanNumberFactory {
 
+    // Private constructor to prevent instantiation
+    private RomanNumberFactory() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     /**
      * Array with Roman digits.
      */
