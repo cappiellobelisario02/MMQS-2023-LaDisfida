@@ -258,7 +258,6 @@ public class HtmlWriter extends DocWriter {
                         } else {
                             writeHeader(header);
                         }
-                    } catch (ClassCastException ignored) {
                     }
                     return true;
                 case Element.SUBJECT:
@@ -844,7 +843,7 @@ public class HtmlWriter extends DocWriter {
                 if (cell.isEmpty()) {
                     write(NBSP);
                 } else {
-                    for (Iterator i = cell.getElements(); i.hasNext(); ) {
+                    for (Iterator<Element> i = cell.getElements(); i.hasNext(); ) {
                         write((Element) i.next(), indent + 1);
                     }
                 }
@@ -920,7 +919,7 @@ public class HtmlWriter extends DocWriter {
                 os.write(GT);
                 // contents
                 Row row;
-                for (Iterator iterator = table.iterator(); iterator.hasNext(); ) {
+                for (Iterator<String> iterator = table.iterator(); iterator.hasNext(); ) {
                     row = (Row) iterator.next();
                     write(row, indent + 1);
                 }
@@ -1034,7 +1033,7 @@ public class HtmlWriter extends DocWriter {
         write("=\"");
         if (styleAttributes != null) {
             String key;
-            for (Enumeration e = styleAttributes.propertyNames(); e.hasMoreElements(); ) {
+            for (Enumeration<String> e = styleAttributes.propertyNames(); e.hasMoreElements(); ) {
                 key = (String) e.nextElement();
                 writeCssProperty(key, styleAttributes.getProperty(key));
             }
