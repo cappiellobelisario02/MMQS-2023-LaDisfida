@@ -86,6 +86,7 @@ public class PRAcroForm extends PdfDictionary {
      *
      * @return size
      */
+    @Override
     public int size() {
         return fields.size();
     }
