@@ -221,7 +221,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     /**
      * This is the width of the table (in percent of the available space).
      */
-    private float width = 80;
+    private float Width = 80;
     /**
      * Is the width a percentage (false) or an absolute width (true)?
      */
@@ -316,6 +316,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      * @param listener an <CODE>ElementListener</CODE>
      * @return <CODE>true</CODE> if the element was processed successfully
      */
+    @Override
     public boolean process(ElementListener listener) {
         try {
             return listener.add(this);
@@ -329,6 +330,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      *
      * @return a type
      */
+    @Override
     public int type() {
         return Element.TABLE;
     }
@@ -338,7 +340,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      *
      * @return an <CODE>ArrayList</CODE>
      */
-
+    @Override
     public ArrayList<Element> getChunks() {
         return new ArrayList<>();
     }
@@ -347,6 +349,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      * @see com.lowagie.text.Element#isNestable()
      * @since iText 2.0.8
      */
+    @Override
     public boolean isNestable() {
         return true;
     }
@@ -499,6 +502,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      *
      * @return the table width
      */
+    @Override
     public float getWidth() {
         return width;
     }
@@ -563,7 +567,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
         }
 
         // The different percentages are calculated
-        float width;
+        float Width;
         this.widths[columns - 1] = 100;
         for (int i = 0; i < columns - 1; i++) {
             width = (100.0f * widths[i]) / hundredPercent;
@@ -1050,7 +1054,6 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
                             totW += tmpWidthsN[totI];
                             totI++;
                         }
-                       /*if( tpI<tmpWidths.length)
                        {
                            System.arraycopy(tmpWidths, tpI, tmpWidthsN, totI, tmpWidths.length-tpI);
                            totI +=tmpWidths.length-tpI;
@@ -1063,7 +1066,6 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
                         System.arraycopy(tmpWidthsN, 0, tmpWidths, 0, totI);
                         lNewMaxColumns = totI;
                     }
-                                     /*if ( lDummyTable.getDimension().width > lNewMaxColumns )
                    {
                        lNewMaxColumns = lDummyTable.getDimension().width;
                        lDummyColumnWidths[j] = lDummyTable.widths; // bugfix Tony Copping
@@ -1103,7 +1105,6 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
                 if (lDummyWidths[tel] != 1) {
                     // divide
                     for (int tel2 = 0; tel2 < lDummyWidths[tel]; tel2++) {
-                        // lNewWidths[lDummy] = widths[tel] / lDummyWidths[tel];
                         lNewWidths[lDummy] = widths[tel] * lDummyColumnWidths[tel][tel2] / 100f; // bugfix Tony Copping
                         lDummy++;
                     }
