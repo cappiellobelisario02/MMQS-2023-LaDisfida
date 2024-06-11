@@ -491,7 +491,7 @@ public class AcroFields {
             dic = dic.getAsDict(PdfName.N);
             if (dic != null) {
 
-                Iterator it = dic.getKeys().iterator();
+                Iterator<String> it = dic.getKeys().iterator();
                 while (it.hasNext()) {
                     String name = PdfName.decodeName(((PdfName) it.next()).toString());
                     if (!names.contains(name)) {
@@ -745,25 +745,22 @@ public class AcroFields {
                             tx.setFont(bp);
                             Integer porkey = por.getNumber();
                             BaseFont porf = extensionFonts.get(porkey);
-                            if (porf == null) {
-                                if (!extensionFonts.containsKey(porkey)) {
-                                    PdfDictionary fo = (PdfDictionary) PdfReader.getPdfObject(po);
-                                    PdfDictionary fd = fo.getAsDict(PdfName.FONTDESCRIPTOR);
-                                    if (fd != null) {
-                                        PRStream prs = (PRStream) PdfReader.getPdfObject(fd.get(PdfName.FONTFILE2));
-                                        if (prs == null) {
-                                            prs = (PRStream) PdfReader.getPdfObject(fd.get(PdfName.FONTFILE3));
+                            if (porf == null && !extensionFonts.containsKey(porkey)) {
+                                PdfDictionary fo = (PdfDictionary) PdfReader.getPdfObject(po);
+                                PdfDictionary fd = fo.getAsDict(PdfName.FONTDESCRIPTOR);
+                                if (fd != null) {
+                                    PRStream prs = (PRStream) PdfReader.getPdfObject(fd.get(PdfName.FONTFILE2));
+                                    if (prs == null) {
+                                        prs = (PRStream) PdfReader.getPdfObject(fd.get(PdfName.FONTFILE3));
+                                    }
+                                    if (prs == null) {
+                                        extensionFonts.put(porkey, null);
+                                    } else {
+                                        try {
+                                            porf = BaseFont.createFont("font.ttf", BaseFont.IDENTITY_H, true, false,
+                                                    PdfReader.getStreamBytes(prs), null);
                                         }
-                                        if (prs == null) {
-                                            extensionFonts.put(porkey, null);
-                                        } else {
-                                            try {
-                                                porf = BaseFont.createFont("font.ttf", BaseFont.IDENTITY_H, true, false,
-                                                        PdfReader.getStreamBytes(prs), null);
-                                            } catch (Exception ignored) {
-                                            }
-                                            extensionFonts.put(porkey, porf);
-                                        }
+                                        extensionFonts.put(porkey, porf);
                                     }
                                 }
                             }
@@ -1074,7 +1071,6 @@ public class AcroFields {
                     PdfString ps = opts.getAsString(idx);
                     value = ps.toUnicodeString();
                     lastWasString = true;
-                } catch (Exception ignored) {
                 }
             }
             return value;
@@ -1110,7 +1106,6 @@ public class AcroFields {
         if (item == null) {
             return ret;
         }
-        //PdfName type = (PdfName)PdfReader.getPdfObject(((PdfDictionary)item.merged.get(0)).get(PdfName.FT));
         //if (!PdfName.CH.equals(type)) {
         //    return ret;
         //}
@@ -2475,7 +2470,6 @@ public class AcroFields {
         } finally {
             try {
                 rf.close();
-            } catch (Exception e) {
             }
         }
     }
