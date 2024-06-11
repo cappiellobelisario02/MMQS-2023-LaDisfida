@@ -179,11 +179,8 @@ public class SAXmyHtmlHandler extends SAXiTextHandler<HtmlPeer> {
             if (ElementTags.TABLE.equals(peer.getTag()) || ElementTags.CELL.equals(peer.getTag())) {
                 Properties p = peer.getAttributes(attrs);
                 String value;
-                if (ElementTags.TABLE.equals(peer.getTag())
-                        && (value = p.getProperty(ElementTags.BORDERWIDTH)) != null) {
-                    if (Float.parseFloat(value + "f") > 0) {
+                if (ElementTags.TABLE.equals(peer.getTag()) && (value = p.getProperty(ElementTags.BORDERWIDTH)) != null) && (Float.parseFloat(value + "f") > 0){
                         tableBorder = true;
-                    }
                 }
                 if (tableBorder) {
                     p.put(ElementTags.LEFT, String.valueOf(true));
