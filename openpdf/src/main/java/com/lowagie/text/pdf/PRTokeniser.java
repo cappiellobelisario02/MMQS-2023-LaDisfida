@@ -331,7 +331,6 @@ public class PRTokeniser implements AutoCloseable {
             stringValue = n1;
             return;
         }
-//                if (type == TK_ENDOFFILE && level > 0)
 //                    {
 //                        file.seek(ptr);
 //                        type = TK_NUMBER;
@@ -574,7 +573,6 @@ public class PRTokeniser implements AutoCloseable {
         int len = input.length;
         // ssteward, pdftk-1.10, 040922:
         // skip initial whitespace; added this because PdfReader.rebuildXref()
-        // assumes that line provided by readLineSegment does not have init. whitespace;
         if (ptr < len) {
             while (isWhitespace((c = read()))) {
                 // consume input
