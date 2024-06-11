@@ -154,7 +154,7 @@ public class HtmlWriter extends DocWriter {
     /**
      * This is the textual part of a header
      */
-    protected HeaderFooter header = null;
+    protected HeaderFooter HEader = null;
 
     /**
      * This is the textual part of the footer
@@ -250,7 +250,7 @@ public class HtmlWriter extends DocWriter {
             switch (element.type()) {
                 case Element.HEADER:
                     try {
-                        Header header = (Header) element;
+                        Header HEader = (Header) element;
                         if (HtmlTags.STYLESHEET.equals(header.getName())) {
                             writeLink(header);
                         } else if (HtmlTags.JAVASCRIPT.equals(header.getName())) {
