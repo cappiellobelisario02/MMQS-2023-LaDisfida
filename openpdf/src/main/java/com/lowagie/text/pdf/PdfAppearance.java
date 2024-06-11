@@ -156,6 +156,7 @@ public class PdfAppearance extends PdfTemplate {
      * @param bf   the font
      * @param size the font size in points
      */
+    @Override
     public void setFontAndSize(BaseFont bf, float size) {
         checkWriter();
         state.size = size;
@@ -174,11 +175,11 @@ public class PdfAppearance extends PdfTemplate {
             }
         }
         PageResources prs = getPageResources();
-//        PdfName name = state.fontDetails.getFontName();
         prs.addFont(psn, state.fontDetails.getIndirectReference());
         content.append(psn.getBytes()).append(' ').append(size).append(" Tf").append_i(separator);
     }
 
+    @Override
     public PdfContentByte getDuplicate() {
         PdfAppearance tpl = new PdfAppearance();
         tpl.writer = writer;
