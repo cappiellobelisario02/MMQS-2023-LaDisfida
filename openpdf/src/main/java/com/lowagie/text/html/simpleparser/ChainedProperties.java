@@ -85,7 +85,7 @@ public class ChainedProperties {
     public Optional<String> findProperty(String key) {
         for (int k = chain.size() - 1; k >= 0; --k) {
             Object[] obj = chain.get(k);
-            HashMap prop = (HashMap) obj[1];
+            HashMap<?, ?> prop = (HashMap<?, ?>) obj[1];
             String ret = (String) prop.get(key);
             if (ret != null) {
                 return Optional.of(ret);
@@ -108,7 +108,7 @@ public class ChainedProperties {
     public boolean hasProperty(String key) {
         for (int k = chain.size() - 1; k >= 0; --k) {
             Object[] obj = (Object[]) chain.get(k);
-            HashMap prop = (HashMap) obj[1];
+            HashMap<String, Integer> prop = (HashMap<String, Integer>) obj[1];
             if (prop.containsKey(key)) {
                 return true;
             }
