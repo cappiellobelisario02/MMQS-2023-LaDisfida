@@ -76,10 +76,12 @@ public class PatternColor extends ExtendedColor {
         return this.painter;
     }
 
+    @Override
     public boolean equals(Object obj) {
         return this == obj;
     }
 
+    @Override
     public int hashCode() {
         return painter.hashCode();
     }
