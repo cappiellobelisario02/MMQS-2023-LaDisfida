@@ -60,6 +60,11 @@ import com.lowagie.text.SpecialSymbol;
  */
 public class GreekAlphabetFactory {
 
+    // Private constructor to prevent instantiation
+    private GreekAlphabetFactory() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     /**
      * Changes an int into a lower case Greek letter combination.
      *
