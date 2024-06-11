@@ -77,7 +77,7 @@ public class HtmlPeer extends XmlPeer {
      * @param name  the iText tagname
      * @param alias the custom tagname
      */
-
+    @Override
     public void addAlias(String name, String alias) {
         attributeAliases.put(alias.toLowerCase(), name);
     }
