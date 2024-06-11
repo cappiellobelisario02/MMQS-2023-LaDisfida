@@ -64,6 +64,10 @@ package com.lowagie.text;
 
 public class SpecialSymbol {
 
+    // Private constructor to prevent instantiation
+    private SpecialSymbol() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
     /**
      * Returns the first occurrence of a special symbol in a <CODE>String</CODE>.
      *
