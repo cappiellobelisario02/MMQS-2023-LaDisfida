@@ -217,7 +217,6 @@ public class HtmlTagMap extends HashMap<String, HtmlPeer> {
         put(peer.getAlias(), peer);
 
         peer = new HtmlPeer(ElementTags.IMAGE, HtmlTags.IMAGE);
-        //        peer.addAlias(ElementTags.URL, HtmlTags.URL);
         peer.addAlias(ElementTags.URL, ElementTags.SRC); // contributed by Lubos Strapko
 
         peer.addAlias(ElementTags.ALT, HtmlTags.ALT);
