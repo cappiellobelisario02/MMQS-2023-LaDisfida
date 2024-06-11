@@ -608,7 +608,8 @@ public class PRTokeniser implements AutoCloseable {
         if (ptr >= len) {
             eol = false;
             while (!eol) {
-                switch (c = read()) {
+                c = read()
+                switch (c) {
                     case -1:
                     case '\n':
                         eol = true;
