@@ -288,7 +288,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
                         img = ip.getImage(src, (HashMap) style, cprops, document);
                     }
                     if (img == null) {
-                        Map images = (HashMap) interfaceProps.get("img_static");
+                        Map<String, String> images = (HashMap<String, String>) interfaceProps.get("img_static");
                         if (images != null) {
                             Image tim = (Image) images.get(src);
                             if (tim != null) {
