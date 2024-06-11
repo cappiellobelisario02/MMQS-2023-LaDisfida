@@ -66,6 +66,9 @@ import java.util.Set;
 
 public class Utilities {
 
+        private Utilities() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
     /**
      * Gets the keys of a Hashtable
      *
