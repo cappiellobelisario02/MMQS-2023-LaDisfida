@@ -357,6 +357,7 @@ public class PdfCell extends Rectangle {
      * @return the lower left x-coordinate
      */
 
+    @Override
     public float getLeft() {
         return super.getLeft(cellspacing);
     }
@@ -367,6 +368,7 @@ public class PdfCell extends Rectangle {
      * @return the upper right x-coordinate
      */
 
+    @Override
     public float getRight() {
         return super.getRight(cellspacing);
     }
@@ -377,6 +379,7 @@ public class PdfCell extends Rectangle {
      * @return the upper right y-coordinate
      */
 
+    @Override
     public float getTop() {
         return super.getTop(cellspacing);
     }
@@ -387,6 +390,7 @@ public class PdfCell extends Rectangle {
      * @return the lower left y-coordinate
      */
 
+    @Override
     public float getBottom() {
         return super.getBottom(cellspacing);
     }
@@ -399,6 +403,7 @@ public class PdfCell extends Rectangle {
      *
      * @param value the lower-left y-coordinate of the rectangle
      */
+    @Override
     public void setBottom(float value) {
         super.setBottom(value);
         float firstLineRealHeight = firstLineRealHeight();
@@ -439,14 +444,12 @@ public class PdfCell extends Rectangle {
     private PdfLine removeLine(int index) {
         PdfLine oldLine = lines.remove(index);
         contentHeight -= oldLine.height();
-        if (index == 0) {
-            if (!lines.isEmpty()) {
+        if (index == 0) && (!lines.isEmpty())  {
                 firstLine = lines.get(0);
                 float firstLineRealHeight = firstLineRealHeight();
                 contentHeight -= firstLine.height();
                 firstLine.height = firstLineRealHeight;
                 contentHeight += firstLineRealHeight;
-            }
         }
         return oldLine;
     }
@@ -525,7 +528,7 @@ public class PdfCell extends Rectangle {
      * @return the height of the image
      */
 
-    private float addImage(Image i, float left, float right, float extraHeight, int alignment) {
+    private float addImage(Image i, float left, float right, int alignment) {
         Image image = Image.getInstance(i);
         if (image.getScaledWidth() > right - left) {
             image.scaleToFit(right - left, Float.MAX_VALUE);
@@ -766,7 +769,7 @@ public class PdfCell extends Rectangle {
      * @return a value
      */
 
-    public float cellpadding() {
+    public float CELLpadding() {
         return cellpadding;
     }
 
@@ -785,7 +788,7 @@ public class PdfCell extends Rectangle {
                 action = new PdfAction(url);
             }
         }
-        Iterator i;
+        Iterator<String> i;
         switch (element.type()) {
             case Element.PHRASE:
             case Element.SECTION:
