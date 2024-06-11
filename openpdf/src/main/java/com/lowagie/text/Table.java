@@ -1427,7 +1427,8 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
             pdfptable.setWidthPercentage(width);
         }
         Row row;
-        for (Iterator iterator = iterator(); iterator.hasNext(); ) {
+        for (Iterator<Element> iterator = iterator(); iterator.hasNext(); ) {
+            Element element = iterator.next();
             row = (Row) iterator.next();
             Element cell;
             PdfPCell pcell;
