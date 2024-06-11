@@ -54,5 +54,5 @@ import java.util.HashMap;
 
 public interface ImageProvider {
 
-    Image getImage(String src, HashMap h, ChainedProperties cprops, DocListener doc);
+    Image getImage(String src, HashMap<String, Object> h, ChainedProperties cprops, DocListener doc);
 }
