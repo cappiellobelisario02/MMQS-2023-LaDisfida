@@ -176,7 +176,7 @@ public class FactoryProperties {
      * @return a HyphenationEvent
      * @since 2.1.2
      */
-    public static HyphenationEvent getHyphenation(HashMap props) {
+    public static HyphenationEvent getHyphenation(HashMap<String, String> props) {
         return getHyphenation((String) props.get("hyphenation"));
     }
 
