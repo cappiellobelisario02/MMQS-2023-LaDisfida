@@ -75,6 +75,7 @@ public class OutputStreamCounter extends OutputStream {
      *
      * @throws IOException if an I/O error occurs.
      */
+    @Override
     public void close() throws IOException {
         out.close();
     }
@@ -89,6 +90,7 @@ public class OutputStreamCounter extends OutputStream {
      *
      * @throws IOException if an I/O error occurs.
      */
+    @Override
     public void flush() throws IOException {
         out.flush();
     }
@@ -102,6 +104,7 @@ public class OutputStreamCounter extends OutputStream {
      * @throws IOException if an I/O error occurs.
      * @see java.io.OutputStream#write(byte[], int, int)
      */
+    @Override
     public void write(byte[] b) throws IOException {
         counter += b.length;
         out.write(b);
@@ -146,6 +149,7 @@ public class OutputStreamCounter extends OutputStream {
      * @throws IOException if an I/O error occurs. In particular, an <code>IOException</code> is thrown if the output
      *                     stream is closed.
      */
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         counter += len;
         out.write(b, off, len);
