@@ -686,7 +686,8 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
         char character;
         boolean newline = false;
         for (int i = 0; i < len; i++) {
-            switch (character = content.charAt(i)) {
+            char character = content.charAt(i);
+            switch (character) {
                 case ' ':
                     if (!newline) {
                         buf.append(character);
