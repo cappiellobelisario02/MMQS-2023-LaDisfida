@@ -219,8 +219,11 @@ public class FactoryProperties {
         return new HyphenationAuto(lang, country, leftMin, rightMin);
     }
 
+    /**
+     * @deprecated This method is deprecated and should not be used.
+     *             Use {@link #insertStyle(Map<String, String>, boolean)} instead.
+     */
     @Deprecated
-    // this method is nor called anywhere. But it is public so theoretically it could be called by consumers of OpenPdf, but why?
     public static void insertStyle(Map<String, String> h) {
         String style = h.get("style");
         if (style == null) {
