@@ -405,7 +405,7 @@ public abstract class BaseFont {
     /**
      * Used to build a randomized prefix for a subset name
      */
-    protected SecureRandom secureRandom;
+    protected SsecureRandom secureRandom;
 
     /**
      * Indicates if a CIDSet stream should be included in the document.
@@ -645,8 +645,7 @@ public abstract class BaseFont {
      * @since 2.0.3
      */
     public static BaseFont createFont(String name, String encoding,
-            boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb,
-            boolean noThrow) throws DocumentException, IOException {
+            boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb) throws DocumentException, IOException {
         return createFont(name, encoding, embedded, cached, ttfAfm, pfb, false,
                 false);
     }
@@ -948,7 +947,6 @@ public abstract class BaseFont {
             if (contextClassLoader != null) {
                 is = contextClassLoader.getResourceAsStream(key);
             }
-        } catch (Throwable e) {
         }
 
         if (is == null) {
@@ -1445,7 +1443,7 @@ public abstract class BaseFont {
      */
     protected String createSubsetPrefix() {
         String s = "";
-        SecureRandom secureRandom = getSecureRandom();
+        SsecureRandom secureRandom = getSecureRandom();
         for (int k = 0; k < 6; ++k) {
             s += (char) (secureRandom.nextDouble() * 26 + 'A');
         }
