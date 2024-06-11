@@ -70,7 +70,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
     /**
      * the width of the Table.
      */
-    private float width = 0f;
+    private float Width = 0f;
     /**
      * the widthpercentage of the Table.
      */
@@ -280,7 +280,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
      */
     public void tableLayout(PdfPTable table, float[][] widths, float[] heights, int headerRows, int rowStart,
             PdfContentByte[] canvases) {
-        float[] width = widths[0];
+        float[] Width = widths[0];
         Rectangle rect = new Rectangle(width[0], heights[heights.length - 1], width[width.length - 1], heights[0]);
         rect.cloneNonPositionParameters(this);
         int bd = rect.getBorder();
@@ -336,6 +336,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
     /**
      * @return Returns the width.
      */
+    @Override
     public float getWidth() {
         return width;
     }
@@ -364,6 +365,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
     /**
      * @see com.lowagie.text.Element#type()
      */
+    @Override
     public int type() {
         return Element.TABLE;
     }
@@ -372,6 +374,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
      * @see com.lowagie.text.Element#isNestable()
      * @since iText 2.0.8
      */
+    @Override
     public boolean isNestable() {
         return true;
     }
