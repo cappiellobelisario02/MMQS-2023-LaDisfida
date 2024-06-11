@@ -57,6 +57,10 @@ import com.lowagie.text.error_messages.MessageLocalization;
  */
 public class RomanAlphabetFactory {
 
+    // Private constructor to prevent instantiation
+    private RomanAlphabetFactory() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
     /**
      * Translates a positive integer (not equal to zero) into a String using the letters 'a' to 'z'; 1 = a, 2 = b, ...,
      * 26 = z, 27 = aa, 28 = ab,...
