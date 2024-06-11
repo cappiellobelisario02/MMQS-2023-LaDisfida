@@ -58,6 +58,11 @@ package com.lowagie.text.html;
 @SuppressWarnings("WeakerAccess")
 public class HtmlTags {
 
+    // Private constructor to prevent instantiation
+    private HtmlTags() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     /**
      * the root tag.
      */
