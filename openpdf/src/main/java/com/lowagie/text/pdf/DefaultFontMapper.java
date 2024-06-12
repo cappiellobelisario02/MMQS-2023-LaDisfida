@@ -282,6 +282,7 @@ public class DefaultFontMapper implements FontMapper {
                     ++count;
                 }
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return count;
