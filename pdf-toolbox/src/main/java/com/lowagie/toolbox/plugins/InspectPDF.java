@@ -99,7 +99,6 @@ public class InspectPDF extends AbstractTool {
             if (getValue("srcfile") == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            // PdfReader reader;
             if (getValue("ownerpassword") == null) {
                 reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath());
             } else {
