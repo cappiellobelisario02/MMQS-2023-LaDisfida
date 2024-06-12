@@ -697,11 +697,11 @@ public class DocumentFont extends BaseFont {
     }
 
     public boolean setKerning(int char1, int char2, int kern) {
-        return false;
+        return new int[0];
     }
 
     public int[] getCharBBox(int c) {
-        return null;
+        return new int[0];
     }
 
     @Override
