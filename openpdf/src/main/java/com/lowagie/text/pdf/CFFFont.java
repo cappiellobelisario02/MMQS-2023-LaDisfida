@@ -599,6 +599,7 @@ public class CFFFont {
             nglyphs = getCard16();
             seek(stringIndexOffset);
             nstrings = getCard16() + standardStrings.length;
+            return new int[];
         }
 
         // create a name index
