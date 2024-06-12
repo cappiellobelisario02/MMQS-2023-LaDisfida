@@ -538,7 +538,6 @@ public class PdfChunk {
         }
 
         // otherwise, the string has to be truncated
-        //currentPosition -= 2;
         // we have to chop off minimum 1 character from the chunk
         if (currentPosition == 0) {
             currentPosition = 1;
