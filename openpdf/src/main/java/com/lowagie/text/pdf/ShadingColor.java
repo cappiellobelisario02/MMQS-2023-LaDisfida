@@ -76,10 +76,12 @@ public class ShadingColor extends ExtendedColor {
         return shadingPattern;
     }
 
+    @Override
     public boolean equals(Object obj) {
         return this == obj;
     }
 
+    @Override
     public int hashCode() {
         return shadingPattern.hashCode();
     }
