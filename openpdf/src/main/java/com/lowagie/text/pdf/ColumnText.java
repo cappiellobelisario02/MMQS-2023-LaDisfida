@@ -738,7 +738,7 @@ public class ColumnText {
             }
             float[] x2 = findLimitsOneLine();
             if (lineStatus == LINE_STATUS_OFFLIMITS) {
-                return null;
+                return new int[0];
             }
             if (lineStatus == LINE_STATUS_NOLINE) {
                 yLine -= currentLeading;
