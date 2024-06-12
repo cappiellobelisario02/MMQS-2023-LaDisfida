@@ -197,7 +197,7 @@ public class ColumnText {
     /**
      * The chunks that form the text.
      */
-//    protected ArrayList chunks = new ArrayList();
+
     protected BidiLine bidiLine;
 
     /**
@@ -1318,14 +1318,14 @@ public class ColumnText {
                         k = -1;
                         continue;
                     }
-                    if (k == items.size() - 1) {
-                        if (!stack.isEmpty()) {
+                    if (k == items.size() - 1 && !stack.isEmpty()) {
+                        
                             Object[] objs = stack.pop();
                             list = (com.lowagie.text.List) objs[0];
                             items = list.getItems();
                             k = (Integer) objs[1];
                             listIndentation = (Float) objs[2];
-                        }
+                        
                     }
                 }
                 int status = 0;
@@ -1490,7 +1490,7 @@ public class ColumnText {
                 if (!table.isComplete()) {
                     yTemp += footerHeight;
                 }
-                // either k is the first row that doesn't fit on the page (break);
+                
                 if (k < table.size()) {
                     if (table.isSplitRows() && (!table.isSplitLate() || (k == listIdx && firstPass))) {
                         if (!splittedRow) {
@@ -1545,7 +1545,7 @@ public class ColumnText {
                     }
                     // then we add the real content
                     sub.addAll(table.getRows(listIdx, k));
-                    // if k < table.size(), we must indicate that the new table is complete;
+                    
                     // otherwise no footers will be added (because iText thinks the table continues on the same page)
                     boolean showFooter = !table.isSkipLastFooter();
                     boolean newPageFollows = false;
