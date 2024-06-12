@@ -1225,8 +1225,8 @@ public class ColumnText {
         descender = 0;
         boolean firstPass = adjustFirstLine;
 
-        main_loop:
-        while (true) {
+        boolean continueLoop = true;
+        while (continueLoop) {
             if (compositeElements.isEmpty()) {
                 return NO_MORE_TEXT;
             }
