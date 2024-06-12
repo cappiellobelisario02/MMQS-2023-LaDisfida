@@ -1106,7 +1106,8 @@ public class PdfContentByte {
         Color cfil = null;
         // draw top
         if (wt > 0) {
-            setLineWidth(clw = wt);
+            clw = wt;
+            setLineWidth(clw);
             cdef = true;
             if (ct == null) {
                 resetRGBColorStroke();
@@ -1122,7 +1123,8 @@ public class PdfContentByte {
         // Draw bottom
         if (wb > 0) {
             if (wb != clw) {
-                setLineWidth(clw = wb);
+                clw = wb;
+                setLineWidth(clw);
             }
             if (!cdef || !compareColors(ccol, cb)) {
                 cdef = true;
@@ -1141,7 +1143,8 @@ public class PdfContentByte {
         // Draw right
         if (wr > 0) {
             if (wr != clw) {
-                setLineWidth(clw = wr);
+                clw = wr;
+                setLineWidth(clw);
             }
             if (!cdef || !compareColors(ccol, cr)) {
                 cdef = true;
@@ -1954,7 +1957,7 @@ public class PdfContentByte {
             w = (w * state.scale) / 100.0f;
         }
 
-        //System.out.println("String width = " + Float.toString(w));
+
         return w;
     }
 
@@ -2764,7 +2767,7 @@ public class PdfContentByte {
             return;
         }
         content.append("[");
-        List arrayList = glyphs.getList();
+        List<String> arrayList = text.getArrayList();
         boolean lastWasDisplacement = false;
         for (Object obj : arrayList) {
             if (obj instanceof PdfGlyphArray.GlyphSubList) { // glyph codes
@@ -2794,7 +2797,7 @@ public class PdfContentByte {
                     MessageLocalization.getComposedMessage("font.and.size.must.be.set.before.writing.any.text"));
         }
         content.append("[");
-        List arrayList = text.getArrayList();
+        List<String> arrayList = text.getArrayList();
         boolean lastWasNumber = false;
         for (Object obj : arrayList) {
             if (obj instanceof String) {
