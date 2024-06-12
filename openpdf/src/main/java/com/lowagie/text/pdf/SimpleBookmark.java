@@ -288,7 +288,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
         PdfDictionary catalog = reader.getCatalog();
         PdfObject obj = PdfReader.getPdfObjectRelease(catalog.get(PdfName.OUTLINES));
         if (obj == null || !obj.isDictionary()) {
-            return null;
+            return Collections.emptyList();
         }
         PdfDictionary outlines = (PdfDictionary) obj;
         IntHashtable pages = new IntHashtable();
