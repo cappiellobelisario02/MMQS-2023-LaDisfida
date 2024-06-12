@@ -46,11 +46,6 @@
  */
 package com.lowagie.text.pdf;
 
-import com.lowagie.text.error_messages.MessageLocalization;
-import com.lowagie.text.xml.XMLUtil;
-import com.lowagie.text.xml.simpleparser.IanaEncodings;
-import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
-import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +57,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.xml.XMLUtil;
+import com.lowagie.text.xml.simpleparser.IanaEncodings;
+import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
+import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
 
 /**
  * @author Paulo Soares (psoares@consiste.pt)
@@ -119,7 +120,7 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
      *                  encoding
      * @throws IOException on error
      */
-    public static void exportToXML(HashMap names, OutputStream out, String encoding, boolean onlyASCII)
+    public static void exportToXML(HashMap<?,?> names, OutputStream out, String encoding, boolean onlyASCII)
             throws IOException {
         String jenc = IanaEncodings.getJavaEncoding(encoding);
         Writer wrt = new BufferedWriter(new OutputStreamWriter(out, jenc));
@@ -136,12 +137,12 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
      *                  encoding
      * @throws IOException on error
      */
-    public static void exportToXML(HashMap names, Writer wrt, String encoding, boolean onlyASCII) throws IOException {
+    public static void exportToXML(HashMap<?,?> names, Writer wrt, String encoding, boolean onlyASCII) throws IOException {
         wrt.write("<?xml version=\"1.0\" encoding=\"");
         wrt.write(XMLUtil.escapeXML(encoding, onlyASCII));
         wrt.write("\"?>\n<Destination>\n");
         for (Object o : names.entrySet()) {
-            Map.Entry entry = (Map.Entry) o;
+            Map.Entry<?,?> entry = (Map.Entry<?,?>) o;
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
             wrt.write("  <Name Page=\"");
@@ -206,10 +207,10 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
         return ar;
     }
 
-    public static PdfDictionary outputNamedDestinationAsNames(HashMap names, PdfWriter writer) {
+    public static PdfDictionary outputNamedDestinationAsNames(HashMap<?,?> names, PdfWriter writer) {
         PdfDictionary dic = new PdfDictionary();
         for (Object o : names.entrySet()) {
-            Map.Entry entry = (Map.Entry) o;
+            Map.Entry<?,?> entry = (Map.Entry<?,?>) o;
             try {
                 String key = (String) entry.getKey();
                 String value = (String) entry.getValue();
