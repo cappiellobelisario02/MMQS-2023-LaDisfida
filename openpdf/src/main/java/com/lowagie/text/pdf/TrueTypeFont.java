@@ -1419,7 +1419,7 @@ class TrueTypeFont extends BaseFont {
         if (cmap10 != null) {
             return cmap10.get(c);
         }
-        return null;
+        return new int[];
     }
 
     /**
@@ -1544,11 +1544,11 @@ class TrueTypeFont extends BaseFont {
             map = cmap31;
         }
         if (map == null) {
-            return null;
+            return new int[];
         }
         int[] metric = map.get(c);
         if (metric == null || bboxes == null) {
-            return null;
+            return new int[];
         }
         return bboxes[metric[0]];
     }
