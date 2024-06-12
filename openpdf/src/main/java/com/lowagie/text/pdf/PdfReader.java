@@ -777,9 +777,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         int r;
         // We'll ignore the next two lines for the sake of perpetuating broken
         // PDFs
-        // if (state == 1)
-        // throw new
-        // RuntimeException(MessageLocalization.getComposedMessage("illegal.length.in.ascii85decode"));
+        
+        
+        
         if (state == 2) {
             r = chn[0] * 85 * 85 * 85 * 85 + chn[1] * 85 * 85 * 85 + 85 * 85 * 85
                     + 85 * 85 + 85;
@@ -897,6 +897,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -968,6 +969,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (Exception ignored) {
+                ignored.printStackTrace();
             }
         }
     }
@@ -1356,7 +1358,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
             strings.clear();
             readPages();
-            //eliminateSharedStreams();
+            
             removeUnusedObjects();
         } finally {
             try {
@@ -1390,6 +1392,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 tokens.close();
             } catch (Exception ignored) {
+                ignored.printStackTrace();
             }
             throw e;
         }
@@ -1649,11 +1652,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 byte[] permsValue = com.lowagie.text.DocWriter.getISOBytes(s);
 
                 // step b of Algorithm 2.A
-                byte[] password = this.password;
-                if (password == null) {
-                    password = new byte[0];
-                } else if (password.length > 127) {
-                    password = Arrays.copyOf(password, 127);
+                byte[] passwordByteThis = this.password;
+                if (passwordByteThis == null) {
+                    passwordByteThis = new byte[0];
+                } else if (passwordByteThis.length > 127) {
+                    passwordByteThis = Arrays.copyOf(passwordByteThis, 127);
                 }
 
                 // According to ISO 32000-2 the uValue is expected to be 48 bytes in length.
@@ -1951,7 +1954,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         readDecryptedDocObj();
         if (objStmMark != null) {
             for (Object o : objStmMark.entrySet()) {
-                Map.Entry entry = (Map.Entry) o;
+                Map.Entry<?,?> entry = (Map.Entry<?,?>) o;
                 int n = (Integer) entry.getKey();
                 IntHashtable h = (IntHashtable) entry.getValue();
                 readObjStm((PRStream) xrefObj.get(n), h);
@@ -1963,14 +1966,14 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     private void checkPRStreamLength(PRStream stream) throws IOException {
-        int fileLength = tokens.length();
+        int fileTokensLength = tokens.length();
         int start = stream.getOffset();
         boolean calc = false;
         int streamLength = 0;
         PdfObject obj = getPdfObjectRelease(stream.get(PdfName.LENGTH));
         if (obj != null && obj.type() == PdfObject.NUMBER) {
             streamLength = ((PdfNumber) obj).intValue();
-            if (streamLength + start > fileLength - 20) {
+            if (streamLength + start > fileTokensLength - 20) {
                 calc = true;
             } else {
                 tokens.seek(start + streamLength);
@@ -2097,6 +2100,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 return;
             }
         } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
         xref = null;
         tokens.seek(startxref);
@@ -2167,8 +2171,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 int p = k * 2;
                 if (tokens.getStringValue().equals("n")) {
                     if (xref[p] == 0 && xref[p + 1] == 0) {
-                        // if (pos == 0)
-                        // tokens.throwError(MessageLocalization.getComposedMessage("file.position.0.cross.reference.entry.in.this.xref.subsection"));
                         xref[p] = pos;
                     }
                 } else if (tokens.getStringValue().equals("f")) {
@@ -2182,10 +2184,10 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 }
             }
         }
-        PdfDictionary trailer = (PdfDictionary) readPRObject();
-        PdfNumber xrefSize = (PdfNumber) trailer.get(PdfName.SIZE);
+        PdfDictionary trailerRead = (PdfDictionary) readPRObject();
+        PdfNumber xrefSize = (PdfNumber) trailerRead.get(PdfName.SIZE);
         ensureXrefSize(xrefSize.intValue() * 2);
-        PdfObject xrs = trailer.get(PdfName.XREFSTM);
+        PdfObject xrs = trailerRead.get(PdfName.XREFSTM);
         if (xrs != null && xrs.isNumber()) {
             int loc = ((PdfNumber) xrs).intValue();
             try {
@@ -2646,6 +2648,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (Exception ignored) {
+                ignored.printStacktrace();
             }
         }
     }
@@ -3069,7 +3072,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      * @return gets the named destinations
      */
-    public HashMap getNamedDestinationFromNames() {
+    public HashMap<?,?> getNamedDestinationFromNames() {
         return getNamedDestinationFromNames(false);
     }
 
