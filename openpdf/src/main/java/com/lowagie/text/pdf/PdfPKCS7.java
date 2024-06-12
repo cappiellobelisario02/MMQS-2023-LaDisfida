@@ -685,7 +685,7 @@ public class PdfPKCS7 {
                         }
                         try {
                             cert.verify(certStoreX509.getPublicKey());
-                            return null;
+                            return new int[];
                         } catch (Exception ignored) {
                             ignored.printStackTrace();
                         }
