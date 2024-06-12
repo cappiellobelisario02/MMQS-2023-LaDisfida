@@ -127,7 +127,7 @@ public class PdfShading {
             }
         }
         throwColorSpaceError();
-        return null;
+        return new int[];
     }
 
     public static PdfShading type1(PdfWriter writer, Color colorSpace, float[] domain, float[] tMatrix,
