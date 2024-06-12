@@ -1693,7 +1693,7 @@ public abstract class BaseFont {
         if (b.length == 0) {
             return null;
         } else {
-            return charBBoxes[b[0] & 0xff];
+            return charBBoxes[0];
         }
     }
 
