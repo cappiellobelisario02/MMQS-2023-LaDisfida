@@ -122,8 +122,6 @@ public class Concat extends AbstractTool {
             File pdf_file = (File) getValue("destfile");
             int pageOffset = 0;
             List<Map<String, Object>> master = new ArrayList<>();
-            // Document document = null;
-            // PdfCopy writer = null;
             for (int i = 0; i < 2; i++) {
                 // we create a reader for a certain document
                 /*PdfReader reader*/ reader = new PdfReader(files[i]);
@@ -141,10 +139,23 @@ public class Concat extends AbstractTool {
                 System.out.println("There are " + n + " pages in " + files[i]);
                 if (i == 0) {
                     // step 1: creation of a document-object
-                    document = new Document(reader.getPageSizeWithRotation(1));
+                    try {
+                        document = new Document(reader.getPageSizeWithRotation(1));
+                    } catch (FileNotFoundException e){
+                        e.printStackTrace();
+                    }
                     // step 2: we create a writer that listens to the document
-                    fos = new FileOutputStream(pdf_file);
-                    writer = new PdfCopy(document, fos);
+                    try {
+                        fos = new FileOutputStream(pdf_file);
+                    } catch (FileNotFoundException e) {
+                        // Handle the file not found exception here
+                        e.printStackTrace();
+                    }
+                    try{
+                        writer = new PdfCopy(document, fos);
+                    } catch (FileNotFoundException e){
+                        e.printStackTrace();
+                    }
                     // step 3: we open the document
                     document.open();
                 }
