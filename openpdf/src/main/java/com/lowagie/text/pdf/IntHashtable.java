@@ -364,7 +364,7 @@
          count = 0;
      }
  
-     public Iterator getEntryIterator() {
+     public Iterator<?> getEntryIterator() {
          return new IntHashtableIterator(table);
      }
  
@@ -457,7 +457,7 @@
      }
  
      // extra inner class by Paulo
-     static class IntHashtableIterator implements Iterator {
+     static class IntHashtableIterator implements Iterator<Object> {
  
          int index;
          Entry[] table;
@@ -494,6 +494,7 @@
              throw new NoSuchElementException(MessageLocalization.getComposedMessage("inthashtableiterator"));
          }
  
+         @Override
          public void remove() {
              throw new UnsupportedOperationException(MessageLocalization.getComposedMessage("remove.not.supported"));
          }
