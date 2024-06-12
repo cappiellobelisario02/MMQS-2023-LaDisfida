@@ -706,11 +706,11 @@ public class ColumnText {
     protected float[] findLimitsOneLine() {
         float x1 = findLimitsPoint(leftWall);
         if (lineStatus == LINE_STATUS_OFFLIMITS || lineStatus == LINE_STATUS_NOLINE) {
-            return null;
+            return new int[0];
         }
         float x2 = findLimitsPoint(rightWall);
         if (lineStatus == LINE_STATUS_NOLINE) {
-            return null;
+            return new int[0];
         }
         return new float[]{x1, x2};
     }
@@ -725,7 +725,7 @@ public class ColumnText {
         boolean repeat = false;
         for (; ; ) {
             if (repeat && currentLeading == 0) {
-                return null;
+                return new int[0];
             }
             repeat = true;
             float[] x1 = findLimitsOneLine();
