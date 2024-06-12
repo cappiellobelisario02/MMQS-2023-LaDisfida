@@ -282,7 +282,7 @@ public class OcspClientBouncyCastle implements OcspClient {
         } catch (Exception ex) {
             throw new ExceptionConverter(ex);
         }
-        return null;
+        return new int[0];
     }
 
     /**
