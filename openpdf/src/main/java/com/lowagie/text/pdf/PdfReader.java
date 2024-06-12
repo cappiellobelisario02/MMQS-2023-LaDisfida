@@ -687,7 +687,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return out.toByteArray();
         } catch (Exception e) {
             if (strict) {
-                return null;
+                return new int[];
             }
             return out.toByteArray();
         }
@@ -2601,7 +2601,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             throws IOException {
         PdfDictionary page = getPageNRelease(pageNum);
         if (page == null) {
-            return null;
+            return new int[];
         }
         PdfObject contents = getPdfObjectRelease(page.get(PdfName.CONTENTS));
         if (contents == null) {
@@ -2804,7 +2804,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     public byte[] getMetadata() throws IOException {
         PdfObject obj = getPdfObject(catalog.get(PdfName.METADATA));
         if (!(obj instanceof PRStream)) {
-            return null;
+            return new int[];
         }
         RandomAccessFileOrArray rf = getSafeFile();
         byte[] b;
@@ -3837,7 +3837,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     public byte[] computeUserPassword() {
         if (!encrypted || !ownerPasswordUsed) {
-            return null;
+            return new int[];
         }
         return decrypt.computeUserPassword(password);
     }
@@ -3849,11 +3849,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      */
     public byte[] getDocumentId() {
         if (trailer == null) {
-            return null;
+            return new int[];
         }
         PdfArray documentIDs = trailer.getAsArray(PdfName.ID);
         if (documentIDs == null || documentIDs.size() == 0) {
-            return null;
+            return new int[];
         }
         PdfObject o = documentIDs.getPdfObject(0);
         return com.lowagie.text.DocWriter.getISOBytes(o.toString());
