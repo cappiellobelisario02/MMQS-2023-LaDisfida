@@ -148,8 +148,7 @@ public class Encrypt extends AbstractTool {
             if (getValue("ownerpassword") != null) {
                 ownerpassword = ((String) getValue("ownerpassword")).getBytes();
             }
-            // PdfReader reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath());
-            
+             
             PdfEncryptor.encrypt(
                     reader,
                     fos, /* new FileOutputStream((File) getValue("destfile")),*/
