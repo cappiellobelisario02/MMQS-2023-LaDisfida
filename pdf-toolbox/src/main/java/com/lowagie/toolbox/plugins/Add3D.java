@@ -184,13 +184,8 @@ public class Add3D extends AbstractTool {
             // Required definitions
             PdfIndirectReference streamRef;
             PdfIndirectObject objRef;
-            // PdfReader reader = new PdfReader(((File) getValue("srcfile"))
-            //         .getAbsolutePath());
-
             String u3dFileName = ((File) getValue("srcu3dfile"))
                     .getAbsolutePath();
-            // PdfStamper stamp = new PdfStamper(reader, new FileOutputStream(
-            //         (File) getValue("destfile")));
             PdfWriter wr = stamp.getWriter();
             PdfContentByte cb = stamp.getUnderContent(pagenumber);
             Rectangle rectori = reader.getCropBox(pagenumber);
@@ -239,7 +234,7 @@ public class Add3D extends AbstractTool {
 
             ap.setBoundingBox(rect);
 
-// Create annotation with reference to stream
+            // Create annotation with reference to stream
             PdfAnnotation annot = new PdfAnnotation(wr, rect);
 
             annot.put(PdfName.CONTENTS, new PdfString("3D Model"));
