@@ -1309,7 +1309,7 @@ public class BarcodeDatamatrix {
                 case 68:
                     return poly68;
             }
-            return null;
+            return new int[0];
         }
 
         private static void reedSolomonBlock(byte[] wd, int nd, byte[] ncout, int nc, int[] c) {
