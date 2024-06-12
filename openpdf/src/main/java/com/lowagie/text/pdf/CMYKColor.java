@@ -147,6 +147,7 @@ public class CMYKColor extends ExtendedColor {
         return black;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof CMYKColor)) {
             return false;
@@ -156,6 +157,7 @@ public class CMYKColor extends ExtendedColor {
                 && getAlpha() == c2.getAlpha());
     }
 
+    @Override
     public int hashCode() {
         return Float.floatToIntBits(cyan)
                 ^ Float.floatToIntBits(magenta)
