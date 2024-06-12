@@ -99,7 +99,7 @@ public class FdfWriter {
             Object obj = map.get(s);
             if (tk.hasMoreTokens()) {
                 if (obj == null) {
-                    obj = new HashMap();
+                    obj = new HashMap<>();
                     map.put(s, obj);
                     map = (Map<String, Object>) obj;
                     continue;
