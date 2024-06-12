@@ -369,7 +369,6 @@ class Type1Font extends BaseFont {
     public void process(RandomAccessFileOrArray rf) throws DocumentException, IOException {
         String line;
         boolean isMetrics = false;
-        label:
         while ((line = rf.readLine()) != null) {
             StringTokenizer tok = new StringTokenizer(line, " ,\n\r\t\f");
             if (!tok.hasMoreTokens()) {
@@ -900,14 +899,14 @@ class Type1Font extends BaseFont {
             metrics = CharMetrics.get(c);
         } else {
             if (name.equals(".notdef")) {
-                return null;
+                return new int[];
             }
             metrics = CharMetrics.get(name);
         }
         if (metrics != null) {
             return ((int[]) (metrics[3]));
         }
-        return null;
+        return new int[];
     }
 
 }
