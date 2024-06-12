@@ -332,7 +332,7 @@ public class PdfPKCS7 {
 
             // the digestAlgorithms
             digestalgos = new HashSet<>();
-            Enumeration e = ((ASN1Set) content.getObjectAt(1)).getObjects();
+            Enumeration<?> e = ((ASN1Set) content.getObjectAt(1)).getObjects();
             while (e.hasMoreElements()) {
                 ASN1Sequence s = (ASN1Sequence) e.nextElement();
                 ASN1ObjectIdentifier o = (ASN1ObjectIdentifier) s.getObjectAt(0);
@@ -429,7 +429,7 @@ public class PdfPKCS7 {
                 if (digestAttr == null) {
                     throw new IllegalArgumentException(
                             MessageLocalization
-                                    .getComposedMessage("authenticated.attribute.is.missing.the.digest"));
+                                .getComposedMessage("authenticated.attribute.is.missing.the.digest"));
                 }
                 ++next;
             }
@@ -625,7 +625,7 @@ public class PdfPKCS7 {
      * @return a <CODE>String</CODE> with the error description or
      * <CODE>null</CODE> if no error
      */
-    public static String verifyCertificate(X509Certificate cert, Collection crls,
+    public static String verifyCertificate(X509Certificate cert, Collection<?> crls,
             Calendar calendar) {
         if (calendar == null) {
             calendar = new GregorianCalendar();
@@ -660,7 +660,7 @@ public class PdfPKCS7 {
      * failed certificate and <CODE>error</CODE> is the error message
      */
     public static Object[] verifyCertificates(Certificate[] certs,
-            KeyStore keystore, Collection crls, Calendar calendar) {
+            KeyStore keystore, Collection<?> crls, Calendar calendar) {
         if (calendar == null) {
             calendar = new GregorianCalendar();
         }
@@ -671,7 +671,7 @@ public class PdfPKCS7 {
                 return new Object[]{cert, err};
             }
             try {
-                for (Enumeration aliases = keystore.aliases(); aliases
+                for (Enumeration<?> aliases = keystore.aliases(); aliases
                         .hasMoreElements(); ) {
                     try {
                         String alias = (String) aliases.nextElement();
@@ -687,11 +687,14 @@ public class PdfPKCS7 {
                             cert.verify(certStoreX509.getPublicKey());
                             return null;
                         } catch (Exception ignored) {
+                            ignored.printStackTrace();
                         }
                     } catch (Exception ignored) {
+                        ignored.printStackTrace();
                     }
                 }
             } catch (Exception ignored) {
+                ignored.printStackTrace();
             }
             int j;
             for (j = 0; j < certs.length; ++j) {
@@ -703,6 +706,7 @@ public class PdfPKCS7 {
                     cert.verify(certNext.getPublicKey());
                     break;
                 } catch (Exception ignored) {
+                    ignored.printStackTrace();
                 }
             }
             if (j == certs.length) {
@@ -732,16 +736,18 @@ public class PdfPKCS7 {
             for (int i = 0; i < AccessDescriptions.size(); i++) {
                 ASN1Sequence AccessDescription = (ASN1Sequence) AccessDescriptions
                         .getObjectAt(i);
-                if (AccessDescription.size() == 2) {
-                    if ((AccessDescription.getObjectAt(0) instanceof ASN1ObjectIdentifier)
-                            && ((ASN1ObjectIdentifier) AccessDescription.getObjectAt(0))
-                            .getId().equals("1.3.6.1.5.5.7.48.1")) {
+                if (AccessDescription.size() == 2 && 
+                        (AccessDescription.getObjectAt(0) instanceof ASN1ObjectIdentifier)
+                        && ((ASN1ObjectIdentifier) AccessDescription.getObjectAt(0))
+                                .getId().equals("1.3.6.1.5.5.7.48.1")) {
+                    
                         return getStringFromGeneralName((ASN1Primitive) AccessDescription
                                 .getObjectAt(1));
-                    }
+                    
                 }
             }
         } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
         return null;
     }
@@ -1007,7 +1013,7 @@ public class PdfPKCS7 {
     // * @since 2.1.6
     // */
     // public static boolean verifyOcspCertificates(BasicOCSPResp ocsp, KeyStore
-    // keystore, String provider) {
+    
     // if (provider == null)
     // provider = "BC";
     // try {
@@ -1104,6 +1110,7 @@ public class PdfPKCS7 {
                     oc.remove(k);
                     break;
                 } catch (Exception ignored) {
+                    ignored.printStackTrace();
                 }
             }
         }
@@ -1115,7 +1122,7 @@ public class PdfPKCS7 {
      *
      * @return the X.509 certificate revocation lists associated with this PKCS#7 object
      */
-    public Collection getCRLs() {
+    public Collection<?> getCRLs() {
         return crls;
     }
 
@@ -1153,9 +1160,9 @@ public class PdfPKCS7 {
      */
     public String getDigestAlgorithm() {
         String dea = getAlgorithm(digestEncryptionAlgorithm);
-        if (dea == null) {
-            dea = digestEncryptionAlgorithm;
-        }
+        // if (dea == null) {
+            
+        // }
 
         return getHashAlgorithm() + "with" + dea;
     }
@@ -1191,7 +1198,7 @@ public class PdfPKCS7 {
             // OJO... Modificacion de
             // Felix--------------------------------------------------
             // CertificateID tis = new CertificateID(CertificateID.HASH_SHA1, isscer,
-            // sigcer.getSerialNumber());
+            
             DigestCalculatorProvider digCalcProv = new JcaDigestCalculatorProviderBuilder()
                     .setProvider(provider).build();
             CertificateID id = new CertificateID(
@@ -1201,6 +1208,7 @@ public class PdfPKCS7 {
             return id.equals(cid);
             // ******************************************************************************
         } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
         return false;
     }
@@ -1744,7 +1752,7 @@ public class PdfPKCS7 {
          * @param seq an ASN1 Sequence
          */
         public X509Name(ASN1Sequence seq) {
-            Enumeration e = seq.getObjects();
+            Enumeration<?> e = seq.getObjects();
 
             while (e.hasMoreElements()) {
                 ASN1Set set = (ASN1Set) e.nextElement();
