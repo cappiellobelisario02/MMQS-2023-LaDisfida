@@ -249,6 +249,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      *
      * @return a type
      */
+    @Override
     public int type() {
         return Element.CELL;
     }
@@ -260,6 +261,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      *
      * @return an <CODE>ArrayList</CODE>
      */
+    @Override
     public ArrayList<Element> getChunks() {
         ArrayList<Element> tmp = new ArrayList<>();
         for (Element o : arrayList) {
@@ -307,6 +309,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     /**
      * Gets the width.
      */
+    @Override
     public float getWidth() {
         return width;
     }
@@ -548,7 +551,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      *
      * @return an <CODE>Iterator</CODE>.
      */
-    public Iterator getElements() {
+    public Iterator<Element> getElements() {
         return arrayList.iterator();
     }
 
@@ -751,7 +754,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
         cell.setLeading(getLeading(), 0);
         cell.cloneNonPositionParameters(this);
         cell.setNoWrap(getMaxLines() == 1);
-        for (Iterator i = getElements(); i.hasNext(); ) {
+        for (Iterator<Element> i = getElements(); i.hasNext(); ) {
             Element e = (Element) i.next();
             if (e.type() == Element.PHRASE || e.type() == Element.PARAGRAPH) {
                 Paragraph p = new Paragraph((Phrase) e);
@@ -768,6 +771,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      *
      * @return NA
      */
+    @Override
     public float getTop() {
         throw new UnsupportedOperationException(
                 MessageLocalization.getComposedMessage("dimensions.of.a.cell.can.t.be.calculated.see.the.faq"));
@@ -788,6 +792,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      *
      * @return NA
      */
+    @Override
     public float getBottom() {
         throw new UnsupportedOperationException(
                 MessageLocalization.getComposedMessage("dimensions.of.a.cell.can.t.be.calculated.see.the.faq"));
