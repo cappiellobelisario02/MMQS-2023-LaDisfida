@@ -107,16 +107,17 @@ public class ConcatPdf {
 
             int pageOffset = 0;
             List<Map<String, Object>> master = new ArrayList<>();
-
-            // Document document = new Document();
-            
             writer.setPdfVersion(PdfWriter.VERSION_1_7);
             writer.setFullCompression();
             writer.setCompressionLevel(PdfStream.BEST_COMPRESSION);
             document.open();
             for (File source : sources) {
                 // we create a reader for a certain document
+                try{
                 PdfReader reader = new PdfReader(new BufferedInputStream(Files.newInputStream(source.toPath())));
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
                 reader.consolidateNamedDestinations();
                 // we retrieve the total number of pages
                 int numberOfPages = reader.getNumberOfPages();
