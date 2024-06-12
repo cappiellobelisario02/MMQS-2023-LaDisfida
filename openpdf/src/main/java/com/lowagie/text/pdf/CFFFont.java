@@ -1151,6 +1151,7 @@ public class CFFFont {
         }
 
         // this is incomplete!
+        @Override
         public void emit(byte[] buffer) {
             buffer[myOffset] = (byte) ((value >>> 0) & 0xff);
         }
@@ -1164,11 +1165,13 @@ public class CFFFont {
             this.s = s;
         }
 
+        @Override
         public void increment(int[] currentOffset) {
             super.increment(currentOffset);
             currentOffset[0] += s.length();
         }
 
+        @Override
         public void emit(byte[] buffer) {
             for (int i = 0; i < s.length(); i++) {
                 buffer[myOffset + i] = (byte) (s.charAt(i) & 0xff);
@@ -1180,22 +1183,23 @@ public class CFFFont {
      * A dictionary number on the list. This implementation is inefficient: it doesn't use the variable-length
      * representation.
      */
-
     static protected final class DictNumberItem extends Item {
 
         public final int value;
         public int size = 5;
-
+        
         public DictNumberItem(int value) {
             this.value = value;
         }
-
+        
+        @Override
         public void increment(int[] currentOffset) {
             super.increment(currentOffset);
             currentOffset[0] += size;
         }
 
         // this is incomplete!
+        @Override
         public void emit(byte[] buffer) {
             if (size == 5) {
                 buffer[myOffset] = 29;
@@ -1218,7 +1222,7 @@ public class CFFFont {
         public MarkerItem(OffsetItem pointerToMarker) {
             p = pointerToMarker;
         }
-
+        @Override
         public void xref() {
             p.set(this.myOffset);
         }
