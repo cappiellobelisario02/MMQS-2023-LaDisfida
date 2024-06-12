@@ -74,7 +74,7 @@ public class PdfPSXObject extends PdfTemplate {
      * @return the stream representing this template
      * @since 2.1.3    (replacing the method without param compressionLevel)
      */
-
+    @Override
     PdfStream getFormXObject(int compressionLevel) {
         PdfStream s = new PdfStream(content.toByteArray());
         s.put(PdfName.TYPE, PdfName.XOBJECT);
@@ -89,7 +89,7 @@ public class PdfPSXObject extends PdfTemplate {
      *
      * @return a copy of this <CODE>PdfPSXObject</CODE>
      */
-
+    @Override
     public PdfContentByte getDuplicate() {
         PdfPSXObject tpl = new PdfPSXObject();
         tpl.writer = writer;
