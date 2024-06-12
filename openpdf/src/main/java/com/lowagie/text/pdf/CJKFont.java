@@ -421,7 +421,7 @@ class CJKFont extends BaseFont {
             IntHashtable W2 = createMetric(p.getProperty("W2"));
             p.remove("W2");
             HashMap<Object, Object> map = new HashMap<>();
-            for (Enumeration e = p.keys(); e.hasMoreElements(); ) {
+            for (Enumeration<Object> e = p.keys(); e.hasMoreElements(); ) {
                 Object obj = e.nextElement();
                 map.put(obj, p.getProperty((String) obj));
             }
