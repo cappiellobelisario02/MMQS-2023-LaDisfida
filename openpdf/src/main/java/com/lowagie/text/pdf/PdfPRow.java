@@ -49,12 +49,13 @@
 
 package com.lowagie.text.pdf;
 
+import java.awt.Color;
+
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
-import java.awt.Color;
 
 /**
  * A row in a PdfPTable.
@@ -512,11 +513,11 @@ public class PdfPRow {
                     float bry = tly
                             - (currentMaxHeight
                             - cell.getEffectivePaddingTop() - cell.getEffectivePaddingBottom());
-                    if (fixedHeight > 0) {
-                        if (cell.getHeight() > currentMaxHeight) {
+                    if (fixedHeight > 0 && cell.getHeight() > currentMaxHeight) {
+                        
                             tly = cell.getTop() + yPos - cell.getEffectivePaddingTop();
                             bry = cell.getTop() + yPos - currentMaxHeight + cell.getEffectivePaddingBottom();
-                        }
+                     
                     }
                     if ((tly > bry || ct.zeroHeightElement()) && leftLimit < rightLimit) {
                         ct.setSimpleColumn(leftLimit, bry - 0.001f, rightLimit, tly);
@@ -649,10 +650,10 @@ public class PdfPRow {
                 float top = cell.getTop() - cell.getEffectivePaddingTop();
                 float bottom = cell.getTop() + cell.getEffectivePaddingBottom() - newHeight;
                 float right = cell.getRight() - cell.getEffectivePaddingRight();
-                switch (cell.getRotation()) {
+                switch(cell.getRotation()) {
                     case 90:
                     case 270:
-                        y = setColumn(ct, bottom, left, top, right);
+                        y = setColumn(ct, left, bottom, right, top);
                         break;
                     default:
                         y = setColumn(ct, left, bottom, cell.isNoWrap() ? RIGHT_LIMIT : right, top);
