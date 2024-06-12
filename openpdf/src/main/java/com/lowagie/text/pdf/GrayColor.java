@@ -80,10 +80,12 @@ public class GrayColor extends ExtendedColor {
         return gray;
     }
 
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof GrayColor && ((GrayColor) obj).gray == this.gray;
     }
 
+    @Override
     public int hashCode() {
         return Float.floatToIntBits(gray);
     }
