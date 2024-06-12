@@ -730,7 +730,7 @@ public class ColumnText {
             repeat = true;
             float[] x1 = findLimitsOneLine();
             if (lineStatus == LINE_STATUS_OFFLIMITS) {
-                return null;
+                return new int[0];
             }
             yLine -= currentLeading;
             if (lineStatus == LINE_STATUS_NOLINE) {
