@@ -480,7 +480,7 @@ public class CFFFontSubset extends CFFFont {
             }
         } else if (fonts[Font].privateSubrs >= 0) {
             // If the font is not CID && the Private Subr exists then subset:
-            // Build the subrs offsets;
+            
             fonts[Font].SubrsOffsets = getIndex(fonts[Font].privateSubrs);
             //Scans the Charstring data storing the used Local and Global subroutines
             // by the glyphs. Scans the Subrs recursively.
@@ -653,7 +653,7 @@ public class CFFFontSubset extends CFFFont {
                 TopElement = 0;
             }
             int NumOfArgs = arg_count;
-            // Check the modification needed on the Argument Stack according to key;
+            
             HandelStack();
             // a call to a Lsubr
             if (Objects.equals(key, "callsubr")) {
@@ -802,7 +802,7 @@ public class CFFFontSubset extends CFFFont {
             char b0 = getCard8();
             // decode according to the type1/type2 format
             if (b0 == 28) {
-                // the two next bytes represent a short int;
+                
                 int first = getCard8();
                 int second = getCard8();
                 args[arg_count] = first << 8 | second;
@@ -810,7 +810,7 @@ public class CFFFontSubset extends CFFFont {
                 continue;
             }
             if (b0 >= 32 && b0 <= 246) {
-                // The byte read is the byte;
+                
                 args[arg_count] = b0 - 139;
                 arg_count++;
                 continue;
@@ -880,7 +880,7 @@ public class CFFFontSubset extends CFFFont {
                 TopElement = args[arg_count - 1];
             }
             int NumOfArgs = arg_count;
-            //Check the modification needed on the Argument Stack according to key;
+            
             HandelStack();
             // a call to a Lsubr
             if (Objects.equals(key, "callsubr")) {
@@ -1186,7 +1186,7 @@ public class CFFFontSubset extends CFFFont {
         int[] currentOffset = new int[1];
         currentOffset[0] = 0;
         // Count and save the offset for each item
-        Iterator listIter = OutputList.iterator();
+        Iterator<Item> listIter = OutputList.iterator();
         while (listIter.hasNext()) {
             Item item = (Item) listIter.next();
             item.increment(currentOffset);
@@ -1316,7 +1316,7 @@ public class CFFFontSubset extends CFFFont {
         }
         int currentStringsOffset = stringOffsets[stringOffsets.length - 1]
                 - stringsBaseOffset;
-        //l.addLast(new IndexOffsetItem(stringsIndexOffSize,currentStringsOffset));
+        
         currentStringsOffset += "Adobe".length();
         OutputList.addLast(new IndexOffsetItem(stringsIndexOffSize, currentStringsOffset));
         currentStringsOffset += "Identity".length();
