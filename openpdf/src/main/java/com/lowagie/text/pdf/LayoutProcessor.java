@@ -147,7 +147,7 @@ public class LayoutProcessor {
      * @param version to set
      * @deprecated To be used *only*, if version two produces incorrect PDF - please file an issue if this occurs
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static void setVersion(Version version) {
         LayoutProcessor.version = version;
     }
@@ -411,7 +411,7 @@ public class LayoutProcessor {
     }
 
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     private static Point2D showText1(PdfContentByte cb, BaseFont baseFont, float fontSize, String text) {
         GlyphVector glyphVector = computeGlyphVector(baseFont, fontSize, text);
         completeCmap(cb, baseFont, text, glyphVector);
