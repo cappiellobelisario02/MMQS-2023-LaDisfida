@@ -3116,7 +3116,8 @@ public class AcroFields {
             }
             return b[0] & 0xff;
         }
-
+        
+        @Override
         public int read(byte[] b, int off, int len) throws IOException {
             if (b == null) {
                 throw new NullPointerException();
@@ -3136,6 +3137,7 @@ public class AcroFields {
             return elen;
         }
 
+        @Override
         public void close() throws IOException {
             if (!closed) {
                 raf.close();
