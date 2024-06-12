@@ -418,7 +418,7 @@ public class MultiColumnText implements Element {
      */
 
     public ArrayList<Element> getChunks() {
-        return null;
+        return new int[0];
     }
 
     /**
