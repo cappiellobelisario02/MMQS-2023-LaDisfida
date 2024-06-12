@@ -70,7 +70,7 @@ public class PdfCopy extends PdfWriter {
     protected HashMap<RefKey, IndirectReferences> indirects;
     protected HashMap<PdfReader, HashMap<RefKey, IndirectReferences>> indirectMap;
     protected PdfReader reader;
-    protected PdfIndirectReference acroForm;
+    protected PdfIndirectReference ACroForm;
     protected int[] namePtr = {0};
     protected PdfArray fieldArray;
     protected HashMap<PdfTemplate, Object> fieldTemplates;
@@ -118,6 +118,7 @@ public class PdfCopy extends PdfWriter {
      * @param pageNumber which page to get
      * @return the page
      */
+    @Override
     public PdfImportedPage getImportedPage(PdfReader reader, int pageNumber) {
         if (currentPdfReaderInstance != null) {
             if (currentPdfReaderInstance.getReader() != reader) {
@@ -188,7 +189,7 @@ public class PdfCopy extends PdfWriter {
 
         for (PdfName key : in.getKeys()) {
             PdfObject value = in.get(key);
-            //        System.out.println("Copy " + key);
+            
             if (PdfName.PAGE.equals(type)) {
                 if (!key.equals(PdfName.B) && !key.equals(PdfName.PARENT)) {
                     out.put(key, copyObject(value));
@@ -249,7 +250,7 @@ public class PdfCopy extends PdfWriter {
         }
         switch (in.type) {
             case PdfObject.DICTIONARY:
-                //            System.out.println("Dictionary: " + in.toString());
+                
                 return copyDictionary((PdfDictionary) in);
             case PdfObject.INDIRECT:
                 PdfObject obj = copyIndirect((PRIndirectReference) in);
@@ -268,7 +269,7 @@ public class PdfCopy extends PdfWriter {
                 return in;
             case PdfObject.STREAM:
                 return copyStream((PRStream) in);
-            //                return in;
+
             default:
                 if (in.type < 0) {
                     String lit = in.toString();
@@ -409,6 +410,7 @@ public class PdfCopy extends PdfWriter {
      * the getCatalog method is part of PdfWriter.
      * we wrap this so that we can extend it
      */
+    @Override
     protected PdfDictionary getCatalog(PdfIndirectReference rootObj) {
         try {
             PdfDictionary theCat = pdf.getCatalog(rootObj);
@@ -429,7 +431,7 @@ public class PdfCopy extends PdfWriter {
         if (fieldArray == null) {
             return;
         }
-        PdfDictionary acroForm = new PdfDictionary();
+        PdfDictionary ACroForm = new PdfDictionary();
         catalog.put(PdfName.ACROFORM, acroForm);
         acroForm.put(PdfName.FIELDS, fieldArray);
         acroForm.put(PdfName.DA, new PdfString("/Helv 0 Tf 0 g "));
@@ -442,7 +444,7 @@ public class PdfCopy extends PdfWriter {
             PdfTemplate template = (PdfTemplate) o;
             PdfFormField.mergeResources(dr, (PdfDictionary) template.getResources());
         }
-        // if (dr.get(PdfName.ENCODING) == null) dr.put(PdfName.ENCODING, PdfName.WIN_ANSI_ENCODING);
+        
         PdfDictionary fonts = dr.getAsDict(PdfName.FONT);
         if (fonts == null) {
             fonts = new PdfDictionary();
@@ -473,6 +475,7 @@ public class PdfCopy extends PdfWriter {
      * reference table is composed and everything is written to the outputstream embedded in a Trailer.
      */
 
+    @Override
     public void close() {
         if (open) {
             PdfReaderInstance ri = currentPdfReaderInstance;
@@ -489,10 +492,8 @@ public class PdfCopy extends PdfWriter {
         }
     }
 
-    public PdfIndirectReference add(PdfOutline outline) {
-        return null;
-    }
 
+    @Override
     public void addAnnotation(PdfAnnotation annot) {
     }
 
