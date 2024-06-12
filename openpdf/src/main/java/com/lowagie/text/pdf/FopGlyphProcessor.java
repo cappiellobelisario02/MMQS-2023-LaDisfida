@@ -15,6 +15,8 @@ import org.apache.fop.fonts.truetype.TTFFile;
  */
 public class FopGlyphProcessor {
 
+    private FopGlyphProcessor(){}
+
     private static boolean isFopSupported;
 
     static {
