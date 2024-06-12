@@ -85,7 +85,7 @@ package com.lowagie.text.pdf;
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the MPL as stated above or under the terms of the GNU
- * Library General Public License as published by the Free Software Foundation;
+ * Library General Public License as published by the Free Software Foundation
  * either version 2 of the License, or any later version.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
@@ -187,8 +187,7 @@ public class OcspClientBouncyCastle implements OcspClient {
         // Generate the id for the certificate we are looking for
         // OJO... Modificacion de
         // Felix--------------------------------------------------
-        // CertificateID id = new CertificateID(CertificateID.HASH_SHA1, issuerCert,
-        // serialNumber);
+        // CertificateID id = new CertificateID(CertificateID.HASH_SHA1, issuerCert, serialNumber)
         // Example from
         // http://grepcode.com/file/repo1.maven.org/maven2/org.bouncycastle/bcmail-jdk16/1.46/org/bouncycastle/cert/ocsp/test/OCSPTest.java
         DigestCalculatorProvider digCalcProv = new JcaDigestCalculatorProviderBuilder()
