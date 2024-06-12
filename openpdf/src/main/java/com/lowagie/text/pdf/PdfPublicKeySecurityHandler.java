@@ -51,9 +51,6 @@
 /*
       The below 2 methods are from pdfbox.
 
-      private DERObject createDERForRecipient(byte[] in, X509Certificate cert) ;
-      private KeyTransRecipientInfo computeRecipientInfo(X509Certificate x509certificate, byte[] abyte0);
-
       2006-11-22 Aiken Sam.
  */
 
@@ -78,7 +75,7 @@
   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
   DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY
   DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
   ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
@@ -160,8 +157,6 @@ public class PdfPublicKeySecurityHandler {
     }
 
     /*
-     * public PdfPublicKeyRecipient[] getRecipients() { recipients.toArray();
-     * return (PdfPublicKeyRecipient[])recipients.toArray(); }
      */
 
     public int getRecipientsSize() {
@@ -170,7 +165,7 @@ public class PdfPublicKeySecurityHandler {
 
     public byte[] getEncodedRecipient(int index) throws IOException,
             GeneralSecurityException {
-        // Certificate certificate = recipient.getX509();
+        
         PdfPublicKeyRecipient recipient = recipients
                 .get(index);
         byte[] cms = recipient.getCms();
@@ -266,7 +261,7 @@ public class PdfPublicKeySecurityHandler {
                 PKCSObjectIdentifiers.envelopedData, env);
         // OJO... Modificacion de
         // Felix--------------------------------------------------
-        // return contentinfo.getDERObject();
+        
         return contentinfo.toASN1Primitive();
         // ******************************************************************************
     }
