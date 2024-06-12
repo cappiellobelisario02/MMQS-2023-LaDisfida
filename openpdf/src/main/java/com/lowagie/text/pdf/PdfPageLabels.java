@@ -109,7 +109,7 @@ public class PdfPageLabels {
         PdfDictionary dict = reader.getCatalog();
         PdfDictionary labels = (PdfDictionary) PdfReader.getPdfObjectRelease(dict.get(PdfName.PAGELABELS));
         if (labels == null) {
-            return null;
+            return new int[];
         }
 
         String[] labelstrings = new String[n];
