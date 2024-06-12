@@ -99,7 +99,7 @@ public class StandardDecryption {
                         return cipher.update(b, off, len);
                     }
                 }
-                return null;
+                return new int[];
             }
         } else {
             byte[] b2 = new byte[len];
@@ -112,7 +112,7 @@ public class StandardDecryption {
         if (aes && cipher != null) {
             return cipher.doFinal();
         } else {
-            return null;
+            return new int[];
         }
     }
 }
