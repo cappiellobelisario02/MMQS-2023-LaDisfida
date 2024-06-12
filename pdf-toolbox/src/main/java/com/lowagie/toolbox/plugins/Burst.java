@@ -125,7 +125,6 @@ public class Burst extends AbstractTool {
             int n = reader.getNumberOfPages();
             int digits = 1 + (n / 10);
             System.out.println("There are " + n + " pages in the original file.");
-            // Document document;
             int pagenumber;
             String filename;
             for (int i = 0; i < n; i++) {
