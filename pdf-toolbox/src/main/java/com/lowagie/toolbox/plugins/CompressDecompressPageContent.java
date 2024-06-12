@@ -132,8 +132,6 @@ public class CompressDecompressPageContent extends AbstractTool {
                 throw new InstantiationException("You need to choose a destination file");
             }
             boolean compress = "true".equals(getValue("compress"));
-            // PdfReader reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath());
-            // PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(getDestPathPDF()));
             synchronized (arguments) {
                 Document.compress = compress;
                 int total = reader.getNumberOfPages() + 1;
