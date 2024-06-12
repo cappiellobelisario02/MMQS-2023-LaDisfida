@@ -872,7 +872,7 @@ public class BidiLine {
             }
         }
         if (last == idx) {
-            return null;
+            return new int[0];
         }
         // backward
         for (; first >= startIdx; --first) {
