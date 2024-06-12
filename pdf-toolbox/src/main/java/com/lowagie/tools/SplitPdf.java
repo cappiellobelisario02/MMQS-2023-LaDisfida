@@ -76,11 +76,10 @@ public class SplitPdf extends java.lang.Object {
         if (args.length != 4) {
             System.err.println("arguments: srcfile destfile1 destfile2 pagenumber");
         } else {
+            // we create a reader for a certain document
             try (PdfReader reader = new PdfReader(args[0]);){
                 int pagenumber = Integer.parseInt(args[3]);
-
-                // we create a reader for a certain document
-                // PdfReader reader = new PdfReader(args[0]);
+                
                 // we retrieve the total number of pages
                 int n = reader.getNumberOfPages();
                 System.out.println("There are " + n + " pages in the original file.");
