@@ -57,6 +57,8 @@ import java.util.StringTokenizer;
 
 public class GlyphList {
 
+    private GlyphList(){}
+
     private static HashMap<Integer, String> unicode2names = new HashMap<>();
     private static HashMap<String, int[]> names2unicode = new HashMap<>();
 
