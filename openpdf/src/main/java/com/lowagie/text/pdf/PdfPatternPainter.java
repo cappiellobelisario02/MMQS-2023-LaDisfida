@@ -179,7 +179,7 @@ public final class PdfPatternPainter extends PdfTemplate {
      *
      * @return a copy of this <CODE>PdfPatternPainter</CODE>
      */
-
+    @Override
     public PdfContentByte getDuplicate() {
         PdfPatternPainter tpl = new PdfPatternPainter();
         tpl.writer = writer;
@@ -207,6 +207,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setGrayFill(float)
      */
+    @Override
     public void setGrayFill(float gray) {
         checkNoColor();
         super.setGrayFill(gray);
@@ -215,6 +216,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#resetGrayFill()
      */
+    @Override
     public void resetGrayFill() {
         checkNoColor();
         super.resetGrayFill();
@@ -223,6 +225,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setGrayStroke(float)
      */
+    @Override
     public void setGrayStroke(float gray) {
         checkNoColor();
         super.setGrayStroke(gray);
@@ -231,6 +234,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#resetGrayStroke()
      */
+    @Override
     public void resetGrayStroke() {
         checkNoColor();
         super.resetGrayStroke();
@@ -239,6 +243,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setRGBColorFillF(float, float, float)
      */
+    @Override
     public void setRGBColorFillF(float red, float green, float blue) {
         checkNoColor();
         super.setRGBColorFillF(red, green, blue);
@@ -247,6 +252,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#resetRGBColorFill()
      */
+    @Override
     public void resetRGBColorFill() {
         checkNoColor();
         super.resetRGBColorFill();
@@ -255,6 +261,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setRGBColorStrokeF(float, float, float)
      */
+    @Override
     public void setRGBColorStrokeF(float red, float green, float blue) {
         checkNoColor();
         super.setRGBColorStrokeF(red, green, blue);
@@ -263,6 +270,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#resetRGBColorStroke()
      */
+    @Override
     public void resetRGBColorStroke() {
         checkNoColor();
         super.resetRGBColorStroke();
@@ -271,6 +279,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setCMYKColorFillF(float, float, float, float)
      */
+    @Override
     public void setCMYKColorFillF(float cyan, float magenta, float yellow, float black) {
         checkNoColor();
         super.setCMYKColorFillF(cyan, magenta, yellow, black);
@@ -279,6 +288,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#resetCMYKColorFill()
      */
+    @Override
     public void resetCMYKColorFill() {
         checkNoColor();
         super.resetCMYKColorFill();
@@ -287,6 +297,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setCMYKColorStrokeF(float, float, float, float)
      */
+    @Override
     public void setCMYKColorStrokeF(float cyan, float magenta, float yellow, float black) {
         checkNoColor();
         super.setCMYKColorStrokeF(cyan, magenta, yellow, black);
@@ -295,6 +306,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#resetCMYKColorStroke()
      */
+    @Override
     public void resetCMYKColorStroke() {
         checkNoColor();
         super.resetCMYKColorStroke();
@@ -304,6 +316,7 @@ public final class PdfPatternPainter extends PdfTemplate {
      * @see com.lowagie.text.pdf.PdfContentByte#addImage(com.lowagie.text.Image, float, float, float, float, float,
      * float)
      */
+    @Override
     public void addImage(Image image, float a, float b, float c, float d, float e, float f) throws DocumentException {
         if (stencil && !image.isMask()) {
             checkNoColor();
@@ -314,6 +327,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setCMYKColorFill(int, int, int, int)
      */
+    @Override
     public void setCMYKColorFill(int cyan, int magenta, int yellow, int black) {
         checkNoColor();
         super.setCMYKColorFill(cyan, magenta, yellow, black);
@@ -322,6 +336,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setCMYKColorStroke(int, int, int, int)
      */
+    @Override
     public void setCMYKColorStroke(int cyan, int magenta, int yellow, int black) {
         checkNoColor();
         super.setCMYKColorStroke(cyan, magenta, yellow, black);
@@ -330,6 +345,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setRGBColorFill(int, int, int)
      */
+    @Override
     public void setRGBColorFill(int red, int green, int blue) {
         checkNoColor();
         super.setRGBColorFill(red, green, blue);
@@ -338,6 +354,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setRGBColorStroke(int, int, int)
      */
+    @Override
     public void setRGBColorStroke(int red, int green, int blue) {
         checkNoColor();
         super.setRGBColorStroke(red, green, blue);
@@ -346,6 +363,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setColorStroke(java.awt.Color)
      */
+    @Override
     public void setColorStroke(Color color) {
         checkNoColor();
         super.setColorStroke(color);
@@ -354,6 +372,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setColorFill(java.awt.Color)
      */
+    @Override
     public void setColorFill(Color color) {
         checkNoColor();
         super.setColorFill(color);
@@ -362,6 +381,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setColorFill(com.lowagie.text.pdf.PdfSpotColor, float)
      */
+    @Override
     public void setColorFill(PdfSpotColor sp, float tint) {
         checkNoColor();
         super.setColorFill(sp, tint);
@@ -370,6 +390,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setColorStroke(com.lowagie.text.pdf.PdfSpotColor, float)
      */
+    @Override
     public void setColorStroke(PdfSpotColor sp, float tint) {
         checkNoColor();
         super.setColorStroke(sp, tint);
@@ -378,6 +399,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setPatternFill(com.lowagie.text.pdf.PdfPatternPainter)
      */
+    @Override
     public void setPatternFill(PdfPatternPainter p) {
         checkNoColor();
         super.setPatternFill(p);
@@ -387,6 +409,7 @@ public final class PdfPatternPainter extends PdfTemplate {
      * @see com.lowagie.text.pdf.PdfContentByte#setPatternFill(com.lowagie.text.pdf.PdfPatternPainter, java.awt.Color,
      * float)
      */
+    @Override
     public void setPatternFill(PdfPatternPainter p, Color color, float tint) {
         checkNoColor();
         super.setPatternFill(p, color, tint);
@@ -396,6 +419,7 @@ public final class PdfPatternPainter extends PdfTemplate {
      * @see com.lowagie.text.pdf.PdfContentByte#setPatternStroke(com.lowagie.text.pdf.PdfPatternPainter, java.awt.Color,
      * float)
      */
+    @Override
     public void setPatternStroke(PdfPatternPainter p, Color color, float tint) {
         checkNoColor();
         super.setPatternStroke(p, color, tint);
@@ -404,6 +428,7 @@ public final class PdfPatternPainter extends PdfTemplate {
     /**
      * @see com.lowagie.text.pdf.PdfContentByte#setPatternStroke(com.lowagie.text.pdf.PdfPatternPainter)
      */
+    @Override
     public void setPatternStroke(PdfPatternPainter p) {
         checkNoColor();
         super.setPatternStroke(p);
