@@ -396,11 +396,11 @@ public class PdfPTable implements LargeElement {
         if (columnWidth.length != getNumberOfColumns()) {
             throw new IllegalArgumentException(MessageLocalization.getComposedMessage("wrong.number.of.columns"));
         }
-        float totalWidth = 0;
+        float totalWidthPercentage = 0;
         for (float v : columnWidth) {
-            totalWidth += v;
+            totalWidthPercentage += v;
         }
-        widthPercentage = totalWidth / (pageSize.getRight() - pageSize.getLeft()) * 100f;
+        widthPercentage = totalWidthPercentage / (pageSize.getRight() - pageSize.getLeft()) * 100f;
         setWidths(columnWidth);
     }
 
@@ -578,10 +578,10 @@ public class PdfPTable implements LargeElement {
     PdfPCell obtainCell(final int row, final int col) {
         PdfPCell[] cells = rows.get(row).getCells();
         for (int i = 0; i < cells.length; i++) {
-            if (cells[i] != null) {
-                if (col >= i && col < (i + cells[i].getColspan())) {
+            if (cells[i] != null && col >= i && col < (i + cells[i].getColspan())) {
+                
                     return cells[i];
-                }
+                
             }
         }
         return null;
@@ -893,13 +893,13 @@ public class PdfPTable implements LargeElement {
                 if (cell != null && cell.getRowspan() > 1) {
                     float existingHeights = 0;
                     for (int r = rowIdx; r < rows.size() && r < rowIdx + cell.getRowspan(); r++) {
-                        PdfPRow currentRow = rows.get(r);
+                        PdfPRow rowAtTheMoment = rows.get(r);
 
-                        if (currentRow == null) {
+                        if (rowAtTheMoment == null) {
                             continue;
                         }
 
-                        existingHeights += currentRow.getMaxHeights();
+                        existingHeights += rowAtTheMoment.getMaxHeights();
                     }
                     float heightToDistribute = cell.getMaxHeight() - existingHeights;
                     if (heightToDistribute > delta) {
