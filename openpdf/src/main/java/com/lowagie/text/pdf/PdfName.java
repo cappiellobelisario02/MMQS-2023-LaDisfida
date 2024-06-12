@@ -1912,7 +1912,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
     /**
      * A name
      */
-    public static final PdfName Off = new PdfName("Off");
+    public static final PdfName off = new PdfName("Off");
     /**
      * A name
      */
@@ -1936,7 +1936,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
     /**
      * A name
      */
-    public static final PdfName OP = new PdfName("OP");
+    public static final PdfName OP_NAME = new PdfName("OP");
     /**
      * A name
      */
@@ -2911,7 +2911,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
      *
      *  </ul>
      */
-    public static final PdfName TYPE = new PdfName("Type");
+    public static final PdfName type = new PdfName("Type");
     /**
      * A name
      */
