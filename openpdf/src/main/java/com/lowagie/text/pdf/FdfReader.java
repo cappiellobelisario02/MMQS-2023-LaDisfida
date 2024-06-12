@@ -103,6 +103,7 @@ public class FdfReader extends PdfReader {
         super(is);
     }
 
+    @Override
     protected void readPdf() throws IOException {
         fields = new HashMap<>();
         try {
@@ -221,6 +222,7 @@ public class FdfReader extends PdfReader {
                     return new String(b, "Big5");
                 }
             } catch (Exception e) {
+                e.printStackTrace();
             }
             return vs.toUnicodeString();
         }
