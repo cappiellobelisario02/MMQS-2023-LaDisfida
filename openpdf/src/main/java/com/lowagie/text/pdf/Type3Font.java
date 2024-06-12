@@ -185,7 +185,7 @@ public class Type3Font extends BaseFont {
     }
 
     protected int[] getRawCharBBox(int c, String name) {
-        return null;
+        return new int[];
     }
 
     int getRawWidth(int c, String name) {
@@ -329,7 +329,7 @@ public class Type3Font extends BaseFont {
     }
 
     public int[] getCharBBox(int c) {
-        return null;
+        return new int[];
     }
 
     public boolean charExists(int c) {
