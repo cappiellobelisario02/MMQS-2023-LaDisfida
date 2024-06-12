@@ -582,6 +582,7 @@ public class DocumentFont extends BaseFont {
      * @param char1 the unicode <CODE>char</CODE> to get the width of
      * @return the width in normalized 1000 units
      */
+    @Override
     public int getWidth(int char1) {
         if (cjkMirror != null) {
             return cjkMirror.getWidth(char1);
@@ -597,6 +598,7 @@ public class DocumentFont extends BaseFont {
         }
     }
 
+    @Override
     public int getWidth(String text) {
         if (cjkMirror != null) {
             return cjkMirror.getWidth(text);
@@ -615,6 +617,7 @@ public class DocumentFont extends BaseFont {
         }
     }
 
+    @Override
     byte[] convertToBytes(String text) {
         if (cjkMirror != null) {
             return PdfEncodings.convertToBytes(text, CJKFont.CJK_ENCODING);
@@ -657,6 +660,7 @@ public class DocumentFont extends BaseFont {
         }
     }
 
+    @Override
     byte[] convertToBytes(int char1) {
         if (cjkMirror != null) {
             return PdfEncodings.convertToBytes((char) char1, CJKFont.CJK_ENCODING);
@@ -681,6 +685,7 @@ public class DocumentFont extends BaseFont {
         return refFont;
     }
 
+    @Override
     public boolean charExists(int c) {
         if (cjkMirror != null) {
             return cjkMirror.charExists(c);
@@ -699,6 +704,7 @@ public class DocumentFont extends BaseFont {
         return null;
     }
 
+    @Override
     protected int[] getRawCharBBox(int c, String name) {
         return null;
     }
