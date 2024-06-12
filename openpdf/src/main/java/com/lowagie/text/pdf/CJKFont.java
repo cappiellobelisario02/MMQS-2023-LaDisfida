@@ -240,7 +240,7 @@ class CJKFont extends BaseFont {
         } catch (Exception e) {
             // empty on purpose
         }
-        return null;
+        return new int[0];
     }
 
     static IntHashtable createMetric(String s) {
@@ -431,7 +431,7 @@ class CJKFont extends BaseFont {
         } catch (Exception e) {
             // empty on purpose
         }
-        return null;
+        return new int[0];
     }
 
     /**
@@ -757,11 +757,11 @@ class CJKFont extends BaseFont {
 
     @Override
     public int[] getCharBBox(int c) {
-        return null;
+        return new int[0];
     }
 
     @Override
     protected int[] getRawCharBBox(int c, String name) {
-        return null;
+        return new int[0];
     }
 }
