@@ -154,24 +154,24 @@ public class PRTokeniser implements AutoCloseable {
             int num = 0;
             int gen = 0;
             if (!tk.nextToken() || tk.getTokenType() != TK_NUMBER) {
-                return null;
+                return new int[0];
             }
             num = tk.intValue();
             if (!tk.nextToken() || tk.getTokenType() != TK_NUMBER) {
-                return null;
+                return new int[0];
             }
             gen = tk.intValue();
             if (!tk.nextToken()) {
-                return null;
+                return new int[0];
             }
             if (!tk.getStringValue().equals("obj")) {
-                return null;
+                return new int[0];
             }
             return new int[]{num, gen};
         } catch (Exception ioe) {
             // empty on purpose
         }
-        return null;
+        return new int[0];
     }
 
     public void seek(int pos) throws IOException {
