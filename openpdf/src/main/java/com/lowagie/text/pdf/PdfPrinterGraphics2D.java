@@ -74,7 +74,8 @@ public class PdfPrinterGraphics2D extends PdfGraphics2D implements PrinterGraphi
     public PrinterJob getPrinterJob() {
         return printerJob;
     }
-
+    
+    @Override
     protected PdfGraphics2D createChild() {
         return new PdfPrinterGraphics2D(this);
     }
