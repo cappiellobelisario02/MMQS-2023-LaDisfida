@@ -601,19 +601,19 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
      *                  encoding
      * @throws IOException on error
      */
-    public static void exportToXMLNode(List list, Writer out, int indent, boolean onlyASCII) throws IOException {
+    public static void exportToXMLNode(List<?> list, Writer out, int indent, boolean onlyASCII) throws IOException {
         StringBuilder dep = new StringBuilder();
         for (int k = 0; k < indent; ++k) {
             dep.append("  ");
         }
         for (Object o1 : list) {
-            Map map = (Map) o1;
+            Map<?,?> map = (Map<?,?>) o1;
             String title = null;
             out.write(dep.toString());
             out.write("<Title ");
-            List kids = null;
+            List<?> kids = null;
             for (Object o : map.entrySet()) {
-                Map.Entry entry = (Map.Entry) o;
+                Map.Entry<?,?> entry = (Map.Entry<?,?>) o;
                 String key = (String) entry.getKey();
                 if (key.equals("Title")) {
                     title = (String) entry.getValue();
@@ -671,7 +671,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
      *                  encoding
      * @throws IOException on error
      */
-    public static void exportToXML(List list, OutputStream out, String encoding, boolean onlyASCII) throws IOException {
+    public static void exportToXML(List<?> list, OutputStream out, String encoding, boolean onlyASCII) throws IOException {
         String jenc = IanaEncodings.getJavaEncoding(encoding);
         Writer wrt = new BufferedWriter(new OutputStreamWriter(out, jenc));
         exportToXML(list, wrt, encoding, onlyASCII);
@@ -687,7 +687,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
      *                  encoding
      * @throws IOException on error
      */
-    public static void exportToXML(List list, Writer wrt, String encoding, boolean onlyASCII) throws IOException {
+    public static void exportToXML(List<?> list, Writer wrt, String encoding, boolean onlyASCII) throws IOException {
         wrt.write("<?xml version=\"1.0\" encoding=\"");
         wrt.write(XMLUtil.escapeXML(encoding, onlyASCII));
         wrt.write("\"?>\n<Bookmark>\n");
