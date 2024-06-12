@@ -55,6 +55,8 @@ package com.lowagie.text.pdf;
  */
 public class ArabicLigaturizer {
 
+    private ArabicLigaturizer(){}
+
     public static final int ar_nothing = 0x0;
     public static final int ar_novowel = 0x1;
     public static final int ar_composedtashkeel = 0x4;
@@ -391,12 +393,6 @@ public class ArabicLigaturizer {
                 s.lignum--;
             }
         }
-//        while (s.lignum > 0) {                           /* NULL-insertion for Langbox-font */
-//            string[i] = 0;
-//            i++;
-//            (s.lignum)--;
-//        }
-//        return i;
     }
 
     // return len
@@ -592,12 +588,10 @@ public class ArabicLigaturizer {
         CharStruct curchar = new CharStruct();
         while (p < text.length) {
             nextletter = text[p++];
-            //nextletter = unshape (nextletter);
 
             join = ligature(nextletter, curchar);
             if (join == 0) {                       /* shape curchar */
                 int nc = shapecount(nextletter);
-                //(*len)++;
                 if (nc == 1) {
                     which = 0;        /* final or isolated */
                 } else {
@@ -619,13 +613,8 @@ public class ArabicLigaturizer {
                 curchar.basechar = nextletter;
                 curchar.numshapes = nc;
                 curchar.lignum++;
-                //          (*len) += unligature (&curchar, level);
+                
             }
-            //      else
-            //        {
-            //          (*len) += unligature (&curchar, level);
-            //        }
-            //      p = g_utf8_next_char (p);
         }
 
         /* Handle last char */
