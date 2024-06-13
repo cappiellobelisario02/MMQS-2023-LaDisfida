@@ -181,20 +181,7 @@ public class AcroFields {
 
     public static Object[] splitDAelements(String da) {
         try {
-            PRTokeniser tk = null;
-            try{
-                tk = new PRTokeniser(PdfEncodings.convertToBytes(da, null));
-            } catch(Exception e){
-                System.err.println("PRTokeniser error: " + e.getMessage());
-            } finally {
-                if(tk != null){
-                    try{
-                        tk.close();
-                    } catch(IOException e){
-                        System.err.println("Error in PRTokeniser closing: " + e.getMessage());
-                    }
-                }
-            }
+            PRTokeniser tk = createPRTokeniser(PdfEncodings.convertToBytes(da, null));
             List<String> stack = new ArrayList<>();
             Object[] ret = new Object[3];
             while (tk.nextToken()) {
@@ -244,6 +231,29 @@ public class AcroFields {
             return ret;
         } catch (IOException ioe) {
             throw new ExceptionConverter(ioe);
+        }
+    }
+
+    private PRTokeniser createPRTokeniser(byte[] da) {
+        PRTokeniser tk = null;
+        try {
+            tk = new PRTokeniser(PdfEncodings.convertToBytes(da, null));
+        } catch (Exception e) {
+            System.err.println("PRTokeniser error: " + e.getMessage());
+        } finally {
+            closePRTokeniser(tk);
+        }
+        return tk;
+    }
+
+    // Method to handle PRTokeniser closing
+    private void closePRTokeniser(PRTokeniser tk) {
+        if (tk != null) {
+            try {
+                tk.close();
+            } catch (IOException e) {
+                System.err.println("Error in PRTokeniser closing: " + e.getMessage());
+            }
         }
     }
 
