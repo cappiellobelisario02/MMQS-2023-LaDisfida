@@ -1261,12 +1261,8 @@ public class PdfSignatureAppearance {
                 raf = new RandomAccessFile(tempFile, "rw");
                 long boutL = raf.length();
                 range[range.length - 1] = boutL - range[range.length - 2];
-                ByteBuffer bf = null;
-                try{
-                    bf = new ByteBuffer();
-                } catch(Exception e){
-                    System.err.println("ByteBuffer error: " + e.getMessage());
-                }
+                private ByteBuffer bf;
+                bf = createByteBuffer();
                 bf.append('[');
                 for (long i : range) {
                     bf.append(i).append(' ');
@@ -1285,6 +1281,15 @@ public class PdfSignatureAppearance {
                 }
                 throw e;
             }
+        }
+    }
+
+    private ByteBuffer createByteBuffer() {
+        try {
+            return new ByteBuffer();
+        } catch (Exception e) {
+            System.err.println("ByteBuffer error: " + e.getMessage());
+            return null;
         }
     }
 
