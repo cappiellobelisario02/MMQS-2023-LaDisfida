@@ -68,12 +68,14 @@ public class JavaScriptAction {
 
             document.open();
             // step 4: we add some content
-            Phrase phrase1 = new Phrase(
-                    "There are 3 JavaScript functions in the HTML page, load(), unload() and sayHi().\n\n" +
-                            "The first one will be called when the HTML page has been loaded by your browser.\n" +
-                            "The second one will be called when the HTML page is being unloaded,\n" +
-                            "for example when you go to another page.\n");
+            Phrase phrase1 = new Phrase("""
+                    There are 3 JavaScript functions in the HTML page, load(), unload() and sayHi().
+                        The first one will be called when the HTML page has been loaded by your browser.
+                        The second one will be called when the HTML page is being unloaded,
+                        for example when you go to another page.
+                        """);
             document.add(phrase1);
+
 
             // add a HTML link <A HREF="...">
             Anchor anchor = new Anchor("Click here to execute the third JavaScript function.");
