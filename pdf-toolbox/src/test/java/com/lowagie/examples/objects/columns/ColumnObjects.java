@@ -60,10 +60,14 @@ public class ColumnObjects {
                     + "should the Retailer/Wholesaler select this book over its competition? What are the unique "
                     + "features about this book should be highlighted? What makes this book different, better? From "
                     + "other books and the previous edition?",
-            "What makes this person so special?  Is she/he an expert, creator of the technology, educational leader, "
-                    + "etc.? What is their background, and what relevant experiences do they have to make them the "
-                    + "BEST choice? Have he/she/they won awards or been recognized in any way. Other books poublished "
-                    + "by the author.\n1. Book one.\n2. Book two.",
+                         """
+                What makes this person so special?  Is she/he an expert, creator of the technology, educational leader, 
+                etc.? What is their background, and what relevant experiences do they have to make them the 
+                BEST choice? Have he/she/they won awards or been recognized in any way. Other books poublished 
+                by the author.
+                1. Book one.
+                2. Book two.
+                """;
             "In brief two to five line description of the technology, topic or relevant information. Please keep "
                     + "descriptions succinct.",
             "Ideal describe the contents of this book. What will this book do for the reader? Will this book help them "
