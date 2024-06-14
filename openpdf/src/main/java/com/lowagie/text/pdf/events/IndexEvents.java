@@ -116,6 +116,7 @@ public class IndexEvents extends PdfPageEventHelper {
      * @see com.lowagie.text.pdf.PdfPageEventHelper#onGenericTag(com.lowagie.text.pdf.PdfWriter,
      * com.lowagie.text.Document, com.lowagie.text.Rectangle, java.lang.String)
      */
+    @Override
     public void onGenericTag(PdfWriter writer, Document document,
             Rectangle rect, String text) {
         indextag.put(text, writer.getPageNumber());
@@ -372,7 +373,7 @@ public class IndexEvents extends PdfPageEventHelper {
          *
          * @return Returns the pagenumbers.
          */
-        public List getPagenumbers() {
+        public List<Integer> getPagenumbers() {
             return pagenumbers;
         }
 
@@ -381,7 +382,7 @@ public class IndexEvents extends PdfPageEventHelper {
          *
          * @return Returns the tags.
          */
-        public List getTags() {
+        public List<String> getTags() {
             return tags;
         }
 
@@ -390,6 +391,7 @@ public class IndexEvents extends PdfPageEventHelper {
          *
          * @return the toString implementation of the entry
          */
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             buf.append(in1).append(' ');
