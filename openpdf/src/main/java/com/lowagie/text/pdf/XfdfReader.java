@@ -217,10 +217,8 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
                 l.add(fVal);
                 listFields.put(fName.toString(), l);
             }
-        } else if (tag.equals("field")) {
-            if (!fieldNames.isEmpty()) {
-                fieldNames.pop();
-            }
+        } else if (tag.equals("field") && !fieldNames.isEmpty()) {
+            fieldNames.pop();
         }
     }
 
