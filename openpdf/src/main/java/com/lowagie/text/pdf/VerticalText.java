@@ -283,7 +283,7 @@ public class VerticalText {
             shortenChunkArray();
             if (!simulate) {
                 text.setTextMatrix(startX, startY - line.indentLeft());
-                writeLine(line, text, graphics);
+                writeLine(line, text);
             }
             --maxLines;
             startX -= leading;
@@ -295,10 +295,10 @@ public class VerticalText {
         return status;
     }
 
-    void writeLine(PdfLine line, PdfContentByte text, PdfContentByte graphics) {
+    void writeLine(PdfLine line, PdfContentByte text) {
         PdfFont currentFont = null;
         PdfChunk chunk;
-        for (Iterator j = line.iterator(); j.hasNext(); ) {
+        for (Iterator<?> j = line.iterator(); j.hasNext(); ) {
             chunk = (PdfChunk) j.next();
 
             if (chunk.font().compareTo(currentFont) != 0) {
