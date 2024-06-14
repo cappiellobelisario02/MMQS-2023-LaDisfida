@@ -178,6 +178,7 @@ public class FieldPositioningEvents extends PdfPageEventHelper implements PdfPCe
      * @see com.lowagie.text.pdf.PdfPageEvent#onGenericTag(com.lowagie.text.pdf.PdfWriter, com.lowagie.text.Document,
      * com.lowagie.text.Rectangle, java.lang.String)
      */
+    @Override
     public void onGenericTag(PdfWriter writer, Document document,
             Rectangle rect, String text) {
         rect.setBottom(rect.getBottom() - 3);
