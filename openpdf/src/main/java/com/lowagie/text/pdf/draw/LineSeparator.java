@@ -107,6 +107,7 @@ public class LineSeparator extends VerticalPositionMark {
      * @see com.lowagie.text.pdf.draw.DrawInterface#draw(com.lowagie.text.pdf.PdfContentByte, float, float, float,
      * float, float)
      */
+    @Override
     public void draw(PdfContentByte canvas, float llx, float lly, float urx, float ury, float y) {
         canvas.saveState();
         drawLine(canvas, llx, urx, y);
