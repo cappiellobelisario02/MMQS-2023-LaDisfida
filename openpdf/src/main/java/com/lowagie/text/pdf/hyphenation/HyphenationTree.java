@@ -43,7 +43,7 @@ public class HyphenationTree extends TernaryTree
     /**
      * This map stores hyphenation exceptions
      */
-    protected Map<String, List> stoplist;
+    protected Map<String, List<String>> stoplist;
 
     /**
      * This map stores the character classes
@@ -346,7 +346,7 @@ public class HyphenationTree extends TernaryTree
         String sw = new String(word, 1, len);
         if (stoplist.containsKey(sw)) {
             // assume only simple hyphens (Hyphen.pre="-", Hyphen.post = Hyphen.no = null)
-            List hw = stoplist.get(sw);
+            List<String> hw = stoplist.get(sw);
             int j = 0;
             for (i = 0; i < hw.size(); i++) {
                 Object o = hw.get(i);
@@ -399,6 +399,7 @@ public class HyphenationTree extends TernaryTree
      * characters, in this case a class for letter 'a', for example, should be defined as "aA", the first character
      * being the normalization char.
      */
+    @Override
     public void addClass(String chargroup) {
         if (chargroup.length() > 0) {
             char equivChar = chargroup.charAt(0);
@@ -430,6 +431,7 @@ public class HyphenationTree extends TernaryTree
      * @param ivalue  interletter weight values indicating the desirability and priority of hyphenating at a given point
      *                within the pattern. It should contain only digit characters. (i.e. '0' to '9').
      */
+    @Override
     public void addPattern(String pattern, String ivalue) {
         int k = ivalues.find(ivalue);
         if (k <= 0) {
@@ -439,6 +441,7 @@ public class HyphenationTree extends TernaryTree
         insert(pattern, (char) k);
     }
 
+    @Override
     public void printStats() {
         System.out.println("Value space size = "
                 + vspace.length());
