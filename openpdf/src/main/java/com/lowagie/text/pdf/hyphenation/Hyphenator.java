@@ -161,8 +161,6 @@ public class Hyphenator {
             int rightMin) {
         HyphenationTree hTree = getHyphenationTree(lang, country);
         if (hTree == null) {
-            //log.error("Error building hyphenation tree for language "
-            //                       + lang);
             return null;
         }
         return hTree.hyphenate(word, leftMin, rightMin);
@@ -183,8 +181,6 @@ public class Hyphenator {
             int leftMin, int rightMin) {
         HyphenationTree hTree = getHyphenationTree(lang, country);
         if (hTree == null) {
-            //log.error("Error building hyphenation tree for language "
-            //                       + lang);
             return null;
         }
         return hTree.hyphenate(word, offset, len, leftMin, rightMin);
