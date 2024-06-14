@@ -127,7 +127,7 @@ public class CMapParser {
                             byte[] startCode = (byte[]) parseNextToken(cmapStream);
                             byte[] endCode = (byte[]) parseNextToken(cmapStream);
                             Object nextToken = parseNextToken(cmapStream);
-                            List array = null;
+                            List<Object> array = null;
                             byte[] tokenBytes = null;
                             if (nextToken instanceof List) {
                                 array = (List) nextToken;
@@ -282,7 +282,6 @@ public class CMapParser {
                 break;
             }
             case -1: {
-                //EOF return null;
                 break;
             }
             case '0':
