@@ -49,7 +49,6 @@
 
 package com.lowagie.text.pdf;
 
-import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,6 +59,7 @@ import java.net.URLConnection;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Base64;
+
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
@@ -68,6 +68,8 @@ import org.bouncycastle.tsp.TimeStampRequestGenerator;
 import org.bouncycastle.tsp.TimeStampResponse;
 import org.bouncycastle.tsp.TimeStampToken;
 import org.bouncycastle.tsp.TimeStampTokenInfo;
+
+import com.lowagie.text.error_messages.MessageLocalization;
 
 /**
  * Time Stamp Authority Client interface implementation using Bouncy Castle org.bouncycastle.tsp package.
@@ -265,8 +267,8 @@ public class TSAClientBouncyCastle implements TSAClient {
         tsaConnection.setUseCaches(false);
         tsaConnection.setRequestProperty("Content-Type",
                 "application/timestamp-query");
-        // tsaConnection.setRequestProperty("Content-Transfer-Encoding",
-        // "base64");
+        
+                
         tsaConnection.setRequestProperty("Content-Transfer-Encoding", "binary");
 
         if (isNotEmpty(tsaUsername)) {
