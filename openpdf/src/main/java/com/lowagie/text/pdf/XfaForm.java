@@ -1191,6 +1191,7 @@ public class XfaForm {
                             try {
                                 initial = Integer.parseInt(a.getNodeValue().trim());
                             } catch (Exception e) {
+                                e.printStackTrace();
                             }
                         }
                         a = n2.getAttributes().getNamedItem("min");
@@ -1198,6 +1199,7 @@ public class XfaForm {
                             try {
                                 min = Integer.parseInt(a.getNodeValue().trim());
                             } catch (Exception e) {
+                                e.printStackTrace();
                             }
                         }
                         a = n2.getAttributes().getNamedItem("max");
@@ -1205,6 +1207,7 @@ public class XfaForm {
                             try {
                                 max = Integer.parseInt(a.getNodeValue().trim());
                             } catch (Exception e) {
+                                e.printStackTrace();
                             }
                         }
                         if (initial != min || min != max) {
