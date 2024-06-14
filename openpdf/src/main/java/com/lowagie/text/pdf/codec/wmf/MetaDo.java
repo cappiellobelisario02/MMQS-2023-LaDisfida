@@ -219,21 +219,6 @@ public class MetaDo {
         if ((data.length & 1) == 1) {
             os.write(0);
         }
-//        writeDWord(os, 14 + sizeBmpWords);
-//        writeWord(os, META_STRETCHDIB);
-//        writeDWord(os, 0x00cc0020);
-//        writeWord(os, 0);
-//        writeWord(os, (int)image.height());
-//        writeWord(os, (int)image.width());
-//        writeWord(os, 0);
-//        writeWord(os, 0);
-//        writeWord(os, (int)image.height());
-//        writeWord(os, (int)image.width());
-//        writeWord(os, 0);
-//        writeWord(os, 0);
-//        os.write(data, 14, data.length - 14);
-//        if ((data.length & 1) == 1)
-//            os.write(0);
 
         writeDWord(os, 3);
         writeWord(os, 0);
@@ -577,7 +562,7 @@ public class MetaDo {
                     } catch (UnsupportedEncodingException e) {
                         s = new String(text, 0, k);
                     }
-                    outputText(x, y, flag, x1, y1, x2, y2, s);
+                    outputText(x, y, s);
                     break;
                 }
                 case META_TEXTOUT: {
@@ -601,7 +586,7 @@ public class MetaDo {
                     in.skip(count - k);
                     int y = in.readShort();
                     int x = in.readShort();
-                    outputText(x, y, 0, 0, 0, 0, 0, s);
+                    outputText(x, y, s);
                     break;
                 }
                 case META_SETBKCOLOR:
@@ -640,7 +625,7 @@ public class MetaDo {
         state.cleanup(cb);
     }
 
-    public void outputText(int x, int y, int flag, int x1, int y1, int x2, int y2, String text) {
+    public void outputText(int x, int y, String text) {
         MetaFont font = state.getCurrentFont();
         float refX = state.transformX(x);
         float refY = state.transformY(y);
