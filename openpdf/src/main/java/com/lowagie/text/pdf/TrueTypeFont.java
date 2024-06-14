@@ -316,7 +316,7 @@ class TrueTypeFont extends BaseFont {
         }
     }
 
-    protected static int[] compactRanges(ArrayList ranges) {
+    protected static int[] compactRanges(ArrayList<?> ranges) {
         List<int[]> simp = new ArrayList<>();
         for (Object range : ranges) {
             int[] r = (int[]) range;
@@ -951,7 +951,13 @@ class TrueTypeFont extends BaseFont {
                 int[] r = new int[2];
                 r[0] = glyph;
                 r[1] = getGlyphWidth(r[0]);
-                h.put(fontSpecific ? ((j & 0xff00) == 0xf000 ? j & 0xff : j) : j, r);
+                int and;
+                if((j & 0xff00) == 0xf000){
+                    and = j & 0xff;
+                }else{
+                    and = j;
+                }
+                h.put(fontSpecific ? and : j, r);
             }
         }
         return h;
@@ -1184,6 +1190,7 @@ class TrueTypeFont extends BaseFont {
                     rf2.close();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -1446,6 +1453,7 @@ class TrueTypeFont extends BaseFont {
      *
      * @return the code pages supported by the font
      */
+    @Override
     public String[] getCodePagesSupported() {
         long cp = (((long) os_2.ulCodePageRange2) << 32) + (os_2.ulCodePageRange1 & 0xffffffffL);
         int count = 0;
