@@ -374,7 +374,6 @@ public class TernaryTree implements Cloneable, Serializable {
      * Balance the tree for best search performance
      */
     public void balance() {
-        // System.out.print("Before root splitchar = "); System.out.println(sc[root]);
 
         int i = 0, n = length;
         String[] k = new String[n];
@@ -388,7 +387,6 @@ public class TernaryTree implements Cloneable, Serializable {
         insertBalanced(k, v, 0, n);
 
         // With uniform letter distribution sc[root] should be around 'm'
-        // System.out.print("After root splitchar = "); System.out.println(sc[root]);
     }
 
     /**
@@ -437,31 +435,19 @@ public class TernaryTree implements Cloneable, Serializable {
     }
 
 
-    public Enumeration keys() {
+    public Enumeration<Object> keys() {
         return new Iterator();
     }
 
     public void printStats() {
         System.out.println("Number of keys = " + length);
         System.out.println("Node count = " + freenode);
-        // System.out.println("Array length = " + Integer.toString(eq.length));
         System.out.println("Key Array length = "
                 + kv.length());
 
-        /*
-         * for(int i=0; i<kv.length(); i++)
-         * if ( kv.get(i) != 0 )
-         * System.out.print(kv.get(i));
-         * else
-         * System.out.println("");
-         * System.out.println("Keys:");
-         * for(Enumeration enum = keys(); enum.hasMoreElements(); )
-         * System.out.println(enum.nextElement());
-         */
-
     }
 
-    public class Iterator implements Enumeration {
+    public class Iterator implements Enumeration<Object> {
 
         /**
          * current node index
@@ -495,6 +481,7 @@ public class TernaryTree implements Cloneable, Serializable {
             run();
         }
 
+        @Override
         public Object nextElement() {
             String res = curkey;
             cur = up();
@@ -635,19 +622,6 @@ public class TernaryTree implements Cloneable, Serializable {
         }
 
     }
-
-/*    public static void main(String[] args) throws Exception {
-        TernaryTree tt = new TernaryTree();
-        tt.insert("Carlos", 'C');
-        tt.insert("Car", 'r');
-        tt.insert("palos", 'l');
-        tt.insert("pa", 'p');
-        tt.trimToSize();
-        System.out.println((char)tt.find("Car"));
-        System.out.println((char)tt.find("Carlos"));
-        System.out.println((char)tt.find("alto"));
-        tt.printStats();
-    }*/
 
 }
 
