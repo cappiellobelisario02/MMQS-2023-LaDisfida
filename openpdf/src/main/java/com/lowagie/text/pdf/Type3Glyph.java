@@ -76,10 +76,12 @@ public final class Type3Glyph extends PdfContentByte {
         }
     }
 
+    @Override
     PageResources getPageResources() {
         return pageResources;
     }
 
+    @Override
     public void addImage(Image image, float a, float b, float c, float d, float e, float f, boolean inlineImage)
             throws DocumentException {
         if (!colorized && (!image.isMask() || !(image.getBpc() == 1 || image.getBpc() > 0xff))) {
@@ -89,6 +91,7 @@ public final class Type3Glyph extends PdfContentByte {
         super.addImage(image, a, b, c, d, e, f, inlineImage);
     }
 
+    @Override
     public PdfContentByte getDuplicate() {
         Type3Glyph dup = new Type3Glyph();
         dup.writer = writer;
