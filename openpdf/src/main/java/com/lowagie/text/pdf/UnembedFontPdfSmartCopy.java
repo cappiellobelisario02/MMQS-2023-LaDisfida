@@ -16,6 +16,7 @@ public class UnembedFontPdfSmartCopy extends PdfSmartCopy {
         super(document, os);
     }
 
+    @Override
     protected PdfDictionary copyDictionary(PdfDictionary in)
             throws IOException, BadPdfFormatException {
 
