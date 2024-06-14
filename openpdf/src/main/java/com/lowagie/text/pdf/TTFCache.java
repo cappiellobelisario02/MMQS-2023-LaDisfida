@@ -15,6 +15,10 @@ import org.apache.fop.fonts.truetype.TTFFile;
  */
 public class TTFCache {
 
+    private TFFCache(){
+        //private constructor
+    }
+
     private static Map<String, TTFFile> ttfFileMap = new ConcurrentHashMap<>();
 
     public static TTFFile getTTFFile(String fileName, TrueTypeFontUnicode ttu) {
