@@ -41,7 +41,7 @@ public interface PatternConsumer {
      * @param word           The word to change
      * @param hyphenatedword A vector of alternating String's and {@link Hyphen Hyphen} instances
      */
-    void addException(String word, ArrayList hyphenatedword);
+    void addException(String word, ArrayList<String> hyphenatedword);
 
     /**
      * Add hyphenation patterns.
