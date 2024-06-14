@@ -281,11 +281,12 @@ public class Type3Font extends BaseFont {
      * @return null
      * @since 2.1.3
      */
+    @Override
     public PdfStream getFullFontStream() {
         return null;
     }
 
-
+    @Override
     byte[] convertToBytes(String text) {
         char[] cc = text.toCharArray();
         byte[] b = new byte[cc.length];
@@ -303,6 +304,7 @@ public class Type3Font extends BaseFont {
         return b2;
     }
 
+    @Override
     byte[] convertToBytes(int char1) {
         if (charExists(char1)) {
             return new byte[]{(byte) char1};
@@ -311,6 +313,7 @@ public class Type3Font extends BaseFont {
         }
     }
 
+    @Override
     public int getWidth(int char1) {
         if (!widths3.containsKey(char1)) {
             throw new IllegalArgumentException(
@@ -319,6 +322,7 @@ public class Type3Font extends BaseFont {
         return widths3.get(char1);
     }
 
+    @Override
     public int getWidth(String text) {
         char[] c = text.toCharArray();
         int total = 0;
@@ -328,10 +332,12 @@ public class Type3Font extends BaseFont {
         return total;
     }
 
+    @Override
     public int[] getCharBBox(int c) {
         return new int[];
     }
 
+    @Override
     public boolean charExists(int c) {
         if (c > 0 && c < 256) {
             return usedSlot[c];
@@ -339,7 +345,7 @@ public class Type3Font extends BaseFont {
             return false;
         }
     }
-
+    @Override
     public boolean setCharAdvance(int c, int advance) {
         return false;
     }
