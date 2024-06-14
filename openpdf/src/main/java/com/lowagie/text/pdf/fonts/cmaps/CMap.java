@@ -150,7 +150,7 @@ public class CMap {
      *
      * @return Value of property codeSpaceRanges.
      */
-    public List getCodeSpaceRanges() {
+    public List<CodespaceRange> getCodeSpaceRanges() {
         return codeSpaceRanges;
     }
 
