@@ -180,9 +180,12 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
         return res.toString();
     }
 
+    @Override
     public void endDocument() {
+        //empty on purpose for now
     }
 
+    @Override
     public void endElement(String tag) {
         if (token.length() > 0) {
             String word = token.toString();
@@ -217,6 +220,7 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
 
     @Override
     public void startDocument() {
+        //empty on purpose for now
     }
 
     @Override
@@ -249,11 +253,11 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
         token.setLength(0);
     }
 
+    @Override
     public void text(String str) {
         StringTokenizer tk = new StringTokenizer(str);
         while (tk.hasMoreTokens()) {
             String word = tk.nextToken();
-            // System.out.println("\"" + word + "\"");
             switch (currElement) {
                 case ELEM_CLASSES:
                     consumer.addClass(word);
@@ -274,14 +278,17 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
     }
 
     // PatternConsumer implementation for testing purposes
+    @Override
     public void addClass(String c) {
         System.out.println("class: " + c);
     }
 
-    public void addException(String w, ArrayList e) {
+    @Override
+    public void addException(String w, ArrayList<String> e) {
         System.out.println("exception: " + w + " : " + e.toString());
     }
 
+    @Override
     public void addPattern(String p, String v) {
         System.out.println("pattern: " + p + " : " + v);
     }
