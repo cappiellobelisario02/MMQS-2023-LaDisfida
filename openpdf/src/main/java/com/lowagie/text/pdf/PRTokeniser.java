@@ -145,12 +145,12 @@ public class PRTokeniser implements AutoCloseable {
     }
 
     public static int[] checkObjectStart(byte[] line) {
+        PRTokeniser tk = initializeTokeniser(line);
+        if (tk == null) {
+            return new int[0];
+        }
+
         try {
-            try{
-                PRTokeniser tk = new PRTokeniser(line);
-            } catch(Exception e){
-                System.out.println("ERROR >> PRTokeniser");
-            }
             int num = 0;
             int gen = 0;
             if (!tk.nextToken() || tk.getTokenType() != TK_NUMBER) {
@@ -174,6 +174,15 @@ public class PRTokeniser implements AutoCloseable {
         return new int[0];
     }
 
+    private static PRTokeniser initializeTokeniser(byte[] line) {
+        try {
+            return new PRTokeniser(line);
+        } catch (Exception e) {
+            System.out.println("ERROR >> PRTokeniser");
+            return null;
+        }
+    }
+    
     public void seek(int pos) throws IOException {
         file.seek(pos);
     }
