@@ -531,20 +531,26 @@ public final class Pfm2afm {
     }
 
     public static void main(String[] args) {
-        try {
-            try{
-                RandomAccessFileOrArray in = new RandomAccessFileOrArray(args[0]);
-            } catch(Exception e){
-                System.out.println("ERROR RandomAccessFileOrArray >> ", e);
+            RandomAccessFileOrArray in = null;
+            try {
+                in = createRandomAccessFileOrArray(args[0]);
+                OutputStream out = new FileOutputStream(args[1]);
+                convert(in, out);
+                in.close();
+                out.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            OutputStream out = new FileOutputStream(args[1]);
-            convert(in, out);
-            in.close();
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-    }
+
+        private static RandomAccessFileOrArray createRandomAccessFileOrArray(String fileName) {
+            try {
+                return new RandomAccessFileOrArray(fileName);
+            } catch (Exception e) {
+                System.out.println("ERROR RandomAccessFileOrArray >> " + e);
+                return null;
+            }
+        }
 
     private String readString(int n) throws IOException {
         byte[] b = new byte[n];
