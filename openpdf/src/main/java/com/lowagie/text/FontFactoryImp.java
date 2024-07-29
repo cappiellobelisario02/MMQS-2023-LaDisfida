@@ -213,11 +213,7 @@ public class FontFactoryImp implements FontProvider {
 
         BaseFont basefont = null;
         try {
-            try {
-                // the font is a type 1 font or CJK font
-                basefont = BaseFont.createFont(fontname, encoding, embedded, cached, null, null, true);
-            } catch (DocumentException ignored) {
-            }
+            basefont = createBaseFont(fontname, encoding, embedded, cached, true);
             if (basefont == null) {
                 // the font is a true type font or an unknown font
                 fontname = trueTypeFonts.get(lowerCaseFontname);
@@ -238,6 +234,15 @@ public class FontFactoryImp implements FontProvider {
         }
 
         return new Font(basefont, size, style, color);
+    }
+
+    private BaseFont createBaseFont(String fontname, String encoding, boolean embedded, boolean cached, boolean isType1) throws DocumentException, IOException {
+        try {
+            return BaseFont.createFont(fontname, encoding, embedded, cached, null, null, isType1);
+        } catch (DocumentException de) {
+            // Handle or log exception if needed
+            return null;
+        }
     }
 
     /**
@@ -643,48 +648,55 @@ public class FontFactoryImp implements FontProvider {
     public int registerDirectory(String dir, boolean scanSubdirectories) {
         int count = 0;
         try {
-            File file = new File(dir);
-            if (!file.exists() || !file.isDirectory()) {
+            File directory = new File(dir);
+            if (!directory.exists() || !directory.isDirectory()) {
                 return 0;
             }
-            String[] files = file.list();
+            String[] files = directory.list();
             if (files == null) {
                 return 0;
             }
-            for (String file1 : files) {
-                try {
-                    file = new File(dir, file1);
-                    if (file.isDirectory()) {
-                        if (scanSubdirectories) {
-                            count += registerDirectory(file.getAbsolutePath(), true);
-                        }
-                    } else {
-                        String name = file.getPath();
-                        String suffix = name.length() < 4 ? null : name.substring(name.length() - 4).toLowerCase();
-                        if (".afm".equals(suffix) || ".pfm".equals(suffix)) {
-                            /* Only register Type 1 fonts with matching .pfb files */
-                            File pfb = new File(name.substring(0, name.length() - 4) + ".pfb");
-                            if (pfb.exists()) {
-                                register(name, null);
-                                ++count;
-                            }
-                        } else if (".ttf".equals(suffix) || ".otf".equals(suffix)) {
-                            register(name, file1);
-                            ++count;
-                        } else if (".ttc".equals(suffix)) {
-                            register(name, null);
-                            ++count;
-                        }
-                    }
-                } catch (Exception e) {
-                    //empty on purpose
-                }
+            for (String fileName : files) {
+                File file = new File(dir, fileName);
+                count += processFile(file, scanSubdirectories);
             }
         } catch (Exception e) {
-            //empty on purpose
+            // Handle or log exception if needed
         }
         return count;
     }
+
+    private int processFile(File file, boolean scanSubdirectories) {
+        int count = 0;
+        try {
+            if (file.isDirectory()) {
+                if (scanSubdirectories) {
+                    count += registerDirectory(file.getAbsolutePath(), true);
+                }
+            } else {
+                String name = file.getPath();
+                String suffix = name.length() < 4 ? null : name.substring(name.length() - 4).toLowerCase();
+                if (".afm".equals(suffix) || ".pfm".equals(suffix)) {
+                    /* Only register Type 1 fonts with matching .pfb files */
+                    File pfb = new File(name.substring(0, name.length() - 4) + ".pfb");
+                    if (pfb.exists()) {
+                        register(name, null);
+                        ++count;
+                    }
+                } else if (".ttf".equals(suffix) || ".otf".equals(suffix)) {
+                    register(name, file.getName());
+                    ++count;
+                } else if (".ttc".equals(suffix)) {
+                    register(name, null);
+                    ++count;
+                }
+            }
+        } catch (Exception e) {
+            // Handle or log exception if needed
+        }
+        return count;
+    }
+
 
     /**
      * Register fonts in some probable directories. It usually works in Windows, Linux and Solaris.
