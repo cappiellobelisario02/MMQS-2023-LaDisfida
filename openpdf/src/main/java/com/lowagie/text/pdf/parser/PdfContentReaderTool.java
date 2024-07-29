@@ -205,32 +205,7 @@ public class PdfContentReaderTool {
                 return;
             }
 
-            try (PrintWriter writer = args.length >= 2 && !args[1].equalsIgnoreCase("stdout")
-                    ? new PrintWriter(new FileOutputStream(new File(args[1])))
-                    : new PrintWriter(System.out)) {
-
-                if (args.length >= 2 && !args[1].equalsIgnoreCase("stdout")) {
-                    System.out.println("Writing PDF content to " + args[1]);
-                }
-
-                int pageNum = -1;
-                if (args.length >= 3) {
-                    pageNum = Integer.parseInt(args[2]);
-                }
-
-                if (pageNum == -1) {
-                    listContentStream(new File(args[0]), writer);
-                } else {
-                    listContentStream(new File(args[0]), pageNum, writer);
-                }
-                writer.flush();
-
-                if (args.length >= 2 && !args[1].equalsIgnoreCase("stdout")) {
-                    System.out.println("Finished writing content to " + args[1]);
-                }
-            } catch (Exception e) {
-                e.printStackTrace(System.err);
-            }
+             handleContentStreaming(args);
 
             int pageNum = -1;
             if (args.length >= 3) {
@@ -252,5 +227,43 @@ public class PdfContentReaderTool {
             e.printStackTrace(System.err);
         }
     }
+
+    private static void handleContentStreaming(String[] args) {
+        try (PrintWriter writer = args.length >= 2 && !args[1].equalsIgnoreCase("stdout")
+                ? new PrintWriter(new FileOutputStream(new File(args[1])))
+                : new PrintWriter(System.out)) {
+
+            if (args.length >= 2 && !args[1].equalsIgnoreCase("stdout")) {
+                System.out.println("Writing PDF content to " + args[1]);
+            }
+
+            int pageNum = -1;
+            if (args.length >= 3) {
+                pageNum = Integer.parseInt(args[2]);
+            }
+
+            if (pageNum == -1) {
+                listContentStream(new File(args[0]), writer);
+            } else {
+                listContentStream(new File(args[0]), pageNum, writer);
+            }
+            writer.flush();
+
+            if (args.length >= 2 && !args[1].equalsIgnoreCase("stdout")) {
+                System.out.println("Finished writing content to " + args[1]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
+    }
+
+    private static void listContentStream(File file, PrintWriter writer) {
+        writer.println("Listing content stream of the entire file...");
+    }
+
+    private static void listContentStream(File file, int pageNum, PrintWriter writer) {
+        writer.println("Listing content stream of page " + pageNum + "...");
+    }
+}
 
 }
