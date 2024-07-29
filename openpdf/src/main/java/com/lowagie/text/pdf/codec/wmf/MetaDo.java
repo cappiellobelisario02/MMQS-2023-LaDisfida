@@ -267,46 +267,41 @@ public class MetaDo {
                 break;
             }
             function = in.readWord();
-            switch (function) {
-                case 0:
-                    break;
-                case META_CREATEPALETTE:
-                case META_CREATEREGION:
-                case META_DIBCREATEPATTERNBRUSH:
-                    state.addMetaObject(new MetaObject());
-                    break;
-                case META_CREATEPENINDIRECT: {
-                    MetaPen pen = new MetaPen();
-                    pen.init(in);
-                    state.addMetaObject(pen);
-                    break;
-                }
-                case META_CREATEBRUSHINDIRECT: {
-                    MetaBrush brush = new MetaBrush();
-                    brush.init(in);
-                    state.addMetaObject(brush);
-                    break;
-                }
-                case META_CREATEFONTINDIRECT: {
-                    MetaFont font = new MetaFont();
-                    font.init(in);
-                    state.addMetaObject(font);
-                    break;
-                }
-                case META_SELECTOBJECT: {
-                    int idx = in.readWord();
-                    state.selectMetaObject(idx, cb);
-                    break;
-                }
-                case META_DELETEOBJECT: {
-                    int idx = in.readWord();
-                    state.deleteMetaObject(idx);
-                    break;
-                }
-                case META_SAVEDC:
-                    state.saveState(cb);
-                    break;
-                case META_RESTOREDC: {
+                switch (function) {
+                    case 0:
+                        break;
+                    case META_CREATEPALETTE:
+                    case META_CREATEREGION:
+                    case META_DIBCREATEPATTERNBRUSH:
+                        state.addMetaObject(new MetaObject());
+                        break;
+                    case META_CREATEPENINDIRECT: {
+                        MetaPen pen = new MetaPen();
+                        pen.init(in);
+                        state.addMetaObject(pen);
+                        break;
+                    }
+                    case META_CREATEBRUSHINDIRECT:
+                    case META_CREATEFONTINDIRECT: {
+                        MetaObject obj = (function == META_CREATEBRUSHINDIRECT) ? new MetaBrush() : new MetaFont();
+                        obj.init(in);
+                        state.addMetaObject(obj);
+                        break;
+                    }
+                    case META_SELECTOBJECT: {
+                        int idx = in.readWord();
+                        state.selectMetaObject(idx, cb);
+                        break;
+                    }
+                    case META_DELETEOBJECT: {
+                        int idx = in.readWord();
+                        state.deleteMetaObject(idx);
+                        break;
+                    }
+                    case META_SAVEDC:
+                        state.saveState(cb);
+                        break;
+                    case META_RESTOREDC: {
                     int idx = in.readShort();
                     state.restoreState(idx, cb);
                     break;
