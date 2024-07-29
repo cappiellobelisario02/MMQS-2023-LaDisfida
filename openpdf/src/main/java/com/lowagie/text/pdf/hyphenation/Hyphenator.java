@@ -1,21 +1,3 @@
-/*
- * Copyright 1999-2004 The Apache Software Foundation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.lowagie.text.pdf.hyphenation;
-
 import com.lowagie.text.pdf.BaseFont;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,8 +8,6 @@ import java.util.Map;
 /**
  * This class is the main entry point to the hyphenation package. You can use only the static methods or create an
  * instance.
- *
- * @author <a href="cav@uniscope.co.jp">Carlos Villegas</a>
  */
 public class Hyphenator {
 
@@ -118,24 +98,9 @@ public class Hyphenator {
             if (hyphenDir == null) {
                 return null;
             }
-            InputStream stream = null;
-            File hyphenFile = new File(hyphenDir, key + ".xml");
-            if (hyphenFile.canRead()) {
-                try{
-                    stream = new FileInputStream(hyphenFile);
-                } catch (Exception e){
-                    System.out.println("ERROR FileInputStream >> ", e);
-                }
-            }
+            InputStream stream = getFileInputStream(new File(hyphenDir, key + ".xml"));
             if (stream == null && key.length() > 2) {
-                hyphenFile = new File(hyphenDir, key.substring(0, 2) + ".xml");
-                if (hyphenFile.canRead()) {
-                    try{
-                        stream = new FileInputStream(hyphenFile);
-                    } catch (Exception e){
-                        System.out.println("ERROR FileInputStream >> ", e);
-                    }
-                }
+                stream = getFileInputStream(new File(hyphenDir, key.substring(0, 2) + ".xml"));
             }
             if (stream == null) {
                 return null;
@@ -146,6 +111,16 @@ public class Hyphenator {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private static InputStream getFileInputStream(File hyphenFile) {
+        InputStream stream = null;
+        try {
+            stream = new FileInputStream(hyphenFile);
+        } catch (Exception e) {
+            System.out.println("ERROR FileInputStream >> " + e);
+        }
+        return stream;
     }
 
     /**
