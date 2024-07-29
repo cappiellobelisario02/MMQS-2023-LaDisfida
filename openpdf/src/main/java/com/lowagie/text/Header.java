@@ -68,7 +68,8 @@ public class Header extends Meta {
     /**
      * This is the content of this chunk of text.
      */
-    private StringBuffer name;
+    pprivate StringBuilder name;
+
 
     // constructors
 
