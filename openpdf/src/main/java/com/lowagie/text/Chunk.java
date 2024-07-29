@@ -201,7 +201,8 @@ public class Chunk implements Element {
     /**
      * This is the content of this chunk of text.
      */
-    protected StringBuffer content = null;
+    protected StringBuilder content = null;
+
 
     // methods to retrieve information
     /**
@@ -406,7 +407,9 @@ public class Chunk implements Element {
      * @param string <CODE>String</CODE>
      * @return a <CODE>StringBuffer</CODE>
      */
-    public StringBuffer append(String string) {
+    private StringBuilder content = new StringBuilder();
+
+    public StringBuilder append(String string) {
         return content.append(string);
     }
 
