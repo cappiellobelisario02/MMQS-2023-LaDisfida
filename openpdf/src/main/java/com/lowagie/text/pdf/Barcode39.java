@@ -160,7 +160,6 @@ public class Barcode39 extends Barcode {
             generateChecksum = false;
             checksumText = false;
             startStopText = true;
-            extended = false;
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
