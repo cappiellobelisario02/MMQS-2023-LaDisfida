@@ -59,6 +59,21 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import java.util.ArrayList;
 import java.util.List;
 
+
+// File: InvalidTopPositionException.java
+public class InvalidTopPositionException extends RuntimeException {
+    // Constructor that accepts a message
+    public InvalidTopPositionException(String message) {
+        super(message);
+    }
+
+    // Constructor that accepts a message and a cause
+    public InvalidTopPositionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+
 /**
  * Formats content into one or more columns bounded by a rectangle.  The columns may be simple rectangles or more
  * complicated shapes. Add all of the columns before adding content. Column continuation is supported. A MultiColumnText
@@ -600,8 +615,7 @@ public class MultiColumnText implements Element {
             }
             if (top == AUTOMATIC) {
                 // this is bad - must be programmer error
-                throw new RuntimeException("resolvePositions called with top=AUTOMATIC (-1).  " +
-                        "Top position must be set befure lines can be resolved");
+                   throw new InvalidTopPositionException("resolvePositions called with top=AUTOMATIC (-1). Top position must be set before lines can be resolved.");
             }
             positions[1] = top;
             positions[3] = getColumnBottom();
