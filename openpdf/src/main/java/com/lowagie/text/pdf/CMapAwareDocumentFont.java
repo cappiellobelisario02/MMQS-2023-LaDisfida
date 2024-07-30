@@ -52,6 +52,25 @@ import com.lowagie.text.pdf.fonts.cmaps.CMapParser;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+
+public class ToUnicodeMapProcessingException extends Exception {
+    public ToUnicodeMapProcessingException() {
+        super();
+    }
+
+    public ToUnicodeMapProcessingException(String message) {
+        super(message);
+    }
+
+    public ToUnicodeMapProcessingException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ToUnicodeMapProcessingException(Throwable cause) {
+        super(cause);
+    }
+}
+
 /**
  * Implementation of DocumentFont used while parsing PDF streams.
  *
@@ -117,8 +136,7 @@ public class CMapAwareDocumentFont extends DocumentFont {
                 toUnicodeCmap = cmapParser
                         .parse(new ByteArrayInputStream(touni));
             } catch (IOException e) {
-                throw new Error("Unable to process ToUnicode map - "
-                        + e.getMessage(), e);
+                throw new ToUnicodeMapProcessingException("Unable to process ToUnicode map - " + e.getMessage(), e);
             }
         }
     }
@@ -205,7 +223,7 @@ public class CMapAwareDocumentFont extends DocumentFont {
             return new String(cidbyte2uni, 0xff & bytes[offset], 1);
         }
 
-        throw new Error("Multi-byte glyphs not implemented yet");
+        throw new MultiByteGlyphsNotImplementedException("Multi-byte glyphs not implemented yet");
     }
 
     /**
@@ -285,14 +303,14 @@ public class CMapAwareDocumentFont extends DocumentFont {
      * @return Unicode character corresponding to the remapped code according to the font's current encoding.
      * @throws Error if the the character is out of range
      */
-    public String decode(char c) throws Error {
+    public String decode(char c) throws MultiByteGlyphsNotImplementedException {
         String result;
         if (hasUnicodeCMAP()) {
             result = toUnicodeCmap.lookup(c);
         } else if (c <= 0xff) {
             result = new String(cidbyte2uni, 0xff & c, 1);
         } else {
-            throw new Error("Multi-byte glyphs not implemented yet");
+            throw new MultiByteGlyphsNotImplementedException("Multi-byte glyphs not implemented yet");
         }
         return result;
     }
