@@ -375,10 +375,13 @@ public class ElementFactory {
                 table.setWidths(widths);
             } else {
                 value = attributes.getProperty(ElementTags.COLUMNS);
+                table = createTable(value);
+            }
+            private Table createTable(String value) {
                 try {
-                    table = new Table(Integer.parseInt(value));
+                    return new Table(Integer.parseInt(value));
                 } catch (Exception e) {
-                    table = new Table(1);
+                    return new Table(1);
                 }
             }
 
@@ -392,12 +395,7 @@ public class ElementFactory {
             }
             value = attributes.getProperty(ElementTags.ALIGN);
             if (value != null) {
-                try {
-                    final HorizontalAlignment horizontalAlignment = HorizontalAlignment.valueOf(value);
-                    table.setHorizontalAlignment(horizontalAlignment);
-                } catch (IllegalArgumentException exc) {
-                    table.setHorizontalAlignment(HorizontalAlignment.UNDEFINED);
-                }
+                setTableHorizontalAlignment(value, table);
             }
             value = attributes.getProperty(ElementTags.CELLSPACING);
             if (value != null) {
@@ -433,6 +431,14 @@ public class ElementFactory {
             return table;
         } catch (BadElementException e) {
             throw new ExceptionConverter(e);
+        }
+            private void setTableHorizontalAlignment(String value, Table table) {
+        try {
+            final HorizontalAlignment horizontalAlignment = HorizontalAlignment.valueOf(value);
+            table.setHorizontalAlignment(horizontalAlignment);
+        } catch (IllegalArgumentException exc) {
+            table.setHorizontalAlignment(HorizontalAlignment.UNDEFINED);
+        }
         }
     }
 
