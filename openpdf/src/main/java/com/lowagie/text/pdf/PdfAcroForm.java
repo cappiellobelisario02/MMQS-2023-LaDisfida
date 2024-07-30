@@ -58,9 +58,230 @@ import java.util.Map;
  * Each PDF document can contain maximum 1 AcroForm.
  */
 
+public class TextDrawingConfig {
+    private PdfFormField field;
+    private String text;
+    private BaseFont font;
+    private float fontSize;
+    private float llx;
+    private float lly;
+    private float urx;
+    private float ury;
+    private String name; // Field for the name of the text field
+
+    // Constructor
+    public TextDrawingConfig(PdfFormField field, String text, BaseFont font, float fontSize, float llx, float lly, float urx, float ury, String name) {
+        this.field = field;
+        this.text = text;
+        this.font = font;
+        this.fontSize = fontSize;
+        this.llx = llx;
+        this.lly = lly;
+        this.urx = urx;
+        this.ury = ury;
+        this.name = name;
+    }
+
+    // Getters
+    public PdfFormField getField() { return field; }
+    public String getText() { return text; }
+    public BaseFont getFont() { return font; }
+    public float getFontSize() { return fontSize; }
+    public float getLlx() { return llx; }
+    public float getLly() { return lly; }
+    public float getUrx() { return urx; }
+    public float getUry() { return ury; }
+    public String getName() { return name; }
+}
+public void drawButton(ButtonDrawingConfig config) {
+    PdfFormField button = config.getButton();
+    String caption = config.getCaption();
+    BaseFont font = config.getFont();
+    float fontSize = config.getFontSize();
+    float llx = config.getLlx();
+    float lly = config.getLly();
+    float urx = config.getUrx();
+    float ury = config.getUry();
+
+    PdfAppearance pa = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
+    pa.drawButton(0f, 0f, urx - llx, ury - lly, caption, font, fontSize);
+    button.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, pa);
+}
+
+public class MapButtonConfig {
+    private String name;
+    private String value;
+    private String url;
+    private PdfContentByte appearance;
+    private float llx;
+    private float lly;
+    private float urx;
+    private float ury;
+
+    // Constructor
+    public MapButtonConfig(String name, String value, String url, PdfContentByte appearance, float llx, float lly, float urx, float ury) {
+        this.name = name;
+        this.value = value;
+        this.url = url;
+        this.appearance = appearance;
+        this.llx = llx;
+        this.lly = lly;
+        this.urx = urx;
+        this.ury = ury;
+    }
+
+    // Getters
+    public String getName() { return name; }
+    public String getValue() { return value; }
+    public String getUrl() { return url; }
+    public PdfContentByte getAppearance() { return appearance; }
+    public float getLlx() { return llx; }
+    public float getLly() { return lly; }
+    public float getUrx() { return urx; }
+    public float getUry() { return ury; }
+}
+
+public class ResetButtonConfig {
+    private String name;
+    private String caption;
+    private String value;
+    private BaseFont font;
+    private float fontSize;
+    private float llx;
+    private float lly;
+    private float urx;
+    private float ury;
+
+    // Constructor
+    public ResetButtonConfig(String name, String caption, String value, BaseFont font, float fontSize, float llx, float lly, float urx, float ury) {
+        this.name = name;
+        this.caption = caption;
+        this.value = value;
+        this.font = font;
+        this.fontSize = fontSize;
+        this.llx = llx;
+        this.lly = lly;
+        this.urx = urx;
+        this.ury = ury;
+    }
+
+    // Getters
+    public String getName() { return name; }
+    public String getCaption() { return caption; }
+    public String getValue() { return value; }
+    public BaseFont getFont() { return font; }
+    public float getFontSize() { return fontSize; }
+    public float getLlx() { return llx; }
+    public float getLly() { return lly; }
+    public float getUrx() { return urx; }
+    public float getUry() { return ury; }
+}
+public class HtmlPostButtonConfig {
+    private String name;
+    private String caption;
+    private String value;
+    private String url;
+    private BaseFont font;
+    private float fontSize;
+    private float llx;
+    private float lly;
+    private float urx;
+    private float ury;
+
+    // Constructor
+    public HtmlPostButtonConfig(String name, String caption, String value, String url, BaseFont font, float fontSize, float llx, float lly, float urx, float ury) {
+        this.name = name;
+        this.caption = caption;
+        this.value = value;
+        this.url = url;
+        this.font = font;
+        this.fontSize = fontSize;
+        this.llx = llx;
+        this.lly = lly;
+        this.urx = urx;
+        this.ury = ury;
+    }
+
+    // Getters
+    public String getName() { return name; }
+    public String getCaption() { return caption; }
+    public String getValue() { return value; }
+    public String getUrl() { return url; }
+    public BaseFont getFont() { return font; }
+    public float getFontSize() { return fontSize; }
+    public float getLlx() { return llx; }
+    public float getLly() { return lly; }
+    public float getUrx() { return urx; }
+    public float getUry() { return ury; }
+}
+
+
 public class PdfAcroForm extends PdfDictionary {
 
     private PdfWriter writer;
+
+    public PdfFormField addSingleLineTextField(TextDrawingConfig config) {
+    PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.SINGLELINE, PdfFormField.PLAINTEXT, 0);
+    setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
+    drawSingleLineOfText(config);
+    addFormField(field);
+    return field;
+    }
+
+    public void drawSingleLineOfText(TextDrawingConfig config) {
+    PdfAppearance tp = PdfAppearance.createAppearance(writer, config.getUrx() - config.getLlx(), config.getUry() - config.getLly());
+    PdfAppearance tp2 = (PdfAppearance) tp.getDuplicate();
+    tp2.setFontAndSize(config.getFont(), config.getFontSize());
+    tp2.resetRGBColorFill();
+    config.getField().setDefaultAppearanceString(tp2);
+    tp.drawTextField(0f, 0f, config.getUrx() - config.getLlx(), config.getUry() - config.getLly());
+    tp.beginVariableText();
+    tp.saveState();
+    tp.rectangle(3f, 3f, config.getUrx() - config.getLlx() - 6f, config.getUry() - config.getLly() - 6f);
+    tp.clip();
+    tp.newPath();
+    tp.beginText();
+    tp.setFontAndSize(config.getFont(), config.getFontSize());
+    tp.resetRGBColorFill();
+    tp.setTextMatrix(4, (config.getUry() - config.getLly()) / 2 - (config.getFontSize() * 0.3f));
+    tp.showText(config.getText());
+    tp.endText();
+    tp.restoreState();
+    tp.endVariableText();
+    config.getField().setAppearance(PdfAnnotation.APPEARANCE_NORMAL, tp);
+    }
+
+    // Create the configuration object
+    TextDrawingConfig config = new TextDrawingConfig(
+        null, // PdfFormField will be created inside addSingleLineTextField
+        "Sample text",
+        font,
+        fontSize,
+        llx,
+        lly,
+        urx,
+        ury,
+        "textFieldName"
+    );
+
+    // Create a new text field
+    PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.SINGLELINE, PdfFormField.PLAINTEXT, 0);
+    config = new TextDrawingConfig(
+        field,
+        config.getText(),
+        config.getFont(),
+        config.getFontSize(),
+        config.getLlx(),
+        config.getLly(),
+        config.getUrx(),
+        config.getUry(),
+        config.getName()
+    );
+
+    // Add the single-line text field
+    PdfFormField resultField = addSingleLineTextField(config);
+
+    
 
 
     /**
@@ -194,15 +415,17 @@ public class PdfAcroForm extends PdfDictionary {
      * @param ury      upper-right-y
      * @return a PdfFormField
      */
-    public PdfFormField addHtmlPostButton(String name, String caption, String value, String url, BaseFont font,
-            float fontSize, float llx, float lly, float urx, float ury) {
-        PdfAction action = PdfAction.createSubmitForm(url, null, PdfAction.SUBMIT_HTML_FORMAT);
-        PdfFormField button = new PdfFormField(writer, llx, lly, urx, ury, action);
-        setButtonParams(button, PdfFormField.FF_PUSHBUTTON, name, value);
-        drawButton(button, caption, font, fontSize, llx, lly, urx, ury);
+    public PdfFormField addHtmlPostButton(HtmlPostButtonConfig config) {
+        PdfAction action = PdfAction.createSubmitForm(config.getUrl(), null, PdfAction.SUBMIT_HTML_FORMAT);
+        PdfFormField button = new PdfFormField(writer, config.getLlx(), config.getLly(), config.getUrx(), config.getUry(), action);
+        setButtonParams(button, PdfFormField.FF_PUSHBUTTON, config.getName(), config.getValue());
+        
+        drawButton(button, config.getCaption(), config.getFont(), config.getFontSize(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
+        
         addFormField(button);
         return button;
     }
+
 
     /**
      * @param name     name of the field
@@ -216,12 +439,13 @@ public class PdfAcroForm extends PdfDictionary {
      * @param ury      upper-right-y
      * @return a PdfFormField
      */
-    public PdfFormField addResetButton(String name, String caption, String value, BaseFont font, float fontSize,
-            float llx, float lly, float urx, float ury) {
+    public PdfFormField addResetButton(ResetButtonConfig config) {
         PdfAction action = PdfAction.createResetForm(null, 0);
-        PdfFormField button = new PdfFormField(writer, llx, lly, urx, ury, action);
-        setButtonParams(button, PdfFormField.FF_PUSHBUTTON, name, value);
-        drawButton(button, caption, font, fontSize, llx, lly, urx, ury);
+        PdfFormField button = new PdfFormField(writer, config.getLlx(), config.getLly(), config.getUrx(), config.getUry(), action);
+        setButtonParams(button, PdfFormField.FF_PUSHBUTTON, config.getName(), config.getValue());
+        
+        drawButton(button, config.getCaption(), config.getFont(), config.getFontSize(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
+        
         addFormField(button);
         return button;
     }
@@ -237,18 +461,19 @@ public class PdfAcroForm extends PdfDictionary {
      * @param ury        upper-right-y
      * @return a PdfFormField
      */
-    public PdfFormField addMap(String name, String value, String url, PdfContentByte appearance, float llx, float lly,
-            float urx, float ury) {
-        PdfAction action = PdfAction.createSubmitForm(url, null,
-                PdfAction.SUBMIT_HTML_FORMAT | PdfAction.SUBMIT_COORDINATES);
-        PdfFormField button = new PdfFormField(writer, llx, lly, urx, ury, action);
-        setButtonParams(button, PdfFormField.FF_PUSHBUTTON, name, null);
-        PdfAppearance pa = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
-        pa.add(appearance);
+    public PdfFormField addMap(MapButtonConfig config) {
+        PdfAction action = PdfAction.createSubmitForm(config.getUrl(), null, PdfAction.SUBMIT_HTML_FORMAT | PdfAction.SUBMIT_COORDINATES);
+        PdfFormField button = new PdfFormField(writer, config.getLlx(), config.getLly(), config.getUrx(), config.getUry(), action);
+        setButtonParams(button, PdfFormField.FF_PUSHBUTTON, config.getName(), null);
+        
+        PdfAppearance pa = PdfAppearance.createAppearance(writer, config.getUrx() - config.getLlx(), config.getUry() - config.getLly());
+        pa.add(config.getAppearance());
         button.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, pa);
+        
         addFormField(button);
         return button;
     }
+
 
     /**
      * @param button          an object of {@link PdfFormField}
@@ -276,12 +501,21 @@ public class PdfAcroForm extends PdfDictionary {
      * @param urx      upper-right-x
      * @param ury      upper-right-y
      */
-    public void drawButton(PdfFormField button, String caption, BaseFont font, float fontSize, float llx, float lly,
-            float urx, float ury) {
+    public void drawButton(ButtonDrawingConfig config) {
+        PdfFormField button = config.getButton();
+        String caption = config.getCaption();
+        BaseFont font = config.getFont();
+        float fontSize = config.getFontSize();
+        float llx = config.getLlx();
+        float lly = config.getLly();
+        float urx = config.getUrx();
+        float ury = config.getUry();
+
         PdfAppearance pa = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
         pa.drawButton(0f, 0f, urx - llx, ury - lly, caption, font, fontSize);
         button.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, pa);
     }
+
 
     /**
      * @param name  name of the field
@@ -307,14 +541,22 @@ public class PdfAcroForm extends PdfDictionary {
      * @param ury      upper-right-y
      * @return a PdfFormField
      */
-    public PdfFormField addSingleLineTextField(String name, String text, BaseFont font, float fontSize, float llx,
-            float lly, float urx, float ury) {
+    public PdfFormField addSingleLineTextField(TextDrawingConfig config) {
+        // Create a single-line text field
         PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.SINGLELINE, PdfFormField.PLAINTEXT, 0);
-        setTextFieldParams(field, text, name, llx, lly, urx, ury);
-        drawSingleLineOfText(field, text, font, fontSize, llx, lly, urx, ury);
+        
+        // Set field parameters
+        setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
+        
+        // Draw the single line of text
+        drawSingleLineOfText(config);
+        
+        // Add the form field to the document
         addFormField(field);
+        
         return field;
     }
+
 
     /**
      * @param name     name of the field
@@ -327,14 +569,45 @@ public class PdfAcroForm extends PdfDictionary {
      * @param ury      upper-right-y
      * @return a PdfFormField
      */
-    public PdfFormField addMultiLineTextField(String name, String text, BaseFont font, float fontSize, float llx,
-            float lly, float urx, float ury) {
+    public PdfFormField addMultiLineTextField(TextDrawingConfig config) {
+        // Create a multi-line text field
         PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.MULTILINE, PdfFormField.PLAINTEXT, 0);
-        setTextFieldParams(field, text, name, llx, lly, urx, ury);
-        drawMultiLineOfText(field, text, font, fontSize, llx, lly, urx, ury);
+        
+        // Set field parameters (including name)
+        setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
+        
+        // Draw the multi-line text
+        drawMultiLineOfText(field, config.getText(), config.getFont(), config.getFontSize(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
+        
+        // Add the form field to the document
         addFormField(field);
+        
         return field;
     }
+
+    public void drawMultiLineOfText(PdfFormField field, String text, BaseFont font, float fontSize, float llx, float lly, float urx, float ury) {
+    PdfAppearance tp = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
+    PdfAppearance tp2 = (PdfAppearance) tp.getDuplicate();
+    tp2.setFontAndSize(font, fontSize);
+    tp2.resetRGBColorFill();
+    field.setDefaultAppearanceString(tp2);
+    tp.drawTextField(0f, 0f, urx - llx, ury - lly);
+    tp.beginVariableText();
+    tp.saveState();
+    tp.rectangle(3f, 3f, urx - llx - 6f, ury - lly - 6f);
+    tp.clip();
+    tp.newPath();
+    tp.beginText();
+    tp.setFontAndSize(font, fontSize);
+    tp.resetRGBColorFill();
+    tp.setTextMatrix(4, (ury - lly) - (fontSize * 0.3f)); // Adjust text matrix for multi-line
+    tp.showText(text);
+    tp.endText();
+    tp.restoreState();
+    tp.endVariableText();
+    field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, tp);
+}
+
 
     /**
      * @param name     name of the field
@@ -347,14 +620,22 @@ public class PdfAcroForm extends PdfDictionary {
      * @param ury      upper-right-y
      * @return PdfFormField
      */
-    public PdfFormField addSingleLinePasswordField(String name, String text, BaseFont font, float fontSize, float llx,
-            float lly, float urx, float ury) {
+    public PdfFormField addSingleLinePasswordField(TextDrawingConfig config) {
+        // Create a text field with password protection
         PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.SINGLELINE, PdfFormField.PASSWORD, 0);
-        setTextFieldParams(field, text, name, llx, lly, urx, ury);
-        drawSingleLineOfText(field, text, font, fontSize, llx, lly, urx, ury);
+        
+        // Set field parameters (including name)
+        setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
+        
+        // Draw the single line of text
+        drawSingleLineOfText(config);
+        
+        // Add the form field to the document
         addFormField(field);
+        
         return field;
     }
+
 
     /**
      * @param field an object of {@link PdfFormField}
@@ -385,8 +666,16 @@ public class PdfAcroForm extends PdfDictionary {
      * @param urx      upper-right-x
      * @param ury      upper-right-y
      */
-    public void drawSingleLineOfText(PdfFormField field, String text, BaseFont font, float fontSize, float llx,
-            float lly, float urx, float ury) {
+    public void drawSingleLineOfText(TextDrawingConfig config) {
+        PdfFormField field = config.getField();
+        String text = config.getText();
+        BaseFont font = config.getFont();
+        float fontSize = config.getFontSize();
+        float llx = config.getLlx();
+        float lly = config.getLly();
+        float urx = config.getUrx();
+        float ury = config.getUry();
+
         PdfAppearance tp = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
         PdfAppearance tp2 = (PdfAppearance) tp.getDuplicate();
         tp2.setFontAndSize(font, fontSize);
@@ -408,6 +697,7 @@ public class PdfAcroForm extends PdfDictionary {
         tp.endVariableText();
         field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, tp);
     }
+
 
     /**
      * @param field    field, an object of {@link PdfFormField}
