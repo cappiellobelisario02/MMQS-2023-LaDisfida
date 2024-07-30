@@ -348,26 +348,37 @@ public class PageSize {
      *             <code>PENGUIN_LARGE_PAPERBACK</code>
      * @return an object of type {@link Rectangle}
      */
-    public static Rectangle getRectangle(String name) {
-        name = name.trim().toUpperCase();
-        int pos = name.indexOf(' ');
-        if (pos == -1) {
-            try {
-                Field field = PageSize.class.getDeclaredField(name.toUpperCase());
-                return (Rectangle) field.get(null);
-            } catch (Exception e) {
-                throw new RuntimeException(MessageLocalization.getComposedMessage("can.t.find.page.size.1", name));
-            }
-        } else {
-            try {
-                String width = name.substring(0, pos);
-                String height = name.substring(pos + 1);
-                return new Rectangle(Float.parseFloat(width), Float.parseFloat(height));
-            } catch (Exception e) {
-                throw new RuntimeException(
-                        MessageLocalization.getComposedMessage("1.is.not.a.valid.page.size.format.2", name,
-                                e.getMessage()));
+    public static Rectangle getRectangle(String name) throws PageSizeException {
+            name = name.trim().toUpperCase();
+            int pos = name.indexOf(' ');
+            if (pos == -1) {
+                try {
+                    Field field = PageSize.class.getDeclaredField(name.toUpperCase());
+                    return (Rectangle) field.get(null);
+                } catch (Exception e) {
+                    throw new PageSizeException(MessageLocalization.getComposedMessage("can.t.find.page.size.1", name), e);
+                }
+            } else {
+                try {
+                    String width = name.substring(0, pos);
+                    String height = name.substring(pos + 1);
+                    return new Rectangle(Float.parseFloat(width), Float.parseFloat(height));
+                } catch (Exception e) {
+                    throw new PageSizeException(
+                            MessageLocalization.getComposedMessage("1.is.not.a.valid.page.size.format.2", name,
+                                    e.getMessage()), e);
+                }
             }
         }
+}
+
+
+public class PageSizeException extends Exception {
+    public PageSizeException(String message) {
+        super(message);
+    }
+
+    public PageSizeException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
