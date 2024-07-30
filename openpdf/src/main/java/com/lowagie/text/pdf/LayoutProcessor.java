@@ -60,6 +60,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+// File: FontCreationException.java
+public class FontCreationException extends RuntimeException {
+    // Constructor that accepts a message
+    public FontCreationException(String message) {
+        super(message);
+    }
+
+    // Constructor that accepts a message and a cause
+    public FontCreationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+
 /**
  * Provides glyph layout e.g. for accented Latin letters.
  */
@@ -315,7 +329,7 @@ public class LayoutProcessor {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Font creation failed for %s.", filename), e);
+            throw new FontCreationException(String.format("Font creation failed for %s.", filename), e);
         } finally {
             if (inputStream != null) {
                 try {
