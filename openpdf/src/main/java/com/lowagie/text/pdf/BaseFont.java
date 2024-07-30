@@ -703,20 +703,80 @@ public abstract class BaseFont {
      * @throws IOException       the font file could not be read
      * @since 2.1.5
      */
-    public static BaseFont createFont(String name, String encoding,
-            boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb,
-            boolean noThrow, boolean forceRead) throws DocumentException,
-            IOException {
+    public class FontOptions {
+        private String name;
+        private String encoding;
+        private boolean embedded;
+        private boolean cached;
+        private byte[] ttfAfm;
+        private byte[] pfb;
+        private boolean noThrow;
+        private boolean forceRead;
+
+        // Constructors, getters, and setters
+        public FontOptions(String name, String encoding, boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb, boolean noThrow, boolean forceRead) {
+            this.name = name;
+            this.encoding = encoding;
+            this.embedded = embedded;
+            this.cached = cached;
+            this.ttfAfm = ttfAfm;
+            this.pfb = pfb;
+            this.noThrow = noThrow;
+            this.forceRead = forceRead;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getEncoding() {
+            return encoding;
+        }
+
+        public boolean isEmbedded() {
+            return embedded;
+        }
+
+        public boolean isCached() {
+            return cached;
+        }
+
+        public byte[] getTtfAfm() {
+            return ttfAfm;
+        }
+
+        public byte[] getPfb() {
+            return pfb;
+        }
+
+        public boolean isNoThrow() {
+            return noThrow;
+        }
+
+        public boolean isForceRead() {
+            return forceRead;
+        }
+    }
+
+    public static BaseFont createFont(FontOptions options) throws DocumentException, IOException {
+        String name = options.getName();
+        String encoding = normalizeEncoding(options.getEncoding());
+        boolean embedded = options.isEmbedded();
+        boolean cached = options.isCached();
+        byte[] ttfAfm = options.getTtfAfm();
+        byte[] pfb = options.getPfb();
+        boolean noThrow = options.isNoThrow();
+        boolean forceRead = options.isForceRead();
+
         String nameBase = getBaseName(name);
-        encoding = normalizeEncoding(encoding);
         boolean isBuiltinFonts14 = BuiltinFonts14.containsKey(name);
-        boolean isCJKFont = !isBuiltinFonts14 && CJKFont.isCJKFont(
-                nameBase, encoding);
+        boolean isCJKFont = !isBuiltinFonts14 && CJKFont.isCJKFont(nameBase, encoding);
         if (isBuiltinFonts14 || isCJKFont) {
             embedded = false;
         } else if (encoding.equals(IDENTITY_H) || encoding.equals(IDENTITY_V)) {
             embedded = true;
         }
+
         BaseFont fontFound = null;
         BaseFont fontBuilt = null;
         String key = name + "\n" + encoding + "\n" + embedded;
@@ -727,21 +787,19 @@ public abstract class BaseFont {
                 return fontFound;
             }
         }
+
         if (isBuiltinFonts14 || name.toLowerCase().endsWith(".afm")
                 || name.toLowerCase().endsWith(".pfm")) {
-            fontBuilt = new Type1Font(name, encoding, embedded, ttfAfm, pfb,
-                    forceRead);
+            fontBuilt = new Type1Font(name, encoding, embedded, ttfAfm, pfb, forceRead);
             fontBuilt.fastWinansi = encoding.equals(CP1252);
         } else if (nameBase.toLowerCase().endsWith(".ttf")
                 || nameBase.toLowerCase().endsWith(".otf")
                 || nameBase.toLowerCase().indexOf(".ttc,") > 0) {
             if (encoding.equals(IDENTITY_H) || encoding.equals(IDENTITY_V)) {
-                fontBuilt = new TrueTypeFontUnicode(name, encoding, embedded,
-                        ttfAfm, forceRead);
+                fontBuilt = new TrueTypeFontUnicode(name, encoding, embedded, ttfAfm, forceRead);
                 LayoutProcessor.loadFont(fontBuilt, name);
             } else {
-                fontBuilt = new TrueTypeFont(name, encoding, embedded, ttfAfm,
-                        false, forceRead);
+                fontBuilt = new TrueTypeFont(name, encoding, embedded, ttfAfm, false, forceRead);
                 fontBuilt.fastWinansi = encoding.equals(CP1252);
             }
         } else if (isCJKFont) {
@@ -749,9 +807,9 @@ public abstract class BaseFont {
         } else if (noThrow) {
             return null;
         } else {
-            throw new DocumentException(MessageLocalization.getComposedMessage(
-                    "font.1.with.2.is.not.recognized", name, encoding));
+            throw new DocumentException(MessageLocalization.getComposedMessage("font.1.with.2.is.not.recognized", name, encoding));
         }
+
         if (cached) {
             fontCache.putIfAbsent(key, fontBuilt);
             return fontCache.get(key);
@@ -759,34 +817,6 @@ public abstract class BaseFont {
         return fontBuilt;
     }
 
-    /**
-     * Creates a font based on an existing document font. The created font font may not behave as expected, depending on
-     * the encoding or subset.
-     *
-     * @param fontRef the reference to the document font
-     * @return the font
-     */
-    public static BaseFont createFont(PRIndirectReference fontRef) {
-        return new DocumentFont(fontRef);
-    }
-
-    /**
-     * Gets the name without the modifiers Bold, Italic or BoldItalic.
-     *
-     * @param name the full name of the font
-     * @return the name without the modifiers Bold, Italic or BoldItalic
-     */
-    protected static String getBaseName(String name) {
-        if (name.endsWith(",Bold")) {
-            return name.substring(0, name.length() - 5);
-        } else if (name.endsWith(",Italic")) {
-            return name.substring(0, name.length() - 7);
-        } else if (name.endsWith(",BoldItalic")) {
-            return name.substring(0, name.length() - 11);
-        } else {
-            return name;
-        }
-    }
 
     /**
      * Normalize the encoding names. "winansi" is changed to "Cp1252" and "macroman" is changed to "MacRoman".
@@ -947,6 +977,8 @@ public abstract class BaseFont {
             if (contextClassLoader != null) {
                 is = contextClassLoader.getResourceAsStream(key);
             }
+        }  catch (Exception e) {
+                throw new DocumentException(e);
         }
 
         if (is == null) {
