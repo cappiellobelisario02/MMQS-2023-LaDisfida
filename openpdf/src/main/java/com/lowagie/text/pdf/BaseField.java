@@ -64,6 +64,48 @@ import java.util.Map;
  *
  * @author Paulo Soares (psoares@consiste.pt)
  */
+
+public class AppearanceSettings {
+    private Color backgroundColor;
+    private int borderStyle;
+    private float borderWidth;
+    private Color borderColor;
+    private int options;
+    private int maxCharacterLength;
+
+    public AppearanceSettings(Color backgroundColor, int borderStyle, float borderWidth, Color borderColor, int options, int maxCharacterLength) {
+        this.backgroundColor = backgroundColor;
+        this.borderStyle = borderStyle;
+        this.borderWidth = borderWidth;
+        this.borderColor = borderColor;
+        this.options = options;
+        this.maxCharacterLength = maxCharacterLength;
+    }
+
+    public Color getBackgroundColor() { return backgroundColor; }
+    public int getBorderStyle() { return borderStyle; }
+    public float getBorderWidth() { return borderWidth; }
+    public Color getBorderColor() { return borderColor; }
+    public int getOptions() { return options; }
+    public int getMaxCharacterLength() { return maxCharacterLength; }
+}
+
+import com.itextpdf.text.Rectangle;
+
+public class BoxSettings {
+    private Rectangle box;
+    private int rotation;
+
+    public BoxSettings(Rectangle box, int rotation) {
+        this.box = box;
+        this.rotation = rotation;
+    }
+
+    public Rectangle getBox() { return box; }
+    public int getRotation() { return rotation; }
+}
+
+
 public abstract class BaseField {
 
     /**
@@ -223,10 +265,18 @@ public abstract class BaseField {
         this.fieldName = fieldName;
     }
 
-    protected static PdfAppearance getBorderAppearance(PdfWriter writer, Rectangle box, int rotation,
-            Color backgroundColor, int borderStyle, float borderWidth, Color borderColor, int options,
-            int maxCharacterLength) {
+    protected static PdfAppearance getBorderAppearance(PdfWriter writer, BoxSettings boxSettings, AppearanceSettings appearanceSettings) {
+        Rectangle box = boxSettings.getBox();
+        int rotation = boxSettings.getRotation();
+        Color backgroundColor = appearanceSettings.getBackgroundColor();
+        int borderStyle = appearanceSettings.getBorderStyle();
+        float borderWidth = appearanceSettings.getBorderWidth();
+        Color borderColor = appearanceSettings.getBorderColor();
+        int options = appearanceSettings.getOptions();
+        int maxCharacterLength = appearanceSettings.getMaxCharacterLength();
+
         PdfAppearance app = PdfAppearance.createAppearance(writer, box.getWidth(), box.getHeight());
+
         switch (rotation) {
             case 90:
                 app.setMatrix(0, 1, -1, 0, box.getHeight(), 0);
@@ -238,13 +288,16 @@ public abstract class BaseField {
                 app.setMatrix(0, -1, 1, 0, 0, box.getWidth());
                 break;
         }
+
         app.saveState();
+        
         // background
         if (backgroundColor != null) {
             app.setColorFill(backgroundColor);
             app.rectangle(0, 0, box.getWidth(), box.getHeight());
             app.fill();
         }
+
         // border
         if (borderStyle == PdfBorderDictionary.STYLE_UNDERLINE) {
             if (borderWidth != 0 && borderColor != null) {
@@ -258,15 +311,10 @@ public abstract class BaseField {
             if (borderWidth != 0 && borderColor != null) {
                 app.setColorStroke(borderColor);
                 app.setLineWidth(borderWidth);
-                app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth,
-                        box.getHeight() - borderWidth);
+                app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth, box.getHeight() - borderWidth);
                 app.stroke();
             }
-            // beveled
-            Color actual = backgroundColor;
-            if (actual == null) {
-                actual = Color.white;
-            }
+            Color actual = backgroundColor != null ? backgroundColor : Color.white;
             app.setGrayFill(1);
             drawTopFrame(app, borderWidth, box);
             app.setColorFill(actual.darker());
@@ -275,11 +323,9 @@ public abstract class BaseField {
             if (borderWidth != 0 && borderColor != null) {
                 app.setColorStroke(borderColor);
                 app.setLineWidth(borderWidth);
-                app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth,
-                        box.getHeight() - borderWidth);
+                app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth, box.getHeight() - borderWidth);
                 app.stroke();
             }
-            // inset
             app.setGrayFill(0.5f);
             drawTopFrame(app, borderWidth, box);
             app.setGrayFill(0.75f);
@@ -291,10 +337,8 @@ public abstract class BaseField {
                 }
                 app.setColorStroke(borderColor);
                 app.setLineWidth(borderWidth);
-                app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth,
-                        box.getHeight() - borderWidth);
+                app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth, box.getHeight() - borderWidth);
                 app.stroke();
-                //comb formfield flag is set and maxchar must be set (for textfield only!)
                 if ((options & COMB) != 0 && maxCharacterLength > 1) {
                     float step = box.getWidth() / maxCharacterLength;
                     float yb = borderWidth / 2;
@@ -308,15 +352,17 @@ public abstract class BaseField {
                 }
             }
         }
+
         app.restoreState();
         return app;
     }
+
 
     protected static List<String> getAllHardBreaks(String text) {
         List<String> arr = new ArrayList<>();
         char[] cs = text.toCharArray();
         int len = cs.length;
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int k = 0; k < len; ++k) {
             char c = cs[k];
             if (c == '\r') {
@@ -336,7 +382,7 @@ public abstract class BaseField {
         return arr;
     }
 
-    protected static void trimRight(StringBuffer buf) {
+    protected static void trimRight(StringBuilder buf) {
         int len = buf.length();
         while (true) {
             if (len == 0) {
@@ -351,7 +397,7 @@ public abstract class BaseField {
 
     protected static List<String> breakLines(List<String> breaks, BaseFont font, float fontSize, float width) {
         List<String> lines = new ArrayList<>();
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (String aBreak : breaks) {
             buf.setLength(0);
             float w = 0;
