@@ -824,7 +824,7 @@ public class BidiLine {
         ArrayList<PdfChunk> ar = new ArrayList<>();
         PdfChunk refCk = detailChunks[startIdx];
         PdfChunk ck = null;
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         char c;
         int idx = 0;
         for (; startIdx <= endIdx; ++startIdx) {
