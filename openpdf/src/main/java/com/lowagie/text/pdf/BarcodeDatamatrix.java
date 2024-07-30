@@ -60,6 +60,39 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+public class EncodingParams {
+    private final byte[] text;
+    private final int textOffset;
+    private final int textSize;
+    private final byte[] data;
+    private final int dataOffset;
+    private final int dataSize;
+    private final int options;
+    private final boolean firstMatch;
+
+    public EncodingParams(byte[] text, int textOffset, int textSize, byte[] data, int dataOffset,
+                          int dataSize, int options, boolean firstMatch) {
+        this.text = text;
+        this.textOffset = textOffset;
+        this.textSize = textSize;
+        this.data = data;
+        this.dataOffset = dataOffset;
+        this.dataSize = dataSize;
+        this.options = options;
+        this.firstMatch = firstMatch;
+    }
+
+    // Getters for all fields
+    public byte[] getText() { return text; }
+    public int getTextOffset() { return textOffset; }
+    public int getTextSize() { return textSize; }
+    public byte[] getData() { return data; }
+    public int getDataOffset() { return dataOffset; }
+    public int getDataSize() { return dataSize; }
+    public int getOptions() { return options; }
+    public boolean isFirstMatch() { return firstMatch; }
+}
+
 /**
  * A DataMatrix 2D barcode generator.
  */
@@ -477,84 +510,102 @@ public class BarcodeDatamatrix {
         return ptrOut + i;
     }
 
-    private static int getEncodation(byte[] text, int textOffset, int textSize, byte[] data, int dataOffset,
-            int dataSize, int options, boolean firstMatch) {
-        int[] e1 = new int[6];
-        if (dataSize < 0) {
-            return -1;
-        }
-        options &= 7;
-        if (options == 0) {
-            e1[0] = asciiEncodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            if (firstMatch && e1[0] >= 0) {
-                return e1[0];
-            }
-            e1[1] = C40OrTextEncodation(text, textOffset, textSize, data, dataOffset, dataSize, false);
-            if (firstMatch && e1[1] >= 0) {
-                return e1[1];
-            }
-            e1[2] = C40OrTextEncodation(text, textOffset, textSize, data, dataOffset, dataSize, true);
-            if (firstMatch && e1[2] >= 0) {
-                return e1[2];
-            }
-            e1[3] = b256Encodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            if (firstMatch && e1[3] >= 0) {
-                return e1[3];
-            }
-            e1[4] = X12Encodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            if (firstMatch && e1[4] >= 0) {
-                return e1[4];
-            }
-            e1[5] = EdifactEncodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            if (firstMatch && e1[5] >= 0) {
-                return e1[5];
-            }
-            if (e1[0] < 0 && e1[1] < 0 && e1[2] < 0 && e1[3] < 0 && e1[4] < 0 && e1[5] < 0) {
-                return -1;
-            }
-            int j = 0;
-            int e = 99999;
-            for (int k = 0; k < 6; ++k) {
-                if (e1[k] >= 0 && e1[k] < e) {
-                    e = e1[k];
-                    j = k;
-                }
-            }
-            if (j == 0) {
-                e = asciiEncodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            } else if (j == 1) {
-                e = C40OrTextEncodation(text, textOffset, textSize, data, dataOffset, dataSize, false);
-            } else if (j == 2) {
-                e = C40OrTextEncodation(text, textOffset, textSize, data, dataOffset, dataSize, true);
-            } else if (j == 3) {
-                e = b256Encodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            } else if (j == 4) {
-                e = X12Encodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            }
-            return e;
-        }
-        switch (options) {
-            case DM_ASCII:
-                return asciiEncodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            case DM_C40:
-                return C40OrTextEncodation(text, textOffset, textSize, data, dataOffset, dataSize, true);
-            case DM_TEXT:
-                return C40OrTextEncodation(text, textOffset, textSize, data, dataOffset, dataSize, false);
-            case DM_B256:
-                return b256Encodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            case DM_X21:
-                return X12Encodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            case DM_EDIFACT:
-                return EdifactEncodation(text, textOffset, textSize, data, dataOffset, dataSize);
-            case DM_RAW:
-                if (textSize > dataSize) {
-                    return -1;
-                }
-                System.arraycopy(text, textOffset, data, dataOffset, textSize);
-                return textSize;
-        }
+private static int getEncodation(EncodingParams params) {
+    int[] e1 = new int[6];
+    if (params.getDataSize() < 0) {
         return -1;
     }
+    int options = params.getOptions() & 7;
+    if (options == 0) {
+        e1[0] = asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                 params.getData(), params.getDataOffset(), params.getDataSize());
+        if (params.isFirstMatch() && e1[0] >= 0) {
+            return e1[0];
+        }
+        e1[1] = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                     params.getData(), params.getDataOffset(), params.getDataSize(), false);
+        if (params.isFirstMatch() && e1[1] >= 0) {
+            return e1[1];
+        }
+        e1[2] = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                     params.getData(), params.getDataOffset(), params.getDataSize(), true);
+        if (params.isFirstMatch() && e1[2] >= 0) {
+            return e1[2];
+        }
+        e1[3] = b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                               params.getData(), params.getDataOffset(), params.getDataSize());
+        if (params.isFirstMatch() && e1[3] >= 0) {
+            return e1[3];
+        }
+        e1[4] = X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                               params.getData(), params.getDataOffset(), params.getDataSize());
+        if (params.isFirstMatch() && e1[4] >= 0) {
+            return e1[4];
+        }
+        e1[5] = EdifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                  params.getData(), params.getDataOffset(), params.getDataSize());
+        if (params.isFirstMatch() && e1[5] >= 0) {
+            return e1[5];
+        }
+        if (e1[0] < 0 && e1[1] < 0 && e1[2] < 0 && e1[3] < 0 && e1[4] < 0 && e1[5] < 0) {
+            return -1;
+        }
+        int j = 0;
+        int e = 99999;
+        for (int k = 0; k < 6; ++k) {
+            if (e1[k] >= 0 && e1[k] < e) {
+                e = e1[k];
+                j = k;
+            }
+        }
+        if (j == 0) {
+            e = asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                 params.getData(), params.getDataOffset(), params.getDataSize());
+        } else if (j == 1) {
+            e = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                     params.getData(), params.getDataOffset(), params.getDataSize(), false);
+        } else if (j == 2) {
+            e = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                     params.getData(), params.getDataOffset(), params.getDataSize(), true);
+        } else if (j == 3) {
+            e = b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                               params.getData(), params.getDataOffset(), params.getDataSize());
+        } else if (j == 4) {
+            e = X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                               params.getData(), params.getDataOffset(), params.getDataSize());
+        }
+        return e;
+    }
+    switch (options) {
+        case DM_ASCII:
+            return asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                     params.getData(), params.getDataOffset(), params.getDataSize());
+        case DM_C40:
+            return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                        params.getData(), params.getDataOffset(), params.getDataSize(), true);
+        case DM_TEXT:
+            return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                        params.getData(), params.getDataOffset(), params.getDataSize(), false);
+        case DM_B256:
+            return b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                  params.getData(), params.getDataOffset(), params.getDataSize());
+        case DM_X21:
+            return X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                  params.getData(), params.getDataOffset(), params.getDataSize());
+        case DM_EDIFACT:
+            return EdifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                                     params.getData(), params.getDataOffset(), params.getDataSize());
+        case DM_RAW:
+            if (params.getTextSize() > params.getDataSize()) {
+                return -1;
+            }
+            System.arraycopy(params.getText(), params.getTextOffset(), params.getData(), params.getDataOffset(),
+                             params.getTextSize());
+            return params.getTextSize();
+    }
+    return -1;
+}
+
 
     private static int getNumber(byte[] text, int ptrIn, int n) {
         int v = 0;
