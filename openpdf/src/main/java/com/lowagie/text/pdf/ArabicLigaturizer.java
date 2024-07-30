@@ -369,7 +369,7 @@ public class ArabicLigaturizer {
         return retval;
     }
 
-    static void copycstostring(StringBuffer string, CharStruct s, int level) {
+    static void copycstostring(StringBuilder string, CharStruct s, int level) {
         /* s is a shaped charstruct; i is the index into the string */
         if (s.basechar == 0) {
             return;
@@ -396,7 +396,7 @@ public class ArabicLigaturizer {
     }
 
     // return len
-    static void doublelig(StringBuffer string, int level)
+    static void doublelig(StringBuilder string, int level)
     /* Ok. We have presentation ligatures in our font. */ {
         int len;
         int olen = len = string.length();
@@ -571,7 +571,7 @@ public class ArabicLigaturizer {
         return a.numshapes > 2;
     }
 
-    static void shape(char[] text, StringBuffer string, int level) {
+    static void shape(char[] text, StringBuilder string, int level) {
         /* string is assumed to be empty and big enough.
          * text is the original text.
          * This routine does the basic arabic reshaping.
@@ -637,7 +637,7 @@ public class ArabicLigaturizer {
         if (srclength + srcoffset - srcoffset >= 0) {
             System.arraycopy(src, srcoffset, str, srcoffset - srcoffset, srclength + srcoffset - srcoffset);
         }
-        StringBuffer string = new StringBuffer(srclength);
+        StringBuilder string = new StringBuilder(srclength);
         shape(str, string, level);
         if ((level & (ar_composedtashkeel | ar_lig)) != 0) {
             doublelig(string, level);
