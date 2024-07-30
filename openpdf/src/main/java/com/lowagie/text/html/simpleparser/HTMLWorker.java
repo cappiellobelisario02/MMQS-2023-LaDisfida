@@ -103,16 +103,55 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
     protected DocListener document;
     private Paragraph currentParagraph;
     private ChainedProperties cprops = new ChainedProperties();
-    private Stack<Object> stack = new Stack<>();
+    private Deque<Object> stack = new ArrayDeque<>();
     private boolean pendingTR = false;
     private boolean pendingTD = false;
     private boolean pendingLI = false;
     private StyleSheet style = new StyleSheet();
     private boolean isPRE = false;
-    private Stack<Object> tableState = new Stack<>();
+    private Deque<Object> tableState = new ArrayDeque<>();
     private boolean skipText = false;
     private Map<String, Object> interfaceProps;
     private FactoryProperties factoryProperties = new FactoryProperties();
+
+
+    public void push(Object item) {
+        stack.addFirst(item);
+    }
+
+    // Method to pop an element from the stack
+    public Object pop() {
+        return stack.removeFirst();
+    }
+
+    // Method to peek the top element from the stack
+    public Object peek() {
+        return stack.peekFirst();
+    }
+
+    // Method to check if the stack is empty
+    public boolean isEmpty() {
+        return stack.isEmpty();
+    }
+    // Method to push an element onto the stack
+    public void pushState(Object state) {
+        tableState.addFirst(state);
+    }
+
+    // Method to pop an element from the stack
+    public Object popState() {
+        return tableState.removeFirst();
+    }
+
+    // Method to peek the top element from the stack
+    public Object peekState() {
+        return tableState.peekFirst();
+    }
+
+    // Method to check if the stack is empty
+    public boolean isTableStateEmpty() {
+        return tableState.isEmpty();
+    }
 
     /**
      * Creates a new instance of HTMLWorker
@@ -396,9 +435,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
                 skipText = true;
                 cprops.addToChain(tag, style);
                 com.lowagie.text.List list = new com.lowagie.text.List(false);
-                try {
-                    list.setIndentationLeft(Float.parseFloat(cprops.getProperty("indent")));
-                } catch (Exception e) {
+                if (!setIndentationFromProperty(list, cprops)) {
                     list.setAutoindent(true);
                 }
                 list.setListSymbol("\u2022");
@@ -412,14 +449,11 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
                 skipText = true;
                 cprops.addToChain(tag, style);
                 com.lowagie.text.List list = new com.lowagie.text.List(true);
-                try {
-                    list.setIndentationLeft(Float.parseFloat(cprops.getProperty("indent")));
-                } catch (Exception e) {
-                    list.setAutoindent(true);
-                }
+                setIndentationFromProperties(list, cprops);
                 stack.push(list);
                 return;
             }
+
             if (tag.equals(HtmlTags.LISTITEM)) {
                 if (pendingLI) {
                     endElement(HtmlTags.LISTITEM);
@@ -473,6 +507,25 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
             }
         } catch (Exception e) {
             throw new ExceptionConverter(e);
+        }
+    }
+    private boolean setIndentationFromProperty(List list, Properties cprops) {
+        try {
+            float indentation = Float.parseFloat(cprops.getProperty("indent"));
+            list.setIndentationLeft(indentation);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private void setIndentationFromProperties(List list, Properties cprops) {
+        try {
+            float indentation = Float.parseFloat(cprops.getProperty("indent"));
+            list.setIndentationLeft(indentation);
+        } catch (NumberFormatException e) {
+            // Handle the case where the property is not a valid float
+            list.setAutoindent(true);
         }
     }
 
