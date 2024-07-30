@@ -50,6 +50,20 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.IOException;
 import java.io.OutputStream;
 
+// File: UnsupportedLZWFlavorException.java
+public class UnsupportedLZWFlavorException extends RuntimeException {
+    // Constructor that accepts a message
+    public UnsupportedLZWFlavorException(String message) {
+        super(message);
+    }
+
+    // Constructor that accepts a message and a cause
+    public UnsupportedLZWFlavorException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+
 /**
  * A class for performing LZW decoding.
  */
@@ -82,7 +96,7 @@ public class LZWDecoder {
     public void decode(byte[] data, OutputStream uncompData) {
 
         if (data[0] == (byte) 0x00 && data[1] == (byte) 0x01) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("lzw.flavour.not.supported"));
+            throw new UnsupportedLZWFlavorException(MessageLocalization.getComposedMessage("lzw.flavour.not.supported"));
         }
 
         initializeStringTable();
