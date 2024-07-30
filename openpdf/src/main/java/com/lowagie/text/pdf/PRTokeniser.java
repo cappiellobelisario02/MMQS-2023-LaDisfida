@@ -365,7 +365,7 @@ public class PRTokeniser implements AutoCloseable {
         // Note:  We have to initialize stringValue here, after we've looked for the end of the stream,
         // to ensure that we don't lose the value of a token that might end exactly at the end
         // of the stream
-        StringBuffer outBuf = null;
+        StringBuilder outBuf = null;
         stringValue = EMPTY;
 
         switch (ch) {
