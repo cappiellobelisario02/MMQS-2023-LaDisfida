@@ -87,6 +87,90 @@ import java.util.Stack;
  * @author Paulo Soares (psoares@consiste.pt)
  */
 
+// File: InvalidRunDirectionException.java
+public class InvalidRunDirectionException extends RuntimeException {
+    // Constructor that accepts a message
+    public InvalidRunDirectionException(String message) {
+        super(message);
+    }
+
+    // Constructor that accepts a message and a cause
+    public InvalidRunDirectionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+public class TextAlignmentSettings {
+    public static final int ALIGN_LEFT = 0;
+    public static final int ALIGN_CENTER = 1;
+    public static final int ALIGN_RIGHT = 2;
+
+    private int alignment;
+    private float x;
+    private float y;
+    private float rotation;
+    private int runDirection;
+    private int arabicOptions;
+
+    public TextAlignmentSettings(int alignment, float x, float y, float rotation, int runDirection, int arabicOptions) {
+        this.alignment = alignment;
+        this.x = x;
+        this.y = y;
+        this.rotation = rotation;
+        this.runDirection = runDirection;
+        this.arabicOptions = arabicOptions;
+    }
+
+    // Getters and setters
+    public int getAlignment() {
+        return alignment;
+    }
+
+    public void setAlignment(int alignment) {
+        this.alignment = alignment;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
+
+    public float getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(float rotation) {
+        this.rotation = rotation;
+    }
+
+    public int getRunDirection() {
+        return runDirection;
+    }
+
+    public void setRunDirection(int runDirection) {
+        this.runDirection = runDirection;
+    }
+
+    public int getArabicOptions() {
+        return arabicOptions;
+    }
+
+    public void setArabicOptions(int arabicOptions) {
+        this.arabicOptions = arabicOptions;
+    }
+}
+
+
 public class ColumnText {
 
     /**
@@ -355,10 +439,9 @@ public class ColumnText {
      * @param runDirection  the run direction
      * @param arabicOptions the options for the arabic shaping
      */
-    public static void showTextAligned(PdfContentByte canvas, int alignment, Phrase phrase, float x, float y,
-            float rotation, int runDirection, int arabicOptions) {
-        if (alignment != Element.ALIGN_LEFT && alignment != Element.ALIGN_CENTER
-                && alignment != Element.ALIGN_RIGHT) {
+    public static void showTextAligned(PdfContentByte canvas, Phrase phrase, TextAlignmentSettings settings) {
+        int alignment = settings.getAlignment();
+        if (alignment != Element.ALIGN_LEFT && alignment != Element.ALIGN_CENTER && alignment != Element.ALIGN_RIGHT) {
             alignment = Element.ALIGN_LEFT;
         }
         canvas.saveState();
@@ -367,6 +450,7 @@ public class ColumnText {
         float ury = 2;
         float llx;
         float urx;
+
         switch (alignment) {
             case Element.ALIGN_LEFT:
                 llx = 0;
@@ -381,18 +465,22 @@ public class ColumnText {
                 urx = 20000;
                 break;
         }
-        if (rotation == 0) {
-            llx += x;
-            lly += y;
-            urx += x;
-            ury += y;
+
+        if (settings.getRotation() == 0) {
+            llx += settings.getX();
+            lly += settings.getY();
+            urx += settings.getX();
+            ury += settings.getY();
         } else {
-            double alpha = rotation * Math.PI / 180.0;
+            double alpha = settings.getRotation() * Math.PI / 180.0;
             float cos = (float) Math.cos(alpha);
             float sin = (float) Math.sin(alpha);
-            canvas.concatCTM(cos, sin, -sin, cos, x, y);
+            canvas.concatCTM(cos, sin, -sin, cos, settings.getX(), settings.getY());
         }
+
         ct.setSimpleColumn(phrase, llx, lly, urx, ury, 2, alignment);
+
+        int runDirection = settings.getRunDirection();
         if (runDirection == PdfWriter.RUN_DIRECTION_RTL) {
             if (alignment == Element.ALIGN_LEFT) {
                 alignment = Element.ALIGN_RIGHT;
@@ -400,16 +488,20 @@ public class ColumnText {
                 alignment = Element.ALIGN_LEFT;
             }
         }
+
         ct.setAlignment(alignment);
-        ct.setArabicOptions(arabicOptions);
+        ct.setArabicOptions(settings.getArabicOptions());
         ct.setRunDirection(runDirection);
+
         try {
             ct.go();
         } catch (DocumentException e) {
             throw new ExceptionConverter(e);
         }
+
         canvas.restoreState();
     }
+
 
     /**
      * Shows a line of text. Only the first line is written.
@@ -641,7 +733,7 @@ public class ColumnText {
      */
     protected List<float[]> convertColumn(float[] cLine) {
         if (cLine.length < 4) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("no.valid.column.line.found"));
+            throw new InvalidRunDirectionException(MessageLocalization.getComposedMessage("no.valid.column.line.found"));
         }
         List<float[]> cc = new ArrayList<>();
         for (int k = 0; k < cLine.length - 2; k += 2) {
@@ -668,7 +760,7 @@ public class ColumnText {
             minY = Math.min(minY, r[0]);
         }
         if (cc.isEmpty()) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("no.valid.column.line.found"));
+            throw new InvalidRunDirectionException(MessageLocalization.getComposedMessage("no.valid.column.line.found"));
         }
         return cc;
     }
@@ -1175,7 +1267,7 @@ public class ColumnText {
      */
     public void setRunDirection(int runDirection) {
         if (runDirection < PdfWriter.RUN_DIRECTION_DEFAULT || runDirection > PdfWriter.RUN_DIRECTION_RTL) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("invalid.run.direction.1", runDirection));
+            throw new InvalidRunDirectionException(MessageLocalization.getComposedMessage("invalid.run.direction.1", runDirection));
         }
         this.runDirection = runDirection;
     }
@@ -1300,7 +1392,30 @@ public class ColumnText {
                 ListItem item = null;
                 float listIndentation = list.getIndentationLeft();
                 int count = 0;
-                Stack<Object[]> stack = new Stack<>();
+                private Deque<Object[]> stack = new ArrayDeque<>();
+                public void pushToStack(Object[] item) {
+                    stack.addFirst(item);  // equivalent to Stack.push(item)
+                }
+
+                public Object[] popFromStack() {
+                    return stack.removeFirst();  // equivalent to Stack.pop()
+                }
+
+                public Object[] peekAtStack() {
+                    return stack.peekFirst();  // equivalent to Stack.peek()
+                }
+
+                public boolean isStackEmpty() {
+                    return stack.isEmpty();  // equivalent to Stack.isEmpty()
+                }
+
+                public static void main(String[] args) {
+                    SomeClass example = new SomeClass();
+                    example.pushToStack(new Object[] {"first item"});
+                    System.out.println(example.peekAtStack()[0]);  // Output: first item
+                    System.out.println(example.popFromStack()[0]);  // Output: first item
+                    System.out.println(example.isStackEmpty());  // Output: true
+                }
                 for (int k = 0; k < items.size(); ++k) {
                     Object obj = items.get(k);
                     if (obj instanceof ListItem) {
