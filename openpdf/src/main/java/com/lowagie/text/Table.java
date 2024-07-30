@@ -1308,7 +1308,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
             if (!someRows.get(i).reserve(aPosition.y, aCell.getColspan())) {
 
                 // should be impossible to come here :-)
-                throw new RuntimeException(MessageLocalization.getComposedMessage("addcell.error.in.reserve"));
+                throw new CellReservationException(MessageLocalization.getComposedMessage("addcell.error.in.reserve"));
             }
         }
         row = someRows.get(aPosition.x);
@@ -1503,4 +1503,14 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
         this.complete = complete;
     }
 
+}
+
+public class CellReservationException extends RuntimeException {
+    public CellReservationException(String message) {
+        super(message);
+    }
+
+    public CellReservationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
