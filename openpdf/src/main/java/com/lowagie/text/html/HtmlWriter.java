@@ -134,7 +134,7 @@ public class HtmlWriter extends DocWriter {
     /**
      * This is the current font of the HTML.
      */
-    protected Stack<Font> currentfont = new Stack<>();
+    protected Deque<Font> currentfont = new ArrayDeque<>();
 
     /**
      * This is the standard font of the HTML.
@@ -250,14 +250,10 @@ public class HtmlWriter extends DocWriter {
             switch (element.type()) {
                 case Element.HEADER:
                     try {
-                        Header HEader = (Header) element;
-                        if (HtmlTags.STYLESHEET.equals(header.getName())) {
-                            writeLink(header);
-                        } else if (HtmlTags.JAVASCRIPT.equals(header.getName())) {
-                            writeJavaScript(header);
-                        } else {
-                            writeHeader(header);
-                        }
+                        Header header = (Header) element;
+                        return handleHeaderElement(header);
+                    } catch (IOException ioe) {
+                        throw new ExceptionConverter(ioe);
                     }
                     return true;
                 case Element.SUBJECT:
@@ -312,6 +308,18 @@ public class HtmlWriter extends DocWriter {
             throw new ExceptionConverter(ioe);
         }
     }
+
+    private boolean handleHeaderElement(Header header) throws IOException, DocumentException {
+    if (HtmlTags.STYLESHEET.equals(header.getName())) {
+        writeLink(header);
+    } else if (HtmlTags.JAVASCRIPT.equals(header.getName())) {
+        writeJavaScript(header);
+    } else {
+        writeHeader(header);
+    }
+    return true;
+}
+
 
     /**
      * Signals that the <CODE>Document</CODE> has been opened and that
