@@ -57,6 +57,15 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.MemoryImageSource;
 
+public class IllegalBarcode128CharacterException extends RuntimeException {
+    public IllegalBarcode128CharacterException(String message) {
+        super(message);
+    }
+
+    public IllegalBarcode128CharacterException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
 
 /**
  * Implements the code 128 and UCC/EAN-128. Other symbologies are allowed in raw mode.<p> The code types allowed
@@ -471,9 +480,9 @@ public class Barcode128 extends Barcode {
         for (int k = 0; k < tLen; ++k) {
             c = text.charAt(k);
             if (c > 127 && c != FNC1) {
-                throw new RuntimeException(
-                        MessageLocalization.getComposedMessage("there.are.illegal.characters.for.barcode.128.in.1",
-                                text));
+                // Throw the dedicated exception with a message
+                throw new IllegalBarcode128CharacterException(
+                        MessageLocalization.getComposedMessage("there.are.illegal.characters.for.barcode.128.in.1", text));
             }
         }
         c = text.charAt(0);
