@@ -70,6 +70,14 @@ import java.util.Arrays;
  *
  * @author Paulo Soares (psoares@consiste.pt)
  */
+
+public class InvalidCodeTypeException extends RuntimeException {
+    public InvalidCodeTypeException(String message) {
+        super(message);
+    }
+}
+
+
 public class BarcodeEAN extends Barcode {
 
     /**
@@ -537,7 +545,7 @@ public class BarcodeEAN extends Barcode {
                 width = x * (4 + 5 * 7 + 4 * 2);
                 break;
             default:
-                throw new RuntimeException(MessageLocalization.getComposedMessage("invalid.code.type"));
+                throw new InvalidCodeTypeException(MessageLocalization.getComposedMessage("invalid.code.type"));
         }
         return new Rectangle(width, height);
     }
@@ -761,7 +769,7 @@ public class BarcodeEAN extends Barcode {
                 width = 4 + 5 * 7 + 4 * 2;
                 break;
             default:
-                throw new RuntimeException(MessageLocalization.getComposedMessage("invalid.code.type"));
+                throw new InvalidCodeTypeException(MessageLocalization.getComposedMessage("invalid.code.type"));
         }
 
         boolean print = true;
