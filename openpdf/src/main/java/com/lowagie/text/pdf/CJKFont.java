@@ -60,6 +60,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 /**
  * Creates a CJK font compatible with the fonts in the Adobe Asian font Pack.
  *
@@ -83,7 +84,7 @@ class CJKFont extends BaseFont {
             500, 0.85f, 64);
     private static boolean propertiesLoaded = false;
     private static Object initLock = new Object();
-    Hashtable<String, char[]> allCMaps = new Hashtable<>();
+    HashMap<String, char[]> allCMaps = new HashMap<>();
     /**
      * The font name
      */
