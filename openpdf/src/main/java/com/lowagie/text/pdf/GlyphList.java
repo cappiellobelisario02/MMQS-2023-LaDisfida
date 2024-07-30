@@ -55,6 +55,22 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
+// File: GlyphListNotFoundException.java
+package com.lowagie.text.pdf.fonts;
+
+public class GlyphListNotFoundException extends RuntimeException {
+    // Constructor that accepts a message
+    public GlyphListNotFoundException(String message) {
+        super(message);
+    }
+
+    // Constructor that accepts a message and a cause
+    public GlyphListNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+
 public class GlyphList {
 
     private GlyphList(){}
@@ -69,7 +85,7 @@ public class GlyphList {
                     FontsResourceAnchor.class.getClassLoader());
             if (is == null) {
                 String msg = "glyphlist.txt not found as resource. (It must exist as resource in the package com.lowagie.text.pdf.fonts)";
-                throw new Exception(msg);
+                throw new GlyphListNotFoundException(msg);
             }
             byte[] buf = new byte[1024];
             ByteArrayOutputStream out = new ByteArrayOutputStream();
