@@ -45,6 +45,8 @@
  * https://github.com/LibrePDF/OpenPDF
  */
 package com.lowagie.text.pdf;
+package com.example.exceptions; 
+package com.yourpackage;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -65,6 +67,73 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.w3c.dom.Node;
+
+public class InvalidColorValueException extends RuntimeException {
+    public InvalidColorValueException(String message) {
+        super(message);
+    }
+
+    public InvalidColorValueException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+public class ReadOnlyException extends RuntimeException {
+    public ReadOnlyException(String message) {
+        super(message);
+    }
+}
+
+
+public class NoReaderException extends RuntimeException {
+
+    // Constructor with a custom message
+    public NoReaderException(String message) {
+        super(message);
+    }
+
+    // Optional: Constructor with a custom message and a cause
+    public NoReaderException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+
+public class ReadOnlyAcroFieldsException extends RuntimeException {
+
+    // Constructor that accepts a message
+    public ReadOnlyAcroFieldsException(String message) {
+        super(message);
+    }
+
+    // Constructor that accepts a message and a cause
+    public ReadOnlyAcroFieldsException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+public class ColorParseException extends RuntimeException {
+    public ColorParseException(String message) {
+        super(message);
+    }
+
+    public ColorParseException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
+
+// Define a custom exception for font processing issues
+public class FontProcessingException extends RuntimeException {
+    public FontProcessingException(String message) {
+        super(message);
+    }
+
+    public FontProcessingException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+
 
 /**
  * Query and change fields in existing documents either by method calls or by FDF merging.
@@ -277,7 +346,10 @@ public class AcroFields {
                 PdfNumber green = pdfColor.getAsNumber(1);
                 PdfNumber blue = pdfColor.getAsNumber(2);
 
-                if (red != null && green != null && blue != null) {
+                public Color createColor(Float red, Float green, Float blue) {
+                    if (red == null || green == null || blue == null) {
+                        throw new InvalidColorValueException("Red, green, and blue values must all be provided.");
+                    }
                     return new Color(red.floatValue(), green.floatValue(), blue.floatValue());
                 }
             } else if (pdfColor.size() == 4) {
@@ -1156,7 +1228,7 @@ public class AcroFields {
      */
     public boolean setFieldProperty(String field, String name, Object value, int[] inst) {
         if (writer == null) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("this.acrofields.instance.is.read.only"));
+            throw new ReadOnlyException(MessageLocalization.getComposedMessage("this.acrofields.instance.is.read.only"));
         }
         try {
             Item item = fields.get(field);
@@ -1335,7 +1407,7 @@ public class AcroFields {
      */
     public Object getFieldProperty(String field, String name, int idx) {
         if (this.reader == null) {
-            throw new RuntimeException("No reader has been supplied to this AcroFields instance!");
+            throw new NoReaderException("No reader has been supplied to this AcroFields instance!");
         }
         try {
             Item item = (Item) this.fields.get(field);
@@ -1423,7 +1495,16 @@ public class AcroFields {
                                     // the BASEFONT was not set so extract the /FontName key
                                     PdfString fontname = fontDescriptor.getAsString(PdfName.FONTNAME);
                                     if (fontname != null) {
-                                        fonts.add(PdfName.decodeName(fontname.toString()));
+                                        try {
+                                            // Attempt to decode the font name and add it to the fonts list
+                                            fonts.add(PdfName.decodeName(fontname.toString()));
+                                        } catch (Exception e) {
+                                            // Throw the custom exception if decoding fails
+                                            throw new FontProcessingException("Failed to decode font name: " + fontname.toString(), e);
+                                        }
+                                    } else {
+                                        // Throw a custom exception if the font name is missing
+                                        throw new FontProcessingException("Font name is missing in font descriptor.");
                                     }
                                 }
                             }
@@ -1438,9 +1519,12 @@ public class AcroFields {
                 merged = item.getMerged(idx);
                 PdfDictionary mk = merged.getAsDict(PdfName.MK);
                 if (mk == null) {
-                    return null;
+                    throw new ColorParseException("Marker is null, cannot process color.");
                 } else {
                     PdfArray color = mk.getAsArray(dname);
+                    if (color == null) {
+                        throw new ColorParseException("Color array is null for the given name: " + dname);
+                    }
                     return parseColor(color);
                 }
             } else {
@@ -1507,8 +1591,10 @@ public class AcroFields {
      */
     public boolean setFieldProperty(Item item, String name, int value, int[] inst) {
         if (writer == null) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("this.acrofields.instance.is.read.only"));
-        }
+                throw new ReadOnlyAcroFieldsException(
+                    MessageLocalization.getComposedMessage("this.acrofields.instance.is.read.only")
+                );
+            }
         if (item == null) {
             return false;
         }
