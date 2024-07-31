@@ -63,7 +63,6 @@ public class XfaFile implements OutputStreamResource {
         // Creating a piped stream to avoid loading everything in memory
         try (PipedOutputStream pos = new PipedOutputStream();
             PipedInputStream pis = new PipedInputStream(pos)) {
-
             // Write to piped output stream
             new Thread(() -> {
                 try {
