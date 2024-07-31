@@ -61,27 +61,22 @@ public class XfaFile implements OutputStreamResource {
      */
     public XfaFile(OutputStreamResource resource) throws IOException, DocumentException {
         // Creating a piped stream to avoid loading everything in memory
-        PipedOutputStream pos = new PipedOutputStream();
-        PipedInputStream pis = new PipedInputStream(pos);
+        try (PipedOutputStream pos = new PipedOutputStream();
+            PipedInputStream pis = new PipedInputStream(pos)) {
 
-        // Write to piped output stream
-        new Thread(() -> {
-            try {
-                resource.writeTo(pos);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
+            // Write to piped output stream
+            new Thread(() -> {
                 try {
-                    pos.close();
+                    resource.writeTo(pos);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
-        }).start();
+            }).start();
 
-        // Parse the piped input stream
-        SAXReader reader = createSAXReader();
-        xfaDocument = reader.read(pis);
+            // Parsing del PipedInputStream
+            SAXReader reader = createSAXReader();
+            xfaDocument = reader.read(pis);
+        }
     }
 
     private SAXReader createSAXReader() throws DocumentException {
