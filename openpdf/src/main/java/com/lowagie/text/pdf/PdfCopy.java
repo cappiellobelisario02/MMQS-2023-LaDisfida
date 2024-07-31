@@ -492,11 +492,11 @@ public class PdfCopy extends PdfWriter {
         }
     }
 
-
     @Override
     public void addAnnotation(PdfAnnotation annot) {
     }
 
+    @Override
     PdfIndirectReference add(PdfPage page, PdfContents contents) throws PdfException {
         return null;
     }

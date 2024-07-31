@@ -127,7 +127,7 @@ public abstract class BaseField {
     /**
      * The field is hidden.
      */
-    public static final int HIDDEN = 1;
+    public static final int hidden = 1;
     /**
      * The field is visible but does not print.
      */
@@ -142,7 +142,7 @@ public abstract class BaseField {
      */
     public static final int INVISIBLE = PdfAnnotation.FLAGS_INVISIBLE;
     /** The annotation flag Hidden. */
-    //public static final int HIDDEN = PdfAnnotation.FLAGS_HIDDEN;
+    public static final int HIDDEN = PdfAnnotation.FLAGS_HIDDEN;
     /**
      * The annotation flag Hidden.
      */
