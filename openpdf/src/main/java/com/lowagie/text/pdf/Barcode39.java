@@ -320,7 +320,8 @@ public class Barcode39 extends Barcode {
             if (startStopText) {
                 fullCode = "*" + fullCode + "*";
             }
-            fontX = font.getWidthPoint(fullCode = altText != null ? altText : fullCode, size);
+            fullCode = (altText != null) ? altText : fullCode;
+            fontX = font.getWidthPoint(fullCode, size);
         }
         if (generateChecksum) {
             bCode += getChecksum(bCode);
