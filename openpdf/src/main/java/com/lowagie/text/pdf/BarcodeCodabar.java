@@ -267,7 +267,8 @@ public class BarcodeCodabar extends Barcode {
         }
         float fontX = 0;
         if (font != null) {
-            fontX = font.getWidthPoint(fullCode = altText != null ? altText : fullCode, size);
+            fullCode = (altText != null) ? altText : fullCode;
+            fontX = font.getWidthPoint(fullCode, size);
         }
         byte[] bars = getBarsCodabar(generateChecksum ? calculateChecksum(code) : code);
         int wide = 0;
