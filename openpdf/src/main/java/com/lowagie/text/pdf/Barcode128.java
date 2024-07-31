@@ -707,7 +707,8 @@ public class Barcode128 extends Barcode {
             if (idx < 0) {
                 fullCode = "";
             } else {
-                fullCode = code.substring(idx + 1);
+                int updated_idx = idx + 1;
+                fullCode = code.substring(updated_idx);
             }
         } else if (codeType == CODE128_UCC) {
             fullCode = getHumanReadableUCCEAN(code);
