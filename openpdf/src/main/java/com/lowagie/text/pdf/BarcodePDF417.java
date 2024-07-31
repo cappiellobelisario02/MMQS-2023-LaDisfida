@@ -1129,15 +1129,14 @@ public class BarcodePDF417 {
             v = segmentList.get(k);
             vp = segmentList.get(k - 1);
             vn = segmentList.get(k + 1);
-            if (checkSegmentType(v, 'B') && getSegmentLength(v) == 1) {
-                if (checkSegmentType(vp, 'T') && checkSegmentType(vn, 'T')
-                        && getSegmentLength(vp) + getSegmentLength(vn) >= 3) {
-                    vp.end = vn.end;
-                    segmentList.remove(k);
-                    segmentList.remove(k);
-                    k = -1;
-                    continue;
-                }
+            if (checkSegmentType(v, 'B') && getSegmentLength(v) == 1
+                    && checkSegmentType(vp, 'T') && checkSegmentType(vn, 'T')
+                    && getSegmentLength(vp) + getSegmentLength(vn) >= 3) {
+                vp.end = vn.end;
+                segmentList.remove(k);
+                segmentList.remove(k);
+                k = -1;
+                continue;
             }
         }
         //merge text sections
