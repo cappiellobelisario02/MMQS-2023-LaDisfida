@@ -717,7 +717,8 @@ public class Barcode128 extends Barcode {
         }
         float fontX = 0;
         if (font != null) {
-            fontX = font.getWidthPoint(fullCode = altText != null ? altText : fullCode, size);
+            fullCode = (altText != null) ? altText : fullCode;
+            fontX = font.getWidthPoint(fullCode, size);
         }
         String bCode;
         if (codeType == CODE128_RAW) {
@@ -845,6 +846,7 @@ public class Barcode128 extends Barcode {
      *
      * @param code the code to generate
      */
+    @Override
     public void setCode(String code) {
         if (getCodeType() == Barcode128.CODE128_UCC && code.startsWith("(")) {
             int idx = 0;
