@@ -631,7 +631,7 @@ public class ArabicLigaturizer {
         copycstostring(string, curchar, level);
     }
 
-    static int arabic_shape(char[] src, int srcoffset, int srclength, char[] dest, int destoffset, int destlength,
+    static int arabic_shape(char[] src, int srcoffset, int srclength, char[] dest, int destoffset,
             int level) {
         char[] str = new char[srclength];
         if (srclength + srcoffset - srcoffset >= 0) {
