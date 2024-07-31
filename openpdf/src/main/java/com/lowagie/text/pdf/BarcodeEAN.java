@@ -268,10 +268,8 @@ public class BarcodeEAN extends Barcode {
                 return text.substring(0, 1) + text.substring(1, 3) + text.substring(8, 11) + text.substring(3, 4)
                         + text.substring(11);
             }
-        } else if (text.substring(4, 6).equals("00")) {
-            if (text.substring(6, 9).equals("000")) {
-                return text.substring(0, 1) + text.substring(1, 4) + text.substring(9, 11) + "3" + text.substring(11);
-            }
+        } else if (text.substring(4, 6).equals("00") && text.substring(6, 9).equals("000")) {
+            return text.substring(0, 1) + text.substring(1, 4) + text.substring(9, 11) + "3" + text.substring(11);
         } else if (text.substring(5, 6).equals("0")) {
             if (text.substring(6, 10).equals("0000")) {
                 return text.substring(0, 1) + text.substring(1, 5) + text.substring(10, 11) + "4" + text.substring(11);
