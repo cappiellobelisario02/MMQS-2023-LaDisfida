@@ -504,16 +504,14 @@ public class PdfCopy extends PdfWriter {
     @Override
     public void freeReader(PdfReader reader) throws IOException {
         indirectMap.remove(reader);
-        if (currentPdfReaderInstance != null) {
-            if (currentPdfReaderInstance.getReader() == reader) {
-                try {
-                    currentPdfReaderInstance.getReader().close();
-                    currentPdfReaderInstance.getReaderFile().close();
-                } catch (IOException ioe) {
-                    // empty on purpose
-                }
-                currentPdfReaderInstance = null;
+        if (currentPdfReaderInstance != null && currentPdfReaderInstance.getReader() == reader) {
+            try {
+                currentPdfReaderInstance.getReader().close();
+                currentPdfReaderInstance.getReaderFile().close();
+            } catch (IOException ioe) {
+                // empty on purpose
             }
+            currentPdfReaderInstance = null;
         }
     }
 
