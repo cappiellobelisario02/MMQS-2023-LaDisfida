@@ -606,7 +606,6 @@ private static int getEncodation(EncodingParams params) {
     return -1;
 }
 
-
     private static int getNumber(byte[] text, int ptrIn, int n) {
         int v = 0;
         for (int j = 0; j < n; ++j) {
@@ -623,7 +622,7 @@ private static int getEncodation(EncodingParams params) {
         image[y * xByte + x / 8] |= (byte) (128 >> (x & 7));
     }
 
-    private void draw(byte[] data, int dataSize, DmParams dm) {
+    private void draw(byte[] data, DmParams dm) {
         int ws = dimensions.getBorder();
         int xByte = (dm.width + ws * 2 + 7) / 8;
         Arrays.fill(image, (byte) 0);
