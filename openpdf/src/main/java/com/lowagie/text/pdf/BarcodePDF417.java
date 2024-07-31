@@ -1185,8 +1185,9 @@ public class BarcodePDF417 {
                 }
             }
         }
+        v = segmentList.get(0);
         // check if all numbers
-        if (segmentList.size() == 1 && (v = segmentList.get(0)).type == 'T' && getSegmentLength(v) >= 8) {
+        if (segmentList.size() == 1 && v.type == 'T' && getSegmentLength(v) >= 8) {
             for (k = v.start; k < v.end; ++k) {
                 c = (char) (text[k] & 0xff);
                 if (c < '0' || c > '9') {
