@@ -1321,7 +1321,7 @@ public class BarcodePDF417 {
             }
             segmentList = new SegmentList();
             breakString();
-            //dumpList();
+            dumpList();
             assemble();
             segmentList = null;
             codewords[0] = lenCodewords = cwPtr;
