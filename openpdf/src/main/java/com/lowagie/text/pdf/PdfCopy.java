@@ -540,9 +540,9 @@ public class PdfCopy extends PdfWriter {
      */
     public PageStamp createPageStamp(PdfImportedPage iPage) {
         int pageNum = iPage.getPageNumber();
-        PdfReader reader = iPage.getPdfReaderInstance().getReader();
-        PdfDictionary pageN = reader.getPageN(pageNum);
-        return new PageStamp(reader, pageN, this);
+        PdfReader pdfReader = iPage.getPdfReaderInstance().getReader();
+        PdfDictionary pageN = pdfReader.getPageN(pageNum);
+        return new PageStamp(pdfReader, pageN, this);
     }
 
     /**
