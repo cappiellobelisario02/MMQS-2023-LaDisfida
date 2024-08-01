@@ -908,9 +908,9 @@ public class PdfGraphics2D extends Graphics2D {
      */
     public void setComposite(Composite comp) {
 
-        if ((comp instanceof AlphaComposite composite) && (composite.getRule() == 3)) {
-            alpha = composite.getAlpha();
-            this.composite = composite;
+        if ((comp instanceof AlphaComposite _Composite) && (_Composite.getRule() == 3)) {
+            alpha = _Composite.getAlpha();
+            this.composite = _Composite;
 
             if (realPaint != null && (realPaint instanceof Color c)) {
 
