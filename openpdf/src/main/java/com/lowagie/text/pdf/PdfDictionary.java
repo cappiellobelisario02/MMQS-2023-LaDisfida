@@ -408,6 +408,7 @@ public class PdfDictionary extends PdfObject {
      * @param key A <CODE>PdfName</CODE>
      * @return the associated <CODE>PdfArray</CODE> object, or <CODE>null</CODE>
      */
+    @Override
     public PdfArray getAsArray(PdfName key) {
         PdfArray array = null;
         PdfObject orig = getDirectObject(key);
