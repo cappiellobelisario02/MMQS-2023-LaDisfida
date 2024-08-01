@@ -148,8 +148,9 @@ public class PdfDictionary extends PdfObject {
         os.write('<');
         os.write('<');
         // loop over all the object-pairs in the HashMap
-        for (PdfName pdfName : hashMap.keySet()) {
-            PdfObject value = hashMap.get(pdfName);
+        for (Map.Entry<PdfName, PdfObject> entry : hashMap.entrySet()) {
+            PdfName pdfName = entry.getKey();
+            PdfObject value = entry.getValue();
             pdfName.toPdf(writer, os);
             int type = value.type();
             if (type != PdfObject.ARRAY && type != PdfObject.DICTIONARY && type != PdfObject.NAME
