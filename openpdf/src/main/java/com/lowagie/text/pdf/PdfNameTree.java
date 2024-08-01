@@ -60,6 +60,9 @@ public class PdfNameTree {
 
     private static final int leafSize = 64;
 
+    private PdfNameTree(){
+        
+    }
 
     /**
      * Writes a name tree to a PdfWriter.
