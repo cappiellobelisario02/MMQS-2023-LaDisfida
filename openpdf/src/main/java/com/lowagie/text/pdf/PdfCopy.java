@@ -847,6 +847,7 @@ public class PdfCopy extends PdfWriter {
          *
          * @return a copy of this <CODE>PdfContentByte</CODE>
          */
+        @Override
         public PdfContentByte getDuplicate() {
             return new PdfCopy.StampContent(writer, pageResources);
         }
