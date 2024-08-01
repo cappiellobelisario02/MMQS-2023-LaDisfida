@@ -3000,7 +3000,7 @@ public class PdfDocument extends Document {
 
     protected void renderCells(RenderingContext ctx, java.util.List<PdfCell> cells, boolean hasToFit) throws DocumentException {
         PdfCell cell;
-        Iterator iterator;
+        Iterator<PdfCell> iterator;
         if (hasToFit) {
             iterator = cells.iterator();
             while (iterator.hasNext()) {
