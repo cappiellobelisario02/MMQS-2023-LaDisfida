@@ -1586,27 +1586,27 @@ public class PdfGraphics2D extends Graphics2D {
 
     private void setPaint(boolean invert, double xoffset, double yoffset, boolean fill) {
         if (paint instanceof Color color) {
-            int alpha = color.getAlpha();
+            int _Alpha = color.getAlpha();
             if (fill) {
-                if (alpha != currentFillGState) {
-                    currentFillGState = alpha;
-                    PdfGState gs = fillGState[alpha];
+                if (_Alpha != currentFillGState) {
+                    currentFillGState = _Alpha;
+                    PdfGState gs = fillGState[_Alpha];
                     if (gs == null) {
                         gs = new PdfGState();
-                        gs.setFillOpacity(alpha / 255f);
-                        fillGState[alpha] = gs;
+                        gs.setFillOpacity(_Alpha / 255f);
+                        fillGState[_Alpha] = gs;
                     }
                     cb.setGState(gs);
                 }
                 cb.setColorFill(color);
             } else {
-                if (alpha != currentStrokeGState) {
-                    currentStrokeGState = alpha;
-                    PdfGState gs = strokeGState[alpha];
+                if (_Alpha != currentStrokeGState) {
+                    currentStrokeGState = _Alpha;
+                    PdfGState gs = strokeGState[_Alpha];
                     if (gs == null) {
                         gs = new PdfGState();
-                        gs.setStrokeOpacity(alpha / 255f);
-                        strokeGState[alpha] = gs;
+                        gs.setStrokeOpacity(_Alpha / 255f);
+                        strokeGState[_Alpha] = gs;
                     }
                     cb.setGState(gs);
                 }
