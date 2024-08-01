@@ -887,13 +887,10 @@ public class PdfGraphics2D extends Graphics2D {
         this.paint = paint;
         realPaint = paint;
 
-        if ((composite instanceof AlphaComposite co) && (paint instanceof Color)) {
-
-            if (co.getRule() == 3) {
-                Color c = (Color) paint;
-                this.paint = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (c.getAlpha() * alpha));
-                realPaint = paint;
-            }
+        if ((composite instanceof AlphaComposite co) && (paint instanceof Color) && (co.getRule() == 3)) {
+            Color c = (Color) paint;
+            this.paint = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (c.getAlpha() * alpha));
+            realPaint = paint;
         }
 
     }
@@ -912,20 +909,16 @@ public class PdfGraphics2D extends Graphics2D {
      */
     public void setComposite(Composite comp) {
 
-        if (comp instanceof AlphaComposite composite) {
+        if ((comp instanceof AlphaComposite composite) && (composite.getRule() == 3)) {
+            alpha = composite.getAlpha();
+            this.composite = composite;
 
-            if (composite.getRule() == 3) {
+            if (realPaint != null && (realPaint instanceof Color c)) {
 
-                alpha = composite.getAlpha();
-                this.composite = composite;
-
-                if (realPaint != null && (realPaint instanceof Color c)) {
-
-                    paint = new Color(c.getRed(), c.getGreen(), c.getBlue(),
-                            (int) (c.getAlpha() * alpha));
-                }
-                return;
+                paint = new Color(c.getRed(), c.getGreen(), c.getBlue(),
+                        (int) (c.getAlpha() * alpha));
             }
+            return;
         }
 
         this.composite = comp;
