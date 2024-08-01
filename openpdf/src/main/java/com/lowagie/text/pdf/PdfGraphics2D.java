@@ -1391,12 +1391,10 @@ public class PdfGraphics2D extends Graphics2D {
         if (s == null) {
             return;
         }
-        if (drawType == STROKE) {
-            if (!(stroke instanceof BasicStroke)) {
-                s = stroke.createStrokedShape(s);
-                followPath(s, FILL);
-                return;
-            }
+        if ((drawType == STROKE) && (!(stroke instanceof BasicStroke))) {
+            s = stroke.createStrokedShape(s);
+            followPath(s, FILL);
+            return;
         }
         if (drawType == STROKE) {
             setStrokeDiff(stroke, oldStroke);
