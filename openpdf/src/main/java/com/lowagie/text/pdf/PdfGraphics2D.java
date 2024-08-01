@@ -890,7 +890,6 @@ public class PdfGraphics2D extends Graphics2D {
         if ((composite instanceof AlphaComposite co) && (paint instanceof Color) && (co.getRule() == 3)) {
             Color c = (Color) paint;
             this.paint = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (c.getAlpha() * alpha));
-            realPaint = paint;
         }
 
     }
