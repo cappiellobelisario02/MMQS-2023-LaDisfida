@@ -406,6 +406,7 @@ class PdfCopyFieldsImp extends PdfWriter {
         }
     }
 
+    @Override
     public void close() {
         if (closing) {
             super.close();
