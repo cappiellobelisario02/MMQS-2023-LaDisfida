@@ -69,6 +69,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class PdfEncodings {
 
+    private PdfEncodings(){
+        
+    }
+
     /**
      * Assumes that '\\n' and '\\r\\n' are the newline sequences. It may not work for all CJK encodings. To be used with
      * loadCmap().
