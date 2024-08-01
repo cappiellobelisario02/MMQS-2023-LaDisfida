@@ -907,7 +907,6 @@ public class PdfGraphics2D extends Graphics2D {
      * @see Graphics2D#setComposite(Composite)
      */
     public void setComposite(Composite comp) {
-
         if ((comp instanceof AlphaComposite _Composite) && (_Composite.getRule() == 3)) {
             alpha = _Composite.getAlpha();
             this.composite = _Composite;
@@ -922,7 +921,6 @@ public class PdfGraphics2D extends Graphics2D {
 
         this.composite = comp;
         alpha = 1.0F;
-
     }
 
     /**
