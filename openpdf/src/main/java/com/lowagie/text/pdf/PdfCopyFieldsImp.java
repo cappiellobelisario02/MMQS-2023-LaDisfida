@@ -597,6 +597,7 @@ class PdfCopyFieldsImp extends PdfWriter {
         return pageRefs.get(page - 1);
     }
 
+    @Override
     protected PdfDictionary getCatalog(PdfIndirectReference rootObj) {
         try {
             PdfDictionary cat = pdf.getCatalog(rootObj);
