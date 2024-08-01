@@ -604,13 +604,12 @@ public class PdfGraphics2D extends Graphics2D {
      * @see Graphics2D#drawString(AttributedCharacterIterator, float, float)
      */
     public void drawString(AttributedCharacterIterator iter, float x, float y) {
-/*
         StringBuffer sb = new StringBuffer();
         for(char c = iter.first(); c != AttributedCharacterIterator.DONE; c = iter.next()) {
             sb.append(c);
         }
         drawString(sb.toString(),x,y);
-*/
+
         StringBuilder stringbuffer = new StringBuilder(iter.getEndIndex());
         for (char c = iter.first(); c != '\uFFFF'; c = iter.next()) {
             if (iter.getIndex() == iter.getRunStart()) {
