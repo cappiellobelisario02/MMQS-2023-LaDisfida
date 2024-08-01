@@ -143,6 +143,7 @@ public class PdfDictionary extends PdfObject {
      * @param os     the <CODE>OutputStream</CODE> to write the bytes to.
      * @throws IOException on error
      */
+    @Override
     public void toPdf(PdfWriter writer, OutputStream os) throws IOException {
         os.write('<');
         os.write('<');
