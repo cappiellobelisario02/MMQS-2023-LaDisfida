@@ -2948,11 +2948,9 @@ public class PdfDocument extends Document {
             boolean isEndOfRow = !iterator.hasNext();
             boolean isCurrentCellPartOfRow = !iterator.hasNext();
 
-            if (previousCell != null) {
-                if (cell.getLeft() <= previousCell.getLeft()) {
-                    isEndOfRow = true;
-                    isCurrentCellPartOfRow = false;
-                }
+            if (previousCell != null && cell.getLeft() <= previousCell.getLeft()) {
+                isEndOfRow = true;
+                isCurrentCellPartOfRow = false;
             }
 
             if (isCurrentCellPartOfRow) {
