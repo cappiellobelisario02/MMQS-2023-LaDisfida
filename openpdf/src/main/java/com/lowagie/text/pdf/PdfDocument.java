@@ -1026,6 +1026,7 @@ public class PdfDocument extends Document {
      * @param marginBottom the margin on the bottom
      * @return a <CODE>boolean</CODE>
      */
+    @Override
     public boolean setMargins(float marginLeft, float marginRight, float marginTop, float marginBottom) {
         if (writer != null && writer.isPaused()) {
             return false;
