@@ -324,9 +324,9 @@ public class PdfGraphics2D extends Graphics2D {
             image = (BufferedImage) img;
         } else {
             ColorModel cm = img.getColorModel();
-            int width = img.getWidth();
+            int Width = img.getWidth();
             int height = img.getHeight();
-            WritableRaster raster = cm.createCompatibleWritableRaster(width, height);
+            WritableRaster raster = cm.createCompatibleWritableRaster(Width, height);
             boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
             Hashtable<String, Object> properties = new Hashtable<>();
             String[] keys = img.getPropertyNames();
