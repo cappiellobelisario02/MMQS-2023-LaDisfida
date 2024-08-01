@@ -3005,10 +3005,8 @@ public class PdfDocument extends Document {
             iterator = cells.iterator();
             while (iterator.hasNext()) {
                 cell = (PdfCell) iterator.next();
-                if (!cell.isHeader()) {
-                    if (cell.getBottom() < indentBottom()) {
-                        return;
-                    }
+                if (!cell.isHeader() && cell.getBottom() < indentBottom()) {
+                    return;
                 }
             }
         }
