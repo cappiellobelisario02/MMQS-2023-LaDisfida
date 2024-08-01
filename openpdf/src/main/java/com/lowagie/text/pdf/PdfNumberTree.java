@@ -60,6 +60,10 @@ public class PdfNumberTree {
 
     private static final int leafSize = 64;
 
+    private PdfNumberTree(){
+        
+    }
+
     /**
      * Creates a number tree.
      *
