@@ -99,6 +99,7 @@ public class PdfImportedPage extends com.lowagie.text.pdf.PdfTemplate {
      * @param f     dummy
      * @throws DocumentException dummy
      */
+    @Override
     public void addImage(Image image, float a, float b, float c, float d, float e, float f) throws DocumentException {
         throwError();
     }
