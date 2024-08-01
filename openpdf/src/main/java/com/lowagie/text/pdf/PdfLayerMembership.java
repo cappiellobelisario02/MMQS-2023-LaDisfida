@@ -119,7 +119,7 @@ public class PdfLayerMembership extends PdfDictionary implements PdfOCG {
      *
      * @return the member layers
      */
-    public Collection getLayers() {
+    public Collection<PdfLayer> getLayers() {
         return layers;
     }
 
