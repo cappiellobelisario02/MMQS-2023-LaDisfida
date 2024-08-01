@@ -546,13 +546,13 @@ public class PdfGraphics2D extends Graphics2D {
                 }
             }
 
-            double width = 0;
+            double Width = 0;
             if (font.getSize2D() > 0) {
                 float scale = 1000 / font.getSize2D();
                 Font derivedFont = font.deriveFont(AffineTransform.getScaleInstance(scale, scale));
-                width = derivedFont.getStringBounds(s, getFontRenderContext()).getWidth();
+                Width = derivedFont.getStringBounds(s, getFontRenderContext()).getWidth();
                 if (derivedFont.isTransformed()) {
-                    width /= scale;
+                    Width /= scale;
                 }
             }
             // if the hyperlink flag is set add an action to the text
