@@ -1066,6 +1066,7 @@ public class PdfDocument extends Document {
      *
      * @param pageN the new page number
      */
+    @Override
     public void setPageCount(int pageN) {
         if (writer != null && writer.isPaused()) {
             return;
