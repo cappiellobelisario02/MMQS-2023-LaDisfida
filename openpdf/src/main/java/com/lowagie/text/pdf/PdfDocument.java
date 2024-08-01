@@ -1077,6 +1077,7 @@ public class PdfDocument extends Document {
     /**
      * Sets the page number to 0.
      */
+    @Override
     public void resetPageCount() {
         if (writer != null && writer.isPaused()) {
             return;
@@ -1089,6 +1090,7 @@ public class PdfDocument extends Document {
      *
      * @param header the new header
      */
+    @Override
     public void setHeader(HeaderFooter header) {
         if (writer != null && writer.isPaused()) {
             return;
@@ -1101,6 +1103,7 @@ public class PdfDocument extends Document {
     /**
      * Resets the header of this document.
      */
+    @Override
     public void resetHeader() {
         if (writer != null && writer.isPaused()) {
             return;
@@ -1113,6 +1116,7 @@ public class PdfDocument extends Document {
      *
      * @param footer the new footer
      */
+    @Override
     public void setFooter(HeaderFooter footer) {
         if (writer != null && writer.isPaused()) {
             return;
@@ -1123,6 +1127,7 @@ public class PdfDocument extends Document {
     /**
      * Resets the footer of this document.
      */
+    @Override
     public void resetFooter() {
         if (writer != null && writer.isPaused()) {
             return;
