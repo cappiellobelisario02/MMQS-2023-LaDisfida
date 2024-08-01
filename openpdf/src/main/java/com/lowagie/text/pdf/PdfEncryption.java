@@ -373,17 +373,17 @@ public class PdfEncryption {
 
         byte[] digest = md5.digest(ownerPad);
         if (revision == STANDARD_ENCRYPTION_128 || revision == AES_128) {
-            byte[] mkey = new byte[keyLength / 8];
+            byte[] m_Key = new byte[keyLength / 8];
             // only use for the input as many bit as the key consists of
             for (int k = 0; k < 50; ++k) {
-                System.arraycopy(md5.digest(digest), 0, digest, 0, mkey.length);
+                System.arraycopy(md5.digest(digest), 0, digest, 0, m_Key.length);
             }
             System.arraycopy(userPad, 0, owner_Key, 0, 32);
             for (int i = 0; i < 20; ++i) {
-                for (int j = 0; j < mkey.length; ++j) {
-                    mkey[j] = (byte) (digest[j] ^ i);
+                for (int j = 0; j < m_Key.length; ++j) {
+                    m_Key[j] = (byte) (digest[j] ^ i);
                 }
-                arcfour.prepareARCFOURKey(mkey);
+                arcfour.prepareARCFOURKey(m_Key);
                 arcfour.encryptARCFOUR(owner_Key);
             }
         } else {
