@@ -189,7 +189,7 @@ public class PdfCopyFields
      *
      * @param outlines the bookmarks or <CODE>null</CODE> to remove any
      */
-    public void setOutlines(List outlines) {
+    public void setOutlines(List<PdfName> outlines) {
         fc.setOutlines(outlines);
     }
 
