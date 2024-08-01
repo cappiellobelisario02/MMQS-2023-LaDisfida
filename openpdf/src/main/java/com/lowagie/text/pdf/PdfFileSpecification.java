@@ -243,6 +243,7 @@ public class PdfFileSpecification extends PdfDictionary {
                 try {
                     in.close();
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
