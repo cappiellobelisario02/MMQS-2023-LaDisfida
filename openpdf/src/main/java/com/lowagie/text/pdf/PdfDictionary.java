@@ -172,6 +172,7 @@ public class PdfDictionary extends PdfObject {
      * @return the string representation of this <CODE>PdfDictionary</CODE>
      * @see com.lowagie.text.pdf.PdfObject#toString()
      */
+    @Override
     public String toString() {
         if (get(PdfName.TYPE) == null) {
             return "Dictionary";
