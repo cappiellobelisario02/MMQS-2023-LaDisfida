@@ -852,6 +852,7 @@ public class PdfCopy extends PdfWriter {
             return new PdfCopy.StampContent(writer, pageResources);
         }
 
+        @Override
         PageResources getPageResources() {
             return pageResources;
         }
