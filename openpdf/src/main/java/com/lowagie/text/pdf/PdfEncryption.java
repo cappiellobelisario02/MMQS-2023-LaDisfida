@@ -798,7 +798,7 @@ public class PdfEncryption {
      * decrypt it (revision 6 and later) - ISO 32000-2 section 7.6.4.3.3
      */
     public void setupByOwnerPassword(byte[] documentID, byte[] ownerPassword,
-            byte[] uValue, byte[] ueValue, byte[] oValue, byte[] oeValue, int permissions)
+            byte[] uValue, byte[] oValue, byte[] oeValue, int permissions)
             throws GeneralSecurityException {
         final Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
 
