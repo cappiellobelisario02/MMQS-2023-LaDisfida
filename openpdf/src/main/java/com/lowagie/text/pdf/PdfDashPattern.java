@@ -133,7 +133,7 @@ public class PdfDashPattern extends PdfArray {
     /**
      * Returns the PDF representation of this <CODE>PdfArray</CODE>.
      */
-
+    @Override
     public void toPdf(PdfWriter writer, OutputStream os) throws IOException {
         os.write('[');
 
