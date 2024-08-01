@@ -2998,7 +2998,7 @@ public class PdfDocument extends Document {
         return rows;
     }
 
-    protected void renderCells(RenderingContext ctx, java.util.List cells, boolean hasToFit) throws DocumentException {
+    protected void renderCells(RenderingContext ctx, java.util.List<PdfCell> cells, boolean hasToFit) throws DocumentException {
         PdfCell cell;
         Iterator iterator;
         if (hasToFit) {
