@@ -3043,7 +3043,7 @@ public class PdfDocument extends Document {
 
                 // we paint the borders of the cells
                 Rectangle cellRect = cell.rectangle(tableRect.getTop(), indentBottom);
-                //cellRect.setBottom(cellRect.bottom());
+                cellRect.setBottom(cellRect.bottom());
                 if (cellRect.getHeight() > 0) {
                     ctx.lostTableBottom = indentBottom;
                     ctx.cellGraphics.rectangle(cellRect);
