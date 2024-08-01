@@ -869,6 +869,7 @@ public class PdfDocument extends Document {
      *
      * @return a <CODE>boolean</CODE>
      */
+    @Override
     public boolean newPage() {
         lastElementType = -1;
         if (isPageEmpty()) {
