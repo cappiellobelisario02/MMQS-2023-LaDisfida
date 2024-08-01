@@ -524,13 +524,13 @@ public class PdfEncryption {
      * @param permissions   permissions
      */
     public void setupByOwnerPassword(byte[] documentID, byte[] ownerPassword,
-            byte[] userKey, byte[] ownerKey, int permissions) {
-        setupByOwnerPad(documentID, padPassword(ownerPassword), userKey,
+            byte[] ownerKey, int permissions) {
+        setupByOwnerPad(documentID, padPassword(ownerPassword),
                 ownerKey, permissions);
     }
 
     private void setupByOwnerPad(byte[] documentID, byte[] ownerPad,
-            byte[] userKey, byte[] ownerKey, int permissions) {
+            byte[] ownerKey, int permissions) {
         byte[] userPad = computeOwnerKey(ownerKey, ownerPad); // userPad will
         // be set in
         // this.ownerKey
