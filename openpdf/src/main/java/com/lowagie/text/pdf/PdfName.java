@@ -3313,10 +3313,8 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
         widgetNames.add(PdfName.MK);
         widgetNames.add(PdfName.A);
         //does exist in both and should have the identical meaning => so either or suffice
-        //widgetNames.add(PdfName.AA);
         widgetNames.add(PdfName.BS);
         //When separating a merged dictionary the Parent stays in the field thus it is disabled here
-        //widgetNames.add(PdfName.PARENT);
 
         //All possible values for an form field dictionary
         formfieldNames.add(PdfName.FT);
