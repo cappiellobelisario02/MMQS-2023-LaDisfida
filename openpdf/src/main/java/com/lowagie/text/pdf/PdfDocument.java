@@ -1008,6 +1008,7 @@ public class PdfDocument extends Document {
      * @param pageSize the new pagesize
      * @return <CODE>true</CODE> if the page size was set
      */
+    @Override
     public boolean setPageSize(Rectangle pageSize) {
         if (writer != null && writer.isPaused()) {
             return false;
