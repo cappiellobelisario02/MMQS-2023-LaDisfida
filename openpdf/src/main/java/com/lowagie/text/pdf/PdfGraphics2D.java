@@ -418,7 +418,7 @@ public class PdfGraphics2D extends Graphics2D {
             drawGlyphVector(this.font.layoutGlyphVector(getFontRenderContext(), s.toCharArray(), 0, s.length(),
                     java.awt.Font.LAYOUT_LEFT_TO_RIGHT), x, y);
 //            Use the following line to compile in JDK 1.3
-//            drawGlyphVector(this.font.createGlyphVector(getFontRenderContext(), s), x, y);
+            drawGlyphVector(this.font.createGlyphVector(getFontRenderContext(), s), x, y);
         } else {
             if (!Float.isFinite(fontSize) || fontSize < PdfContentByte.MIN_FONT_SIZE) {
                 return;
