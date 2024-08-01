@@ -592,6 +592,7 @@ class PdfCopyFieldsImp extends PdfWriter {
         }
     }
 
+    @Override
     public PdfIndirectReference getPageReference(int page) {
         return pageRefs.get(page - 1);
     }
