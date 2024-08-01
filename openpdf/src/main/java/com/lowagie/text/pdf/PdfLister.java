@@ -149,8 +149,6 @@ public class PdfLister {
             out.println("endstream");
         } catch (IOException e) {
             System.err.println("I/O exception: " + e);
-//          } catch (java.util.zip.DataFormatException e) {
-//              System.err.println("Data Format Exception: " + e);
         }
     }
 
