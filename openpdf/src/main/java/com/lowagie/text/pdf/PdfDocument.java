@@ -2717,7 +2717,7 @@ public class PdfDocument extends Document {
             Set<PdfCell> opt = new HashSet<>();
             iterator = rows.iterator();
             while (iterator.hasNext()) {
-                ArrayList row = (ArrayList) iterator.next();
+                ArrayList<PdfCell> row = (ArrayList<PdfCell>) iterator.next();
 
                 for (Object o : row) {
                     cell = (PdfCell) o;
