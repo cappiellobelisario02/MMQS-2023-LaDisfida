@@ -1041,6 +1041,7 @@ public class PdfDocument extends Document {
     /**
      * @see com.lowagie.text.DocListener#setMarginMirroring(boolean)
      */
+    @Override
     public boolean setMarginMirroring(boolean MarginMirroring) {
         if (writer != null && writer.isPaused()) {
             return false;
