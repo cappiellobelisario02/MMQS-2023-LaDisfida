@@ -800,6 +800,7 @@ public class PdfDocument extends Document {
      * <p>
      * You have to open the document before you can begin to add content to the body of the document.
      */
+    @Override
     public void open() {
         if (!open) {
             super.open();
