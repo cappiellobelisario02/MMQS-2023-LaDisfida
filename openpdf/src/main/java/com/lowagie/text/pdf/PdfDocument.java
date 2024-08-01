@@ -822,6 +822,7 @@ public class PdfDocument extends Document {
      * to the body anymore.
      * </p>
      */
+    @Override
     public void close() {
         if (close) {
             return;
