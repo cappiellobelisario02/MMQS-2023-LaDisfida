@@ -1416,7 +1416,7 @@ public class PdfDocument extends Document {
         float tabPosition = 0;
 
         // looping over all the chunks in 1 line
-        for (Iterator j = line.iterator(); j.hasNext(); ) {
+        for (Iterator<PdfChunk> j = line.iterator(); j.hasNext(); ) {
             chunk = (PdfChunk) j.next();
             Color color = chunk.color();
             hScale = 1;
