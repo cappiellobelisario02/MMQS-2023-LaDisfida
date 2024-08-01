@@ -615,6 +615,7 @@ class PdfCopyFieldsImp extends PdfWriter {
         return new PdfIndirectReference(0, getNewObjectNumber(ref.getReader(), ref.getNumber(), 0));
     }
 
+    @Override
     protected int getNewObjectNumber(PdfReader reader, int number, int generation) {
         IntHashtable refs = readers2intrefs.get(reader);
         int n = refs.get(number);
