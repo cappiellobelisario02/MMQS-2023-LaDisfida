@@ -529,14 +529,14 @@ public class PdfGraphics2D extends Graphics2D {
                         cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_FILL_STROKE);
                         oldStroke = new BasicStroke(strokeWidth);
                         cb.setLineWidth(strokeWidth);
-                        int alpha = color.getAlpha();
-                        if (alpha != currentStrokeGState) {
-                            currentStrokeGState = alpha;
-                            PdfGState gs = strokeGState[alpha];
+                        int Alpha = color.getAlpha();
+                        if (Alpha != currentStrokeGState) {
+                            currentStrokeGState = Alpha;
+                            PdfGState gs = strokeGState[Alpha];
                             if (gs == null) {
                                 gs = new PdfGState();
-                                gs.setStrokeOpacity(alpha / 255f);
-                                strokeGState[alpha] = gs;
+                                gs.setStrokeOpacity(Alpha / 255f);
+                                strokeGState[Alpha] = gs;
                             }
                             cb.setGState(gs);
                         }
