@@ -127,20 +127,6 @@ public class PdfIndirectObject {
 
     // methods
 
-/**
- * Return the length of this <CODE>PdfIndirectObject</CODE>.
- *
- * @return the length of the PDF-representation of this indirect object.
- */
-
-//    public int length() {
-//        if (isStream)
-//            return bytes.size() + SIZEOBJ + stream.getStreamLength(writer);
-//        else
-//            return bytes.size();
-//    }
-
-
     /**
      * Returns a <CODE>PdfIndirectReference</CODE> to this <CODE>PdfIndirectObject</CODE>.
      *
