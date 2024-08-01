@@ -560,17 +560,17 @@ public class PdfGraphics2D extends Graphics2D {
             if (url != null && !url.equals(HyperLinkKey.VALUE_HYPERLINKKEY_OFF)) {
                 float scale = 1000 / font.getSize2D();
                 Font derivedFont = font.deriveFont(AffineTransform.getScaleInstance(scale, scale));
-                double height = derivedFont.getStringBounds(s, getFontRenderContext()).getHeight();
+                double Height = derivedFont.getStringBounds(s, getFontRenderContext()).getHeight();
                 if (derivedFont.isTransformed()) {
-                    height /= scale;
+                    Height /= scale;
                 }
                 double leftX = cb.getXTLM();
                 double leftY = cb.getYTLM();
                 PdfAction action = new PdfAction(url.toString());
-                cb.setAction(action, (float) leftX, (float) leftY, (float) (leftX + width), (float) (leftY + height));
+                cb.setAction(action, (float) leftX, (float) leftY, (float) (leftX + Width), (float) (leftY + Height));
             }
             if (s.length() > 1) {
-                float adv = ((float) width - baseFont.getWidthPoint(s, fontSize)) / (s.length() - 1);
+                float adv = ((float) Width - baseFont.getWidthPoint(s, fontSize)) / (s.length() - 1);
                 cb.setCharacterSpacing(adv);
             }
             cb.showText(s);
@@ -587,7 +587,7 @@ public class PdfGraphics2D extends Graphics2D {
             }
 
             cb.endText();
-            return width;
+            return Width;
         } finally {
             setTransform(at);
         }
