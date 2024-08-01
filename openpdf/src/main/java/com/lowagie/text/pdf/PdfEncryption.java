@@ -369,7 +369,7 @@ public class PdfEncryption {
      *
      */
     private byte[] computeOwnerKey(byte[] userPad, byte[] ownerPad) {
-        byte[] ownerKey = new byte[32];
+        byte[] owner_Key = new byte[32];
 
         byte[] digest = md5.digest(ownerPad);
         if (revision == STANDARD_ENCRYPTION_128 || revision == AES_128) {
@@ -378,20 +378,20 @@ public class PdfEncryption {
             for (int k = 0; k < 50; ++k) {
                 System.arraycopy(md5.digest(digest), 0, digest, 0, mkey.length);
             }
-            System.arraycopy(userPad, 0, ownerKey, 0, 32);
+            System.arraycopy(userPad, 0, owner_Key, 0, 32);
             for (int i = 0; i < 20; ++i) {
                 for (int j = 0; j < mkey.length; ++j) {
                     mkey[j] = (byte) (digest[j] ^ i);
                 }
                 arcfour.prepareARCFOURKey(mkey);
-                arcfour.encryptARCFOUR(ownerKey);
+                arcfour.encryptARCFOUR(owner_Key);
             }
         } else {
             arcfour.prepareARCFOURKey(digest, 0, 5);
-            arcfour.encryptARCFOUR(userPad, ownerKey);
+            arcfour.encryptARCFOUR(userPad, owner_Key);
         }
 
-        return ownerKey;
+        return owner_Key;
     }
 
     /**
