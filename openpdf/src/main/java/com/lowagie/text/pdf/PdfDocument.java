@@ -2933,7 +2933,7 @@ public class PdfDocument extends Document {
         }
     }
 
-    protected java.util.List<java.util.List<PdfCell>> extractRows(java.util.List<PdfCell> cells, RenderingContext ctx) {
+    protected java.util.List<java.util.List<PdfCell>> extractRows(java.util.List<PdfCell> cells) {
         PdfCell cell;
         PdfCell previousCell = null;
         java.util.List<java.util.List<PdfCell>> rows = new ArrayList<>();
