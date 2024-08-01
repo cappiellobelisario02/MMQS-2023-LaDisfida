@@ -423,17 +423,17 @@ public class PdfGraphics2D extends Graphics2D {
             if (!Float.isFinite(fontSize) || fontSize < PdfContentByte.MIN_FONT_SIZE) {
                 return;
             }
-            double width = 0;
+            double Width = 0;
             if (isCompositeFontDrawerEnabled && CompositeFontDrawer.isSupported()
                     && compositeFontDrawer.isCompositeFont(font)) {
-                width = compositeFontDrawer.drawString(s, font, x, y, this::getCachedBaseFont, this::drawString);
+                Width = compositeFontDrawer.drawString(s, font, x, y, this::getCachedBaseFont, this::drawString);
             } else {
                 // Splitting string to the parts depending on they visibility preserves
                 // the position of the visible parts of string and prevents alignment of the text in width
                 // (increasing value of the character spacing parameter of the PdfContentByte)
                 List<String> substrings = splitIntoSubstringsByVisibility(s);
                 for (String str : substrings) {
-                    width += drawString(str, baseFont, x + width, y);
+                    Width += drawString(str, baseFont, x + Width, y);
                 }
             }
             if (underline) {
@@ -445,7 +445,7 @@ public class PdfGraphics2D extends Graphics2D {
                 Stroke savedStroke = originalStroke;
                 setStroke(new BasicStroke((float) d));
                 y = (float) (y + asPoints(UnderlineThickness, (int) fontSize));
-                Line2D line = new Line2D.Double(x, y, width + x, y);
+                Line2D line = new Line2D.Double(x, y, Width + x, y);
                 draw(line);
                 setStroke(savedStroke);
             }
