@@ -1390,8 +1390,8 @@ public class PdfDocument extends Document {
                 PdfChunk last = line.getChunk(line.size() - 1);
                 if (last != null) {
                     String s = last.toString();
-                    char c;
-                    if (s.length() > 0 && hangingPunctuation.indexOf((c = s.charAt(s.length() - 1))) >= 0) {
+                    char c = s.charAt(s.length() - 1);
+                    if (s.length() > 0 && hangingPunctuation.indexOf(c) >= 0) {
                         float oldWidth = width;
                         width += last.font().width(c) * 0.4f;
                         hangingCorrection = width - oldWidth;
