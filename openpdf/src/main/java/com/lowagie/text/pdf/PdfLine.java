@@ -172,8 +172,7 @@ public class PdfLine {
         // we split the chunk to be added
         PdfChunk overflow = chunk.split(width);
         newlineSplit = (chunk.isNewlineSplit() || overflow == null);
-        //        if (chunk.isNewlineSplit() && alignment == Element.ALIGN_JUSTIFIED)
-        //            alignment = Element.ALIGN_LEFT;
+        
         if (chunk.isTab()) {
             Object[] tab = (Object[]) chunk.getAttribute(Chunk.TAB);
             float tabPosition = (Float) tab[1];
