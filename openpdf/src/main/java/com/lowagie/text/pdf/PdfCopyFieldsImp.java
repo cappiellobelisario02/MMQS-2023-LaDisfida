@@ -565,10 +565,8 @@ class PdfCopyFieldsImp extends PdfWriter {
                                 && ((flag1 ^ flag2) & PdfFormField.FF_RADIO) != 0) {
                             return;
                         }
-                    } else if (type1.equals(PdfName.CH)) {
-                        if (((flag1 ^ flag2) & PdfFormField.FF_COMBO) != 0) {
-                            return;
-                        }
+                    } else if (type1.equals(PdfName.CH) && ((flag1 ^ flag2) & PdfFormField.FF_COMBO) != 0) {
+                        return;
                     }
                     createWidgets(list, item);
                 }
