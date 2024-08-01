@@ -360,6 +360,7 @@ public class PdfFormField extends PdfAnnotation {
         put(PdfName.Q, new PdfNumber(v));
     }
 
+    @Override
     public void setUsed() {
         used = true;
         if (parent != null) {
