@@ -1161,6 +1161,7 @@ public class PdfGraphics2D extends Graphics2D {
     /**
      * @see Graphics#fillRect(int, int, int, int)
      */
+    @Override
     public void fillRect(int x, int y, int width, int height) {
         fill(new Rectangle(x, y, width, height));
     }
