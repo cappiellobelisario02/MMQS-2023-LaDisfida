@@ -115,6 +115,7 @@ public class PdfImportedPage extends com.lowagie.text.pdf.PdfTemplate {
      * @param e        dummy
      * @param f        dummy
      */
+    @Override
     public void addTemplate(PdfTemplate template, float a, float b, float c, float d, float e, float f) {
         throwError();
     }
@@ -124,6 +125,7 @@ public class PdfImportedPage extends com.lowagie.text.pdf.PdfTemplate {
      *
      * @return dummy
      */
+    @Override
     public PdfContentByte getDuplicate() {
         throwError();
         return null;
@@ -136,18 +138,22 @@ public class PdfImportedPage extends com.lowagie.text.pdf.PdfTemplate {
      * @return the stream representing this page
      * @since 2.1.3    (replacing the method without param compressionLevel)
      */
+    @Override
     PdfStream getFormXObject(int compressionLevel) throws IOException {
         return readerInstance.getFormXObject(pageNumber, compressionLevel);
     }
 
+    @Override
     public void setColorFill(PdfSpotColor sp, float tint) {
         throwError();
     }
 
+    @Override
     public void setColorStroke(PdfSpotColor sp, float tint) {
         throwError();
     }
 
+    @Override
     PdfObject getResources() {
         return readerInstance.getResources(pageNumber);
     }
@@ -158,6 +164,7 @@ public class PdfImportedPage extends com.lowagie.text.pdf.PdfTemplate {
      * @param bf   dummy
      * @param size dummy
      */
+    @Override
     public void setFontAndSize(BaseFont bf, float size) {
         throwError();
     }
@@ -168,6 +175,7 @@ public class PdfImportedPage extends com.lowagie.text.pdf.PdfTemplate {
      * @param group New value of property group.
      * @since 2.1.6
      */
+    @Override
     public void setGroup(PdfTransparencyGroup group) {
         throwError();
     }
