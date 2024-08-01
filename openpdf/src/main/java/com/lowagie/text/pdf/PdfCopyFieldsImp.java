@@ -263,7 +263,7 @@ class PdfCopyFieldsImp extends PdfWriter {
                 break;
             }
             case PdfObject.ARRAY: {
-                //PdfArray arr = new PdfArray();
+                PdfArray arr = new PdfArray();
                 for (PdfObject ob : ((PdfArray) obj).getElements()) {
                     if (ob != null && ob.isIndirect()) {
                         PRIndirectReference ind = (PRIndirectReference) ob;
