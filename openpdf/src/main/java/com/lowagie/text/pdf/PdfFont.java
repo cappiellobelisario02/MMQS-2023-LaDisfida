@@ -67,7 +67,7 @@ import com.lowagie.text.Image;
  * @see BadPdfFormatException
  */
 
-class PdfFont implements Comparable {
+class PdfFont implements Comparable<Object> {
 
 
     /**
