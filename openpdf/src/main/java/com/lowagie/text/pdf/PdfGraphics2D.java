@@ -525,25 +525,23 @@ public class PdfGraphics2D extends Graphics2D {
                                         fontFaceName.equals(fontLogicalName + BOLD_ITALIC_FONT_FACE_NAME_SUFFIX))))) {
                     // Simulate a bold font.
                     float strokeWidth = font.getSize2D() * (weight - TextAttribute.WEIGHT_REGULAR) / 30f;
-                    if (strokeWidth != 1) {
-                        if (realPaint instanceof Color color) {
-                            cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_FILL_STROKE);
-                            oldStroke = new BasicStroke(strokeWidth);
-                            cb.setLineWidth(strokeWidth);
-                            int alpha = color.getAlpha();
-                            if (alpha != currentStrokeGState) {
-                                currentStrokeGState = alpha;
-                                PdfGState gs = strokeGState[alpha];
-                                if (gs == null) {
-                                    gs = new PdfGState();
-                                    gs.setStrokeOpacity(alpha / 255f);
-                                    strokeGState[alpha] = gs;
-                                }
-                                cb.setGState(gs);
+                    if (strokeWidth != 1 && realPaint instanceof Color color) {
+                        cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_FILL_STROKE);
+                        oldStroke = new BasicStroke(strokeWidth);
+                        cb.setLineWidth(strokeWidth);
+                        int alpha = color.getAlpha();
+                        if (alpha != currentStrokeGState) {
+                            currentStrokeGState = alpha;
+                            PdfGState gs = strokeGState[alpha];
+                            if (gs == null) {
+                                gs = new PdfGState();
+                                gs.setStrokeOpacity(alpha / 255f);
+                                strokeGState[alpha] = gs;
                             }
-                            setStrokePaint();
-                            restoreTextRenderingMode = true;
+                            cb.setGState(gs);
                         }
+                        setStrokePaint();
+                        restoreTextRenderingMode = true;
                     }
                 }
             }
