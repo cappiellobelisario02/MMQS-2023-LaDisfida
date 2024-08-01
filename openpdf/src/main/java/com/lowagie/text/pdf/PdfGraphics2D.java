@@ -370,8 +370,8 @@ public class PdfGraphics2D extends Graphics2D {
                 continue;
             }
             if (textattribute.equals(TextAttribute.FONT)) {
-                Font font = (Font) iter.getAttributes().get(textattribute);
-                setFont(font);
+                Font _Font = (Font) iter.getAttributes().get(textattribute);
+                setFont(_Font);
             } else if (textattribute.equals(TextAttribute.UNDERLINE)) {
                 if (iter.getAttributes().get(textattribute) == TextAttribute.UNDERLINE_ON) {
                     underline = true;
@@ -388,20 +388,20 @@ public class PdfGraphics2D extends Graphics2D {
             } else if (textattribute.equals(TextAttribute.FOREGROUND)) {
                 setColor((Color) iter.getAttributes().get(textattribute));
             } else if (textattribute.equals(TextAttribute.FAMILY)) {
-                Font font = getFont();
-                Map<TextAttribute, Object> fontAttributes = (Map<TextAttribute, Object>) font.getAttributes();
+                Font _Font = getFont();
+                Map<TextAttribute, Object> fontAttributes = (Map<TextAttribute, Object>) _Font.getAttributes();
                 fontAttributes.put(TextAttribute.FAMILY, iter.getAttributes().get(textattribute));
-                setFont(font.deriveFont(fontAttributes));
+                setFont(_Font.deriveFont(fontAttributes));
             } else if (textattribute.equals(TextAttribute.POSTURE)) {
-                Font font = getFont();
-                Map<TextAttribute, Object> fontAttributes = (Map<TextAttribute, Object>) font.getAttributes();
+                Font _Font = getFont();
+                Map<TextAttribute, Object> fontAttributes = (Map<TextAttribute, Object>) _Font.getAttributes();
                 fontAttributes.put(TextAttribute.POSTURE, iter.getAttributes().get(textattribute));
-                setFont(font.deriveFont(fontAttributes));
+                setFont(_Font.deriveFont(fontAttributes));
             } else if (textattribute.equals(TextAttribute.WEIGHT)) {
-                Font font = getFont();
-                Map<TextAttribute, Object> fontAttributes = (Map<TextAttribute, Object>) font.getAttributes();
+                Font _Font = getFont();
+                Map<TextAttribute, Object> fontAttributes = (Map<TextAttribute, Object>) _Font.getAttributes();
                 fontAttributes.put(TextAttribute.WEIGHT, iter.getAttributes().get(textattribute));
-                setFont(font.deriveFont(fontAttributes));
+                setFont(_Font.deriveFont(fontAttributes));
             }
         }
     }
