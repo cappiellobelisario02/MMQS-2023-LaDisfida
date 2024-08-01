@@ -676,6 +676,7 @@ class PdfCopyFieldsImp extends PdfWriter {
         }
     }
 
+    @Override
     RandomAccessFileOrArray getReaderFile(PdfReader reader) {
         return file;
     }
