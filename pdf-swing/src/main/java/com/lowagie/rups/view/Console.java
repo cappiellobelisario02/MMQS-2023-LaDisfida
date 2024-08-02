@@ -204,6 +204,7 @@ public class Console implements Observer {
         /**
          * @see java.lang.Thread#run()
          */
+        @Override
         public void run() {
             final byte[] buf = new byte[1024];
 

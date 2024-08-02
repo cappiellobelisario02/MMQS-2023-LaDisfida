@@ -91,7 +91,7 @@ public class PagesTable extends JTable implements JTableAutoModelInterface, Obse
             if (pages == null) {
                 return;
             }
-            Enumeration p = pages.depthFirstEnumeration();
+            Enumeration<?> p = pages.depthFirstEnumeration();
             PdfObjectTreeNode child;
             StringBuffer buf;
             while (p.hasMoreElements()) {
@@ -115,6 +115,7 @@ public class PagesTable extends JTable implements JTableAutoModelInterface, Obse
     /**
      * @see javax.swing.JTable#getColumnCount()
      */
+    @Override
     public int getColumnCount() {
         return 2;
     }
@@ -122,6 +123,7 @@ public class PagesTable extends JTable implements JTableAutoModelInterface, Obse
     /**
      * @see javax.swing.JTable#getRowCount()
      */
+    @Override
     public int getRowCount() {
         return list.size();
     }
@@ -129,6 +131,7 @@ public class PagesTable extends JTable implements JTableAutoModelInterface, Obse
     /**
      * @see javax.swing.JTable#getValueAt(int, int)
      */
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (getRowCount() == 0) {
             return null;
@@ -145,6 +148,7 @@ public class PagesTable extends JTable implements JTableAutoModelInterface, Obse
     /**
      * @see javax.swing.JTable#getColumnName(int)
      */
+    @Override
     public String getColumnName(int columnIndex) {
         switch (columnIndex) {
             case 0:

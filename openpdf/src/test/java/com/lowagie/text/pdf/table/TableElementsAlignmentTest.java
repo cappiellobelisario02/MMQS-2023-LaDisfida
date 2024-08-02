@@ -35,7 +35,7 @@ public class TableElementsAlignmentTest {
                     final int alignmentId = table.getAlignment();
                     assertEquals(alignmentId, alignment.getId());
                 }))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Test

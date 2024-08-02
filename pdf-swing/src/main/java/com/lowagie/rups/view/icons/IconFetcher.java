@@ -29,6 +29,10 @@ import javax.swing.ImageIcon;
  */
 public class IconFetcher {
 
+    private IconFetcher(){
+        //empty on purpose
+    }
+
     /**
      * Cache with icons.
      */

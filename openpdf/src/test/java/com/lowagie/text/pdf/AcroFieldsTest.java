@@ -39,8 +39,8 @@ public class AcroFieldsTest {
             // TODO need other PR to fix java.lang.ClassCastException:
             // org.bouncycastle.asn1.BERTaggedObject cannot be cast to
             // org.bouncycastle.asn1.DERTaggedObject
-            // PdfPKCS7 pdfPkcs7 = fields.verifySignature(signName, "BC");
-            // Assertions.assertTrue(pdfPkcs7.verify());
+            // PdfPKCS7 pdfPkcs7 = fields.verifySignature(signName, "BC")
+            // Assertions.assertTrue(pdfPkcs7.verify())
         }
 
     }

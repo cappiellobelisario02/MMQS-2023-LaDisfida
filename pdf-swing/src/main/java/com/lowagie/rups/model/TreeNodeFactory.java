@@ -122,7 +122,7 @@ public class TreeNodeFactory {
      * @return the PdfObjectTreeNode that is the child of the dictionary node
      */
     public PdfObjectTreeNode getChildNode(PdfObjectTreeNode node, PdfName key) {
-        Enumeration children = node.breadthFirstEnumeration();
+        Enumeration<?> children = node.breadthFirstEnumeration();
         PdfObjectTreeNode child;
         while (children.hasMoreElements()) {
             child = (PdfObjectTreeNode) children.nextElement();

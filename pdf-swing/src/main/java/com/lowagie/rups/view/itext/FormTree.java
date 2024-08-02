@@ -147,7 +147,7 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
         if (object_node.isIndirectReference()) {
             loadFields(factory, form_node, (PdfObjectTreeNode) object_node.getFirstChild());
         } else if (object_node.isArray()) {
-            Enumeration children = object_node.children();
+            Enumeration<?> children = object_node.children();
             while (children.hasMoreElements()) {
                 loadFields(factory, form_node, (PdfObjectTreeNode) children.nextElement());
             }
@@ -173,7 +173,7 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
         if (object_node.isIndirectReference()) {
             loadXfa(factory, form_node, (PdfObjectTreeNode) object_node.getFirstChild());
         } else if (object_node.isArray()) {
-            Enumeration children = object_node.children();
+            Enumeration<?> children = object_node.children();
             PdfObjectTreeNode key;
             PdfObjectTreeNode value;
             while (children.hasMoreElements()) {

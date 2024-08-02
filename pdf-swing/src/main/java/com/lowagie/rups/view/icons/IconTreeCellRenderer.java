@@ -39,6 +39,7 @@ public class IconTreeCellRenderer extends DefaultTreeCellRenderer {
      * @see javax.swing.tree.DefaultTreeCellRenderer#getTreeCellRendererComponent(javax.swing.JTree, java.lang.Object,
      * boolean, boolean, boolean, int, boolean)
      */
+    @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value,
             boolean selected, boolean expanded, boolean leaf, int row,
             boolean hasFocus) {
