@@ -216,7 +216,6 @@ public class MarkedUpTextAssembler implements TextAssembler {
                 }
             }
             inProgress = partialWord;
-            // System.out.println("<< Hard Return >>");
         } else if (spacing < partialWord.getSingleSpaceWidth() / 2.3 || inProgress.shouldNotSplit()) {
             inProgress = new Word(inProgress.getText() + partialWord.getText().trim(),
                     partialWord.getAscent(),

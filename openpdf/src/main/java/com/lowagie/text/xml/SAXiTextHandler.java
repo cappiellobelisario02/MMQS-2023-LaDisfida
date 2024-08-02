@@ -533,7 +533,8 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
         char character;
         boolean newline = false;
         for (int i = 0; i < len; i++) {
-            switch (character = content.charAt(i)) {
+            character = content.charAt(i);
+            switch (character) {
                 case ' ':
                     if (!newline) {
                         buf.append(character);
@@ -594,8 +595,6 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
      */
 
     public void handleEndingTags(String name) {
-
-        // System.err.println("Stop: " + name);
 
         if (ElementTags.IGNORE.equals(name)) {
             ignore = false;

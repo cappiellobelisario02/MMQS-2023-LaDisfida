@@ -120,7 +120,7 @@ public class XmlDomWriter {
         switch (type) {
             case Node.DOCUMENT_NODE: {
                 Document document = (Document) node;
-                fXML11 = false; //"1.1".equals(getVersion(document));
+                fXML11 = false; //"1.1".equals(getVersion(document))
                 if (!fCanonical) {
                     if (fXML11) {
                         fOut.println("<?xml version=\"1.1\" encoding=\"UTF-8\"?>");
@@ -373,23 +373,23 @@ public class XmlDomWriter {
         }
     } // normalizeAndPrint(char,boolean)
 
-    /** Extracts the XML version from the Document. */
-//    protected String getVersion(Document document) {
-//        if (document == null) {
-//            return null;
-//        }
-//        String version = null;
-//        Method getXMLVersion = null;
-//        try {
-//            getXMLVersion = document.getClass().getMethod("getXmlVersion", new Class[]{});
+    /* Extracts the XML version from the Document. */
+//    protected String getVersion(Document document)
+//        if document == nul
+//            return null
+//
+//        String version = null
+//        Method getXMLVersion = null
+//        try
+//            getXMLVersion = document.getClass().getMethod("getXmlVersion", new Class[]{})
 //            // If Document class implements DOM L3, this method will exist.
-//            if (getXMLVersion != null) {
-//                version = (String) getXMLVersion.invoke(document, (Object[]) null);
-//            }
-//        } catch (Exception e) {
+//            if getXMLVersion != null
+//                version = (String) getXMLVersion.invoke(document, (Object[]) null)
+//
+//         catch Exception e
 //            // Either this locator object doesn't have
-//            // this method, or we're on an old JDK.
-//        }
-//        return version;
-//    } // getVersion(Document)
+//            // this method, or we're on an old JDK
+//
+//        return version
+//    } // getVersion(Document
 }

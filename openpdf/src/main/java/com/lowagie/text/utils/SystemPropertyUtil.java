@@ -2,6 +2,10 @@ package com.lowagie.text.utils;
 
 public class SystemPropertyUtil {
 
+    private SystemPropertyUtil(){
+        //empty on purpose
+    }
+
     /**
      * Similar to {@link Boolean#getBoolean(String)} but uses the given default value if property were not set.
      *

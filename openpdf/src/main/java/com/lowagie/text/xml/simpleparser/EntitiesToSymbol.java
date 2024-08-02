@@ -61,6 +61,10 @@ import java.util.Map;
 @SuppressWarnings("deprecated")
 public class EntitiesToSymbol {
 
+    private EntitiesToSymbol(){
+        //empty on purpose
+    }
+
     /**
      * This is a map that contains all possible id values of the entity tag that can be translated to a character in
      * font Symbol.

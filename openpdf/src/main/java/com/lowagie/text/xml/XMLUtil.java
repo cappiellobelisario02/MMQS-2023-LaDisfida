@@ -45,6 +45,10 @@ package com.lowagie.text.xml;
 
 public class XMLUtil {
 
+    private XMLUtil(){
+        //empty on purpose
+    }
+
     /**
      * Escapes a string with the appropriated XML codes.
      *

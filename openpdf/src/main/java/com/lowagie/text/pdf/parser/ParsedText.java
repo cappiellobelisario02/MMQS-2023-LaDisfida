@@ -196,7 +196,7 @@ public class ParsedText extends ParsedTextImpl {
         Vector startPos = pointToUserSpace(0, 0, textToUserSpaceTransformMatrix);
         Vector endPos = pointToUserSpace(0, height,
                 textToUserSpaceTransformMatrix);
-        return distance(endPos, startPos);
+        return distance(startPos, endPos);
     }
 
     /**

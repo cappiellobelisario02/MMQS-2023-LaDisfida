@@ -107,6 +107,7 @@ public class SAXmyHandler extends SAXiTextHandler<XmlPeer> {
      * @param name  the name of the tag that ends
      */
 
+    @Override
     public void endElement(String uri, String lname, String name) {
         if (myTags.containsKey(name)) {
             XmlPeer peer = myTags.get(name);
