@@ -193,7 +193,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
         this();
         try {
             addElement(new Paragraph(content));
-        } 
+        }
     }
 
     /**

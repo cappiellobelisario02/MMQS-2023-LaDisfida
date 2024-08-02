@@ -88,6 +88,7 @@ public class XmpArray extends ArrayList<String> {
      *
      * @return a String representation
      */
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder("<");
         buf.append(type);

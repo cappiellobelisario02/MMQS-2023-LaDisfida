@@ -112,7 +112,7 @@ public abstract class XmpSchema extends Properties {
     @Override
     public synchronized String toString() {
         StringBuffer buf = new StringBuffer();
-        for (Enumeration e = this.propertyNames(); e.hasMoreElements(); ) {
+        for (Enumeration<?> e = this.propertyNames(); e.hasMoreElements(); ) {
             process(buf, e.nextElement());
         }
         return buf.toString();

@@ -86,7 +86,7 @@ public class XmpWriter implements AutoCloseable {
     /**
      * String used to fill the extra space.
      */
-    public static final String extraspace = "                                                                                                   \n";
+    public static final String extraspace = "\n";
     /**
      * Processing Instruction required at the start of an XMP stream
      *
@@ -222,7 +222,7 @@ public class XmpWriter implements AutoCloseable {
      * @param info map of info
      * @throws IOException on error
      */
-    public XmpWriter(OutputStream os, Map info) throws IOException {
+    public XmpWriter(OutputStream os, Map<?, ?> info) throws IOException {
         this(os);
         if (info != null) {
             DublinCoreSchema dc = new DublinCoreSchema();
@@ -231,7 +231,7 @@ public class XmpWriter implements AutoCloseable {
             String key;
             String value;
             for (Object o : info.entrySet()) {
-                Map.Entry entry = (Map.Entry) o;
+                Map.Entry<?, ?> entry = (Map.Entry<?, ?>) o;
                 key = (String) entry.getKey();
                 value = (String) entry.getValue();
                 if (value == null) {

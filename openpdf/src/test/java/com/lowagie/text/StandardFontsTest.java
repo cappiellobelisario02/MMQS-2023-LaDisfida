@@ -42,7 +42,7 @@ class StandardFontsTest {
             // the 14 standard fonts in PDF: do not use this Font constructor!
             // this is for demonstration purposes only, use FontFactory!
             final List<StandardFonts> standardFonts = Arrays.stream(values())
-                    .filter(f -> !f.isDeprecated()).collect(Collectors.toList());
+                    .filter(f -> !f.isDeprecated()).toList();
             assertThat(standardFonts).isNotEmpty();  // Assertion added here
             for (StandardFonts standardFont : standardFonts) {
                 // add the content
@@ -60,7 +60,7 @@ class StandardFontsTest {
     void testNonDeprecatedFonts() {
         // given
         final List<StandardFonts> standardFonts = Arrays.stream(values())
-                .filter(f -> !f.isDeprecated()).collect(Collectors.toList());
+                .filter(f -> !f.isDeprecated()).toList();
         // then
         assertThat(standardFonts).containsExactlyInAnyOrder(
                 COURIER, COURIER_BOLD, COURIER_BOLDITALIC, COURIER_ITALIC,
@@ -75,7 +75,7 @@ class StandardFontsTest {
     void testCreateStandardFonts() throws IOException {
         // given
         final List<StandardFonts> standardFonts = Arrays.stream(values())
-                .filter(f -> !f.isDeprecated()).collect(Collectors.toList());
+                .filter(f -> !f.isDeprecated()).toList();
         for (StandardFonts standardFont : standardFonts) {
             // when
             final Font font = standardFont.create();
@@ -89,7 +89,7 @@ class StandardFontsTest {
         // given
         SoftAssertions softly = new SoftAssertions();
         final List<StandardFonts> deprecatedFonts = Arrays.stream(values())
-                .filter(StandardFonts::isDeprecated).collect(Collectors.toList());
+                .filter(StandardFonts::isDeprecated).toList();
         // when
         for (StandardFonts deprecatedFont : deprecatedFonts) {
             // then

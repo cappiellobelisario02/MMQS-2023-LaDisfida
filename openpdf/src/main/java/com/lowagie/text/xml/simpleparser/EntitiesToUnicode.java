@@ -59,6 +59,10 @@ import java.util.Map;
 @SuppressWarnings("deprecated")
 public class EntitiesToUnicode {
 
+    private EntitiesToUnicode(){
+        //empty on purpose
+    }
+
     /**
      * This is a map that contains the names of entities and their unicode value.
      */

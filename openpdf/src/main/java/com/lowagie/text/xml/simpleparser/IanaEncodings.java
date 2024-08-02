@@ -76,6 +76,10 @@ import java.util.Map;
 
 public class IanaEncodings {
 
+    private IanaEncodings(){
+        //empty on purpose
+    }
+
     /**
      * The object that maps IANA to Java encodings.
      */
