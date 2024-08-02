@@ -178,16 +178,14 @@ public class PdfXConformanceImp implements PdfXConformance {
                         if (cs == null) {
                             return;
                         }
-                        if (cs.isName()) {
-                            if (PdfName.DEVICERGB.equals(cs)) {
+                        if (cs.isName() && PdfName.DEVICERGB.equals(cs)) {
                                 throw new PdfXConformanceException(
                                         MessageLocalization.getComposedMessage("colorspace.rgb.is.not.allowed"));
-                            }
-                        } else if (cs.isArray()) {
-                            if (PdfName.CALRGB.equals(((PdfArray) cs).getPdfObject(0))) {
+                        } else if (cs.isArray() && PdfName.CALRGB.equals(((PdfArray) cs).getPdfObject(0))) {
+
                                 throw new PdfXConformanceException(
                                         MessageLocalization.getComposedMessage("colorspace.calrgb.is.not.allowed"));
-                            }
+
                         }
                         break;
                 }
@@ -206,7 +204,7 @@ public class PdfXConformanceImp implements PdfXConformance {
                             MessageLocalization.getComposedMessage("transparency.is.not.allowed.ca.eq.1",
                                     String.valueOf(v)));
                 }
-                obj = gs.get(PdfName.ca);
+                obj = gs.get(PdfName.CA);
                 v = 0.0;
                 if (obj != null && (v = ((PdfNumber) obj).doubleValue()) != 1.0) {
                     throw new PdfXConformanceException(
@@ -301,8 +299,8 @@ public class PdfXConformanceImp implements PdfXConformance {
     }
 
     public void completeExtraCatalog(PdfDictionary extraCatalog) {
-        if (isPdfX() && !isPdfA1()) {
-            if (extraCatalog.get(PdfName.OUTPUTINTENTS) == null) {
+        if (isPdfX() && !isPdfA1() && extraCatalog.get(PdfName.OUTPUTINTENTS) == null) {
+
                 PdfDictionary out = new PdfDictionary(PdfName.OUTPUTINTENT);
                 out.put(PdfName.OUTPUTCONDITION, new PdfString("SWOP CGATS TR 001-1995"));
                 out.put(PdfName.OUTPUTCONDITIONIDENTIFIER, new PdfString("CGATS TR 001"));
@@ -310,7 +308,7 @@ public class PdfXConformanceImp implements PdfXConformance {
                 out.put(PdfName.INFO, new PdfString(""));
                 out.put(PdfName.S, PdfName.GTS_PDFX);
                 extraCatalog.put(PdfName.OUTPUTINTENTS, new PdfArray(out));
-            }
+
         }
     }
 }
