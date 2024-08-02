@@ -73,6 +73,7 @@ public class BitsetArgument extends AbstractArgument {
      * @return String
      * @see com.lowagie.toolbox.arguments.StringArgument#getUsage()
      */
+    @Override
     public String getUsage() {
         StringBuilder buf = new StringBuilder(super.getUsage());
         buf.append("    possible options:\n");

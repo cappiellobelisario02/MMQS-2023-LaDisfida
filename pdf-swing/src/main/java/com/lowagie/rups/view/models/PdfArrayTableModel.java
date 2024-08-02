@@ -75,6 +75,7 @@ public class PdfArrayTableModel extends AbstractTableModel {
     /**
      * @see javax.swing.table.AbstractTableModel#getColumnName(int)
      */
+    @Override
     public String getColumnName(int columnIndex) {
         switch (columnIndex) {
             case 0:

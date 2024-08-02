@@ -52,6 +52,7 @@ public class ColorArgument extends AbstractArgument {
         super(tool, name, description, null);
     }
 
+    @Override
     public Object getArgument() throws InstantiationException {
         if (value == null) {
             return null;

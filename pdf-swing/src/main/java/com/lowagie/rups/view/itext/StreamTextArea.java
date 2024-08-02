@@ -67,7 +67,7 @@ public class StreamTextArea extends JScrollPane implements Observer {
             PRStream stream = (PRStream) object;
             try (TextAreaOutputStream taos = new TextAreaOutputStream(text)) {
                 taos.write(PdfReader.getStreamBytes(stream));
-                // text.addMouseListener(new StreamEditorAction(stream));
+                // text.addMouseListener(new StreamEditorAction(stream))
             } catch (IOException e) {
                 text.setText("The stream could not be read: " + e.getMessage());
             }

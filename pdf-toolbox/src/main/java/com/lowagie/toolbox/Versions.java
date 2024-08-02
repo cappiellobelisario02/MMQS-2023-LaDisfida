@@ -195,6 +195,7 @@ public class Versions
                 return versionsarray;
             }
 
+            @Override
             public String getColumnName(int column) {
                 switch (column) {
                     case 0:
@@ -210,6 +211,7 @@ public class Versions
                 }
             }
 
+            @Override
             public Class<? extends Object> getColumnClass(int column) {
                 switch (column) {
                     case 0:

@@ -68,7 +68,7 @@ public class XfaTreeNode extends FormTreeNode implements OutputStreamResource {
      * @throws IOException usual exception when there's a problem writing to an OutputStream
      */
     public void writeTo(OutputStream os) throws IOException {
-        Enumeration children = this.children();
+        Enumeration<?> children = this.children();
         FormTreeNode node;
         PRStream stream;
         String key = null;
@@ -83,7 +83,6 @@ public class XfaTreeNode extends FormTreeNode implements OutputStreamResource {
                 os.write(tmp.getBytes());
                 os.write(BOUNDARY_END);
             }
-            key = tmp;
             stream = (PRStream) node.getCorrespondingPdfObjectNode().getPdfObject();
             os.write(PdfReader.getStreamBytes(stream));
         }

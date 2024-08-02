@@ -83,6 +83,7 @@ public class XRefTable extends JTable implements JTableAutoModelInterface, Obser
     /**
      * @see javax.swing.JTable#getColumnCount()
      */
+    @Override
     public int getColumnCount() {
         return 2;
     }
@@ -90,6 +91,7 @@ public class XRefTable extends JTable implements JTableAutoModelInterface, Obser
     /**
      * @see javax.swing.JTable#getRowCount()
      */
+    @Override
     public int getRowCount() {
         if (objects == null) {
             return 0;
@@ -100,6 +102,8 @@ public class XRefTable extends JTable implements JTableAutoModelInterface, Obser
     /**
      * @see javax.swing.JTable#getValueAt(int, int)
      */
+
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         switch (columnIndex) {
             case 0:
@@ -138,6 +142,7 @@ public class XRefTable extends JTable implements JTableAutoModelInterface, Obser
     /**
      * @see javax.swing.JTable#getColumnName(int)
      */
+    @Override
     public String getColumnName(int columnIndex) {
         switch (columnIndex) {
             case 0:

@@ -102,6 +102,7 @@ public class FileArgument extends AbstractArgument {
      * @return an object
      * @throws InstantiationException if the specified key cannot be compared with the keys currently in the map
      */
+    @Override
     public Object getArgument() throws InstantiationException {
         if (value == null) {
             return null;
@@ -139,6 +140,7 @@ public class FileArgument extends AbstractArgument {
         try {
             setValue(fc.getSelectedFile());
         } catch (NullPointerException npe) {
+            npe.printStackTrace();
         }
     }
 

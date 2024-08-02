@@ -237,25 +237,25 @@ public class Toolbox extends JFrame implements ActionListener {
         JMenuItem reset = new JMenuItem(ToolMenuItems.RESET);
         reset.addActionListener(this);
         view.add(reset);
-        // JMenuItem filelist = new JMenuItem(FILELIST);
+        // JMenuItem filelist = new JMenuItem(FILELIST)
         // filelist.addActionListener(this);
         // view.add(filelist);
         JMenu tools = new JMenu(ToolMenuItems.TOOLS);
         // Here one day should be the wizard to help you create a new beanshell script
-        // JMenuItem create = new JMenuItem(CREATE);
+        // JMenuItem create = new JMenuItem(CREATE)
         // create.addActionListener(this);
         // tools.add(create);
         buildPluginMenuItems(new TreeMap<>(p), tools);
         JMenu help = new JMenu(ToolMenuItems.HELP);
         JMenuItem about = new JMenuItem(ToolMenuItems.ABOUT);
         // about.setIcon(new ImageIcon(Toolbox.class.getResource(
-        // "Help24.gif")));
+        // "Help24.gif")))
         about.setMnemonic(KeyEvent.VK_A);
         about.addActionListener(this);
         help.add(about);
         JMenuItem versions = new JMenuItem(ToolMenuItems.VERSION);
         // versions.setIcon(new ImageIcon(Toolbox.class.getResource(
-        // "About24.gif")));
+        // "About24.gif")))
         versions.addActionListener(this);
         help.add(versions);
         menubar.add(file);
@@ -377,6 +377,7 @@ public class Toolbox extends JFrame implements ActionListener {
                             yy = 0;
                         }
                     } catch (PropertyVetoException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -467,6 +468,7 @@ public class Toolbox extends JFrame implements ActionListener {
             /**
              * @see java.lang.Thread#run()
              */
+            @Override
             public void run() {
                 final byte[] buf = new byte[1024];
 
@@ -484,6 +486,7 @@ public class Toolbox extends JFrame implements ActionListener {
                         oriout.print(snippet);
                         textArea.setCaretPosition(textArea.getDocument().getLength());
                     } catch (BadLocationException | IOException ex) {
+                        ex.printStackTrace();
                     }
                 }
             }

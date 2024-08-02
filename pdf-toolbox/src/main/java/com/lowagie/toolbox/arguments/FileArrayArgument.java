@@ -81,12 +81,13 @@ public class FileArrayArgument extends AbstractArgument {
             System.out.println(ex1.getMessage());
         }
 
-//        try {
-//            setValue(fileList1.getFilevector().toArray());
-//        } catch (NullPointerException npe) {
-//        }
+//        try
+//            setValue fileList1.getFilevector().toArray()
+//         catch NullPointerException npe
+//
     }
 
+    @Override
     public Object getArgument() throws InstantiationException {
         if (value == null) {
             return null;
@@ -102,6 +103,7 @@ public class FileArrayArgument extends AbstractArgument {
         fileList1.addPropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyname = evt.getPropertyName();
         if (propertyname.equals("filevector")) {
@@ -117,6 +119,7 @@ public class FileArrayArgument extends AbstractArgument {
      *
      * @return a string representation of the object.
      */
+    @Override
     public String toString() {
 
         return fileList1.getStringreprasentation();

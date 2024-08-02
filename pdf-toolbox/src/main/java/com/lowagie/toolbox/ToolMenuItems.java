@@ -41,6 +41,10 @@ package com.lowagie.toolbox;
  */
 public class ToolMenuItems {
 
+    private ToolMenuItems(){
+        //empty on purpose
+    }
+
     /**
      * An item in the menubar.
      */

@@ -84,6 +84,7 @@ public class DictionaryTableModel extends AbstractTableModel {
     /**
      * @see javax.swing.table.AbstractTableModel#getColumnName(int)
      */
+    @Override
     public String getColumnName(int columnIndex) {
         switch (columnIndex) {
             case 0:

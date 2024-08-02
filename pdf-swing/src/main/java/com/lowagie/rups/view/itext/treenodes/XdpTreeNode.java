@@ -74,7 +74,7 @@ public class XdpTreeNode extends IconTreeNode {
         icon = IconFetcher.getIcon("tag.png");
     }
 
-    private void addChildNodes(List list) {
+    private void addChildNodes(List<?> list) {
         for (Object o : list) {
             Node n = (Node) o;
             if (n instanceof Namespace) {
@@ -91,6 +91,7 @@ public class XdpTreeNode extends IconTreeNode {
         return (Node) getUserObject();
     }
 
+    @Override
     public String toString() {
         Node node = getNode();
         if (node instanceof Element) {
