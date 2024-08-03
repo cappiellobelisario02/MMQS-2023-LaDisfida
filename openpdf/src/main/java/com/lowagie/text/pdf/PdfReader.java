@@ -3117,7 +3117,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      * @return gets the named destinations
      */
-    public HashMap getNamedDestinationFromStrings() {
+    public HashMap<String, PdfObject> getNamedDestinationFromStrings() {
         if (catalog.get(PdfName.NAMES) != null) {
             PdfDictionary dic = (PdfDictionary) getPdfObjectRelease(catalog
                     .get(PdfName.NAMES));
