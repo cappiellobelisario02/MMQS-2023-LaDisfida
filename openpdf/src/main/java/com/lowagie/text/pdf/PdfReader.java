@@ -3451,7 +3451,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             } else {
                 objs = (Object[]) current;
                 if (objs[0] instanceof ArrayList) {
-                    ar = (ArrayList) objs[0];
+                    ar = (ArrayList<PdfObject>) objs[0];
                     idx = (Integer) objs[1];
                 } else {
                     keys = (PdfName[]) objs[0];
