@@ -1184,8 +1184,6 @@ class PdfStamperImp extends PdfWriter {
             acrodic.put(PdfName.FIELDS, new PdfArray());
         }
         acrodic.remove(PdfName.SIGFLAGS);
-//        PdfReader.killIndirect(acro);
-//        reader.getCatalog().remove(PdfName.ACROFORM);
     }
 
     void sweepKids(PdfObject obj) {
