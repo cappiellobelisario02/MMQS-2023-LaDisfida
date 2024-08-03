@@ -646,6 +646,7 @@ class PdfStamperImp extends PdfWriter {
         try {
             raf.close();
         } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
     }
 
