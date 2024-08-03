@@ -1274,11 +1274,9 @@ class PdfStamperImp extends PdfWriter {
             }
             for (int idx = 0; idx < annots.size(); ++idx) {
                 PdfDictionary annot = annots.getAsDict(idx);
-                if (annot != null) {
-                    if (PdfName.FREETEXT.equals(annot.get(PdfName.SUBTYPE))) {
-                        annots.remove(idx);
-                        --idx;
-                    }
+                if (annot != null && PdfName.FREETEXT.equals(annot.get(PdfName.SUBTYPE))) {
+                    annots.remove(idx);
+                    --idx;
                 }
             }
             if (annots.isEmpty()) {
