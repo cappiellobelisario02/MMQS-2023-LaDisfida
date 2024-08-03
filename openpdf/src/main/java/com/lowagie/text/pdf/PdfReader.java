@@ -4075,7 +4075,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     refsp.put(size(), ref.getNumber());
                 } else {
                     IntHashtable refs2 = new IntHashtable((refsp.size() + 1) * 2);
-                    for (Iterator it = refsp.getEntryIterator(); it.hasNext(); ) {
+                    for (Iterator<?> it = refsp.getEntryIterator(); it.hasNext(); ) {
                         IntHashtable.Entry entry = (IntHashtable.Entry) it.next();
                         int p = entry.getKey();
                         refs2.put(p >= pageNum ? p + 1 : p, entry.getValue());
