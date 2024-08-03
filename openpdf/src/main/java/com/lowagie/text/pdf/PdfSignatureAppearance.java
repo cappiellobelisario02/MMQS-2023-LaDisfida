@@ -1362,11 +1362,13 @@ public class PdfSignatureAppearance {
                 try {
                     raf.close();
                 } catch (Exception ee) {
+                    ee.printStackTrace();
                 }
                 if (originalout != null) {
                     try {
                         tempFile.delete();
                     } catch (Exception ee) {
+                        ee.printStackTrace();
                     }
                 }
             }
@@ -1374,6 +1376,7 @@ public class PdfSignatureAppearance {
                 try {
                     originalout.close();
                 } catch (Exception e) {
+                    ee.printStackTrace();
                 }
             }
         }
