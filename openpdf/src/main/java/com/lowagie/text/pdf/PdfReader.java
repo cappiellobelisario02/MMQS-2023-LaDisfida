@@ -3413,7 +3413,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     @SuppressWarnings("unchecked")
     protected void removeUnusedNode(PdfObject obj, boolean[] hits) {
-        Stack state = new Stack();
+        Stack<PdfObject> state = new Stack<>();
         state.push(obj);
         while (!state.empty()) {
             Object current = state.pop();
