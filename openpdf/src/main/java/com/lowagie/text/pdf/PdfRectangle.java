@@ -181,7 +181,7 @@ public class PdfRectangle extends PdfArray {
      * @param object <CODE>PdfObject</CODE> to add (will not be added here)
      * @return <CODE>false</CODE>
      */
-
+    @Override
     public boolean add(PdfObject object) {
         return false;
     }
