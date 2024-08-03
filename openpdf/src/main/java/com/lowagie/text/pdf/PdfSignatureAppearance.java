@@ -449,7 +449,6 @@ public class PdfSignatureAppearance {
         }
         // OJO... Modificacion de
         // flopez--------------------------------------------------
-        // if (page < 1 || page > writer.reader.getNumberOfPages())
         if (page < 0 || page > writer.reader.getNumberOfPages()) {
             throw new IllegalArgumentException(
                     MessageLocalization.getComposedMessage("invalid.page.number.1", page));
