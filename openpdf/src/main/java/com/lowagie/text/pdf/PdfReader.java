@@ -3604,6 +3604,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (Exception ignored) {
+                ignored.printStackTrace();
             }
         }
     }
