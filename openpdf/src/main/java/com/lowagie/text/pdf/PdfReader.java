@@ -3319,9 +3319,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
         for (int k = 1; k <= pageRefs.size(); ++k) {
             PdfDictionary page = pageRefs.getPageN(k);
-            PdfObject annotsRef;
-            PdfArray annots = (PdfArray) getPdfObject(annotsRef = page
-                    .get(PdfName.ANNOTS));
+            PdfObject annotsRef = page.get(PdfName.ANNOTS);
+            PdfArray annots = (PdfArray) getPdfObject(annotsRef);
             int annotIdx = lastXrefPartial;
             releaseLastXrefPartial();
             if (annots == null) {
