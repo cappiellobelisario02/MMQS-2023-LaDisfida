@@ -1269,10 +1269,12 @@ public class PdfSignatureAppearance {
                 try {
                     raf.close();
                 } catch (Exception ee) {
+                    ee.printStackTrace();
                 }
                 try {
                     tempFile.delete();
                 } catch (Exception ee) {
+                    ee.printStackTrace();
                 }
                 throw e;
             }
