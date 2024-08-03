@@ -95,6 +95,7 @@ public class PdfSmartCopy extends PdfCopy {
      * has its own namespace. The translation we do from their namespace to ours is *at best* heuristic, and guaranteed
      * to fail under some circumstances.
      */
+    @Override
     protected PdfIndirectReference copyIndirect(PRIndirectReference in) throws IOException, BadPdfFormatException {
         PdfObject srcObj = PdfReader.getPdfObjectRelease(in);
         ByteStore streamKey = null;
