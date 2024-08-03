@@ -1289,6 +1289,7 @@ class PdfStamperImp extends PdfWriter {
     /**
      * @see com.lowagie.text.pdf.PdfWriter#getPageReference(int)
      */
+    @Override
     public PdfIndirectReference getPageReference(int page) {
         PdfIndirectReference ref = reader.getPageOrigRef(page);
         if (ref == null) {
