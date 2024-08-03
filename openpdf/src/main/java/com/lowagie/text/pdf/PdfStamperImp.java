@@ -324,10 +324,9 @@ class PdfStamperImp extends PdfWriter {
                 if (producerXMP == null) {
                     producerXMP = "";
                 }
-                if (!xmpr.replace("http://ns.adobe.com/pdf/1.3/", "Producer", producerXMP)) {
-                    if (!"".equals(producerXMP)) {
-                        xmpr.add("rdf:Description", "http://ns.adobe.com/pdf/1.3/", "pdf:Producer", producerXMP);
-                    }
+                if (!xmpr.replace("http://ns.adobe.com/pdf/1.3/", "Producer", producerXMP) 
+                        && !"".equals(producerXMP)) {
+                    xmpr.add("rdf:Description", "http://ns.adobe.com/pdf/1.3/", "pdf:Producer", producerXMP);
                 }
 
                 if (!xmpr.replace("http://ns.adobe.com/xap/1.0/", "ModifyDate", date.getW3CDate())) {
