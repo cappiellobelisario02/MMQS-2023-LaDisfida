@@ -1196,7 +1196,7 @@ public class PdfSignatureAppearance {
             exclusionLocations.put(PdfName.BYTERANGE, lit);
             cryptoDictionary.put(PdfName.BYTERANGE, lit);
             for (Object o : exclusionSizes.entrySet()) {
-                Map.Entry entry = (Map.Entry) o;
+                Map.Entry<PdfName, Integer> entry = (Map.Entry<PdfName, Integer>) o;
                 PdfName key = (PdfName) entry.getKey();
                 Integer v = (Integer) entry.getValue();
                 lit = new PdfLiteral(v);
