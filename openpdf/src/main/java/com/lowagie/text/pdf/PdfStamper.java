@@ -669,7 +669,7 @@ public class PdfStamper
      *
      * @param outlines the bookmarks or <CODE>null</CODE> to remove any
      */
-    public void setOutlines(List outlines) {
+    public void setOutlines(List<PdfOutline> outlines) {
         stamper.setOutlines(outlines);
     }
 
