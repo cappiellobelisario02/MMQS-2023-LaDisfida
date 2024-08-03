@@ -1104,10 +1104,6 @@ public class PdfSignatureAppearance {
             int pagen = getPage();
             // OJO... Modificacion de
             // flopez-----------------------------------------------------
-            // if (!isInvisible())
-            // sigField.setWidget(getPageRect(), null);
-            // else
-            // sigField.setWidget(new Rectangle(0, 0), null);
             if ((!isInvisible()) && (pagen == 0)) { // Si pagina en cero tonces firma
                 // en todas las paginas
                 int pages = writer.reader.getNumberOfPages();
