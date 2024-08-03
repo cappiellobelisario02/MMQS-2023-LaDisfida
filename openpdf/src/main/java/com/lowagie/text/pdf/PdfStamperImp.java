@@ -561,6 +561,7 @@ class PdfStamperImp extends PdfWriter {
         ps.pageN.put(PdfName.RESOURCES, ps.pageResources.getResources());
     }
 
+    @Override
     protected int getNewObjectNumber(PdfReader reader, int number, int generation) {
         IntHashtable ref = readers2intrefs.get(reader);
         if (ref != null) {
@@ -586,6 +587,7 @@ class PdfStamperImp extends PdfWriter {
         }
     }
 
+    @Override
     RandomAccessFileOrArray getReaderFile(PdfReader reader) {
         if (readers2intrefs.containsKey(reader)) {
             RandomAccessFileOrArray raf = readers2file.get(reader);
