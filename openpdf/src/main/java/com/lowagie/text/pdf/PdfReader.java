@@ -3092,7 +3092,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             if (dic == null) {
                 return names;
             }
-            Set keys = dic.getKeys();
+            Set<PdfName> keys = dic.getKeys();
             for (Object key1 : keys) {
                 PdfName key = (PdfName) key1;
                 PdfArray arr = getNameArray(dic.get(key));
