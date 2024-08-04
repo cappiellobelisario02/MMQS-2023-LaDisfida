@@ -141,6 +141,7 @@ public class PdfString extends PdfObject {
      * @param writer for backwards compatibility
      * @param os     The <CODE>OutputStream</CODE> to write the bytes to.
      */
+    @Override
     public void toPdf(PdfWriter writer, OutputStream os) throws IOException {
         byte[] b = getBytes();
         PdfEncryption crypto = null;
@@ -174,10 +175,12 @@ public class PdfString extends PdfObject {
      *
      * @return A <CODE>String</CODE>
      */
+    @Override
     public String toString() {
         return value;
     }
 
+    @Override
     public byte[] getBytes() {
         if (bytes == null) {
             if (encoding != null && encoding.equals(TEXT_UNICODE) && PdfEncodings.isPdfDocEncoding(value)) {
