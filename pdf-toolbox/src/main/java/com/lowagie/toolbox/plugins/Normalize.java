@@ -142,12 +142,11 @@ public class Normalize
             curwidth = ausr.getM5();
             curheight = ausr.getM6();
 
-            if (((pagecount + 1) % 2) == 0) {
-                if ((Math.abs(curwidth - width) > tolerancex) ||
-                        (Math.abs(curheight - height) > tolerancey)) {
+            if (((pagecount + 1) % 2) == 0 && ((Math.abs(curwidth - width) > tolerancex) ||
+                    (Math.abs(curheight - height) > tolerancey))) {
                     Seitehinzufuegen(page, count_in_leaf, writer, arr);
                     this.pagecountinsertedpages++;
-                }
+
             }
 
             /**

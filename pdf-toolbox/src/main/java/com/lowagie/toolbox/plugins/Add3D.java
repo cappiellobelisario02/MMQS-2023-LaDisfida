@@ -118,10 +118,10 @@ public class Add3D extends AbstractTool {
             String image, PdfWriter wr) {
         try {
 //            URL url=Add3D.class.getResource(
-//                image);
-//            PdfFileSpecification fs=PdfFileSpecification.fileEmbedded(wr,image,image,null);
+//                image
+//            PdfFileSpecification fs=PdfFileSpecification.fileEmbedded(wr,image,image,null
 //            wr.addAnnotation(PdfAnnotation.createScreen(wr,new Rectangle(x, y, x + img.plainWidth(),
-//                                  y + img.plainHeight())));
+//                                  y + img.plainHeight()
             Image img = Image.getInstance(image);
             PushbuttonField bt = new PushbuttonField(wr,
                     new Rectangle(x, y, x + img.getPlainWidth(),

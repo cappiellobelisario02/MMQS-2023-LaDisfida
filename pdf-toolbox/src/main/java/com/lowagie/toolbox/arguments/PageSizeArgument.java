@@ -97,6 +97,7 @@ public class PageSizeArgument extends OptionArgument {
      * @return an object
      * @throws InstantiationException if the key can't be compared with the other ones in the map
      */
+    @Override
     public Object getArgument() throws InstantiationException {
         if (value == null) {
             return null;
@@ -112,6 +113,7 @@ public class PageSizeArgument extends OptionArgument {
      * @return String
      * @see com.lowagie.toolbox.arguments.StringArgument#getUsage()
      */
+    @Override
     public String getUsage() {
         StringBuilder buf = new StringBuilder("  ");
         buf.append(name);
@@ -133,6 +135,7 @@ public class PageSizeArgument extends OptionArgument {
      * @param evt ActionEvent
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
+    @Override
     public void actionPerformed(ActionEvent evt) {
         Object[] message = new Object[2];
         message[0] = "Choose one of the following pagesizes:";
@@ -161,6 +164,7 @@ public class PageSizeArgument extends OptionArgument {
      *
      * @return a string representation of the object.
      */
+    @Override
     public String toString() {
         return super.getValue().toString();
     }

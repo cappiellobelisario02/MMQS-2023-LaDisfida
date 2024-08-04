@@ -92,12 +92,11 @@ public class ExtractAttachments extends AbstractTool {
     /**
      * Unpacks a file attachment.
      *
-     * @param reader   The object that reads the PDF document
      * @param filespec The dictionary containing the file specifications
      * @param outPath  The path where the attachment has to be written
      * @throws IOException on error
      */
-    public static void unpackFile(PdfReader reader, PdfDictionary filespec,
+    public static void unpackFile(PdfDictionary filespec,
             String outPath) throws IOException {
         if (filespec == null) {
             return;

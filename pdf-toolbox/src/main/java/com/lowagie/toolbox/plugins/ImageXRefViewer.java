@@ -206,8 +206,7 @@ public class ImageXRefViewer extends AbstractTool {
                                 ((File) getValue("srcfile")).getAbsolutePath());
                         for (int i = 0; i < reader.getXrefSize(); i++) {
                             PdfObject pdfobj = reader.getPdfObject(i);
-                            if (pdfobj != null) {
-                                if (pdfobj.isStream()) {
+                            if (pdfobj != null && pdfobj.isStream()) {
                                     PdfStream pdfdict = (PdfStream) pdfobj;
                                     PdfObject pdfsubtype = pdfdict
                                             .get(PdfName.SUBTYPE);
@@ -235,7 +234,6 @@ public class ImageXRefViewer extends AbstractTool {
                                     JLabel label = new JLabel();
                                     label.setIcon(ii);
                                     image_panel.add(label, String.valueOf(total_number_of_pictures++));
-                                }
                             }
                         }
                     } catch (InstantiationException | IOException ex) {

@@ -103,7 +103,7 @@ public class FileList
         jPanel3.add(jLabel1);
         jScrollPane1.setViewportView(jTable1);
         jTable1.setRowSorter(sorter);
-//    this.setSize(200,100);
+//    this.setSize(200,100
         this.pack();
     }
 
@@ -160,7 +160,7 @@ public class FileList
         }
     }
 
-    public void ftm_tableChanged(TableModelEvent e) {
+    public void ftm_tableChanged() {
         int sum = 0;
         for (RowContainer c : filevector) {
             sum += c.getPages();
@@ -204,6 +204,7 @@ public class FileList
             this.adaptee = adaptee;
         }
 
+        @Override
         public void keyPressed(KeyEvent e) {
             adaptee.jTable1_keyPressed(e);
         }
@@ -223,6 +224,7 @@ public class FileList
             try {
                 reader = new PdfReader(file.getAbsolutePath());
             } catch (IOException ignored) {
+                ignored.printStackTrace();
             } finally {
                 if (reader != null) {
                     try {
@@ -266,6 +268,7 @@ public class FileList
             return filevector.size();
         }
 
+        @Override
         public String getColumnName(int col) {
             return columnNames[col];
         }
@@ -282,6 +285,7 @@ public class FileList
             return null;
         }
 
+        @Override
         public Class<?> getColumnClass(int col) {
             switch (col) {
                 case 0:

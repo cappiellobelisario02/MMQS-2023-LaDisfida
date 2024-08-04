@@ -59,6 +59,9 @@ import java.lang.reflect.Method;
  */
 public class Executable {
 
+    private Executable(){
+        //empty on purpose
+    }
     /**
      * The path to Acrobat Reader.
      */
@@ -107,6 +110,7 @@ public class Executable {
                 process.waitFor();
             }
         } catch (InterruptedException ignored) {
+            ignored.printStackTrace();
         }
         return process;
     }

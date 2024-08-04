@@ -60,7 +60,7 @@ public class OptionArgument extends AbstractArgument {
      */
     public OptionArgument(AbstractTool tool, String name, String description) {
         super(tool, name, description, null);
-//        this.setClassname(new Entry("").getClass().getName());
+//        this.setClassname(new Entry("").getClass().getName()
     }
 
     /**
@@ -79,6 +79,7 @@ public class OptionArgument extends AbstractArgument {
      * @return an object
      * @throws InstantiationException if the specified key cannot be compared with the keys currently in the map
      */
+    @Override
     public Object getArgument() throws InstantiationException {
         if (value == null) {
             return null;
@@ -94,6 +95,7 @@ public class OptionArgument extends AbstractArgument {
      * @return String
      * @see com.lowagie.toolbox.arguments.StringArgument#getUsage()
      */
+    @Override
     public String getUsage() {
         StringBuilder buf = new StringBuilder(super.getUsage());
         buf.append("    possible options:\n");
