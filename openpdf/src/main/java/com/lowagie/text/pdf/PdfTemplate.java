@@ -282,6 +282,7 @@ public class PdfTemplate extends PdfContentByte {
         return type;
     }
 
+    @Override
     PageResources getPageResources() {
         return pageResources;
     }
