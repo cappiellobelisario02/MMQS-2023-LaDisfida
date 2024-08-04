@@ -261,7 +261,7 @@ public class PdfTemplate extends PdfContentByte {
      *
      * @return a copy of this <CODE>PdfTemplate</CODE>
      */
-
+    @Override
     public PdfContentByte getDuplicate() {
         PdfTemplate tpl = new PdfTemplate();
         tpl.writer = writer;
