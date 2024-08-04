@@ -276,15 +276,6 @@ public class PdfStream extends PdfDictionary {
         }
     }
 
-//    public int getStreamLength(PdfWriter writer) {
-//        if (dicBytes == null)
-//            toPdf(writer);
-//        if (streamBytes != null)
-//            return streamBytes.size() + dicBytes.length + SIZESTREAM;
-//        else
-//            return bytes.length + dicBytes.length + SIZESTREAM;
-//    }
-
     protected void superToPdf(PdfWriter writer, OutputStream os) throws IOException {
         super.toPdf(writer, os);
     }
