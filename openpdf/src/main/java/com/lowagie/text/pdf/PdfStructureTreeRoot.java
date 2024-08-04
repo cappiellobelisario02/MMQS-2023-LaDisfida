@@ -179,8 +179,9 @@ public class PdfStructureTreeRoot extends PdfDictionary {
 
     void buildTree() throws IOException {
         Map<Integer, PdfIndirectReference> numTree = new HashMap<>();
-        for (Integer i : parentTree.keySet()) {
-            PdfObject pdfObj = parentTree.get(i);
+        for (Map.Entry<Integer, PdfObject> entry : parentTree.entrySet()) {
+            Integer i = entry.getKey();
+            PdfObject pdfObj = entry.getValue();
             if (pdfObj instanceof PdfIndirectReference pdfRef) {
                 //saving the reference to the object which was already added to the body
                 numTree.put(i, pdfRef);
