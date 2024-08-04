@@ -259,7 +259,7 @@ public abstract class BaseField {
      * @param fieldName the field name. If <CODE>null</CODE> only the widget keys will be included in the field allowing
      *                  it to be used as a kid field.
      */
-    public BaseField(PdfWriter writer, Rectangle box, String fieldName) {
+    protected BaseField(PdfWriter writer, Rectangle box, String fieldName) {
         this.writer = writer;
         setBox(box);
         this.fieldName = fieldName;

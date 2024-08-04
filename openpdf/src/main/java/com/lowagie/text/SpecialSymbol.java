@@ -49,6 +49,9 @@
 
 package com.lowagie.text;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * This class contains the symbols that correspond with special symbols.
  * <p>
@@ -63,6 +66,64 @@ package com.lowagie.text;
  */
 
 public class SpecialSymbol {
+
+    private static final Map<Integer, Character> greekLetterMap = createGreekLetterMap();
+
+    private static Map<Integer, Character> createGreekLetterMap() {
+        Map<Integer, Character> map = new HashMap<>();
+
+        map.put(913, 'A'); // ALFA
+        map.put(914, 'B'); // BETA
+        map.put(915, 'G'); // GAMMA
+        map.put(916, 'D'); // DELTA
+        map.put(917, 'E'); // EPSILON
+        map.put(918, 'Z'); // ZETA
+        map.put(919, 'H'); // ETA
+        map.put(920, 'Q'); // THETA
+        map.put(921, 'I'); // IOTA
+        map.put(922, 'K'); // KAPPA
+        map.put(923, 'L'); // LAMBDA
+        map.put(924, 'M'); // MU
+        map.put(925, 'N'); // NU
+        map.put(926, 'X'); // XI
+        map.put(927, 'O'); // OMICRON
+        map.put(928, 'P'); // PI
+        map.put(929, 'R'); // RHO
+        map.put(931, 'S'); // SIGMA
+        map.put(932, 'T'); // TAU
+        map.put(933, 'U'); // UPSILON
+        map.put(934, 'F'); // PHI
+        map.put(935, 'C'); // CHI
+        map.put(936, 'Y'); // PSI
+        map.put(937, 'W'); // OMEGA
+        map.put(945, 'a'); // alfa
+        map.put(946, 'b'); // beta
+        map.put(947, 'g'); // gamma
+        map.put(948, 'd'); // delta
+        map.put(949, 'e'); // epsilon
+        map.put(950, 'z'); // zeta
+        map.put(951, 'h'); // eta
+        map.put(952, 'q'); // theta
+        map.put(953, 'i'); // iota
+        map.put(954, 'k'); // kappa
+        map.put(955, 'l'); // lambda
+        map.put(956, 'm'); // mu
+        map.put(957, 'n'); // nu
+        map.put(958, 'x'); // xi
+        map.put(959, 'o'); // omicron
+        map.put(960, 'p'); // pi
+        map.put(961, 'r'); // rho
+        map.put(962, 'V'); // sigma
+        map.put(963, 's'); // sigma
+        map.put(964, 't'); // tau
+        map.put(965, 'u'); // upsilon
+        map.put(966, 'f'); // phi
+        map.put(967, 'c'); // chi
+        map.put(968, 'y'); // psi
+        map.put(969, 'w'); // omega
+
+        return map;
+    }
 
     // Private constructor to prevent instantiation
     private SpecialSymbol() {
@@ -108,107 +169,73 @@ public class SpecialSymbol {
      * @return the corresponding symbol in font Symbol
      */
     public static char getCorrespondingSymbol(char c) {
-        switch (c) {
-            case 913:
-                return 'A'; // ALFA
-            case 914:
-                return 'B'; // BETA
-            case 915:
-                return 'G'; // GAMMA
-            case 916:
-                return 'D'; // DELTA
-            case 917:
-                return 'E'; // EPSILON
-            case 918:
-                return 'Z'; // ZETA
-            case 919:
-                return 'H'; // ETA
-            case 920:
-                return 'Q'; // THETA
-            case 921:
-                return 'I'; // IOTA
-            case 922:
-                return 'K'; // KAPPA
-            case 923:
-                return 'L'; // LAMBDA
-            case 924:
-                return 'M'; // MU
-            case 925:
-                return 'N'; // NU
-            case 926:
-                return 'X'; // XI
-            case 927:
-                return 'O'; // OMICRON
-            case 928:
-                return 'P'; // PI
-            case 929:
-                return 'R'; // RHO
-            case 931:
-                return 'S'; // SIGMA
-            case 932:
-                return 'T'; // TAU
-            case 933:
-                return 'U'; // UPSILON
-            case 934:
-                return 'F'; // PHI
-            case 935:
-                return 'C'; // CHI
-            case 936:
-                return 'Y'; // PSI
-            case 937:
-                return 'W'; // OMEGA
-            case 945:
-                return 'a'; // alfa
-            case 946:
-                return 'b'; // beta
-            case 947:
-                return 'g'; // gamma
-            case 948:
-                return 'd'; // delta
-            case 949:
-                return 'e'; // epsilon
-            case 950:
-                return 'z'; // zeta
-            case 951:
-                return 'h'; // eta
-            case 952:
-                return 'q'; // theta
-            case 953:
-                return 'i'; // iota
-            case 954:
-                return 'k'; // kappa
-            case 955:
-                return 'l'; // lambda
-            case 956:
-                return 'm'; // mu
-            case 957:
-                return 'n'; // nu
-            case 958:
-                return 'x'; // xi
-            case 959:
-                return 'o'; // omicron
-            case 960:
-                return 'p'; // pi
-            case 961:
-                return 'r'; // rho
-            case 962:
-                return 'V'; // sigma
-            case 963:
-                return 's'; // sigma
-            case 964:
-                return 't'; // tau
-            case 965:
-                return 'u'; // upsilon
-            case 966:
-                return 'f'; // phi
-            case 967:
-                return 'c'; // chi
-            case 968:
-                return 'y'; // psi
-            case 969:
-                return 'w'; // omega
-            default:
-                return ' ';
+        if (c >= 913 && c <= 937) {
+            return getUpperCaseGreekSymbol(c);
+        } else if (c >= 945 && c <= 969) {
+            return getLowerCaseGreekSymbol(c);
+        } else {
+            return ' ';
         }
+    }
+
+    private static char getUpperCaseGreekSymbol(char c) {
+        return switch (c) {
+            case 913 -> 'A'; // ALFA
+            case 914 -> 'B'; // BETA
+            case 915 -> 'G'; // GAMMA
+            case 916 -> 'D'; // DELTA
+            case 917 -> 'E'; // EPSILON
+            case 918 -> 'Z'; // ZETA
+            case 919 -> 'H'; // ETA
+            case 920 -> 'Q'; // THETA
+            case 921 -> 'I'; // IOTA
+            case 922 -> 'K'; // KAPPA
+            case 923 -> 'L'; // LAMBDA
+            case 924 -> 'M'; // MU
+            case 925 -> 'N'; // NU
+            case 926 -> 'X'; // XI
+            case 927 -> 'O'; // OMICRON
+            case 928 -> 'P'; // PI
+            case 929 -> 'R'; // RHO
+            case 931 -> 'S'; // SIGMA
+            case 932 -> 'T'; // TAU
+            case 933 -> 'U'; // UPSILON
+            case 934 -> 'F'; // PHI
+            case 935 -> 'C'; // CHI
+            case 936 -> 'Y'; // PSI
+            case 937 -> 'W'; // OMEGA
+            default -> ' ';
+        };
+    }
+
+    private static char getLowerCaseGreekSymbol(char c) {
+        return switch (c) {
+            case 945 -> 'a'; // alfa
+            case 946 -> 'b'; // beta
+            case 947 -> 'g'; // gamma
+            case 948 -> 'd'; // delta
+            case 949 -> 'e'; // epsilon
+            case 950 -> 'z'; // zeta
+            case 951 -> 'h'; // eta
+            case 952 -> 'q'; // theta
+            case 953 -> 'i'; // iota
+            case 954 -> 'k'; // kappa
+            case 955 -> 'l'; // lambda
+            case 956 -> 'm'; // mu
+            case 957 -> 'n'; // nu
+            case 958 -> 'x'; // xi
+            case 959 -> 'o'; // omicron
+            case 960 -> 'p'; // pi
+            case 961 -> 'r'; // rho
+            case 962 -> 'V'; // sigma finale
+            case 963 -> 's'; // sigma
+            case 964 -> 't'; // tau
+            case 965 -> 'u'; // upsilon
+            case 966 -> 'f'; // phi
+            case 967 -> 'c'; // chi
+            case 968 -> 'y'; // psi
+            case 969 -> 'w'; // omega
+            default -> ' ';
+        };
     }
 }

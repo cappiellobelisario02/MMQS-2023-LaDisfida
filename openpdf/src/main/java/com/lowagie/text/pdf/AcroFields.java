@@ -60,6 +60,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -516,7 +517,7 @@ public class AcroFields {
     public String[] getAppearanceStates(String fieldName) {
         Item fd = fields.get(fieldName);
         if (fd == null) {
-            return null;
+            return new String[0];
         }
         Map<String, ?> names = new HashMap<>();
         PdfDictionary vals = fd.getValue(0);
@@ -563,7 +564,7 @@ public class AcroFields {
     public String[] getAppearanceNames(String fieldName, int idx) {
         Item fd = (Item) this.fields.get(fieldName);
         if (fd == null) {
-            return null;
+            return new String[0];
         }
         ArrayList<String> names = new ArrayList<String>();
 

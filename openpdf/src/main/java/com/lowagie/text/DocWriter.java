@@ -174,7 +174,7 @@ public abstract class DocWriter implements DocListener {
 
     public static final byte[] getISOBytes(String text) {
         if (text == null) {
-            return null;
+            return new byte[0];
         }
         int len = text.length();
         byte[] b = new byte[len];

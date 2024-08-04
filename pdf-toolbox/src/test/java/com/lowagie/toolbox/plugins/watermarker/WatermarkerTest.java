@@ -31,7 +31,7 @@ class WatermarkerTest {
         assertTrue(result.length > input.length);
 
         // Uncomment the following to write the generated file on disk
-        // writeOnDisk(result);
+        // writeOnDisk(resu
     }
 
     @SuppressWarnings("unused")

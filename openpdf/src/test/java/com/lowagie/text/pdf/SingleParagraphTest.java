@@ -35,7 +35,7 @@ public class SingleParagraphTest {
         PdfReader reader = new PdfReader(stream.toByteArray());
         PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
         String text = pdfTextExtractor.getTextFromPage(1);
-        Assertions.assertEquals(text, "Hier fetter Text");
+        Assertions.assertEquals("Hier fetter Text", text);
     }
 
 }

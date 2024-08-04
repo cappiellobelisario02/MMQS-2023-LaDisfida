@@ -399,7 +399,7 @@ public abstract class Image extends Rectangle {
      *
      * @param url the <CODE>URL</CODE> where the image can be found.
      */
-    public Image(URL url) {
+    protected Image(URL url) {
         super(0, 0);
         this.url = url;
         this.alignment = DEFAULT;

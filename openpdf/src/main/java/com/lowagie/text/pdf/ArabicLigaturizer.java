@@ -634,8 +634,8 @@ public class ArabicLigaturizer {
     static int arabic_shape(char[] src, int srcoffset, int srclength, char[] dest, int destoffset,
             int level) {
         char[] str = new char[srclength];
-        if (srclength + srcoffset - srcoffset >= 0) {
-            System.arraycopy(src, srcoffset, str, srcoffset - srcoffset, srclength + srcoffset - srcoffset);
+        if (srclength + srcoffset - destoffset >= 0) {
+            System.arraycopy(src, srcoffset, str, srcoffset - destoffset, srclength + srcoffset - srcoffset);
         }
         StringBuilder string = new StringBuilder(srclength);
         shape(str, string, level);

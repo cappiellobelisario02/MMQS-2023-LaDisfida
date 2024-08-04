@@ -62,7 +62,7 @@ public class TableBorders {
             border.setBorderColorBottom(Color.ORANGE);
             border.setBorderColorRight(Color.YELLOW);
             border.setBorderColorTop(Color.GREEN);
-            makeTestPage(tableFont, border, writer, document, padding, true, true);
+            makeTestPage(tableFont, border, document, padding, true, true);
             Font font = FontFactory.getFont("Helvetica", 10);
             Paragraph p;
             p = new Paragraph("\nVarious border widths and colors\nuseAscender=true, useDescender=true", font);
@@ -78,7 +78,7 @@ public class TableBorders {
             border.setBorderWidthRight(1f);
             border.setBorderWidthTop(2f);
             border.setBorderColor(Color.BLACK);
-            makeTestPage(tableFont, border, writer, document, padding, true, true);
+            makeTestPage(tableFont, border, document, padding, true, true);
             p = new Paragraph(
                     "More typical use - padding of 2\nuseBorderPadding=true, useAscender=true, useDescender=true",
                     font);
@@ -94,7 +94,7 @@ public class TableBorders {
             border.setBorderWidthRight(1f);
             border.setBorderWidthTop(2f);
             border.setBorderColor(Color.BLACK);
-            makeTestPage(tableFont, border, writer, document, padding, false, true);
+            makeTestPage(tableFont, border, document, padding, false, true);
             p = new Paragraph("\nuseBorderPadding=true, useAscender=false, useDescender=true", font);
             document.add(p);
 
@@ -108,7 +108,7 @@ public class TableBorders {
             border.setBorderWidthRight(1f);
             border.setBorderWidthTop(2f);
             border.setBorderColor(Color.BLACK);
-            makeTestPage(tableFont, border, writer, document, padding, false, false);
+            makeTestPage(tableFont, border, document, padding, false, false);
             p = new Paragraph("\nuseBorderPadding=true, useAscender=false, useDescender=false", font);
             document.add(p);
 
@@ -122,7 +122,7 @@ public class TableBorders {
             border.setBorderWidthRight(1f);
             border.setBorderWidthTop(2f);
             border.setBorderColor(Color.BLACK);
-            makeTestPage(tableFont, border, writer, document, padding, true, false);
+            makeTestPage(tableFont, border, document, padding, true, false);
             p = new Paragraph("\nuseBorderPadding=true, useAscender=true, useDescender=false", font);
             document.add(p);
         } catch (Exception de) {
@@ -132,7 +132,7 @@ public class TableBorders {
         document.close();
     }
 
-    private static void makeTestPage(Font tableFont, Rectangle borders, PdfWriter writer, Document document,
+    private static void makeTestPage(Font tableFont, Rectangle borders, Document document,
             float padding, boolean ascender, boolean descender) throws DocumentException {
         document.newPage();
         PdfPTable table = null;

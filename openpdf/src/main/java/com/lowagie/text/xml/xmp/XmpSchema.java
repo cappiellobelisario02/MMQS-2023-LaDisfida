@@ -69,7 +69,7 @@ public abstract class XmpSchema extends Properties {
      *
      * @param xmlns xml namespace name
      */
-    public XmpSchema(String xmlns) {
+    protected XmpSchema(String xmlns) {
         super();
         this.xmlns = xmlns;
     }

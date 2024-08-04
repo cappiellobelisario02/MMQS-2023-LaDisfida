@@ -27,7 +27,7 @@ public class PdfTestBaseTest {
         final byte[] bytes = stream.toByteArray();
         Assertions.assertNotNull(bytes, "There should be some PDF-bytes there.");
         String header = new String(bytes, 0, 5);
-        Assertions.assertEquals(header, "%PDF-", "This is no PDF.");
+        Assertions.assertEquals("%PDF-", header, "This is no PDF.");
     }
 
 }

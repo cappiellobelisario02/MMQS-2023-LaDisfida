@@ -100,7 +100,7 @@ public abstract class ExtendedColor extends Color {
      *
      * @param type {@link ExtendedColor#type}
      */
-    public ExtendedColor(int type) {
+    protected ExtendedColor(int type) {
         super(0, 0, 0);
         this.type = type;
     }
@@ -113,7 +113,7 @@ public abstract class ExtendedColor extends Color {
      * @param green green quotient
      * @param blue  blue quotient
      */
-    public ExtendedColor(int type, float red, float green, float blue) {
+    protected ExtendedColor(int type, float red, float green, float blue) {
         this(type, normalize(red), normalize(green), normalize(blue), MAX_FLOAT_COLOR_VALUE);
     }
 
@@ -126,7 +126,7 @@ public abstract class ExtendedColor extends Color {
      * @param blue  blue quotient
      * @param alpha alpha quotient
      */
-    public ExtendedColor(int type, float red, float green, float blue, float alpha) {
+    protected ExtendedColor(int type, float red, float green, float blue, float alpha) {
         super(normalize(red), normalize(green), normalize(blue), normalize(alpha));
         this.type = type;
     }

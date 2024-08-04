@@ -55,6 +55,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -240,14 +241,14 @@ public final class MessageLocalization {
                 return readLanguageStream(is);
             }
             if (country == null) {
-                return null;
+                return Collections.emptyMap();
             }
             file = language + ".lng";
             is = BaseFont.getResourceStream(BASE_PATH + file, MessageLocalization.class.getClassLoader());
             if (is != null) {
                 return readLanguageStream(is);
             } else {
-                return null;
+                return Collections.emptyMap();
             }
         } finally {
             try {

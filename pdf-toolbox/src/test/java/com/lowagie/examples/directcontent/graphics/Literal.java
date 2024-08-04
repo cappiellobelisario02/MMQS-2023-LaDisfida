@@ -65,7 +65,7 @@ public class Literal {
             cb.setLiteral(star);
 
             // sanityCheck doesn't check literals.
-            //cb.sanityCheck();
+            //cb.sanityCheck(
         } catch (DocumentException | IOException de) {
             System.err.println(de.getMessage());
         }

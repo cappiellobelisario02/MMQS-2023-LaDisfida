@@ -85,7 +85,7 @@ public abstract class PdfSigGenericPKCS extends PdfSignature {
      * @param filter    the filter name
      * @param subFilter the sub-filter name
      */
-    public PdfSigGenericPKCS(PdfName filter, PdfName subFilter) {
+    protected PdfSigGenericPKCS(PdfName filter, PdfName subFilter) {
         super(filter, subFilter);
     }
 

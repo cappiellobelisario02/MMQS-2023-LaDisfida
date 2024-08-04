@@ -53,6 +53,7 @@ package com.lowagie.text;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -217,7 +218,7 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
     public static Paragraph constructTitle(Paragraph title, java.util.List<Integer> numbers, int numberDepth,
             int numberStyle) {
         if (title == null) {
-            return null;
+            return new Paragraph();
         }
 
         int depth = Math.min(numbers.size(), numberDepth);

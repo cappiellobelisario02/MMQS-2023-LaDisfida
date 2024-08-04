@@ -103,7 +103,7 @@ class PdfCrossReferenceTest {
                 dynamicTest("Test equals", () -> {
                     final PdfCrossReference entry1 = new PdfCrossReference(2, 0);
                     final PdfCrossReference entry2 = new PdfCrossReference(2, 0);
-                    assertEquals(entry1.compareTo(entry2), 0);
+                    assertEquals(0, entry1.compareTo(entry2));
                 }),
 
                 // Testing {@link Object#equals(Object)} implementation
