@@ -229,6 +229,7 @@ public class PdfTable extends Rectangle {
     /**
      * @see com.lowagie.text.Element#type()
      */
+    @Override
     public int type() {
         return Element.TABLE;
     }
