@@ -1426,7 +1426,7 @@ class PdfStamperImp extends PdfWriter {
                         PdfRectangle rect = (PdfRectangle) annotation.get(PdfName.RECT);
                         if (rect != null && (rect.left() != 0 || rect.right() != 0 || rect.top() != 0
                                 || rect.bottom() != 0)) {
-                            int rotation = reader.getPageRotation(pageN);
+                            int rotation = PdfReader.getPageRotation(pageN);
                             Rectangle pageSize = reader.getPageSizeWithRotation(pageN);
                             switch (rotation) {
                                 case 90:
