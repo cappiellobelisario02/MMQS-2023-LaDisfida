@@ -324,10 +324,9 @@ class PdfStamperImp extends PdfWriter {
                 if (producerXMP == null) {
                     producerXMP = "";
                 }
-                if (!xmpr.replace("http://ns.adobe.com/pdf/1.3/", "Producer", producerXMP)) {
-                    if (!"".equals(producerXMP)) {
-                        xmpr.add("rdf:Description", "http://ns.adobe.com/pdf/1.3/", "pdf:Producer", producerXMP);
-                    }
+                if (!xmpr.replace("http://ns.adobe.com/pdf/1.3/", "Producer", producerXMP) 
+                        && !"".equals(producerXMP)) {
+                    xmpr.add("rdf:Description", "http://ns.adobe.com/pdf/1.3/", "pdf:Producer", producerXMP);
                 }
 
                 if (!xmpr.replace("http://ns.adobe.com/xap/1.0/", "ModifyDate", date.getW3CDate())) {
@@ -562,6 +561,7 @@ class PdfStamperImp extends PdfWriter {
         ps.pageN.put(PdfName.RESOURCES, ps.pageResources.getResources());
     }
 
+    @Override
     protected int getNewObjectNumber(PdfReader reader, int number, int generation) {
         IntHashtable ref = readers2intrefs.get(reader);
         if (ref != null) {
@@ -587,6 +587,7 @@ class PdfStamperImp extends PdfWriter {
         }
     }
 
+    @Override
     RandomAccessFileOrArray getReaderFile(PdfReader reader) {
         if (readers2intrefs.containsKey(reader)) {
             RandomAccessFileOrArray raf = readers2file.get(reader);
@@ -645,6 +646,7 @@ class PdfStamperImp extends PdfWriter {
         try {
             raf.close();
         } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
     }
 
@@ -1182,8 +1184,6 @@ class PdfStamperImp extends PdfWriter {
             acrodic.put(PdfName.FIELDS, new PdfArray());
         }
         acrodic.remove(PdfName.SIGFLAGS);
-//        PdfReader.killIndirect(acro);
-//        reader.getCatalog().remove(PdfName.ACROFORM);
     }
 
     void sweepKids(PdfObject obj) {
@@ -1274,11 +1274,9 @@ class PdfStamperImp extends PdfWriter {
             }
             for (int idx = 0; idx < annots.size(); ++idx) {
                 PdfDictionary annot = annots.getAsDict(idx);
-                if (annot != null) {
-                    if (PdfName.FREETEXT.equals(annot.get(PdfName.SUBTYPE))) {
-                        annots.remove(idx);
-                        --idx;
-                    }
+                if (annot != null && PdfName.FREETEXT.equals(annot.get(PdfName.SUBTYPE))) {
+                    annots.remove(idx);
+                    --idx;
                 }
             }
             if (annots.isEmpty()) {
@@ -1291,6 +1289,7 @@ class PdfStamperImp extends PdfWriter {
     /**
      * @see com.lowagie.text.pdf.PdfWriter#getPageReference(int)
      */
+    @Override
     public PdfIndirectReference getPageReference(int page) {
         PdfIndirectReference ref = reader.getPageOrigRef(page);
         if (ref == null) {

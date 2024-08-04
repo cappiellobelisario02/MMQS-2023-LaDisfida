@@ -3092,7 +3092,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             if (dic == null) {
                 return names;
             }
-            Set keys = dic.getKeys();
+            Set<PdfName> keys = dic.getKeys();
             for (Object key1 : keys) {
                 PdfName key = (PdfName) key1;
                 PdfArray arr = getNameArray(dic.get(key));
@@ -3117,7 +3117,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      * @return gets the named destinations
      */
-    public HashMap getNamedDestinationFromStrings() {
+    public HashMap<String, PdfObject> getNamedDestinationFromStrings() {
         if (catalog.get(PdfName.NAMES) != null) {
             PdfDictionary dic = (PdfDictionary) getPdfObjectRelease(catalog
                     .get(PdfName.NAMES));
@@ -3238,9 +3238,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
         for (int k = 1; k <= pageRefs.size(); ++k) {
             PdfDictionary page = pageRefs.getPageN(k);
-            PdfObject annotsRef;
-            PdfArray annots = (PdfArray) getPdfObject(annotsRef = page
-                    .get(PdfName.ANNOTS));
+            PdfObject annotsRef = page.get(PdfName.ANNOTS);
+            PdfArray annots = (PdfArray) getPdfObject(annotsRef);
             int annotIdx = lastXrefPartial;
             releaseLastXrefPartial();
             if (annots == null) {
@@ -3320,9 +3319,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
         for (int k = 1; k <= pageRefs.size(); ++k) {
             PdfDictionary page = pageRefs.getPageN(k);
-            PdfObject annotsRef;
-            PdfArray annots = (PdfArray) getPdfObject(annotsRef = page
-                    .get(PdfName.ANNOTS));
+            PdfObject annotsRef = page.get(PdfName.ANNOTS);
+            PdfArray annots = (PdfArray) getPdfObject(annotsRef);
             int annotIdx = lastXrefPartial;
             releaseLastXrefPartial();
             if (annots == null) {
@@ -3415,7 +3413,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     @SuppressWarnings("unchecked")
     protected void removeUnusedNode(PdfObject obj, boolean[] hits) {
-        Stack state = new Stack();
+        Stack<PdfObject> state = new Stack<>();
         state.push(obj);
         while (!state.empty()) {
             Object current = state.pop();
@@ -3453,7 +3451,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             } else {
                 objs = (Object[]) current;
                 if (objs[0] instanceof ArrayList) {
-                    ar = (ArrayList) objs[0];
+                    ar = (ArrayList<PdfObject>) objs[0];
                     idx = (Integer) objs[1];
                 } else {
                     keys = (PdfName[]) objs[0];
@@ -3606,6 +3604,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (Exception ignored) {
+                ignored.printStackTrace();
             }
         }
     }
@@ -4076,7 +4075,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     refsp.put(size(), ref.getNumber());
                 } else {
                     IntHashtable refs2 = new IntHashtable((refsp.size() + 1) * 2);
-                    for (Iterator it = refsp.getEntryIterator(); it.hasNext(); ) {
+                    for (Iterator<?> it = refsp.getEntryIterator(); it.hasNext(); ) {
                         IntHashtable.Entry entry = (IntHashtable.Entry) it.next();
                         int p = entry.getKey();
                         refs2.put(p >= pageNum ? p + 1 : p, entry.getValue());

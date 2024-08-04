@@ -101,7 +101,7 @@ class PdfReaderInstance {
         return pageT;
     }
 
-    int getNewObjectNumber(int number, int generation) {
+    int getNewObjectNumber(int number) {
         if (myXref[number] == 0) {
             myXref[number] = writer.getIndirectReferenceNumber();
             nextRound.add(number);

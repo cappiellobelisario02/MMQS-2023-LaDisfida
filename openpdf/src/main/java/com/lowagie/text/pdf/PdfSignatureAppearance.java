@@ -449,7 +449,6 @@ public class PdfSignatureAppearance {
         }
         // OJO... Modificacion de
         // flopez--------------------------------------------------
-        // if (page < 1 || page > writer.reader.getNumberOfPages())
         if (page < 0 || page > writer.reader.getNumberOfPages()) {
             throw new IllegalArgumentException(
                     MessageLocalization.getComposedMessage("invalid.page.number.1", page));
@@ -1105,10 +1104,6 @@ public class PdfSignatureAppearance {
             int pagen = getPage();
             // OJO... Modificacion de
             // flopez-----------------------------------------------------
-            // if (!isInvisible())
-            // sigField.setWidget(getPageRect(), null);
-            // else
-            // sigField.setWidget(new Rectangle(0, 0), null);
             if ((!isInvisible()) && (pagen == 0)) { // Si pagina en cero tonces firma
                 // en todas las paginas
                 int pages = writer.reader.getNumberOfPages();
@@ -1201,7 +1196,7 @@ public class PdfSignatureAppearance {
             exclusionLocations.put(PdfName.BYTERANGE, lit);
             cryptoDictionary.put(PdfName.BYTERANGE, lit);
             for (Object o : exclusionSizes.entrySet()) {
-                Map.Entry entry = (Map.Entry) o;
+                Map.Entry<PdfName, Integer> entry = (Map.Entry<PdfName, Integer>) o;
                 PdfName key = (PdfName) entry.getKey();
                 Integer v = (Integer) entry.getValue();
                 lit = new PdfLiteral(v);
@@ -1274,10 +1269,12 @@ public class PdfSignatureAppearance {
                 try {
                     raf.close();
                 } catch (Exception ee) {
+                    ee.printStackTrace();
                 }
                 try {
                     tempFile.delete();
                 } catch (Exception ee) {
+                    ee.printStackTrace();
                 }
                 throw e;
             }
@@ -1365,11 +1362,13 @@ public class PdfSignatureAppearance {
                 try {
                     raf.close();
                 } catch (Exception ee) {
+                    ee.printStackTrace();
                 }
                 if (originalout != null) {
                     try {
                         tempFile.delete();
                     } catch (Exception ee) {
+                        ee.printStackTrace();
                     }
                 }
             }
@@ -1377,6 +1376,7 @@ public class PdfSignatureAppearance {
                 try {
                     originalout.close();
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }

@@ -669,7 +669,7 @@ public class PdfStamper
      *
      * @param outlines the bookmarks or <CODE>null</CODE> to remove any
      */
-    public void setOutlines(List outlines) {
+    public void setOutlines(List<PdfOutline> outlines) {
         stamper.setOutlines(outlines);
     }
 
@@ -862,7 +862,7 @@ public class PdfStamper
      * @return a Map with all the PdfLayers in the document (and the name/title of the layer as key)
      * @since 2.1.2
      */
-    public Map getPdfLayers() {
+    public Map<String, PdfLayer> getPdfLayers() {
         return stamper.getPdfLayers();
     }
 
