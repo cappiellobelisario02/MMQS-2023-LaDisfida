@@ -51,7 +51,7 @@ public abstract class EventDispatchingThread {
     /**
      * Starts a thread. Executes the time-consuming task in the construct method; finally calls the finish().
      */
-    public EventDispatchingThread() {
+    protected EventDispatchingThread() {
         final Runnable doFinished = this::finished;
 
         Runnable doConstruct = () -> {
