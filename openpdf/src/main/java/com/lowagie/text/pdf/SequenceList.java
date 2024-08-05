@@ -117,7 +117,6 @@ public class SequenceList {
                 parse.low = maxNumber;
             }
 
-            //System.out.println("low="+parse.low+",high="+parse.high+",odd="+parse.odd+",even="+parse.even+",inverse="+parse.inverse);
             int inc = 1;
             if (parse.inverse) {
                 if (parse.low > parse.high) {
