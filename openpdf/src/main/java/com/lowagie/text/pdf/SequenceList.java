@@ -164,9 +164,6 @@ public class SequenceList {
                     }
                 }
             }
-//            for (int k = 0; k < list.size(); ++k)
-//                System.out.print(((Integer)list.get(k)).intValue() + ",");
-//            System.out.println();
         }
         return list;
     }
