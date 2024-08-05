@@ -549,7 +549,7 @@ public class PdfWriter extends DocWriter implements
      * A number referring to the previous Cross-Reference Table.
      */
     protected int prevxref = 0;
-    protected List newBookmarks;
+    protected List<Map<String, Object>> newBookmarks;
     /**
      * Stores the version information for the header and the catalog.
      */
@@ -1403,7 +1403,7 @@ public class PdfWriter extends DocWriter implements
      *
      * @param outlines the bookmarks or <CODE>null</CODE> to remove any
      */
-    public void setOutlines(List outlines) {
+    public void setOutlines(List<Map<String, Object>> outlines) {
         newBookmarks = outlines;
     }
 
