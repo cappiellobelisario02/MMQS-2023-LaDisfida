@@ -871,7 +871,7 @@ public class PdfWriter extends DocWriter implements
      * @throws IOException on error
      */
 
-    void addLocalDestinations(TreeMap dest) throws IOException {
+    void addLocalDestinations(TreeMap<String, PdfDestination> dest) throws IOException {
         for (Object o : dest.entrySet()) {
             Map.Entry entry = (Map.Entry) o;
             String name = (String) entry.getKey();
