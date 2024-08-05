@@ -194,7 +194,8 @@ public class SequenceList {
             char c = nextChar();
             if (c == EOT) {
                 if (state == DIGIT) {
-                    number = Integer.parseInt(other = buf.toString());
+                    other = buf.toString();
+                    number = Integer.parseInt(other);
                     return NUMBER;
                 } else if (state == OTHER) {
                     other = buf.toString().toLowerCase();
