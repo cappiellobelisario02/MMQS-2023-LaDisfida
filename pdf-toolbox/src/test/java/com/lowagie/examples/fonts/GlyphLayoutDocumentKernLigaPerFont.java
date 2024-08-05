@@ -27,9 +27,12 @@ import java.nio.file.Paths;
  */
 public class GlyphLayoutDocumentKernLigaPerFont {
 
-    public static String TEXT_INTRO =
-            "Test of kerning and ligatures per font\n"
-                    + "Using LayoutProcessor for glyph layout with Java built-in routines.\n\n";
+    public static String TEXT_INTRO = """
+            Test of kerning and ligatures per font
+            Using LayoutProcessor for glyph layout with Java built-in routines.
+
+
+            """;
 
 
     public static String TEST_TEXT =
