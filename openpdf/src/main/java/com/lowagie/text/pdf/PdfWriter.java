@@ -2339,7 +2339,7 @@ public class PdfWriter extends DocWriter implements
 
         List<PdfOCG> docOrder = documentOCGorder.stream()
                 .filter(pdfOCG -> ((PdfLayer) pdfOCG).getParent() == null)
-                .collect(Collectors.toList());
+                .toList();
 
         PdfArray order = new PdfArray();
         for (PdfOCG o1 : docOrder) {
