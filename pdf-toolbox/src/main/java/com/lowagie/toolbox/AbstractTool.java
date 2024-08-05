@@ -99,7 +99,7 @@ public abstract class AbstractTool implements ActionListener {
     /**
      * AbstractTool
      */
-    public AbstractTool() {
+    protected AbstractTool() {
         if (Desktop.isDesktopSupported()) {
             awtdesktop = Desktop.getDesktop();
         }
