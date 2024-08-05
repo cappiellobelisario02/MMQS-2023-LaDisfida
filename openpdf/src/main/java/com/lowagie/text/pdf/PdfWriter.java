@@ -1685,10 +1685,6 @@ public class PdfWriter extends DocWriter implements
         pdf.addAnnotation(annot);
     }
 
-    void addAnnotation(PdfAnnotation annot, int page) {
-        addAnnotation(annot);
-    }
-
 //  [F8] shading patterns
 
     /**
