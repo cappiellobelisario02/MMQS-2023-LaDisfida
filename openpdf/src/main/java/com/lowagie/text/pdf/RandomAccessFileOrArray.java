@@ -123,6 +123,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
                     try {
                         is.close();
                     } catch (IOException ioe) {
+                        ioe.printStackTrace();
                     }
                 }
             }
