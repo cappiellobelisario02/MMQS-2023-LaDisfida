@@ -33,7 +33,7 @@ public abstract class AbstractArgument implements ActionListener, PropertyChange
     protected AbstractArgument() {
     }
 
-    public AbstractArgument(AbstractTool tool, String name, String description, Object value) {
+    protected AbstractArgument(AbstractTool tool, String name, String description, Object value) {
         this.tool = tool;
         this.name = name;
         this.description = description;
