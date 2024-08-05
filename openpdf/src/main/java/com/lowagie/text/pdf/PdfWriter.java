@@ -2125,7 +2125,7 @@ public class PdfWriter extends DocWriter implements
         return n;
     }
 
-    RandomAccessFileOrArray getReaderFile(PdfReader reader) {
+    RandomAccessFileOrArray getReaderFile() {
         return currentPdfReaderInstance.getReaderFile();
     }
 
