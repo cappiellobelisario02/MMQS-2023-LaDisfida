@@ -225,7 +225,8 @@ public class SequenceList {
                         buf.append(c);
                     } else {
                         putBack();
-                        number = Integer.parseInt(other = buf.toString());
+                        other = buf.toString();
+                        number = Integer.parseInt(other);
                         return NUMBER;
                     }
                     break;
