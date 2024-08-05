@@ -138,7 +138,7 @@ public class PdfTextArray {
         // adding an empty string doesn't modify the TextArray at all
     }
 
-    List getArrayList() {
+    List<Object> getArrayList() {
         return arrayList;
     }
 
