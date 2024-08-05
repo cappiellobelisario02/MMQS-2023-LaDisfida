@@ -60,6 +60,7 @@ import com.lowagie.text.ImgWMF;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Table;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.pdf.TextDrawingConfig.PdfAcroForm;
 import com.lowagie.text.pdf.collection.PdfCollection;
 import com.lowagie.text.pdf.events.PdfPageEventForwarder;
 import com.lowagie.text.pdf.interfaces.PdfAnnotations;
@@ -871,9 +872,8 @@ public class PdfWriter extends DocWriter implements
      * @throws IOException on error
      */
 
-    void addLocalDestinations(TreeMap<String, PdfDestination> dest) throws IOException {
-        for (Object o : dest.entrySet()) {
-            Map.Entry entry = (Map.Entry) o;
+    void addLocalDestinations(TreeMap<String, Object> dest) throws IOException {
+        for (Map.Entry<String, Object> entry : dest.entrySet()) {
             String name = (String) entry.getKey();
             Object[] obj = (Object[]) entry.getValue();
             PdfDestination destination = (PdfDestination) obj[2];
