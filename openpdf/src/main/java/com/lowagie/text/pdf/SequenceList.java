@@ -124,7 +124,7 @@ public class SequenceList {
                     parse.low = parse.high;
                     parse.high = t;
                 }
-                for (ListIterator it = list.listIterator(); it.hasNext(); ) {
+                for (ListIterator<Integer> it = list.listIterator(); it.hasNext(); ) {
                     int n = (Integer) it.next();
                     if (parse.even && (n & 1) == 1) {
                         continue;
