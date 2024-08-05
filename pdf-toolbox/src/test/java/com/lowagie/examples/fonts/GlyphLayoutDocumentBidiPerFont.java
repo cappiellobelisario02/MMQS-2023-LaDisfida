@@ -28,9 +28,12 @@ import java.nio.file.Paths;
  */
 public class GlyphLayoutDocumentBidiPerFont {
 
-    public static String INTRO_TEXT =
-            "Test of bidirectional text\n" +
-                    "Using LayoutProcessor for glyph layout with Java built-in routines.\n\n";
+    public static String INTRO_TEXT = """
+            Test of bidirectional text
+            Using LayoutProcessor for glyph layout with Java built-in routines.
+
+
+            """;
 
     /**
      * Main method
