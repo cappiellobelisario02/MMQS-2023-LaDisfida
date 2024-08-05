@@ -569,7 +569,6 @@ public class RadioCheckField extends BaseField {
         if ((visibility & INVISIBLE) != 0) {
             field.addFlags(PdfAnnotation.FLAGS_INVISIBLE);
         }
-        //if ((visibility & HIDDEN) != 0) field.addFlags(PdfAnnotation.FLAGS_HIDDEN);
         if ((visibility & PRINT) != 0) {
             field.addFlags(PdfAnnotation.FLAGS_PRINT);
         }
