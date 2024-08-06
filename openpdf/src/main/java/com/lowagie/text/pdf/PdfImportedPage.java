@@ -52,6 +52,7 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.IllegalContentException;
 import java.io.IOException;
 
 /**
@@ -181,7 +182,7 @@ public class PdfImportedPage extends com.lowagie.text.pdf.PdfTemplate {
     }
 
     void throwError() {
-        throw new RuntimeException(
+        throw new IllegalContentException(
                 MessageLocalization.getComposedMessage("content.can.not.be.added.to.a.pdfimportedpage"));
     }
 
