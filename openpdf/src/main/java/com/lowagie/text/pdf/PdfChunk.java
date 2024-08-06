@@ -177,7 +177,6 @@ public class PdfChunk {
      */
 
     PdfChunk(String string, PdfChunk other) {
-        thisChunk[0] = this;
         value = string;
         this.font = other.font;
         this.attributes = other.attributes;
@@ -207,7 +206,6 @@ public class PdfChunk {
      */
 
     PdfChunk(Chunk chunk, PdfAction action) {
-        thisChunk[0] = this;
         value = chunk.getContent();
 
         Font f = chunk.getFont();
