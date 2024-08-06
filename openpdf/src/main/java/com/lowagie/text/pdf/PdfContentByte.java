@@ -63,6 +63,8 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.TransformationMatrix;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.IllegalPdfSyntaxException;
+import com.lowagie.text.exceptions.InvalidColorTypeException;
+import com.lowagie.text.exceptions.InvalidPatternTemplateException;
 import com.lowagie.text.exceptions.NotEqualWritersException;
 import com.lowagie.text.exceptions.ZeroValueException;
 import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
@@ -2142,7 +2144,7 @@ public class PdfContentByte {
     public PdfPatternPainter createPattern(float width, float height, float xstep, float ystep, Color color) {
         checkWriter();
         if (xstep == 0.0f || ystep == 0.0f) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("xstep.or.ystep.can.not.be.zero"));
+            throw new ZeroValueException(MessageLocalization.getComposedMessage("xstep.or.ystep.can.not.be.zero"));
         }
         PdfPatternPainter painter = new PdfPatternPainter(writer, color);
         painter.setWidth(width);
@@ -2589,7 +2591,7 @@ public class PdfContentByte {
                 content.append(tint);
                 break;
             default:
-                throw new RuntimeException(MessageLocalization.getComposedMessage("invalid.color.type"));
+                throw new InvalidColorTypeException(MessageLocalization.getComposedMessage("invalid.color.type"));
         }
     }
 
@@ -2617,7 +2619,8 @@ public class PdfContentByte {
     public void setPatternFill(PdfPatternPainter p, Color color, float tint) {
         checkWriter();
         if (!p.isStencil()) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
+            throw new InvalidColorTypeException(
+                MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
         }
         saveColorFill(new RGBColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
         PageResources prs = getPageResources();
@@ -2654,7 +2657,8 @@ public class PdfContentByte {
     public void setPatternStroke(PdfPatternPainter p, Color color, float tint) {
         checkWriter();
         if (!p.isStencil()) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
+            throw new InvalidColorTypeException(
+                MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
         }
         saveColorStroke(new PatternColor(p));
         PageResources prs = getPageResources();
@@ -2984,7 +2988,7 @@ public class PdfContentByte {
      */
     void checkNoPattern(PdfTemplate t) {
         if (t.getType() == PdfTemplate.TYPE_PATTERN) {
-            throw new RuntimeException(
+            throw new InvalidPatternTemplateException(
                     MessageLocalization.getComposedMessage("invalid.use.of.a.pattern.a.template.was.expected"));
         }
     }
