@@ -111,7 +111,7 @@ public abstract class XmpSchema extends Properties {
      */
     @Override
     public synchronized String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (Enumeration<?> e = this.propertyNames(); e.hasMoreElements(); ) {
             process(buf, e.nextElement());
         }
@@ -124,7 +124,7 @@ public abstract class XmpSchema extends Properties {
      * @param buf buffer
      * @param p   object
      */
-    protected void process(StringBuffer buf, Object p) {
+    protected void process(StringBuilder buf, Object p) {
         buf.append('<');
         buf.append(p);
         buf.append('>');

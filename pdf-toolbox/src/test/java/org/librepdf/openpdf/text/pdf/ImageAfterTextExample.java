@@ -72,7 +72,7 @@ public class ImageAfterTextExample {
         image.setIndentationLeft(100); // this will put the image to the right of the previous text
 
         p2.add(image);
-        System.out.printf("p2 leadind: " + p2.getTotalLeading());
+        System.out.printf("p2 leading: %f", p2.getTotalLeading());
 
         String spaces = "    ";
         p2.add(spaces); // this is necessary, so the following text is not written over the image.

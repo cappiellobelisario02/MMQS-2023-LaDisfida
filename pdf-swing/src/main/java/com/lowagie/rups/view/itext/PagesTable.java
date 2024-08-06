@@ -93,11 +93,11 @@ public class PagesTable extends JTable implements JTableAutoModelInterface, Obse
             }
             Enumeration<?> p = pages.depthFirstEnumeration();
             PdfObjectTreeNode child;
-            StringBuffer buf;
+            StringBuilder buf;
             while (p.hasMoreElements()) {
                 child = (PdfObjectTreeNode) p.nextElement();
                 if (child instanceof PdfPageTreeNode) {
-                    buf = new StringBuffer("Page ");
+                    buf = new StringBuilder("Page ");
                     buf.append(++i);
                     if (pagelabels != null) {
                         buf.append(" ( ");

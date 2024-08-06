@@ -41,6 +41,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.JInternalFrame;
@@ -63,7 +64,7 @@ public class FileList
 
     private static final long serialVersionUID = -7238230038043975672L;
 
-    private final Vector<RowContainer> filevector = new Vector<>();
+    private final ArrayList<RowContainer> filevector = new ArrayList<>();
     private final JPanel jPanel1 = new JPanel();
     private final BorderLayout borderLayout1 = new BorderLayout();
     private final JPanel jPanel2 = new JPanel();
@@ -73,7 +74,7 @@ public class FileList
     private final JTable jTable1 = new JTable(model);
     private final RowSorter<TableModel> sorter = new TableRowSorter<>(model);
     private final BorderLayout borderLayout3 = new BorderLayout();
-    private final DropTarget dt = new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, this, true, null);
+    //private final DropTarget dt = new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, this, true, null
     private final JPanel jPanel3 = new JPanel();
     private final JLabel jLabel1 = new JLabel();
     private final JLabel jLabel2 = new JLabel();
@@ -168,7 +169,7 @@ public class FileList
         this.jLabel2.setText(Integer.toString(sum));
     }
 
-    public Vector<RowContainer> getFilevector() {
+    public ArrayList<RowContainer> getFilevector() {
         return filevector;
     }
 

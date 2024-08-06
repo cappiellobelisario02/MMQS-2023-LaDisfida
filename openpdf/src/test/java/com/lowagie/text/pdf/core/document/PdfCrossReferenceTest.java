@@ -141,7 +141,7 @@ class PdfCrossReferenceTest {
         doAnswer(invocation -> {
             final byte[] bytes = invocation.getArgument(0);
             tests.add(dynamicTest("Test not null", () -> assertNotNull(bytes)));
-            tests.add(dynamicTest("Test size", () -> assertEquals(bytes.length, CROSS_REFERENCE_ENTRY_LENGTH)));
+            tests.add(dynamicTest("Test size", () -> assertEquals(CROSS_REFERENCE_ENTRY_LENGTH, bytes.length)));
             final String stringRepresentation = new String(bytes);
             tests.add(dynamicTest("Test format", () -> assertTrue(CROSS_REFERENCE_FORMAT.test(stringRepresentation))));
             return invocation;

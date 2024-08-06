@@ -30,7 +30,7 @@ public class TableEndlessTest {
             table.addCell(cell1);
             StringBuilder largeStr = new StringBuilder();
             for (int i = 0; i < 45; i++) {
-                largeStr.append(String.format("this is to test-> row %d\n", i));
+                largeStr.append(String.format("this is to test-> row %d%n", i));
             }
             Cell cell2 = new Cell(new Phrase(largeStr.toString()));
             table.addCell(cell2);
@@ -54,7 +54,7 @@ public class TableEndlessTest {
             table.addCell(cell1);
             StringBuilder largeStr = new StringBuilder();
             for (int i = 0; i < 86; i++) {
-                largeStr.append(String.format("this is to test-> row %d\n", i));
+                largeStr.append(String.format("this is to test-> row %d%n", i));
             }
             Cell cell2 = new Cell(new Phrase(largeStr.toString()));
             table.addCell(cell2);

@@ -34,6 +34,7 @@
  */
 package com.lowagie.toolbox.swing;
 
+import com.lowagie.text.DocumentException;
 import java.awt.Toolkit;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -125,7 +126,7 @@ public class CustomDialog {
         return stringDocument;
     }
 
-    private void jbInit() throws Exception {
+    private void jbInit() throws DocumentException {
         textField.setDocument(plainDocument);
     }
 

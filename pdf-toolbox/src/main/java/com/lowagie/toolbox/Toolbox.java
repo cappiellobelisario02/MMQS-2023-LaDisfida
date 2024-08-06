@@ -93,8 +93,8 @@ public class Toolbox extends JFrame implements ActionListener {
      * toolarray
      */
     private final ArrayList<AbstractTool> toolarray = new ArrayList<>();
-    private final Vector<String> menulist = new Vector<>();
-    private final Vector<String> menuitemlist = new Vector<>();
+    private final ArrayList<String> menulist = new ArrayList<>();
+    private final ArrayList<String> menuitemlist = new ArrayList<>();
     /**
      * The ConsolePane of the toolbox.
      */
@@ -394,7 +394,7 @@ public class Toolbox extends JFrame implements ActionListener {
         }
     }
 
-    public Vector<String> getMenulist() {
+    public ArrayList<String> getMenulist() {
         return menulist;
     }
 

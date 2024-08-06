@@ -777,6 +777,8 @@ public abstract class Image extends Rectangle {
         try {
             pg.grabPixels();
         } catch (InterruptedException e) {
+            // Re-interrupt the current thread
+            Thread.currentThread().interrupt();
             throw new IOException(
                     MessageLocalization.getComposedMessage("java.awt.image.interrupted.waiting.for.pixels"));
         }
@@ -978,6 +980,8 @@ public abstract class Image extends Rectangle {
         try {
             pg.grabPixels();
         } catch (InterruptedException e) {
+            // Re-interrupt the current thread
+            Thread.currentThread().interrupt();
             throw new IOException(
                     MessageLocalization.getComposedMessage("java.awt.image.interrupted.waiting.for.pixels"));
         }
@@ -1855,11 +1859,11 @@ public abstract class Image extends Rectangle {
         } else {
             newValue = value;
             PdfName first = value.getAsName(0);
-            if (PdfName.INDEXED.equals(first)) {
-                if (value.size() >= 2 && second != null) {
-                    PdfArray second = value.getAsArray(1);
-                    value.set(1, simplifyColorspace(second));
-                }
+            if (PdfName.INDEXED.equals(first) && (value.size() >= 2 && second != null)) {
+
+                PdfArray second = value.getAsArray(1);
+                value.set(1, simplifyColorspace(second));
+
             }
         }
         additional.put(PdfName.COLORSPACE, newValue);

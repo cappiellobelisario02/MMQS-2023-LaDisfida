@@ -37,7 +37,7 @@ public abstract class BackgroundTask {
     /**
      * Starts a thread. Executes the time-consuming task in the construct method; finally calls the finish().
      */
-    public BackgroundTask() {
+    protected BackgroundTask() {
         final Runnable doFinished = this::finished;
 
         Runnable doConstruct = () -> {

@@ -117,12 +117,9 @@ public class NUp extends AbstractTool {
                 throw new InstantiationException("You need to choose a destination file");
             }
             File dest = (File) getValue("destfile");
-            int pow2;
-            try {
-                pow2 = Integer.parseInt((String) getValue("pow2"));
-            } catch (Exception e) {
-                pow2 = 1;
-            }
+
+            int pow2 = tryPowSquared();
+
             // we create a reader for a certain document
             /*PdfReader reader */ reader = new PdfReader(src.getAbsolutePath());
             // we retrieve the total number of pages and the page size
@@ -200,5 +197,15 @@ public class NUp extends AbstractTool {
      */
     protected File getDestPathPDF() throws InstantiationException {
         return (File) getValue("destfile");
+    }
+
+    private int tryPowSquared(){
+        int pow_squared;
+        try {
+            pow_squared = Integer.parseInt((String) getValue("pow2"));
+        } catch (Exception e) {
+            pow_squared = 1;
+        }
+        return pow_squared;
     }
 }

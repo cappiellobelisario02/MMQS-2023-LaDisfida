@@ -21,7 +21,7 @@ public class StandardDecryptionTest {
 
         // verify empty array returned
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(result.length, 0);
+        Assertions.assertEquals(0, result.length);
     }
 
 }

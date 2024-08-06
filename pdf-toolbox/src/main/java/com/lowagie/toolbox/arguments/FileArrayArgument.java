@@ -34,6 +34,7 @@
  */
 package com.lowagie.toolbox.arguments;
 
+import com.lowagie.text.exceptions.FileListInitializationException;
 import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.swing.FileList;
 import java.awt.event.ActionEvent;
@@ -99,8 +100,12 @@ public class FileArrayArgument extends AbstractArgument {
         }
     }
 
-    private void jbInit() throws Exception {
-        fileList1.addPropertyChangeListener(this);
+    private void jbInit() throws FileListInitializationException {
+        try{
+            fileList1.addPropertyChangeListener(this);
+        }catch(Exception e){
+            throw new FileListInitializationException(e.getMessage());
+        }
     }
 
     @Override

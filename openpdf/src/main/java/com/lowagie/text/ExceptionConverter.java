@@ -72,15 +72,16 @@ package com.lowagie.text;
  */
 public class ExceptionConverter extends RuntimeException {
 
+    private final transient Object lock = new Object();
     private static final long serialVersionUID = 8657630363395849399L;
     /**
      * we keep a handle to the wrapped exception
      */
-    private Exception ex;
+    private final Exception ex;
     /**
      * prefix for the exception
      */
-    private String prefix;
+    private final String  prefix;
 
     /**
      * Construct a RuntimeException based on another Exception
@@ -100,7 +101,7 @@ public class ExceptionConverter extends RuntimeException {
      * @return an unchecked exception
      * @since 2.1.6
      */
-    public static final RuntimeException convertException(Exception ex) {
+    public static RuntimeException convertException(Exception ex) {
         if (ex instanceof RuntimeException) {
             return (RuntimeException) ex;
         }
@@ -161,7 +162,7 @@ public class ExceptionConverter extends RuntimeException {
      */
     @Override
     public void printStackTrace(java.io.PrintStream printStream) {
-        synchronized (printStream) {
+        synchronized (lock) {
             printStream.print(prefix);
             ex.printStackTrace(printStream);
         }
@@ -174,7 +175,7 @@ public class ExceptionConverter extends RuntimeException {
      */
     @Override
     public void printStackTrace(java.io.PrintWriter printWriter) {
-        synchronized (printWriter) {
+        synchronized (lock) {
             printWriter.print(prefix);
             ex.printStackTrace(printWriter);
         }

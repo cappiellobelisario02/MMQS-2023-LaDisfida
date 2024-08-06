@@ -154,10 +154,9 @@ public class ProgressServlet extends HttpServlet {
                 while (p < 99) {
                     doc.add(new Paragraph(new Date().toString()));
                     // we slow the process down deliberately
-                    Thread.sleep(500);
                     p++;
                 }
-            } catch (DocumentException | InterruptedException e) {
+            } catch (DocumentException e) {
                 p = -1;
                 e.printStackTrace();
             }

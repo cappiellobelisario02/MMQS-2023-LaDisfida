@@ -293,7 +293,7 @@ public class Executable {
                     }
                 }
                 if (browser == null) {
-                    throw new Exception(MessageLocalization.getComposedMessage("could.not.find.web.browser"));
+                    throw new IOException(MessageLocalization.getComposedMessage("could.not.find.web.browser"));
                 } else {
                     Runtime.getRuntime().exec(new String[]{browser, url});
                 }

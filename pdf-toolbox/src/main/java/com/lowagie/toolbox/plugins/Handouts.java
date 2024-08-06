@@ -118,12 +118,7 @@ public class Handouts extends AbstractTool {
                 throw new InstantiationException("You need to choose a destination file");
             }
             File dest = (File) getValue("destfile");
-            int pages;
-            try {
-                pages = Integer.parseInt((String) getValue("pages"));
-            } catch (Exception e) {
-                pages = 4;
-            }
+            int pages = tryParsingPagesNumber();
 
             float x1 = 30f;
             float x2 = 280f;
@@ -220,5 +215,15 @@ public class Handouts extends AbstractTool {
      */
     protected File getDestPathPDF() throws InstantiationException {
         return (File) getValue("destfile");
+    }
+
+    private int tryParsingPagesNumber() {
+        int pages_to_parse;
+        try {
+            pages_to_parse = Integer.parseInt((String) getValue("pages"));
+        } catch (Exception e) {
+            pages_to_parse = 4;
+        }
+        return pages_to_parse;
     }
 }
