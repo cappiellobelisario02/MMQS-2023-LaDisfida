@@ -60,6 +60,7 @@ import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.text.ImgJBIG2;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.TransformationMatrix;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.IllegalPdfSyntaxException;
 import com.lowagie.text.exceptions.NotEqualWritersException;
@@ -1409,7 +1410,9 @@ public class PdfContentByte {
         float[] matrix = image.matrix();
         matrix[Image.CX] = image.getAbsoluteX() - matrix[Image.CX];
         matrix[Image.CY] = image.getAbsoluteY() - matrix[Image.CY];
-        addImage(image, matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], inlineImage);
+        TransformationMatrix transformationMatrix = new TransformationMatrix(matrix[0], matrix[1], matrix[2], 
+            matrix[3], matrix[4], matrix[5]);
+        addImage(image, transformationMatrix, inlineImage);
     }
 
     /**
@@ -1426,7 +1429,8 @@ public class PdfContentByte {
      * @throws DocumentException on error
      */
     public void addImage(Image image, float a, float b, float c, float d, float e, float f) throws DocumentException {
-        addImage(image, a, b, c, d, e, f, false);
+        TransformationMatrix matrix = new TransformationMatrix(a, b, c, d, e, f);
+        addImage(image, matrix, false);
     }
 
     /**
@@ -1444,8 +1448,8 @@ public class PdfContentByte {
      * @param inlineImage <CODE>true</CODE> to place this image inline, <CODE>false</CODE> otherwise
      * @throws DocumentException on error
      */
-    public void addImage(Image image, float a, float b, float c, float d, float e, float f, boolean inlineImage)
-            throws DocumentException {
+    public void addImage(Image image, TransformationMatrix matrix, boolean inlineImage)
+        throws DocumentException {
         try {
             if (image.getLayer() != null) {
                 beginLayer(image.getLayer());
@@ -1455,15 +1459,15 @@ public class PdfContentByte {
                 PdfTemplate template = image.getTemplateData();
                 float w = template.getWidth();
                 float h = template.getHeight();
-                addTemplate(template, a / w, b / w, c / h, d / h, e, f);
+                addTemplate(template, matrix.getA() / w, matrix.getB() / w, matrix.getC() / h, matrix.getD() / h, matrix.getE(), matrix.getF());
             } else {
                 content.append("q ");
-                content.append(a).append(' ');
-                content.append(b).append(' ');
-                content.append(c).append(' ');
-                content.append(d).append(' ');
-                content.append(e).append(' ');
-                content.append(f).append(" cm");
+                content.append(matrix.getA()).append(' ');
+                content.append(matrix.getB()).append(' ');
+                content.append(matrix.getC()).append(' ');
+                content.append(matrix.getD()).append(' ');
+                content.append(matrix.getE()).append(' ');
+                content.append(matrix.getF()).append(" cm");
                 if (inlineImage) {
                     content.append("\nBI\n");
                     PdfImage pimage = new PdfImage(image, "", null);
@@ -1524,7 +1528,7 @@ public class PdfContentByte {
                 saveState();
                 float w = image.getWidth();
                 float h = image.getHeight();
-                concatCTM(a / w, b / w, c / h, d / h, e, f);
+                concatCTM(matrix.getA() / w, matrix.getB() / w, matrix.getC() / h, matrix.getD() / h, matrix.getE(), matrix.getF());
                 rectangle(image);
                 restoreState();
             }
@@ -1537,8 +1541,8 @@ public class PdfContentByte {
             }
             float[] r = new float[unitRect.length];
             for (int k = 0; k < unitRect.length; k += 2) {
-                r[k] = a * unitRect[k] + c * unitRect[k + 1] + e;
-                r[k + 1] = b * unitRect[k] + d * unitRect[k + 1] + f;
+                r[k] = matrix.getA() * unitRect[k] + matrix.getC() * unitRect[k + 1] + matrix.getE();
+                r[k + 1] = matrix.getB() * unitRect[k] + matrix.getD() * unitRect[k + 1] + matrix.getF();
             }
             float llx = r[0];
             float lly = r[1];
