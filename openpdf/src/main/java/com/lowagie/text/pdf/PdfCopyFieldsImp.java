@@ -52,6 +52,7 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.BadPasswordException;
+import com.lowagie.text.exceptions.IllegalReferencePointerException;
 import com.lowagie.text.pdf.AcroFields.Item;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -279,7 +280,8 @@ class PdfCopyFieldsImp extends PdfWriter {
                 break;
             }
             case PdfObject.INDIRECT: {
-                throw new RuntimeException(MessageLocalization.getComposedMessage("reference.pointing.to.reference"));
+                throw new IllegalReferencePointerException(
+                    MessageLocalization.getComposedMessage("reference.pointing.to.reference"));
             }
         }
     }

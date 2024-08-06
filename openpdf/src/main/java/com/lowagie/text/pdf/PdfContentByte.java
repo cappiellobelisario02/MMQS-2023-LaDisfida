@@ -60,9 +60,13 @@ import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.text.ImgJBIG2;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.TransformationMatrix;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.IllegalPdfSyntaxException;
+import com.lowagie.text.exceptions.InvalidColorTypeException;
+import com.lowagie.text.exceptions.InvalidPatternTemplateException;
 import com.lowagie.text.exceptions.NotEqualWritersException;
+import com.lowagie.text.exceptions.ZeroValueException;
 import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import java.awt.Color;
@@ -1409,7 +1413,9 @@ public class PdfContentByte {
         float[] matrix = image.matrix();
         matrix[Image.CX] = image.getAbsoluteX() - matrix[Image.CX];
         matrix[Image.CY] = image.getAbsoluteY() - matrix[Image.CY];
-        addImage(image, matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], inlineImage);
+        TransformationMatrix transformationMatrix = new TransformationMatrix(matrix[0], matrix[1], matrix[2], 
+            matrix[3], matrix[4], matrix[5]);
+        addImage(image, transformationMatrix, inlineImage);
     }
 
     /**
@@ -1426,7 +1432,8 @@ public class PdfContentByte {
      * @throws DocumentException on error
      */
     public void addImage(Image image, float a, float b, float c, float d, float e, float f) throws DocumentException {
-        addImage(image, a, b, c, d, e, f, false);
+        TransformationMatrix matrix = new TransformationMatrix(a, b, c, d, e, f);
+        addImage(image, matrix, false);
     }
 
     /**
@@ -1444,8 +1451,8 @@ public class PdfContentByte {
      * @param inlineImage <CODE>true</CODE> to place this image inline, <CODE>false</CODE> otherwise
      * @throws DocumentException on error
      */
-    public void addImage(Image image, float a, float b, float c, float d, float e, float f, boolean inlineImage)
-            throws DocumentException {
+    public void addImage(Image image, TransformationMatrix matrix, boolean inlineImage)
+        throws DocumentException {
         try {
             if (image.getLayer() != null) {
                 beginLayer(image.getLayer());
@@ -1455,15 +1462,15 @@ public class PdfContentByte {
                 PdfTemplate template = image.getTemplateData();
                 float w = template.getWidth();
                 float h = template.getHeight();
-                addTemplate(template, a / w, b / w, c / h, d / h, e, f);
+                addTemplate(template, matrix.getA() / w, matrix.getB() / w, matrix.getC() / h, matrix.getD() / h, matrix.getE(), matrix.getF());
             } else {
                 content.append("q ");
-                content.append(a).append(' ');
-                content.append(b).append(' ');
-                content.append(c).append(' ');
-                content.append(d).append(' ');
-                content.append(e).append(' ');
-                content.append(f).append(" cm");
+                content.append(matrix.getA()).append(' ');
+                content.append(matrix.getB()).append(' ');
+                content.append(matrix.getC()).append(' ');
+                content.append(matrix.getD()).append(' ');
+                content.append(matrix.getE()).append(' ');
+                content.append(matrix.getF()).append(" cm");
                 if (inlineImage) {
                     content.append("\nBI\n");
                     PdfImage pimage = new PdfImage(image, "", null);
@@ -1524,7 +1531,7 @@ public class PdfContentByte {
                 saveState();
                 float w = image.getWidth();
                 float h = image.getHeight();
-                concatCTM(a / w, b / w, c / h, d / h, e, f);
+                concatCTM(matrix.getA() / w, matrix.getB() / w, matrix.getC() / h, matrix.getD() / h, matrix.getE(), matrix.getF());
                 rectangle(image);
                 restoreState();
             }
@@ -1537,8 +1544,8 @@ public class PdfContentByte {
             }
             float[] r = new float[unitRect.length];
             for (int k = 0; k < unitRect.length; k += 2) {
-                r[k] = a * unitRect[k] + c * unitRect[k + 1] + e;
-                r[k + 1] = b * unitRect[k] + d * unitRect[k + 1] + f;
+                r[k] = matrix.getA() * unitRect[k] + matrix.getC() * unitRect[k + 1] + matrix.getE();
+                r[k + 1] = matrix.getB() * unitRect[k] + matrix.getD() * unitRect[k + 1] + matrix.getF();
             }
             float llx = r[0];
             float lly = r[1];
@@ -2100,7 +2107,7 @@ public class PdfContentByte {
     public PdfPatternPainter createPattern(float width, float height, float xstep, float ystep) {
         checkWriter();
         if (xstep == 0.0f || ystep == 0.0f) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("xstep.or.ystep.can.not.be.zero"));
+            throw new ZeroValueException(MessageLocalization.getComposedMessage("xstep.or.ystep.can.not.be.zero"));
         }
         PdfPatternPainter painter = new PdfPatternPainter(writer);
         painter.setWidth(width);
@@ -2137,7 +2144,7 @@ public class PdfContentByte {
     public PdfPatternPainter createPattern(float width, float height, float xstep, float ystep, Color color) {
         checkWriter();
         if (xstep == 0.0f || ystep == 0.0f) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("xstep.or.ystep.can.not.be.zero"));
+            throw new ZeroValueException(MessageLocalization.getComposedMessage("xstep.or.ystep.can.not.be.zero"));
         }
         PdfPatternPainter painter = new PdfPatternPainter(writer, color);
         painter.setWidth(width);
@@ -2245,18 +2252,17 @@ public class PdfContentByte {
         content.append(name.getBytes()).append(" Do Q").append_i(separator);
     }
 
-    void addTemplateReference(PdfIndirectReference template, PdfName name, float a, float b, float c, float d, float e,
-            float f) {
+    void addTemplateReference(PdfIndirectReference template, PdfName name, TransformationMatrix matrix) {
         checkWriter();
         PageResources prs = getPageResources();
         name = prs.addXObject(name, template);
         content.append("q ");
-        content.append(a).append(' ');
-        content.append(b).append(' ');
-        content.append(c).append(' ');
-        content.append(d).append(' ');
-        content.append(e).append(' ');
-        content.append(f).append(" cm ");
+        content.append(matrix.getA()).append(' ');
+        content.append(matrix.getB()).append(' ');
+        content.append(matrix.getC()).append(' ');
+        content.append(matrix.getD()).append(' ');
+        content.append(matrix.getE()).append(' ');
+        content.append(matrix.getF()).append(" cm ");
         content.append(name.getBytes()).append(" Do Q").append_i(separator);
     }
 
@@ -2584,7 +2590,7 @@ public class PdfContentByte {
                 content.append(tint);
                 break;
             default:
-                throw new RuntimeException(MessageLocalization.getComposedMessage("invalid.color.type"));
+                throw new InvalidColorTypeException(MessageLocalization.getComposedMessage("invalid.color.type"));
         }
     }
 
@@ -2612,7 +2618,8 @@ public class PdfContentByte {
     public void setPatternFill(PdfPatternPainter p, Color color, float tint) {
         checkWriter();
         if (!p.isStencil()) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
+            throw new InvalidColorTypeException(
+                MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
         }
         saveColorFill(new RGBColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
         PageResources prs = getPageResources();
@@ -2649,7 +2656,8 @@ public class PdfContentByte {
     public void setPatternStroke(PdfPatternPainter p, Color color, float tint) {
         checkWriter();
         if (!p.isStencil()) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
+            throw new InvalidColorTypeException(
+                MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
         }
         saveColorStroke(new PatternColor(p));
         PageResources prs = getPageResources();
@@ -2979,7 +2987,7 @@ public class PdfContentByte {
      */
     void checkNoPattern(PdfTemplate t) {
         if (t.getType() == PdfTemplate.TYPE_PATTERN) {
-            throw new RuntimeException(
+            throw new InvalidPatternTemplateException(
                     MessageLocalization.getComposedMessage("invalid.use.of.a.pattern.a.template.was.expected"));
         }
     }

@@ -724,19 +724,9 @@ public class PdfDocument extends Document {
                         break;
                     } else if (element instanceof Table) {
                         try {
-                            PdfPTable ptable = ((Table) element).createPdfPTable();
-                            if (ptable.size() <= ptable.getHeaderRows()) {
-                                break; //nothing to do
-                            }
-                            // before every table, we add a new line and flush all lines
-                            ensureNewLine();
-                            flushLines();
-                            addPTable(ptable);
-                            pageEmpty = false;
+                            handleTableElement((Table) element);
                             break;
                         } catch (BadElementException bee) {
-                            // constructing the PdfTable
-                            // Before the table, add a blank line using offset or default leading
                             float offset = ((Table) element).getOffset();
                             if (Float.isNaN(offset)) {
                                 offset = leading;
@@ -794,6 +784,18 @@ public class PdfDocument extends Document {
         }
     }
 
+    private void handleTableElement(Table element) throws BadElementException, DocumentException {
+        PdfPTable ptable = element.createPdfPTable();
+        if (ptable.size() <= ptable.getHeaderRows()) {
+            return; //nothing to do
+        }
+        // before every table, we add a new line and flush all lines
+        ensureNewLine();
+        flushLines();
+        addPTable(ptable);
+        pageEmpty = false;
+    }
+    
 //    Info Dictionary and Catalog
 
     /**
