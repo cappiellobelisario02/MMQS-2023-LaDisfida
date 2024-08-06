@@ -54,6 +54,8 @@ import com.lowagie.text.Font;
 import com.lowagie.text.Image;
 import com.lowagie.text.SplitCharacter;
 import com.lowagie.text.Utilities;
+import com.lowagie.text.exceptions.BaseFontException;
+
 import java.awt.Color;
 import java.io.IOException;
 import java.util.HashMap;
@@ -237,7 +239,7 @@ public class PdfChunk {
                     baseFont = BaseFont.createFont("font-fallback/LiberationSans-Regular.ttf",
                             BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new BaseFontException(e.getMessage());
                 }
             }
         } else {
