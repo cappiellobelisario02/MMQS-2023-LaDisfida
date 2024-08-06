@@ -328,13 +328,14 @@ public class PdfGraphics2D extends Graphics2D {
             int Height = img.getHeight();
             WritableRaster raster = cm.createCompatibleWritableRaster(Width, Height);
             boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-            Hashtable<String, Object> properties = new Hashtable<>();
+            HashMap<String, Object> propertiesMap = new HashMap<>();
             String[] keys = img.getPropertyNames();
             if (keys != null) {
                 for (String key : keys) {
-                    properties.put(key, img.getProperty(key));
+                    propertiesMap.put(key, img.getProperty(key));
                 }
             }
+            Hashtable<String, Object> properties = new Hashtable<>(propertiesMap);
             BufferedImage result = new BufferedImage(cm, raster, isAlphaPremultiplied, properties);
             img.copyData(raster);
             image = result;
