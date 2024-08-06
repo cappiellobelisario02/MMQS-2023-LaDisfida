@@ -51,6 +51,9 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.CheckboxParams;
+import com.lowagie.text.pdf.SelectListParams;
+import com.lowagie.text.pdf.ComboBoxParams;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -201,124 +204,6 @@ public class HtmlPostButtonConfig {
     public float getUry() { return ury; }
 }
 
-public class CheckBoxParams {
-    private PdfFormField field;
-    private String name;
-    private String value;
-    private boolean status;
-    private float llx;
-    private float lly;
-    private float urx;
-    private float ury;
-
-    // Costruttore
-    public CheckBoxParams(PdfFormField field, String name, String value, boolean status, float llx, float lly, float urx, float ury) {
-        this.field = field;
-        this.name = name;
-        this.value = value;
-        this.status = status;
-        this.llx = llx;
-        this.lly = lly;
-        this.urx = urx;
-        this.ury = ury;
-    }
-
-    // Getter per tutti i campi
-    public PdfFormField getField() {
-        return field;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public boolean isStatus() {
-        return status;
-    }
-
-    public float getLlx() {
-        return llx;
-    }
-
-    public float getLly() {
-        return lly;
-    }
-
-    public float getUrx() {
-        return urx;
-    }
-
-    public float getUry() {
-        return ury;
-    }
-}
-
-public class SelectListParams {
-    private String name;
-    private String[] options;
-    private String defaultValue;
-    private BaseFont font;
-    private float fontSize;
-    private float llx;
-    private float lly;
-    private float urx;
-    private float ury;
-
-    // Costruttore
-    public SelectListParams(String name, String[] options, String defaultValue, BaseFont font, float fontSize, float llx, float lly, float urx, float ury) {
-        this.name = name;
-        this.options = options;
-        this.defaultValue = defaultValue;
-        this.font = font;
-        this.fontSize = fontSize;
-        this.llx = llx;
-        this.lly = lly;
-        this.urx = urx;
-        this.ury = ury;
-    }
-
-    // Getter per tutti i campi
-    public String getName() {
-        return name;
-    }
-
-    public String[] getOptions() {
-        return options;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public BaseFont getFont() {
-        return font;
-    }
-
-    public float getFontSize() {
-        return fontSize;
-    }
-
-    public float getLlx() {
-        return llx;
-    }
-
-    public float getLly() {
-        return lly;
-    }
-
-    public float getUrx() {
-        return urx;
-    }
-
-    public float getUry() {
-        return ury;
-    }
-}
-
 
 public class PdfAcroForm extends PdfDictionary {
 
@@ -337,14 +222,6 @@ public class PdfAcroForm extends PdfDictionary {
         PdfAppearance pa = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
         pa.drawButton(0f, 0f, urx - llx, ury - lly, caption, font, fontSize);
         button.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, pa);
-    }
-
-    public PdfFormField addSingleLineTextField(TextDrawingConfig config) {
-    PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.SINGLELINE, PdfFormField.PLAINTEXT, 0);
-    setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
-    drawSingleLineOfText(config);
-    addFormField(field);
-    return field;
     }
 
     public void drawSingleLineOfText(TextDrawingConfig config) {
@@ -753,48 +630,6 @@ public class PdfAcroForm extends PdfDictionary {
         field.setPage();
     }
 
-    /**
-     * @param field    field
-     * @param text     text for the field
-     * @param font     an object of {@link BaseFont}
-     * @param fontSize font size
-     * @param llx      lower-left-x
-     * @param lly      lower-left-y
-     * @param urx      upper-right-x
-     * @param ury      upper-right-y
-     */
-    public void drawSingleLineOfText(TextDrawingConfig config) {
-        PdfFormField field = config.getField();
-        String text = config.getText();
-        BaseFont font = config.getFont();
-        float fontSize = config.getFontSize();
-        float llx = config.getLlx();
-        float lly = config.getLly();
-        float urx = config.getUrx();
-        float ury = config.getUry();
-
-        PdfAppearance tp = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
-        PdfAppearance tp2 = (PdfAppearance) tp.getDuplicate();
-        tp2.setFontAndSize(font, fontSize);
-        tp2.resetRGBColorFill();
-        field.setDefaultAppearanceString(tp2);
-        tp.drawTextField(0f, 0f, urx - llx, ury - lly);
-        tp.beginVariableText();
-        tp.saveState();
-        tp.rectangle(3f, 3f, urx - llx - 6f, ury - lly - 6f);
-        tp.clip();
-        tp.newPath();
-        tp.beginText();
-        tp.setFontAndSize(font, fontSize);
-        tp.resetRGBColorFill();
-        tp.setTextMatrix(4, (ury - lly) / 2 - (fontSize * 0.3f));
-        tp.showText(text);
-        tp.endText();
-        tp.restoreState();
-        tp.endVariableText();
-        field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, tp);
-    }
-
 
     /**
      * @param field    field, an object of {@link PdfFormField}
@@ -847,8 +682,8 @@ public class PdfAcroForm extends PdfDictionary {
     public PdfFormField addCheckBox(String name, String value, boolean status, float llx, float lly, float urx,
             float ury) {
         PdfFormField field = PdfFormField.createCheckBox(writer);
-        CheckBoxParams checkBoxParams = new CheckBoxParams(field, name, value, status, llx, lly, urx, ury);
-        setCheckBoxParams(checkBoxParams);
+        CheckboxParams checkboxParams = new CheckboxParams(field, name, value, status, llx, lly, urx, ury);
+        setCheckBoxParams(checkboxParams);
         drawCheckBoxAppearences(field, value, llx, lly, urx, ury);
         addFormField(field);
         return field;
@@ -864,7 +699,7 @@ public class PdfAcroForm extends PdfDictionary {
      * @param urx    upper-right-x
      * @param ury    upper-right-y
      */
-    public void setCheckBoxParams(CheckBoxParams checkBoxParams) {
+    public void setCheckBoxParams(CheckboxParams checkBoxParams) {
         field.setWidget(new Rectangle(checkBoxParams.getLlx(), checkBoxParams.getLly(), checkBoxParams.getUrx(), checkBoxParams.getUry()), PdfAnnotation.HIGHLIGHT_TOGGLE);
         field.setFieldName(checkBoxParams.getName());
         if (checkBoxParams.isStatus()) {
@@ -987,102 +822,89 @@ public class PdfAcroForm extends PdfDictionary {
      * @param ury          upper-right-y
      * @return a PdfFormField
      */
-    public PdfFormField addSelectList(SelectListParams params) {
-        PdfFormField choice = PdfFormField.createList(writer, params.getOptions(), 0);
-        setChoiceParams(choice, params.getName(), params.getDefaultValue(), params.getLlx(), params.getLly(), params.getUrx(), params.getUry());
-        StringBuilder text = new StringBuilder();
-        for (String option : params.getOptions()) {
-            text.append(option).append('\n');
-        }
+    public PdfFormField addSelectList(SelectListParams params) throws UnsupportedOperationException{
+        
+        try{
+            params.getElement(0);
 
-        TextDrawingConfig textDrawingConfig = new TextDrawingConfig(choice, text.toString(), params.getFont(), params.getFontSize(), params.getLlx(), params.getLly(), params.getUrx(), params.getUry(), params.getName());
-        drawMultiLineOfText(textDrawingConfig);
-        addFormField(choice);
-        return choice;
-    }
-
-    /**
-     * @param name         name of the field
-     * @param options      options
-     * @param defaultValue default value
-     * @param font         an object of {@link BaseFont}
-     * @param fontSize     font size
-     * @param llx          lower-left-x
-     * @param lly          lower-left-y
-     * @param urx          upper-right-x
-     * @param ury          upper-right-y
-     * @return a PdfFormField
-     */
-    public PdfFormField addSelectList(String name, String[][] options, String defaultValue, BaseFont font,
-            float fontSize, float llx, float lly, float urx, float ury) {
-        PdfFormField choice = PdfFormField.createList(writer, options, 0);
-        setChoiceParams(choice, name, defaultValue, llx, lly, urx, ury);
-        StringBuilder text = new StringBuilder();
-        for (String[] option : options) {
-            text.append(option[1]).append('\n');
-        }
-
-        TextDrawingConfig textDrawingConfig = new TextDrawingConfig(choice, text.toString(), font, fontSize, llx, lly, urx, ury, name);
-        drawMultiLineOfText(textDrawingConfig);
-        addFormField(choice);
-        return choice;
-    }
-
-    /**
-     * @param name         name of the field
-     * @param options      options
-     * @param defaultValue default value
-     * @param editable     if field is editable, <code>true</code> or <code>false</code>
-     * @param font         an object of {@link BaseFont}
-     * @param fontSize     font size
-     * @param llx          lower-left-x
-     * @param lly          lower-left-y
-     * @param urx          upper-right-x
-     * @param ury          upper-right-y
-     * @return a PdfFormField
-     */
-    public PdfFormField addComboBox(String name, String[] options, String defaultValue, boolean editable, BaseFont font,
-            float fontSize, float llx, float lly, float urx, float ury) {
-        PdfFormField choice = PdfFormField.createCombo(writer, editable, options, 0);
-        setChoiceParams(choice, name, defaultValue, llx, lly, urx, ury);
-        if (defaultValue == null) {
-            defaultValue = options[0];
-        }
-        drawSingleLineOfText(choice, defaultValue, font, fontSize, llx, lly, urx, ury);
-        addFormField(choice);
-        return choice;
-    }
-
-    /**
-     * @param name         name of the field
-     * @param options      options
-     * @param defaultValue default value
-     * @param editable     if field is editable, <code>true</code> or <code>false</code>
-     * @param font         an object of {@link BaseFont}
-     * @param fontSize     font size
-     * @param llx          lower-left-x
-     * @param lly          lower-left-y
-     * @param urx          upper-right-x
-     * @param ury          upper-right-y
-     * @return a PdfFormField
-     */
-    public PdfFormField addComboBox(String name, String[][] options, String defaultValue, boolean editable,
-            BaseFont font, float fontSize, float llx, float lly, float urx, float ury) {
-        PdfFormField choice = PdfFormField.createCombo(writer, editable, options, 0);
-        setChoiceParams(choice, name, defaultValue, llx, lly, urx, ury);
-        String value = null;
-        for (String[] option : options) {
-            if (option[0].equals(defaultValue)) {
-                value = option[1];
-                break;
+            PdfFormField choice = PdfFormField.createList(writer, (String[]) params.getOptions(), 0);
+            setChoiceParams(choice, params.getName(), params.getDefaultValue(), params.getLlx(), params.getLly(), params.getUrx(), params.getUry());
+            StringBuilder text = new StringBuilder();
+            for (String option : (String[]) params.getOptions()) {
+                text.append(option).append('\n');
             }
+            TextDrawingConfig textDrawingConfig = new TextDrawingConfig(choice, text.toString(), params.getFont(), params.getFontSize(), params.getLlx(), params.getLly(), params.getUrx(), params.getUry(), params.getName());
+            drawMultiLineOfText(textDrawingConfig);
+            addFormField(choice);
+            return choice;
+
+        } catch(UnsupportedOperationException e) {
+            PdfFormField choice = PdfFormField.createList(writer, (String[][]) params.getOptions(), 0);
+            setChoiceParams(choice, params.getName(), params.getDefaultValue(), params.getLlx(), params.getLly(), params.getUrx(), params.getUry());
+            StringBuilder text = new StringBuilder();
+            for (String[] option : (String[][]) params.getOptions()) {
+                text.append(option[1]).append('\n');
+            }
+            TextDrawingConfig textDrawingConfig = new TextDrawingConfig(choice, text.toString(), params.getFont(), params.getFontSize(), params.getLlx(), params.getLly(), params.getUrx(), params.getUry(), params.getName());
+            drawMultiLineOfText(textDrawingConfig);
+            addFormField(choice);
+            return choice;
         }
-        if (value == null) {
-            value = options[0][1];
+
+    }
+
+    /**
+     * @param name         name of the field
+     * @param options      options
+     * @param defaultValue default value
+     * @param editable     if field is editable, <code>true</code> or <code>false</code>
+     * @param font         an object of {@link BaseFont}
+     * @param fontSize     font size
+     * @param llx          lower-left-x
+     * @param lly          lower-left-y
+     * @param urx          upper-right-x
+     * @param ury          upper-right-y
+     * @return a PdfFormField
+     */
+    public PdfFormField addComboBox(ComboBoxParams params) throws UnsupportedOperationException {
+        try {
+            params.getElement(0);
+
+            PdfFormField choice = PdfFormField.createCombo(writer, params.isEditable(), (String[]) params.getOptions(), 0);
+            setChoiceParams(choice, params.getName(), params.getDefaultValue(), params.getLlx(), params.getLly(), 
+                params.getUrx(), params.getUry());
+            if (params.getDefaultValue() == null) {
+                params.setDefaultValue(params.getElement(0));
+            }
+            TextDrawingConfig config = new TextDrawingConfig(choice, params.getDefaultValue(), params.getFont(), 
+                params.getFontSize(), params.getLlx(), params.getLly(), params.getUrx(), params.getUry(), 
+                params.getName());
+            drawSingleLineOfText(config);
+            addFormField(choice);
+            return choice;
+            
+        } catch(UnsupportedOperationException e) {
+            PdfFormField choice = PdfFormField.createCombo(writer, params.isEditable(), (String[][]) params.getOptions(), 0);
+            setChoiceParams(choice, params.getName(), params.getDefaultValue(), params.getLlx(), params.getLly(), 
+                params.getUrx(), params.getUry());
+            String value = null;
+            for (String[] option : (String[][]) params.getOptions()) {
+                if (option[0].equals(params.getDefaultValue())) {
+                    value = option[1];
+                    break;
+                }
+            }
+            if (value == null) {
+                value = params.getElement(0, 1);
+            }
+            TextDrawingConfig config = new TextDrawingConfig(choice, value, params.getFont(), 
+                params.getFontSize(), params.getLlx(), params.getLly(), params.getUrx(), params.getUry(), 
+                params.getName());
+            drawSingleLineOfText(config);
+            addFormField(choice);
+            return choice;
         }
-        drawSingleLineOfText(choice, value, font, fontSize, llx, lly, urx, ury);
-        addFormField(choice);
-        return choice;
+        
     }
 
     /**
