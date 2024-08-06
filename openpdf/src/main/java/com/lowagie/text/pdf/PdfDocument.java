@@ -75,6 +75,7 @@ import com.lowagie.text.Section;
 import com.lowagie.text.SimpleTable;
 import com.lowagie.text.Table;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.ActionException;
 import com.lowagie.text.pdf.TextDrawingConfig.PdfAcroForm;
 import com.lowagie.text.pdf.collection.PdfCollection;
 import com.lowagie.text.pdf.draw.DrawInterface;
@@ -795,7 +796,7 @@ public class PdfDocument extends Document {
         addPTable(ptable);
         pageEmpty = false;
     }
-    
+
 //    Info Dictionary and Catalog
 
     /**
@@ -837,7 +838,7 @@ public class PdfDocument extends Document {
                 newPage();
             }
             if (annotationsImp.hasUnusedAnnotations()) {
-                throw new RuntimeException(MessageLocalization.getComposedMessage(
+                throw new DocumentException(MessageLocalization.getComposedMessage(
                         "not.all.annotations.could.be.added.to.the.document.the.document.doesn.t.have.enough.pages"));
             }
             PdfPageEvent pageEvent = writer.getPageEvent();
@@ -880,7 +881,7 @@ public class PdfDocument extends Document {
             return false;
         }
         if (!open || close) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("the.document.is.not.open"));
+            throw new DocumentException(MessageLocalization.getComposedMessage("the.document.is.not.open"));
         }
         PdfPageEvent pageEvent = writer.getPageEvent();
         if (pageEvent != null) {
@@ -2141,7 +2142,7 @@ public class PdfDocument extends Document {
 
     void addJavaScript(PdfAction js) {
         if (js.get(PdfName.JS) == null) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("only.javascript.actions.are.allowed"));
+            throw new ActionException(MessageLocalization.getComposedMessage("only.javascript.actions.are.allowed"));
         }
         try {
             documentLevelJS.put(SIXTEEN_DIGITS.format(jsCounter++), writer.addToBody(js).getIndirectReference());
@@ -2152,7 +2153,7 @@ public class PdfDocument extends Document {
 
     void addJavaScript(String name, PdfAction js) {
         if (js.get(PdfName.JS) == null) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("only.javascript.actions.are.allowed"));
+            throw new ActionException(MessageLocalization.getComposedMessage("only.javascript.actions.are.allowed"));
         }
         try {
             documentLevelJS.put(name, writer.addToBody(js).getIndirectReference());
