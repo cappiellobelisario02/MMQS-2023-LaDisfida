@@ -25,6 +25,7 @@ import com.lowagie.text.pdf.PRStream;
 import com.lowagie.text.pdf.PdfReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serial;
 import java.util.Enumeration;
 
 /**
@@ -37,18 +38,19 @@ public class XfaTreeNode extends FormTreeNode implements OutputStreamResource {
     /**
      * Start sequence of an artificial boundary between XFA fragments added by RUPS
      */
-    public static final byte[] BOUNDARY_START = "<!--\nRUPS XFA individual packet: end of [".getBytes();
+    protected static final byte[] BOUNDARY_START = "<!--\nRUPS XFA individual packet: end of [".getBytes();
     /**
      * Middle sequence of an artificial boundary between XFA fragments added by RUPS
      */
-    public static final byte[] BOUNDARY_MIDDLE = "]; start of [".getBytes();
+    protected static final byte[] BOUNDARY_MIDDLE = "]; start of [".getBytes();
     /**
      * End sequence of an artificial boundary between XFA fragments added by RUPS
      */
-    public static final byte[] BOUNDARY_END = "]\n-->".getBytes();
+    protected static final byte[] BOUNDARY_END = "]\n-->".getBytes();
     /**
      * A serial version UID.
      */
+    @Serial
     private static final long serialVersionUID = 2463297568233643790L;
 
     /**
@@ -71,15 +73,14 @@ public class XfaTreeNode extends FormTreeNode implements OutputStreamResource {
         Enumeration<?> children = this.children();
         FormTreeNode node;
         PRStream stream;
-        String key = null;
-        String tmp = null;
+        String tmp;
         while (children.hasMoreElements()) {
             node = (FormTreeNode) children.nextElement();
-            if (key != null) {
+            tmp = (String) node.getUserObject();
+            if (tmp != null) {  // Assuming tmp should be checked
                 os.write(BOUNDARY_START);
-                os.write(key.getBytes());
+                os.write(tmp.getBytes());
                 os.write(BOUNDARY_MIDDLE);
-                tmp = (String) node.getUserObject();
                 os.write(tmp.getBytes());
                 os.write(BOUNDARY_END);
             }
