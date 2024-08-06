@@ -64,6 +64,7 @@ import com.lowagie.text.TransformationMatrix;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.IllegalPdfSyntaxException;
 import com.lowagie.text.exceptions.NotEqualWritersException;
+import com.lowagie.text.exceptions.ZeroValueException;
 import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import java.awt.Color;
@@ -2104,7 +2105,7 @@ public class PdfContentByte {
     public PdfPatternPainter createPattern(float width, float height, float xstep, float ystep) {
         checkWriter();
         if (xstep == 0.0f || ystep == 0.0f) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("xstep.or.ystep.can.not.be.zero"));
+            throw new ZeroValueException(MessageLocalization.getComposedMessage("xstep.or.ystep.can.not.be.zero"));
         }
         PdfPatternPainter painter = new PdfPatternPainter(writer);
         painter.setWidth(width);
