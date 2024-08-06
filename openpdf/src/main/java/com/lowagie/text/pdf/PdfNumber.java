@@ -50,6 +50,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.IllegalNumberException;
 import java.util.Objects;
 
 /**
@@ -84,7 +85,7 @@ public class PdfNumber extends PdfObject implements Comparable<PdfNumber> {
             value = Double.parseDouble(content.trim());
             setContent(content);
         } catch (NumberFormatException nfe) {
-            throw new RuntimeException(
+            throw new IllegalNumberException(
                     MessageLocalization.getComposedMessage("1.is.not.a.valid.number.2", content, nfe.toString()));
         }
     }
