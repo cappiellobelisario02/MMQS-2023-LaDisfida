@@ -50,6 +50,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.InvalidNamedActionException;
 import com.lowagie.text.pdf.collection.PdfTargetDictionary;
 import java.io.IOException;
 import java.net.URL;
@@ -258,7 +259,7 @@ public class PdfAction extends PdfDictionary {
                 put(PdfName.JS, new PdfString("this.print(true);\r"));
                 break;
             default:
-                throw new RuntimeException(MessageLocalization.getComposedMessage("invalid.named.action"));
+                throw new InvalidNamedActionException(MessageLocalization.getComposedMessage("invalid.named.action"));
         }
     }
 
