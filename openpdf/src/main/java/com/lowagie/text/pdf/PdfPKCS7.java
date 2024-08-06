@@ -1848,13 +1848,13 @@ public class PdfPKCS7 {
     }
 
     /**
-     * class for breaking up an X500 Name into it's component tokens, ala java.util.StringTokenizer. We need this class
+     * class for breaking up an X500 Name into its component tokens, ala java.util.StringTokenizer. We need this class
      * as some of the lightweight Java environment don't support classes like StringTokenizer.
      */
     public static class X509NameTokenizer {
 
         private final String oid;
-        private final StringBuffer buf = new StringBuffer();
+        private final StringBuilder buf = new StringBuilder();
         private int index;
 
         public X509NameTokenizer(String oid) {
