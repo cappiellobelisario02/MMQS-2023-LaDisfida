@@ -51,6 +51,8 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.AnnotationException;
+
 import java.awt.Color;
 import java.io.IOException;
 import java.util.HashMap;
@@ -595,7 +597,7 @@ public class PdfAnnotation extends PdfDictionary {
             case ExtendedColor.TYPE_SEPARATION:
             case ExtendedColor.TYPE_PATTERN:
             case ExtendedColor.TYPE_SHADING:
-                throw new RuntimeException(
+                throw new AnnotationException(
                         MessageLocalization.getComposedMessage(
                                 "separations.patterns.and.shadings.are.not.allowed.in.mk.dictionary"));
             default:
