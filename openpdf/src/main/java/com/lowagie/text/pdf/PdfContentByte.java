@@ -2252,18 +2252,17 @@ public class PdfContentByte {
         content.append(name.getBytes()).append(" Do Q").append_i(separator);
     }
 
-    void addTemplateReference(PdfIndirectReference template, PdfName name, float a, float b, float c, float d, float e,
-            float f) {
+    void addTemplateReference(PdfIndirectReference template, PdfName name, TransformationMatrix matrix) {
         checkWriter();
         PageResources prs = getPageResources();
         name = prs.addXObject(name, template);
         content.append("q ");
-        content.append(a).append(' ');
-        content.append(b).append(' ');
-        content.append(c).append(' ');
-        content.append(d).append(' ');
-        content.append(e).append(' ');
-        content.append(f).append(" cm ");
+        content.append(matrix.getA()).append(' ');
+        content.append(matrix.getB()).append(' ');
+        content.append(matrix.getC()).append(' ');
+        content.append(matrix.getD()).append(' ');
+        content.append(matrix.getE()).append(' ');
+        content.append(matrix.getF()).append(" cm ");
         content.append(name.getBytes()).append(" Do Q").append_i(separator);
     }
 
