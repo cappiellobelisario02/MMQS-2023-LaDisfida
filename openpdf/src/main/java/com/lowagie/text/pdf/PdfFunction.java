@@ -72,24 +72,23 @@ public class PdfFunction {
         this.writer = writer;
     }
 
-    public static PdfFunction type0(PdfWriter writer, float[] domain, float[] range, int[] size,
-            int bitsPerSample, int order, float[] encode, float[] decode, byte[] stream) {
+    public static PdfFunction type0(PdfWriter writer, PdfFunctionParams params) {
         PdfFunction func = new PdfFunction(writer);
-        func.dictionary = new PdfStream(stream);
+        func.dictionary = new PdfStream(params.getStream());
         ((PdfStream) func.dictionary).flateCompress(writer.getCompressionLevel());
         func.dictionary.put(PdfName.FUNCTIONTYPE, new PdfNumber(0));
-        func.dictionary.put(PdfName.DOMAIN, new PdfArray(domain));
-        func.dictionary.put(PdfName.RANGE, new PdfArray(range));
-        func.dictionary.put(PdfName.SIZE, new PdfArray(size));
-        func.dictionary.put(PdfName.BITSPERSAMPLE, new PdfNumber(bitsPerSample));
-        if (order != 1) {
-            func.dictionary.put(PdfName.ORDER, new PdfNumber(order));
+        func.dictionary.put(PdfName.DOMAIN, new PdfArray(params.getDomain()));
+        func.dictionary.put(PdfName.RANGE, new PdfArray(params.getRange()));
+        func.dictionary.put(PdfName.SIZE, new PdfArray(params.getSize()));
+        func.dictionary.put(PdfName.BITSPERSAMPLE, new PdfNumber(params.getBitsPerSample()));
+        if (params.getOrder() != 1) {
+            func.dictionary.put(PdfName.ORDER, new PdfNumber(params.getOrder()));
         }
-        if (encode != null) {
-            func.dictionary.put(PdfName.ENCODE, new PdfArray(encode));
+        if (params.getEncode() != null) {
+            func.dictionary.put(PdfName.ENCODE, new PdfArray(params.getEncode()));
         }
-        if (decode != null) {
-            func.dictionary.put(PdfName.DECODE, new PdfArray(decode));
+        if (params.getDecode() != null) {
+            func.dictionary.put(PdfName.DECODE, new PdfArray(params.getDecode()));
         }
         return func;
     }
