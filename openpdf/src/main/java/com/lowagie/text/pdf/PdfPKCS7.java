@@ -298,13 +298,7 @@ public class PdfPKCS7 {
             //
             ASN1Primitive pkcs;
 
-            try {
-                pkcs = din.readObject();
-            } catch (IOException e) {
-                throw new IllegalArgumentException(
-                        MessageLocalization
-                                .getComposedMessage("can.t.decode.pkcs7signeddata.object"));
-            }
+            pkcs = readASN1InputStream(din);
             if (!(pkcs instanceof ASN1Sequence)) {
                 throw new IllegalArgumentException(
                         MessageLocalization
@@ -464,6 +458,16 @@ public class PdfPKCS7 {
             sig.initVerify(signCert.getPublicKey());
         } catch (Exception e) {
             throw new ExceptionConverter(e);
+        }
+    }
+
+    private ASN1Primitive readASN1InputStream(ASN1InputStream stream) {
+        try {
+            return stream.readObject();
+        } catch (IOException e) {
+            throw new IllegalArgumentException(
+                    MessageLocalization
+                            .getComposedMessage("can.t.decode.pkcs7signeddata.object"));
         }
     }
 
@@ -670,32 +674,7 @@ public class PdfPKCS7 {
             if (err != null) {
                 return new Object[]{cert, err};
             }
-            try {
-                for (Enumeration<?> aliases = keystore.aliases(); aliases
-                        .hasMoreElements(); ) {
-                    try {
-                        String alias = (String) aliases.nextElement();
-                        if (!keystore.isCertificateEntry(alias)) {
-                            continue;
-                        }
-                        X509Certificate certStoreX509 = (X509Certificate) keystore
-                                .getCertificate(alias);
-                        if (verifyCertificate(certStoreX509, crls, calendar) != null) {
-                            continue;
-                        }
-                        try {
-                            cert.verify(certStoreX509.getPublicKey());
-                            return new int[];
-                        } catch (Exception ignored) {
-                            ignored.printStackTrace();
-                        }
-                    } catch (Exception ignored) {
-                        ignored.printStackTrace();
-                    }
-                }
-            } catch (Exception ignored) {
-                ignored.printStackTrace();
-            }
+            return certificateVerification(keystore, calendar, cert);
             int j;
             for (j = 0; j < certs.length; ++j) {
                 if (j == k) {
@@ -716,6 +695,44 @@ public class PdfPKCS7 {
         }
         return new Object[]{null,
                 "Invalid state. Possible circular certificate chain"};
+    }
+
+    private Object[] certificateVerification (KeyStore keyStore, Calendar calendar,
+        X509Certificate certificate) {
+        try{
+            for (Enumeration<?> aliases = keyStore.aliases(); aliases
+                        .hasMoreElements(); ) {
+                try {
+                    String alias = (String) aliases.nextElement();
+                    if (!keyStore.isCertificateEntry(alias)) {
+                        continue;
+                    }
+                    X509Certificate certStoreX509 = (X509Certificate) keyStore
+                            .getCertificate(alias);
+                    if (verifyCertificate(certStoreX509, crls, calendar) != null) {
+                        continue;
+                    }
+                    return X509CertificateVerification(certificate, certStoreX509);
+                } catch (Exception ignored) {
+                    ignored.printStackTrace();
+                    return null;
+                }
+            }
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
+            return null;
+        }
+    }
+
+    private Object[] X509CertificateVerification(X509Certificate certificate, X509Certificate certStoreX509) {
+        try{
+            certificate.verify(certStoreX509.getPublicKey());
+            Object[] arr = new Object[]{};
+            return arr;
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
+            return null;
+        }
     }
 
     /**
