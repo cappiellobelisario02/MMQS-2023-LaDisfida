@@ -54,7 +54,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-import java.util.Vector;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JDesktopPane;
@@ -80,6 +80,8 @@ import javax.swing.text.StyleContext;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class Toolbox extends JFrame implements ActionListener {
+
+    private static final Logger logger = Logger.getLogger(Toolbox.class.getName());
 
     /**
      * A serial version ID
@@ -127,7 +129,7 @@ public class Toolbox extends JFrame implements ActionListener {
             setIconImage(new ImageIcon(com.lowagie.toolbox.Toolbox.class.getResource(
                     "1t3xt.gif")).getImage());
         } catch (Exception err) {
-            System.err.println("Problem loading icon image.");
+            logger.info("Problem loading icon image.");
         }
         Console c;
         try {
@@ -180,7 +182,7 @@ public class Toolbox extends JFrame implements ActionListener {
                 tool.setMainArguments(nargs);
                 tool.execute();
             } catch (PropertyVetoException | InstantiationException | IllegalAccessException
-                    | ClassNotFoundException ex) {
+                     | ClassNotFoundException ex) {
             }
         }
     }
@@ -273,7 +275,8 @@ public class Toolbox extends JFrame implements ActionListener {
      * @param tools JMenu
      */
     private void buildPluginMenuItems(Map<Object, Object> tmp, JMenu tools) {
-        String name, tool;
+        String name;
+        String tool;
         JMenu current = null;
         JMenuItem item;
 
@@ -296,7 +299,7 @@ public class Toolbox extends JFrame implements ActionListener {
                     current.add(item);
                 }
             } catch (ClassNotFoundException e) {
-                System.err.println("Plugin " + name
+                logger.info("Plugin " + name
                         + " was not found in your CLASSPATH.");
             }
         }
@@ -341,12 +344,10 @@ public class Toolbox extends JFrame implements ActionListener {
      */
     public void actionPerformed(ActionEvent evt) {
         if (ToolMenuItems.CLOSE.equals(evt.getActionCommand())) {
-            System.out.println("The Toolbox is closed.");
+            logger.info("The Toolbox is closed.");
             System.exit(0);
         } else if (ToolMenuItems.ABOUT.equals(evt.getActionCommand())) {
-            System.out
-                    .println(
-                            "The iText Toolbox is part of iText, a Free Java-PDF Library.\nVisit http://itexttoolbox.sourceforge.net/ for more info.");
+            logger.info("The iText Toolbox is part of iText, a Free Java-PDF Library.\nVisit http://itexttoolbox.sourceforge.net/ for more info.");
             try {
                 Executable
                         .launchBrowser("http://itexttoolbox.sourceforge.net/");
@@ -358,7 +359,8 @@ public class Toolbox extends JFrame implements ActionListener {
             }
         } else if (ToolMenuItems.RESET.equals(evt.getActionCommand())) {
             JInternalFrame[] framearray = desktop.getAllFrames();
-            int xx = 0, yy = 0;
+            int xx = 0;
+            int yy = 0;
             for (JInternalFrame jInternalFrame : framearray) {
                 if (!jInternalFrame.isIcon()) {
                     try {

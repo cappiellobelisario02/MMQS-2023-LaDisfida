@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -55,6 +56,10 @@ import javax.swing.JOptionPane;
  */
 public class Bookmarks2XML extends AbstractTool {
 
+    private static final Logger logger = Logger.getLogger(Bookmarks2XML.class.getName());
+    public static final String PDFFILE = "pdffile";
+    public static final String XMLFILE = "xmlfile";
+
     static {
         addVersion("$Id: Bookmarks2XML.java 3271 2008-04-18 20:39:42Z xlv $");
     }
@@ -63,9 +68,9 @@ public class Bookmarks2XML extends AbstractTool {
      * Constructs an Bookmarks2XML object.
      */
     public Bookmarks2XML() {
-        arguments.add(new FileArgument(this, "pdffile", "the PDF from which you want to extract bookmarks", false,
+        arguments.add(new FileArgument(this, PDFFILE, "the PDF from which you want to extract bookmarks", false,
                 new PdfFilter()));
-        arguments.add(new FileArgument(this, "xmlfile", "the resulting bookmarks file in XML", true));
+        arguments.add(new FileArgument(this, XMLFILE, "the resulting bookmarks file in XML", true));
     }
 
     /**
@@ -76,7 +81,7 @@ public class Bookmarks2XML extends AbstractTool {
     public static void main(String[] args) {
         Bookmarks2XML tool = new Bookmarks2XML();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -89,24 +94,24 @@ public class Bookmarks2XML extends AbstractTool {
         internalFrame = new JInternalFrame("Bookmarks2XML", true, true, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Bookmarks2XML OPENED ===");
+        logger.info("=== Bookmarks2XML OPENED ===");
     }
 
     /**
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        try (PdfReader reader = new PdfReader(((File) getValue("pdffile")).getAbsolutePath());){
-            if (getValue("xmlfile") == null) {
+        try (PdfReader reader = new PdfReader(((File) getValue(PDFFILE)).getAbsolutePath());){
+            if (getValue(XMLFILE) == null) {
                 throw new InstantiationException("You need to choose an xml file");
             }
-            if (getValue("pdffile") == null) {
+            if (getValue(PDFFILE) == null) {
                 throw new InstantiationException("You need to choose a source PDF file");
             }
             reader.consolidateNamedDestinations();
             List<Map<String, Object>> bookmarks = SimpleBookmark.getBookmarkList(reader);
             // save them in XML format
-            FileOutputStream bmWriter = new FileOutputStream((File) getValue("xmlfile"));
+            FileOutputStream bmWriter = new FileOutputStream((File) getValue(XMLFILE));
             SimpleBookmark.exportToXML(bookmarks, bmWriter, "UTF-8", false);
             bmWriter.close();
         } catch (Exception e) {
@@ -115,7 +120,7 @@ public class Bookmarks2XML extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.severe(e.getMessage());
         }
     }
 

@@ -48,6 +48,8 @@ import com.lowagie.toolbox.arguments.OptionArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
 /**
@@ -56,6 +58,10 @@ import javax.swing.JInternalFrame;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class NUp extends AbstractTool {
+
+    private static final Logger logger = Logger.getLogger(NUp.class.getName());
+    public static final String SRCFILE = "srcfile";
+    public static final String DESTFILE = "destfile";
 
     static {
         addVersion("$Id: NUp.java 3427 2008-05-24 18:32:31Z xlv $");
@@ -66,8 +72,8 @@ public class NUp extends AbstractTool {
      */
     public NUp() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW;
-        arguments.add(new FileArgument(this, "srcfile", "The file you want to N-up", false, new PdfFilter()));
-        arguments.add(new FileArgument(this, "destfile", "The resulting PDF", true, new PdfFilter()));
+        arguments.add(new FileArgument(this, SRCFILE, "The file you want to N-up", false, new PdfFilter()));
+        arguments.add(new FileArgument(this, DESTFILE, "The resulting PDF", true, new PdfFilter()));
         OptionArgument oa = new OptionArgument(this, "pow2", "The number of pages you want to copy to 1 page");
         oa.addOption("2", "1");
         oa.addOption("4", "2");
@@ -86,7 +92,7 @@ public class NUp extends AbstractTool {
     public static void main(String[] args) {
         NUp tool = new NUp();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -99,7 +105,7 @@ public class NUp extends AbstractTool {
         internalFrame = new JInternalFrame("N-up", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== N-up OPENED ===");
+        logger.info("=== N-up OPENED ===");
     }
 
     /**
@@ -108,15 +114,16 @@ public class NUp extends AbstractTool {
     public void execute() {
         PdfReader reader = null;
         Document document = null;
+        String stringToLog = null;
         try {
-            if (getValue("srcfile") == null) {
+            if (getValue(SRCFILE) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            File src = (File) getValue("srcfile");
-            if (getValue("destfile") == null) {
+            File src = (File) getValue(SRCFILE);
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException("You need to choose a destination file");
             }
-            File dest = (File) getValue("destfile");
+            File dest = (File) getValue(DESTFILE);
 
             int pow2 = tryPowSquared();
 
@@ -124,7 +131,8 @@ public class NUp extends AbstractTool {
             /*PdfReader reader */ reader = new PdfReader(src.getAbsolutePath());
             // we retrieve the total number of pages and the page size
             int total = reader.getNumberOfPages();
-            System.out.println("There are " + total + " pages in the original file.");
+            stringToLog = "There are " + total + " pages in the original file.";
+            logger.info(stringToLog);
             Rectangle pageSize = reader.getPageSize(1);
             Rectangle newSize = (pow2 % 2) == 0 ? new Rectangle(pageSize.getWidth(), pageSize.getHeight())
                     : new Rectangle(pageSize.getHeight(), pageSize.getWidth());
@@ -134,7 +142,7 @@ public class NUp extends AbstractTool {
                 unitSize = new Rectangle(unitSize.getHeight() / 2, unitSize.getWidth());
             }
             int n = (int) Math.pow(2, pow2);
-            int r = (int) Math.pow(2, pow2 / 2);
+            int r = (int) Math.pow(2, (double) pow2 / 2);
             int c = n / r;
             // step 1: creation of a document-object
             /*Document document*/ document = new Document(newSize, 0, 0, 0, 0);
@@ -145,7 +153,9 @@ public class NUp extends AbstractTool {
             // step 4: adding the content
             PdfContentByte cb = writer.getDirectContent();
             PdfImportedPage page;
-            float offsetX, offsetY, factor;
+            float offsetX;
+            float offsetY;
+            float factor;
             int p;
             for (int i = 0; i < total; i++) {
                 if (i % n == 0) {
@@ -153,7 +163,7 @@ public class NUp extends AbstractTool {
                 }
                 p = i + 1;
                 offsetX = unitSize.getWidth() * ((i % n) % c);
-                offsetY = newSize.getHeight() - (unitSize.getHeight() * (((i % n) / c) + 1));
+                offsetY = newSize.getHeight() - (unitSize.getHeight() * (((float) (i % n) / c) + 1));
                 currentSize = reader.getPageSize(p);
                 factor = Math.min(unitSize.getWidth() / currentSize.getWidth(),
                         unitSize.getHeight() / currentSize.getHeight());
@@ -164,7 +174,7 @@ public class NUp extends AbstractTool {
             }
             // step 5: we close the document
             document.close();
-        } catch (Exception e) {
+        } catch (IOException | InstantiationException e) {
             e.printStackTrace();
         } finally {
             if (reader != null && document != null){
@@ -196,16 +206,16 @@ public class NUp extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 
     private int tryPowSquared(){
-        int pow_squared;
+        int powSquared;
         try {
-            pow_squared = Integer.parseInt((String) getValue("pow2"));
+            powSquared = Integer.parseInt((String) getValue("pow2"));
         } catch (Exception e) {
-            pow_squared = 1;
+            powSquared = 1;
         }
-        return pow_squared;
+        return powSquared;
     }
 }

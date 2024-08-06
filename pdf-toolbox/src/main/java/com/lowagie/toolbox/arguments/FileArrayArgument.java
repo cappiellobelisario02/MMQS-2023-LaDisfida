@@ -41,12 +41,15 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.util.logging.Logger;
 
 
 /**
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class FileArrayArgument extends AbstractArgument {
+
+    private static final Logger logger = Logger.getLogger(FileArrayArgument.class.getName());
 
     FileList fileList1 = new FileList();
 
@@ -68,10 +71,6 @@ public class FileArrayArgument extends AbstractArgument {
         }
     }
 
-    public static void main(String[] args) {
-        FileArrayArgument filearrayargument = new FileArrayArgument();
-    }
-
     public void actionPerformed(ActionEvent e) {
         fileList1.setLocation(10, 10);
         fileList1.setVisible(true);
@@ -79,7 +78,7 @@ public class FileArrayArgument extends AbstractArgument {
         try {
             fileList1.setSelected(true);
         } catch (PropertyVetoException ex1) {
-            System.out.println(ex1.getMessage());
+            logger.info(ex1.getMessage());
         }
 
 //        try

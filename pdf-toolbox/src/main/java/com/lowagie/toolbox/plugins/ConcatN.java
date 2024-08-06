@@ -50,6 +50,7 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
 /**
@@ -58,6 +59,10 @@ import javax.swing.JInternalFrame;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class ConcatN extends AbstractTool {
+
+    private static final Logger logger = Logger.getLogger(ConcatN.class.getName());
+    public static final String SRCFILES = "srcfiles";
+    public static final String DESTFILE = "destfile";
 
     static {
         addVersion("$Id: ConcatN.java 3271 2008-04-18 20:39:42Z xlv $");
@@ -68,9 +73,9 @@ public class ConcatN extends AbstractTool {
      */
     public ConcatN() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW;
-        arguments.add(new FileArrayArgument(this, "srcfiles",
+        arguments.add(new FileArrayArgument(this, SRCFILES,
                 "The list of PDF files"));
-        arguments.add(new FileArgument(this, "destfile",
+        arguments.add(new FileArgument(this, DESTFILE,
                 "The file to which the concatenated PDF has to be written", true,
                 new PdfFilter()));
     }
@@ -83,7 +88,7 @@ public class ConcatN extends AbstractTool {
     public static void main(String[] args) {
         ConcatN tool = new ConcatN();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -96,7 +101,7 @@ public class ConcatN extends AbstractTool {
         internalFrame = new JInternalFrame("Concatenate n PDF files", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Concat OPENED ===");
+        logger.info("=== Concat OPENED ===");
     }
 
     /**
@@ -107,18 +112,19 @@ public class ConcatN extends AbstractTool {
         Document document = null;
         FileOutputStream fos = null;
         PdfCopy writer = null;
+        String stringToLog;
         try {
             File[] files;
-            if (getValue("srcfiles") == null) {
+            if (getValue(SRCFILES) == null) {
                 throw new InstantiationException(
                         "You need to choose a list of sourcefiles");
             }
-            files = ((File[]) getValue("srcfiles"));
-            if (getValue("destfile") == null) {
+            files = ((File[]) getValue(SRCFILES));
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException(
                         "You need to choose a destination file");
             }
-            File pdf_file = (File) getValue("destfile");
+            File pdfFile = (File) getValue(DESTFILE);
             int pageOffset = 0;
             List<Map<String, Object>> master = new ArrayList<>();
             for (int i = 0; i < files.length; i++) {
@@ -135,7 +141,8 @@ public class ConcatN extends AbstractTool {
                     master.addAll(bookmarks);
                 }
                 pageOffset += n;
-                System.out.println("There are " + n + " pages in " + files[i]);
+                stringToLog = "There are " + n + " pages in " + files[i];
+                logger.info(stringToLog);
                 if (i == 0) {
                     // step 1: creation of a document-object
                     try{
@@ -144,7 +151,7 @@ public class ConcatN extends AbstractTool {
                         e.printStackTrace();
                     }
                     // step 2: we create a writer that listens to the document
-                    fos = new FileOutputStream(pdf_file);
+                    fos = new FileOutputStream(pdfFile);
                     try {
                         writer = new PdfCopy(document, fos);
                         // Rest of your code here...
@@ -161,7 +168,7 @@ public class ConcatN extends AbstractTool {
                     ++p;
                     page = writer.getImportedPage(reader, p);
                     writer.addPage(page);
-                    System.out.println("Processed page " + p);
+                    logger.info("Processed page " + p);
                 }
             }
             if (!master.isEmpty()) {
@@ -203,7 +210,7 @@ public class ConcatN extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 
 }

@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
 /**
@@ -51,11 +52,15 @@ import javax.swing.JInternalFrame;
 public class Normalize
         extends AbstractTool {
 
+    private static final Logger logger = Logger.getLogger(Normalize.class.getName());
+    public static final String SRCFILE = "srcfile";
+    public static final String DESTFILE = "destfile";
+
     static {
         addVersion("$Id: Normalize.java 3736 2009-02-26 08:52:21Z xlv $");
     }
 
-    FileArgument destfile = null;
+    FileArgument destinationfile = null;
     int pagecount;
     float width;
     float height;
@@ -70,14 +75,14 @@ public class Normalize
      */
     public Normalize() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW;
-        FileArgument inputfile = new FileArgument(this, "srcfile",
+        FileArgument inputfile = new FileArgument(this, SRCFILE,
                 "The file you want to normalize", false,
                 new PdfFilter());
         arguments.add(inputfile);
-        destfile = new FileArgument(this, "destfile", "The resulting PDF", true,
+        destinationfile = new FileArgument(this, DESTFILE, "The resulting PDF", true,
                 new PdfFilter());
-        arguments.add(destfile);
-        inputfile.addPropertyChangeListener(destfile);
+        arguments.add(destinationfile);
+        inputfile.addPropertyChangeListener(destinationfile);
     }
 
     /**
@@ -88,7 +93,7 @@ public class Normalize
     public static void main(String[] args) {
         Normalize tool = new Normalize();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -101,13 +106,14 @@ public class Normalize
         internalFrame = new JInternalFrame("Normalize", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Normalize OPENED ===");
+        logger.info("=== Normalize OPENED ===");
     }
 
     protected void iteratePages(PdfDictionary page, PdfReader pdfreader,
             ArrayList<PdfDictionary> pageInh,
-            int count_in_leaf, PdfWriter writer) throws
+            int countInLeaf, PdfWriter writer) throws
             IOException {
+        String stringToLog = null;
         float curwidth;
         float curheight;
         PdfArray kidsPR = page.getAsArray(PdfName.KIDS);
@@ -120,23 +126,21 @@ public class Normalize
             PdfNumber rotation = page.getAsNumber(PdfName.ROTATE);
 
             if (rotation == null) {
-                System.out.println("optional rotation missing");
+                logger.info("optional rotation missing");
                 rotation = new PdfNumber(0);
             }
 
             Ausrichtung ausr = new Ausrichtung(rotation.floatValue(),
                     new Rectangle(curwidth, curheight));
 
-            switch (ausr.type) {
-                case Ausrichtung.A4Landscape:
-                case Ausrichtung.A3Portrait:
-                    ausr.rotate();
-                    page.put(PdfName.ROTATE, new PdfNumber(ausr.getRotation()));
-                    System.out.println("rotate page:" + (pagecount + 1) + " targetformat: " +
-                            ausr);
-                    this.pagecountrotatedpages++;
-
-                    break;
+            if (ausr.type == Ausrichtung.A_4_LANDSCAPE ||
+                    ausr.type == Ausrichtung.A_3_PORTRAIT) {
+                ausr.rotate();
+                page.put(PdfName.ROTATE, new PdfNumber(ausr.getRotation()));
+                stringToLog = "rotate page:" + (pagecount + 1) + " targetformat: " +
+                        ausr;
+                logger.info(stringToLog);
+                this.pagecountrotatedpages++;
             }
 
             curwidth = ausr.getM5();
@@ -144,8 +148,8 @@ public class Normalize
 
             if (((pagecount + 1) % 2) == 0 && ((Math.abs(curwidth - width) > tolerancex) ||
                     (Math.abs(curheight - height) > tolerancey))) {
-                    Seitehinzufuegen(page, count_in_leaf, writer, arr);
-                    this.pagecountinsertedpages++;
+                seitehinzufuegen(page, countInLeaf, writer, arr);
+                this.pagecountinsertedpages++;
 
             }
 
@@ -170,15 +174,16 @@ public class Normalize
         }
     }
 
-    private void Seitehinzufuegen(PdfDictionary page, int count_in_leaf,
+    private void seitehinzufuegen(PdfDictionary page, int countInLeaf,
             PdfWriter writer,
             PdfArray array) throws IOException {
-        System.out.print("change!");
+        String stringToLog = null;
+        logger.info("change!");
 
         PdfDictionary parent = page.getAsDict(PdfName.PARENT);
         PdfArray kids = parent.getAsArray(PdfName.KIDS);
         PdfIndirectReference ref = writer.getPdfIndirectReference();
-        kids.add(count_in_leaf, ref);
+        kids.add(countInLeaf, ref);
 
         PdfDictionary newPage = new PdfDictionary(PdfName.PAGE);
         newPage.merge(lastpage);
@@ -195,11 +200,11 @@ public class Normalize
             parent.put(PdfName.COUNT, new PdfNumber(count.intValue() + 1));
             parent = parent.getAsDict(PdfName.PARENT);
         }
-
-        System.out.println("page:" + (pagecount + 1) + " nr in leaf:" +
-                count_in_leaf + " arl x:" +
+        stringToLog = "page:" + (pagecount + 1) + " nr in leaf:" +
+                countInLeaf + " arl x:" +
                 array.getPdfObject(0) + " y:" + array.getPdfObject(1) + " width:" + array.getPdfObject(2) +
-                " height:" + array.getPdfObject(3));
+                " height:" + array.getPdfObject(3);
+        logger.info(stringToLog);
     }
 
     /**
@@ -209,16 +214,17 @@ public class Normalize
         PdfReader reader = null;
         FileOutputStream fouts = null;
         PdfStamper stp = null;
+        String stringToLog = null;
         try {
-            if (getValue("srcfile") == null) {
+            if (getValue(SRCFILE) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            File src = (File) getValue("srcfile");
-            if (getValue("destfile") == null) {
+            File src = (File) getValue(SRCFILE);
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException(
                         "You need to choose a destination file");
             }
-            File dest = (File) getValue("destfile");
+            File dest = (File) getValue(DESTFILE);
 
             pagecountinsertedpages = 0;
             pagecountrotatedpages = 0;
@@ -240,11 +246,12 @@ public class Normalize
             }
 
             stp.close();
-            System.out.println("In " + dest.getAbsolutePath() + " pages= " +
+            stringToLog = "In " + dest.getAbsolutePath() + " pages= " +
                     pagecount +
                     " inserted pages=" + this.getPagecountinsertedpages() +
                     " rotated pages=" +
-                    this.getPagecountrotatedpages());
+                    this.getPagecountrotatedpages();
+            logger.info(stringToLog);
         } catch (Exception e) {
             e.printStackTrace(System.out);
         } finally {
@@ -262,7 +269,7 @@ public class Normalize
 
     private void appendemptypageatend(PdfReader reader, PdfWriter writer) throws
             IOException {
-        System.out.println("last page odd. add page!");
+        logger.info("last page odd. add page!");
 
         PdfDictionary page = reader.getPageN(reader.getNumberOfPages());
         PdfDictionary parent = page.getAsDict(PdfName.PARENT);
@@ -304,11 +311,11 @@ public class Normalize
             return;
         }
         // represent the changes of the argument in the internal frame
-        if (destfile.getValue() == null && arg.getName().equalsIgnoreCase("srcfile")) {
+        if (destinationfile.getValue() == null && arg.getName().equalsIgnoreCase(SRCFILE)) {
             String filename = arg.getValue().toString();
             String filenameout = filename.substring(0, filename.indexOf(".",
                     filename.length() - 4)) + "_out.pdf";
-            destfile.setValue(filenameout);
+            destinationfile.setValue(filenameout);
         }
     }
 
@@ -318,17 +325,17 @@ public class Normalize
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 
     public class Ausrichtung {
 
-        static final float tolerance = 60;
+        static final float TOLERANCE = 60;
         static final int UNKNOWN = 0;
-        static final int A4Portrait = 1;
-        static final int A4Landscape = 2;
-        static final int A3Portrait = 3;
-        static final int A3Landscape = 4;
+        static final int A_4_PORTRAIT = 1;
+        static final int A_4_LANDSCAPE = 2;
+        static final int A_3_PORTRAIT = 3;
+        static final int A_3_LANDSCAPE = 4;
         float rotation;
         Rectangle rect;
         float m5;
@@ -354,18 +361,18 @@ public class Normalize
         }
 
         private void klassifiziere() {
-            if (Math.abs(rect.getWidth() - 595) < tolerance &&
-                    Math.abs(rect.getHeight() - 842) < tolerance) {
-                this.type = A4Portrait;
-            } else if (Math.abs(rect.getWidth() - 842) < tolerance &&
-                    Math.abs(rect.getHeight() - 595) < tolerance) {
-                this.type = A4Landscape;
-            } else if (Math.abs(rect.getWidth() - 1190) < tolerance &&
-                    Math.abs(rect.getHeight() - 842) < tolerance) {
-                this.type = A3Landscape;
-            } else if (Math.abs(rect.getWidth() - 842) < tolerance &&
-                    Math.abs(rect.getHeight() - 1190) < tolerance) {
-                this.type = A3Portrait;
+            if (Math.abs(rect.getWidth() - 595) < TOLERANCE &&
+                    Math.abs(rect.getHeight() - 842) < TOLERANCE) {
+                this.type = A_4_PORTRAIT;
+            } else if (Math.abs(rect.getWidth() - 842) < TOLERANCE &&
+                    Math.abs(rect.getHeight() - 595) < TOLERANCE) {
+                this.type = A_4_LANDSCAPE;
+            } else if (Math.abs(rect.getWidth() - 1190) < TOLERANCE &&
+                    Math.abs(rect.getHeight() - 842) < TOLERANCE) {
+                this.type = A_3_LANDSCAPE;
+            } else if (Math.abs(rect.getWidth() - 842) < TOLERANCE &&
+                    Math.abs(rect.getHeight() - 1190) < TOLERANCE) {
+                this.type = A_3_PORTRAIT;
             } else {
                 type = UNKNOWN;
             }
@@ -385,16 +392,16 @@ public class Normalize
                 case UNKNOWN:
                     back = rect.getWidth() + "*" + rect.getHeight();
                     break;
-                case A3Landscape:
+                case A_3_LANDSCAPE:
                     back = "A3 Landscape";
                     break;
-                case A3Portrait:
+                case A_3_PORTRAIT:
                     back = "A3 Portrait";
                     break;
-                case A4Landscape:
+                case A_4_LANDSCAPE:
                     back = "A4 Landscape";
                     break;
-                case A4Portrait:
+                case A_4_PORTRAIT:
                     back = "A4 Portrait";
                     break;
                 default:

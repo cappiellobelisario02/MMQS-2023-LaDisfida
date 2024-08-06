@@ -44,6 +44,7 @@ import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -54,6 +55,10 @@ import javax.swing.JOptionPane;
  */
 public class InspectPDF extends AbstractTool {
 
+    private static final Logger logger = Logger.getLogger(InspectPDF.class.getName());
+    public static final String SRCFILE = "srcfile";
+    public static final String OWNERPASSWORD = "ownerpassword";
+
     static {
         addVersion("$Id: InspectPDF.java 3826 2009-03-31 17:46:18Z blowagie $");
     }
@@ -62,8 +67,8 @@ public class InspectPDF extends AbstractTool {
      * Constructs an InpectPDF object.
      */
     public InspectPDF() {
-        arguments.add(new FileArgument(this, "srcfile", "The file you want to inspect", false, new PdfFilter()));
-        arguments.add(new StringArgument(this, "ownerpassword", "The owner password if the file is encrypt"));
+        arguments.add(new FileArgument(this, SRCFILE, "The file you want to inspect", false, new PdfFilter()));
+        arguments.add(new StringArgument(this, OWNERPASSWORD, "The owner password if the file is encrypt"));
     }
 
     /**
@@ -74,7 +79,7 @@ public class InspectPDF extends AbstractTool {
     public static void main(String[] args) {
         InspectPDF tool = new InspectPDF();
         if (args.length < 1) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -87,7 +92,7 @@ public class InspectPDF extends AbstractTool {
         internalFrame = new JInternalFrame("Pdf Information", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Pdf Information OPENED ===");
+        logger.info("=== Pdf Information OPENED ===");
     }
 
     /**
@@ -95,49 +100,53 @@ public class InspectPDF extends AbstractTool {
      */
     public void execute() {
         PdfReader reader = null;
+        String stringToLog = null;
         try {
-            if (getValue("srcfile") == null) {
+            if (getValue(SRCFILE) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            if (getValue("ownerpassword") == null) {
-                reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath());
+            if (getValue(OWNERPASSWORD) == null) {
+                reader = new PdfReader(((File) getValue(SRCFILE)).getAbsolutePath());
             } else {
-                reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath(),
-                        ((String) getValue("ownerpassword")).getBytes());
+                reader = new PdfReader(((File) getValue(SRCFILE)).getAbsolutePath(),
+                        ((String) getValue(OWNERPASSWORD)).getBytes());
             }
             // Some general document information and page size
-            System.out.println("=== Document Information ===");
-            System.out.println("PDF Version: " + reader.getPdfVersion());
-            System.out.println("Number of pages: " + reader.getNumberOfPages());
-            System.out.println("Number of PDF objects: " + reader.getXrefSize());
-            System.out.println("File length: " + reader.getFileLength());
-            System.out.println("Encrypted? " + reader.isEncrypted());
+            logger.info("=== Document Information ===");
+            logger.info("PDF Version: " + reader.getPdfVersion());
+            logger.info("Number of pages: " + reader.getNumberOfPages());
+            logger.info("Number of PDF objects: " + reader.getXrefSize());
+            logger.info("File length: " + reader.getFileLength());
+            logger.info("Encrypted? " + reader.isEncrypted());
             if (reader.isEncrypted()) {
-                System.out.println("Permissions: " + PdfEncryptor.getPermissionsVerbose(reader.getPermissions()));
-                System.out.println("128 bit? " + reader.is128Key());
+                stringToLog = "Permissions: " + PdfEncryptor.getPermissionsVerbose(reader.getPermissions());
+                logger.info(stringToLog);
+                logger.info("128 bit? " + reader.is128Key());
             }
-            System.out.println("Rebuilt? " + reader.isRebuilt());
+            logger.info("Rebuilt? " + reader.isRebuilt());
             // Some metadata
-            System.out.println("=== Metadata ===");
+            logger.info("=== Metadata ===");
             Map<String, String> info = reader.getInfo();
             String key;
             String value;
             for (Map.Entry<String, String> entry : info.entrySet()) {
                 key = entry.getKey();
                 value = entry.getValue();
-                System.out.println(key + ": " + value);
+                stringToLog = key + ": " + value;
+                logger.info(stringToLog);
             }
             if (reader.getMetadata() == null) {
-                System.out.println("There is no XML Metadata in the file");
+                logger.info("There is no XML Metadata in the file");
             } else {
-                System.out.println("XML Metadata: " + new String(reader.getMetadata()));
+                stringToLog = "XML Metadata: " + new String(reader.getMetadata());
+                logger.info(stringToLog);
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.severe(e.getMessage());
         } finally {
             if (reader != null){
                 try {

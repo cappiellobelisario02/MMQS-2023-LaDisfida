@@ -45,10 +45,12 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
 /**
@@ -57,6 +59,8 @@ import javax.swing.JInternalFrame;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class Concat extends AbstractTool {
+
+    private static final Logger logger = Logger.getLogger(Concat.class.getName());
 
     static {
         addVersion("$Id: Concat.java 3271 2008-04-18 20:39:42Z xlv $");
@@ -82,7 +86,7 @@ public class Concat extends AbstractTool {
     public static void main(String[] args) {
         Concat tool = new Concat();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -95,7 +99,7 @@ public class Concat extends AbstractTool {
         internalFrame = new JInternalFrame("Concatenate 2 PDF files", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Concat OPENED ===");
+        logger.info("=== Concat OPENED ===");
     }
 
     /**
@@ -136,7 +140,8 @@ public class Concat extends AbstractTool {
                     master.addAll(bookmarks);
                 }
                 pageOffset += n;
-                System.out.println("There are " + n + " pages in " + files[i]);
+                String stringToLog = "There are " + n + " pages in " + files[i];
+                logger.info(stringToLog);
                 if (i == 0) {
                     // step 1: creation of a document-object
                     try {
@@ -165,7 +170,7 @@ public class Concat extends AbstractTool {
                     ++p;
                     page = writer.getImportedPage(reader, p);
                     writer.addPage(page);
-                    System.out.println("Processed page " + p);
+                    logger.info("Processed page " + p);
                 }
             }
             if (!master.isEmpty()) {

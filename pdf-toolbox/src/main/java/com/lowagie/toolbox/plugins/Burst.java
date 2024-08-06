@@ -59,6 +59,7 @@ import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
 /**
@@ -67,6 +68,8 @@ import javax.swing.JInternalFrame;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class Burst extends AbstractTool {
+
+    private static final Logger logger = Logger.getLogger(Burst.class.getName());
 
     static {
         addVersion("$Id: Burst.java 3271 2008-04-18 20:39:42Z xlv $");
@@ -89,7 +92,7 @@ public class Burst extends AbstractTool {
     public static void main(String[] args) {
         Burst tool = new Burst();
         if (args.length < 1) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -102,7 +105,7 @@ public class Burst extends AbstractTool {
         internalFrame = new JInternalFrame("Burst", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Burst OPENED ===");
+        logger.info("=== Burst OPENED ===");
     }
 
     /**
@@ -111,7 +114,7 @@ public class Burst extends AbstractTool {
     public void execute() {
         PdfReader reader = null;
         Document document = null;
-        try {
+        try{
             if (getValue("srcfile") == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
@@ -120,11 +123,12 @@ public class Burst extends AbstractTool {
             String name = src.getName();
             name = name.substring(0, name.lastIndexOf('.'));
             // we create a reader for a certain document
-            reader = new PdfReader(src.getAbsolutePath());
+
             // we retrieve the total number of pages
             int n = reader.getNumberOfPages();
             int digits = 1 + (n / 10);
-            System.out.println("There are " + n + " pages in the original file.");
+            String stringToLog = "There are " + n + " pages in the original file.";
+            logger.info(stringToLog);
             int pagenumber;
             String filename;
             for (int i = 0; i < n; i++) {

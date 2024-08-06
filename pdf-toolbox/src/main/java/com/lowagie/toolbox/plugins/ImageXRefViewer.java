@@ -51,6 +51,7 @@ import java.awt.Cursor;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -69,6 +70,10 @@ import javax.swing.event.ChangeListener;
  */
 public class ImageXRefViewer extends AbstractTool {
 
+    private static final Logger logger = Logger.getLogger(ImageXRefViewer.class.getName());
+    public static final String SRCFILE = "srcfile";
+    private String stringToLog;
+
     static {
         addVersion("$Id: ImageXRefViewer.java 3271 2008-04-18 20:39:42Z xlv $");
     }
@@ -76,7 +81,7 @@ public class ImageXRefViewer extends AbstractTool {
     /**
      * The total number of pictures inside the PDF.
      */
-    int total_number_of_pictures = 0;
+    int totalNumberOfPictures = 0;
     /**
      * The spinner that will allow you to select an image.
      */
@@ -84,7 +89,7 @@ public class ImageXRefViewer extends AbstractTool {
     /**
      * The panel that will show the images.
      */
-    JPanel image_panel = new JPanel();
+    JPanel imagePanel = new JPanel();
     /**
      * The layout with the images.
      */
@@ -94,7 +99,7 @@ public class ImageXRefViewer extends AbstractTool {
      * Creates a ViewImageXObjects object.
      */
     public ImageXRefViewer() {
-        arguments.add(new FileArgument(this, "srcfile",
+        arguments.add(new FileArgument(this, SRCFILE,
                 "The file you want to inspect", false, new PdfFilter()));
     }
 
@@ -106,7 +111,7 @@ public class ImageXRefViewer extends AbstractTool {
     public static void main(String[] args) {
         ImageXRefViewer tool = new ImageXRefViewer();
         if (args.length < 1) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -137,12 +142,12 @@ public class ImageXRefViewer extends AbstractTool {
                 java.awt.BorderLayout.CENTER);
 
         // images
-        image_panel.setLayout(layout);
+        imagePanel.setLayout(layout);
         jSpinner.addChangeListener(new SpinnerListener(this));
-        image_panel.setBorder(BorderFactory.createEtchedBorder());
+        imagePanel.setBorder(BorderFactory.createEtchedBorder());
 
         JScrollPane scrollPane = new JScrollPane();
-        scrollPane.setViewportView(image_panel);
+        scrollPane.setViewportView(imagePanel);
         master_panel.add(scrollPane, java.awt.BorderLayout.CENTER);
 
         // spinner
@@ -180,21 +185,21 @@ public class ImageXRefViewer extends AbstractTool {
             picture = 0;
             jSpinner.setValue("0");
         }
-        if (picture >= total_number_of_pictures) {
-            picture = total_number_of_pictures - 1;
+        if (picture >= totalNumberOfPictures) {
+            picture = totalNumberOfPictures - 1;
             jSpinner.setValue(String.valueOf(picture));
         }
-        layout.show(image_panel, String.valueOf(picture));
-        image_panel.repaint();
+        layout.show(imagePanel, String.valueOf(picture));
+        imagePanel.repaint();
     }
 
     /**
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        total_number_of_pictures = 0;
+        totalNumberOfPictures = 0;
         try {
-            if (getValue("srcfile") == null) {
+            if (getValue(SRCFILE) == null) {
                 throw new InstantiationException(
                         "You need to choose a sourcefile");
             }
@@ -203,37 +208,43 @@ public class ImageXRefViewer extends AbstractTool {
                     PdfReader reader = null;
                     try {
                         reader = new PdfReader(
-                                ((File) getValue("srcfile")).getAbsolutePath());
+                                ((File) getValue(SRCFILE)).getAbsolutePath());
                         for (int i = 0; i < reader.getXrefSize(); i++) {
                             PdfObject pdfobj = reader.getPdfObject(i);
                             if (pdfobj != null && pdfobj.isStream()) {
-                                    PdfStream pdfdict = (PdfStream) pdfobj;
-                                    PdfObject pdfsubtype = pdfdict
-                                            .get(PdfName.SUBTYPE);
-                                    if (pdfsubtype == null) {
-                                        continue;
-                                    }
-                                    if (!pdfsubtype.toString().equals(
-                                            PdfName.IMAGE.toString())) {
-                                        continue;
-                                    }
-                                    System.out.println("total_number_of_pictures: "
-                                            + total_number_of_pictures);
-                                    System.out.println("height:"
-                                            + pdfdict.get(PdfName.HEIGHT));
-                                    System.out.println("width:"
-                                            + pdfdict.get(PdfName.WIDTH));
-                                    System.out.println("bitspercomponent:"
-                                            + pdfdict.get(PdfName.BITSPERCOMPONENT));
-                                    byte[] barr = PdfReader
-                                            .getStreamBytesRaw((PRStream) pdfdict);
-                                    java.awt.Image im = Toolkit
-                                            .getDefaultToolkit().createImage(barr);
-                                    javax.swing.ImageIcon ii = new javax.swing.ImageIcon(im);
 
-                                    JLabel label = new JLabel();
-                                    label.setIcon(ii);
-                                    image_panel.add(label, String.valueOf(total_number_of_pictures++));
+                                PdfStream pdfdict = (PdfStream) pdfobj;
+                                PdfObject pdfsubtype = pdfdict
+                                        .get(PdfName.SUBTYPE);
+                                if (pdfsubtype == null) {
+                                    continue;
+                                }
+                                if (!pdfsubtype.toString().equals(
+                                        PdfName.IMAGE.toString())) {
+                                    continue;
+                                }
+                                stringToLog = "total_number_of_pictures: "
+                                        + totalNumberOfPictures;
+                                logger.info(stringToLog);
+                                stringToLog = "height:"
+                                        + pdfdict.get(PdfName.HEIGHT)
+                                logger.info(stringToLog);
+                                stringToLog = "width:"
+                                        + pdfdict.get(PdfName.WIDTH);
+                                logger.info(stringToLog);
+                                stringToLog = "bitspercomponent:"
+                                        + pdfdict.get(PdfName.BITSPERCOMPONENT)
+                                logger.info(stringToLog);
+                                byte[] barr = PdfReader
+                                        .getStreamBytesRaw((PRStream) pdfdict);
+                                java.awt.Image im = Toolkit
+                                        .getDefaultToolkit().createImage(barr);
+                                javax.swing.ImageIcon ii = new javax.swing.ImageIcon(im);
+
+                                JLabel label = new JLabel();
+                                label.setIcon(ii);
+                                imagePanel.add(label, String.valueOf(totalNumberOfPictures++));
+
                             }
                         }
                     } catch (InstantiationException | IOException ex) {

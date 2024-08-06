@@ -62,6 +62,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -72,6 +73,12 @@ import javax.swing.JOptionPane;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class Add3D extends AbstractTool {
+
+    public static final Logger logger = Logger.getLogger(Add3D.class.getName());
+    public static final String SRCU_3_DFILE = "srcu3dfile";
+    public static final String SRCFILE = "srcfile";
+    public static final String DESTFILE1 = "destfile";
+
 
     public static final String PDF_NAME_3D = "3D";
     public static final String PDF_NAME_3DD = "3DD";
@@ -95,11 +102,11 @@ public class Add3D extends AbstractTool {
     public Add3D() {
         super();
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW;
-        FileArgument inputfile = new FileArgument(this, "srcfile",
+        FileArgument inputfile = new FileArgument(this, SRCFILE,
                 "The file you want to add the u3d File", false,
                 new PdfFilter());
         arguments.add(inputfile);
-        FileArgument u3dinputfile = new FileArgument(this, "srcu3dfile",
+        FileArgument u3dinputfile = new FileArgument(this, SRCU_3_DFILE,
                 "The u3d file you want to add", false,
                 new U3DFilter());
         arguments.add(u3dinputfile);
@@ -107,21 +114,16 @@ public class Add3D extends AbstractTool {
                 "The pagenumber where to add the u3d annotation");
         pagenumber.setValue("1");
         arguments.add(pagenumber);
-        destfile = new FileArgument(this, "destfile",
+        destfile = new FileArgument(this, DESTFILE1,
                 "The file that contains the u3d annotation after processing",
                 true, new PdfFilter());
         arguments.add(destfile);
         inputfile.addPropertyChangeListener(destfile);
     }
 
-    public static void AddButton(float x, float y, String fname, String js,
+    public static void addButton(float x, float y, String fname, String js,
             String image, PdfWriter wr) {
         try {
-//            URL url=Add3D.class.getResource(
-//                image
-//            PdfFileSpecification fs=PdfFileSpecification.fileEmbedded(wr,image,image,null
-//            wr.addAnnotation(PdfAnnotation.createScreen(wr,new Rectangle(x, y, x + img.plainWidth(),
-//                                  y + img.plainHeight()
             Image img = Image.getInstance(image);
             PushbuttonField bt = new PushbuttonField(wr,
                     new Rectangle(x, y, x + img.getPlainWidth(),
@@ -145,7 +147,7 @@ public class Add3D extends AbstractTool {
     public static void main(String[] args) {
         Add3D add3d = new Add3D();
         if (args.length != 4) {
-            System.err.println(add3d.getUsage());
+            logger.severe(add3d.getUsage());
         }
         add3d.setMainArguments(args);
         add3d.execute();
@@ -158,24 +160,24 @@ public class Add3D extends AbstractTool {
         internalFrame = new JInternalFrame("Add3D", true, true, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Add3D OPENED ===");
+        logger.info("=== Add3D OPENED ===");
     }
 
     /**
      * Executes the tool (in most cases this generates a PDF file).
      */
     public void execute() {
-        try (PdfReader reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath());
-             PdfStamper stamp = new PdfStamper(reader, new FileOutputStream((File) getValue("destfile")));){
-            if (getValue("srcfile") == null) {
+        try (PdfReader reader = new PdfReader(((File) getValue(SRCFILE)).getAbsolutePath());
+                PdfStamper stamp = new PdfStamper(reader, new FileOutputStream((File) getValue(DESTFILE1)));){
+            if (getValue(SRCFILE) == null) {
                 throw new InstantiationException(
                         "You need to choose a sourcefile");
             }
-            if (getValue("srcu3dfile") == null) {
+            if (getValue(SRCU_3_DFILE) == null) {
                 throw new InstantiationException(
                         "You need to choose a u3d file");
             }
-            if (getValue("destfile") == null) {
+            if (getValue(DESTFILE1) == null) {
                 throw new InstantiationException(
                         "You need to choose a destination file");
             }
@@ -184,7 +186,7 @@ public class Add3D extends AbstractTool {
             // Required definitions
             PdfIndirectReference streamRef;
             PdfIndirectObject objRef;
-            String u3dFileName = ((File) getValue("srcu3dfile"))
+            String u3dFileName = ((File) getValue(SRCU_3_DFILE))
                     .getAbsolutePath();
             PdfWriter wr = stamp.getWriter();
             PdfContentByte cb = stamp.getUnderContent(pagenumber);
@@ -254,21 +256,20 @@ public class Add3D extends AbstractTool {
 
             // Actually write annotation
             stamp.addAnnotation(annot, pagenumber);
-            AddButton(100, 100, "Rotate",
+            addButton(100, 100, "Rotate",
                     "im = this.getAnnots3D(0)[0].context3D;\rim.runtime.setCurrentTool(\"Rotate\");",
                     "rotate.png", wr);
-            AddButton(150, 100, "Pan",
+            addButton(150, 100, "Pan",
                     "im = this.getAnnots3D(0)[0].context3D;\rim.runtime.setCurrentTool(\"Pan\");",
                     "translate.png", wr);
-            AddButton(200, 100, "Zoom",
+            addButton(200, 100, "Zoom",
                     "im = this.getAnnots3D(0)[0].context3D;\rim.runtime.setCurrentTool(\"Zoom\");",
                     "zoom.png", wr);
-            stamp.close();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e
                             .getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.severe(e.getMessage());
         }
     }
 
@@ -279,7 +280,7 @@ public class Add3D extends AbstractTool {
      * @throws InstantiationException on error
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE1);
     }
 
     /**
@@ -294,7 +295,7 @@ public class Add3D extends AbstractTool {
             return;
         }
         if (destfile.getValue() == null &&
-                arg.getName().equalsIgnoreCase("srcfile")) {
+                arg.getName().equalsIgnoreCase(SRCFILE)) {
             String filename = arg.getValue().toString();
             String filenameout = filename.substring(0, filename.indexOf(".",
                     filename.length() - 4)) + "_out.pdf";

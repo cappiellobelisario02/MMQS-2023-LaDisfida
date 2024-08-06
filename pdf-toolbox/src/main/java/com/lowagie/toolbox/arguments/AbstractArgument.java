@@ -6,11 +6,14 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Logger;
 
 /**
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public abstract class AbstractArgument implements ActionListener, PropertyChangeListener {
+
+    private static final Logger logger = Logger.getLogger(AbstractArgument.class.getName());
 
     protected PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     /**
@@ -143,7 +146,7 @@ public abstract class AbstractArgument implements ActionListener, PropertyChange
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        System.out.println("AbstractArgument PropertyChange");
+        logger.info("AbstractArgument PropertyChange");
     }
 
     public abstract void actionPerformed(ActionEvent e);
