@@ -62,6 +62,7 @@ import com.lowagie.text.ImgJBIG2;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.IllegalPdfSyntaxException;
+import com.lowagie.text.exceptions.NotEqualWritersException;
 import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import java.awt.Color;
@@ -423,7 +424,7 @@ public class PdfContentByte {
 
     public void add(PdfContentByte other) {
         if (other.writer != null && writer != other.writer) {
-            throw new RuntimeException(
+            throw new NotEqualWritersException(
                     MessageLocalization.getComposedMessage("inconsistent.writers.are.you.mixing.two.documents"));
         }
         content.append(other.content);

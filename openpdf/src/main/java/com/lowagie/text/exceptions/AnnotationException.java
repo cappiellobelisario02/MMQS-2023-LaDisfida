@@ -1,8 +1,8 @@
 package com.lowagie.text.exceptions;
 
-import java.lang.RuntimeException;
+import java.io.IOException;
 
-public class AnnotationException extends RuntimeException{
+public class AnnotationException extends IOException{
     public AnnotationException(String message) {
         super(message);
     }
