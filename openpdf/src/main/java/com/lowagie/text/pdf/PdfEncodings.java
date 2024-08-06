@@ -50,6 +50,7 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.InvalidMappingException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -543,7 +544,7 @@ public class PdfEncodings {
             int one = seqs[idx] & 0xff;
             char c = plane[one];
             if (c != 0 && (c & 0x8000) == 0) {
-                throw new RuntimeException(
+                throw new InvalidMappingException(
                         MessageLocalization
                                 .getComposedMessage("inconsistent.mapping"));
             }
@@ -558,7 +559,7 @@ public class PdfEncodings {
         int one = seqs[size] & 0xff;
         char c = plane[one];
         if ((c & 0x8000) != 0) {
-            throw new RuntimeException(
+            throw new InvalidMappingException(
                     MessageLocalization
                             .getComposedMessage("inconsistent.mapping"));
         }
