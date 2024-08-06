@@ -250,24 +250,34 @@ public class CMapAwareDocumentFont extends DocumentFont {
      * @return the unicode String that results from decoding
      * @since 2.1.7
      */
-    public String decode(byte[] cidbytes,
-            final int offset,
-            final int len) {
-        StringBuilder sb = new StringBuilder(); // it's a shame we can't make this
-        // StringBuilder
-        for (int i = offset; i < offset + len; i++) {
+    public String decode(byte[] cidbytes, final int offset, final int len) {
+        StringBuilder sb = new StringBuilder(); // Using StringBuilder for efficient string concatenation
+
+        int end = offset + len; // Calculate the end index only once
+
+        int i = offset;
+        while (i < end) {
+            // Decode a single character from the bytes array
             String rslt = decodeSingleCID(cidbytes, i, 1);
-            if (rslt == null && i + 1 < offset + len) {
+
+            // If decoding a single character fails and there's still room for two-byte decoding
+            if (rslt == null && i + 1 < end) {
                 rslt = decodeSingleCID(cidbytes, i, 2);
-                i++;
+                i++; // Increment i here, but this is the only time we increment by 2
             }
+
+            // If a valid result was found, append it to the StringBuilder
             if (rslt != null) {
                 sb.append(rslt);
             }
+
+            // Increment the loop counter by 1
+            i++;
         }
 
         return sb.toString();
     }
+
 
     /**
      * Decodes a string. This is a normal Java string, but if the range of character values exceeds the range of the

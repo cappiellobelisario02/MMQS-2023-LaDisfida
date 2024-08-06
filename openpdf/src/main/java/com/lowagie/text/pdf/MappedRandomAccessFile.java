@@ -58,6 +58,7 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.logging.Logger;
 
 /**
  * A {@link java.nio.MappedByteBuffer} wrapped as a {@link java.io.RandomAccessFile}
@@ -68,6 +69,7 @@ public class MappedRandomAccessFile implements AutoCloseable {
 
     private MappedByteBuffer mappedByteBuffer = null;
     private FileChannel channel = null;
+    private static final Logger logger = Logger.getLogger(MappedRandomAccessFile.class.getName());
 
     /**
      * Constructs a new MappedRandomAccessFile instance
@@ -85,23 +87,21 @@ public class MappedRandomAccessFile implements AutoCloseable {
                 init(raf.getChannel(), FileChannel.MapMode.READ_WRITE);
             }
             catch(IOException e){
-                System.out.println("Error in RandomAccessFile.");
+                logger.info("Error in RandomAccessFile.");
             }
         } else {
-            FileInputStream fis = null;
-            try{
-                fis = new FileInputStream(filename);
+            try(FileInputStream fis = new FileInputStream(filename)){
                 init(fis.getChannel(), FileChannel.MapMode.READ_ONLY);
             } catch (FileNotFoundException e) {
-                System.err.println("File not found: " + e.getMessage());
+                logger.info("File not found: " + e.getMessage());
             } catch(IOException e){
-                System.err.println("I/O Error: " + e.getMessage());
+                logger.info("I/O Error: " + e.getMessage());
             } finally {
                 if(fis != null){
                     try{
                         fis.close();
                     } catch (IOException e){
-                        System.err.println("Failed to close FileInputStream: " + e.getMessage());
+                        logger.info("Failed to close FileInputStream: " + e.getMessage());
                     }
                 }
             }
@@ -173,9 +173,9 @@ public class MappedRandomAccessFile implements AutoCloseable {
     public int read() {
         try {
             byte b = mappedByteBuffer.get();
-            int n = b & 0xff;
+            //int n = b & 0xff
 
-            return n;
+            return (b & 0xff);
         } catch (BufferUnderflowException e) {
             return -1; // EOF
         }
@@ -239,18 +239,6 @@ public class MappedRandomAccessFile implements AutoCloseable {
             channel.close();
         }
         channel = null;
-    }
-
-    /**
-     * invokes the close method
-     *
-     * @see java.lang.Object#finalize()
-     */
-    @Override
-    @Deprecated(since = "OpenPDF-2.0.2", forRemoval = true)
-    protected void finalize() throws Throwable {
-        close();
-        super.finalize();
     }
 
 }

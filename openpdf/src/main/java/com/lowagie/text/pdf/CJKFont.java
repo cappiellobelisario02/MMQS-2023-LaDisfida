@@ -566,15 +566,15 @@ class CJKFont extends BaseFont {
         PdfObject pobj = null;
         PdfIndirectObject obj = null;
         pobj = getFontDescriptor();
-        if (pobj != null) {
-            obj = writer.addToBody(pobj);
-            ind_font = obj.getIndirectReference();
-        }
+
+        obj = writer.addToBody(pobj);
+        ind_font = obj.getIndirectReference();
+
         pobj = getCIDFont(ind_font, cjkTag);
-        if (pobj != null) {
-            obj = writer.addToBody(pobj);
-            ind_font = obj.getIndirectReference();
-        }
+
+        obj = writer.addToBody(pobj);
+        ind_font = obj.getIndirectReference();
+
         pobj = getFontBaseType(ind_font);
         writer.addToBody(pobj, ref);
     }

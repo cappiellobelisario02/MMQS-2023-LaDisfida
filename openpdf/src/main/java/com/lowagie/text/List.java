@@ -125,14 +125,14 @@ public class List implements TextElementArray {
     /**
      * a possible value for the lettered parameter
      */
-    public static final boolean lowercase = true;
+    public static boolean lowercase = true;
 
     // member variables
 
     /**
      * This is the <CODE>ArrayList</CODE> containing the different <CODE>ListItem</CODE>s.
      */
-    protected java.util.List<Element> list = new ArrayList<>();
+    protected java.util.List<Element> listOfListItems = new ArrayList<>();
 
     /**
      * Indicates if the list has to be numbered.
@@ -145,7 +145,7 @@ public class List implements TextElementArray {
     /**
      * Indicates if the listsymbols are lowercase or uppercase.
      */
-    protected boolean LOWERCASE = false;
+    protected boolean lowCase = false;
     /**
      * Indicates if the indentation has to be set automatically.
      */
@@ -267,8 +267,8 @@ public class List implements TextElementArray {
      */
     public boolean process(ElementListener listener) {
         try {
-            for (Object o : list) {
-                listener.add((Element) o);
+            for (Element o : listOfListItems) {
+                listener.add(o);
             }
             return true;
         } catch (DocumentException de) {
@@ -292,7 +292,7 @@ public class List implements TextElementArray {
      */
     public ArrayList<Element> getChunks() {
         ArrayList<Element> tmp = new ArrayList<>();
-        for (Element o : list) {
+        for (Element o : listOfListItems) {
             tmp.addAll(o.getChunks());
         }
         return tmp;
@@ -311,7 +311,7 @@ public class List implements TextElementArray {
             ListItem item = (ListItem) o;
             if (numbered || lettered) {
                 Chunk chunk = new Chunk(preSymbol, symbol.getFont());
-                int index = first + list.size();
+                int index = first + listOfListItems.size();
                 if (lettered) {
                     chunk.append(RomanAlphabetFactory.getString(index, lowercase));
                 } else {
@@ -324,7 +324,7 @@ public class List implements TextElementArray {
             }
             item.setIndentationLeft(symbolIndent, autoindent);
             item.setIndentationRight(0);
-            return list.add(item);
+            return listOfListItems.add(item);
         }
         return false;
     }
@@ -338,7 +338,7 @@ public class List implements TextElementArray {
     public boolean add(List nested) {
         nested.setIndentationLeft(nested.getIndentationLeft() + symbolIndent);
         first--;
-        return list.add(nested);
+        return listOfListItems.add(nested);
     }
 
     /**
@@ -359,14 +359,14 @@ public class List implements TextElementArray {
     public void normalizeIndentation() {
         float max = 0;
         Element o;
-        for (Object o2 : list) {
-            o = (Element) o2;
+        for (Element o2 : listOfListItems) {
+            o = o2;
             if (o instanceof ListItem) {
                 max = Math.max(max, ((ListItem) o).getIndentationLeft());
             }
         }
-        for (Object o1 : list) {
-            o = (Element) o1;
+        for (Element o1 : listOfListItems) {
+            o = o1;
             if (o instanceof ListItem) {
                 ((ListItem) o).setIndentationLeft(max);
             }
@@ -401,7 +401,7 @@ public class List implements TextElementArray {
      * @return an <CODE>ArrayList</CODE> containing <CODE>ListItem</CODE>s.
      */
     public java.util.List<Element> getItems() {
-        return list;
+        return listOfListItems;
     }
 
     /**
@@ -410,7 +410,7 @@ public class List implements TextElementArray {
      * @return a <CODE>size</CODE>
      */
     public int size() {
-        return list.size();
+        return listOfListItems.size();
     }
 
     /**
@@ -419,7 +419,7 @@ public class List implements TextElementArray {
      * @return <CODE>true</CODE> if the list is empty
      */
     public boolean isEmpty() {
-        return list.isEmpty();
+        return listOfListItems.isEmpty();
     }
 
     /**
@@ -428,10 +428,10 @@ public class List implements TextElementArray {
      * @return a <CODE>leading</CODE>
      */
     public float getTotalLeading() {
-        if (list.size() < 1) {
+        if (listOfListItems.isEmpty()) {
             return -1;
         }
-        ListItem item = (ListItem) list.get(0);
+        ListItem item = (ListItem) listOfListItems.get(0);
         return item.getTotalLeading();
     }
 
@@ -483,7 +483,7 @@ public class List implements TextElementArray {
      * @param uppercase the uppercase to set
      */
     public void setLowercase(boolean uppercase) {
-        this.lowercase = uppercase;
+        List.lowercase = uppercase;
     }
 
     /**

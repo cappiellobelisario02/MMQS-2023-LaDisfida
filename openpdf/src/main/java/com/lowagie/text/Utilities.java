@@ -66,9 +66,10 @@ import java.util.Set;
 
 public class Utilities {
 
-        private Utilities() {
+    private Utilities() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
+
     /**
      * Gets the keys of a Hashtable
      *
@@ -119,27 +120,30 @@ public class Utilities {
     public static String unEscapeURL(String src) {
         StringBuilder bf = new StringBuilder();
         char[] s = src.toCharArray();
-        for (int k = 0; k < s.length; ++k) {
+        int k = 0;
+        while (k < s.length) {
             char c = s[k];
             if (c == '%') {
                 if (k + 2 >= s.length) {
                     bf.append(c);
-                    continue;
+                } else {
+                    int a0 = PRTokeniser.getHex(s[k + 1]);
+                    int a1 = PRTokeniser.getHex(s[k + 2]);
+                    if (a0 < 0 || a1 < 0) {
+                        bf.append(c);
+                    } else {
+                        bf.append((char) (a0 * 16 + a1));
+                        k += 2; // Skip next two characters as they form the hex code
+                    }
                 }
-                int a0 = PRTokeniser.getHex(s[k + 1]);
-                int a1 = PRTokeniser.getHex(s[k + 2]);
-                if (a0 < 0 || a1 < 0) {
-                    bf.append(c);
-                    continue;
-                }
-                bf.append((char) (a0 * 16 + a1));
-                k += 2;
             } else {
                 bf.append(c);
             }
+            k++; // Increment the loop counter at the end of each iteration
         }
         return bf.toString();
     }
+
 
     /**
      * This method makes a valid URL from a given filename.
@@ -167,7 +171,7 @@ public class Utilities {
      * @param size the number of bytes to skip
      * @throws IOException on error
      */
-    static public void skip(InputStream is, int size) throws IOException {
+    public static void skip(InputStream is, int size) throws IOException {
         long n;
         while (size > 0) {
             n = is.skip(size);

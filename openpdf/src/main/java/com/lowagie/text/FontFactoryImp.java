@@ -64,6 +64,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Logger;
 
 
 /**
@@ -81,6 +82,9 @@ public class FontFactoryImp implements FontProvider {
             "1", "0", "0",
             "0", "3", "0"
     };
+
+    private static final Logger logger = Logger.getLogger(FontFactoryImp.class.getName());
+
     /**
      * This is a map of postscriptfontnames of True Type fonts and the path of their ttf- or ttc-file.
      */
@@ -98,12 +102,12 @@ public class FontFactoryImp implements FontProvider {
     /**
      * This is the default encoding to use.
      */
-    public String defaultEncoding = BaseFont.WINANSI;
+    public static final String defaultEncoding = BaseFont.WINANSI;
 
     /**
      * This is the default value of the <VAR>embedded</VAR> variable.
      */
-    public boolean defaultEmbedding = BaseFont.NOT_EMBEDDED;
+    public static final boolean defaultEmbedding = BaseFont.NOT_EMBEDDED;
 
     /**
      * Creates new FontFactory
@@ -260,7 +264,7 @@ public class FontFactoryImp implements FontProvider {
         int style = Font.NORMAL;
         Color color = null;
         String value = attributes.getProperty(Markup.HTML_ATTR_STYLE);
-        if (value != null && value.length() > 0) {
+        if (value != null && !value.isEmpty()) {
             Properties styleAttributes = Markup.parseAttributes(value);
             if (styleAttributes.isEmpty()) {
                 attributes.put(Markup.HTML_ATTR_STYLE, value);
@@ -290,7 +294,7 @@ public class FontFactoryImp implements FontProvider {
                     color = Markup.decodeColor(value);
                 }
                 attributes.putAll(styleAttributes);
-                for (Enumeration e = styleAttributes.keys(); e.hasMoreElements(); ) {
+                for (Enumeration<Object> e = styleAttributes.keys(); e.hasMoreElements(); ) {
                     Object o = e.nextElement();
                     attributes.put(o, styleAttributes.get(o));
                 }
@@ -558,61 +562,70 @@ public class FontFactoryImp implements FontProvider {
 
     public void register(String path, String alias) {
         try {
-            if (path.toLowerCase().endsWith(".ttf") || path.toLowerCase().endsWith(".otf")
-                    || path.toLowerCase().indexOf(".ttc,") > 0) {
+            String lowerCasePath = path.toLowerCase();
+            if (lowerCasePath.endsWith(".ttf") || lowerCasePath.endsWith(".otf")
+                    || lowerCasePath.indexOf(".ttc,") > 0) {
                 Object[] allNames = BaseFont.getAllFontNames(path, BaseFont.WINANSI, null);
                 trueTypeFonts.put(((String) allNames[0]).toLowerCase(), path);
                 if (alias != null) {
                     trueTypeFonts.put(alias.toLowerCase(), path);
                 }
-                // register all the font names with all the locales
-                String[][] names = (String[][]) allNames[2]; //full name
-                for (String[] name1 : names) {
-                    trueTypeFonts.put(name1[3].toLowerCase(), path);
+
+                // Register all the font names with all the locales
+                String[][] names = (String[][]) allNames[2]; // full name
+                for (String[] name : names) {
+                    trueTypeFonts.put(name[3].toLowerCase(), path);
                 }
+
                 String familyName = null;
-                names = (String[][]) allNames[1]; //family name
-                for (int k = 0; k < TTFamilyOrder.length; k += 3) {
+                names = (String[][]) allNames[1]; // family name
+
+                // Use a flag to break out of the loop once the family name is found
+                boolean familyNameFound = false;
+                for (int k = 0; k < TTFamilyOrder.length && !familyNameFound; k += 3) {
                     for (String[] name : names) {
                         if (name.length == 4 && TTFamilyOrder.length > k + 2
                                 && TTFamilyOrder[k].equals(name[0])
                                 && TTFamilyOrder[k + 1].equals(name[1])
                                 && TTFamilyOrder[k + 2].equals(name[2])) {
                             familyName = name[3].toLowerCase();
-                            k = TTFamilyOrder.length;
+                            familyNameFound = true; // Set flag to true and exit inner loop
                             break;
                         }
                     }
                 }
+
                 if (familyName != null) {
                     String lastName = "";
-                    names = (String[][]) allNames[2]; //full name
+                    names = (String[][]) allNames[2]; // full name
                     for (String[] name : names) {
-                        for (int k = 0; k < TTFamilyOrder.length; k += 3) {
+                        // Use a flag to exit the loop after registering a family name
+                        boolean nameRegistered = false;
+                        for (int k = 0; k < TTFamilyOrder.length && !nameRegistered; k += 3) {
                             if (name.length == 4 && TTFamilyOrder.length > k + 2
                                     && TTFamilyOrder[k].equals(name[0])
                                     && TTFamilyOrder[k + 1].equals(name[1])
                                     && TTFamilyOrder[k + 2].equals(name[2])) {
                                 String fullName = name[3];
-                                if (fullName.equals(lastName)) {
-                                    continue;
+                                if (!fullName.equals(lastName)) {
+                                    lastName = fullName;
+                                    registerFamily(familyName, fullName, path);
+                                    nameRegistered = true; // Set flag to true and exit loop
                                 }
-                                lastName = fullName;
-                                registerFamily(familyName, fullName, path);
-                                break;
                             }
                         }
                     }
                 }
-            } else if (path.toLowerCase().endsWith(".ttc")) {
+            } else if (lowerCasePath.endsWith(".ttc")) {
                 if (alias != null) {
-                    System.err.println("class FontFactory: You can't define an alias for a true type collection.");
+                    // Use a logger instead of System.err
+                    logger.warning("You can't define an alias for a true type collection.");
                 }
                 String[] names = BaseFont.enumerateTTCNames(path);
                 for (int i = 0; i < names.length; i++) {
-                    register(path + "," + i);
+                    register(path + "," + i, null); // Use 'null' for alias as it's not applicable
                 }
-            } else if (path.toLowerCase().endsWith(".afm") || path.toLowerCase().endsWith(".pfm")) {
+            } else if (lowerCasePath.endsWith(".afm") || lowerCasePath.endsWith(".pfm")) {
                 BaseFont bf = BaseFont.createFont(path, BaseFont.CP1252, false);
                 String fullName = bf.getFullFontName()[0][3].toLowerCase();
                 String familyName = bf.getFamilyFontName()[0][3].toLowerCase();
@@ -669,10 +682,8 @@ public class FontFactoryImp implements FontProvider {
     private int processFile(File file, boolean scanSubdirectories) {
         int count = 0;
         try {
-            if (file.isDirectory()) {
-                if (scanSubdirectories) {
-                    count += registerDirectory(file.getAbsolutePath(), true);
-                }
+            if (file.isDirectory() && scanSubdirectories) {
+                count += registerDirectory(file.getAbsolutePath(), true);
             } else {
                 String name = file.getPath();
                 String suffix = name.length() < 4 ? null : name.substring(name.length() - 4).toLowerCase();

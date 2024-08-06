@@ -67,13 +67,20 @@
 
 package com.lowagie.text;
 
+import java.io.Serial;
+import java.util.logging.Logger;
+
 /**
  * The ExceptionConverter changes a checked exception into an unchecked exception.
  */
 public class ExceptionConverter extends RuntimeException {
 
     private final transient Object lock = new Object();
+
+    @Serial
     private static final long serialVersionUID = 8657630363395849399L;
+    private static final Logger logger = Logger.getLogger(ExceptionConverter.class.getName());
+
     /**
      * we keep a handle to the wrapped exception
      */
@@ -152,7 +159,13 @@ public class ExceptionConverter extends RuntimeException {
      */
     @Override
     public void printStackTrace() {
-        printStackTrace(System.err);
+        StringBuilder errorBuilder = new StringBuilder();
+        StackTraceElement[] stackTrace = ex.getStackTrace();  // Get the stack trace
+        for (StackTraceElement element : stackTrace) {
+            errorBuilder.append(element.toString()).append("\n");
+        }
+        String stringToLog = "Exception stack trace: " + errorBuilder;
+        logger.severe(stringToLog);
     }
 
     /**

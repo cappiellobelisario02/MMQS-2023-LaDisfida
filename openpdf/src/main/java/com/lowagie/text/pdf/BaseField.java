@@ -290,7 +290,7 @@ public abstract class BaseField {
         }
 
         app.saveState();
-        
+
         // background
         if (backgroundColor != null) {
             app.setColorFill(backgroundColor);
@@ -370,10 +370,10 @@ public abstract class BaseField {
                     ++k;
                 }
                 arr.add(buf.toString());
-                buf = new StringBuffer();
+                buf = new StringBuilder();
             } else if (c == '\n') {
                 arr.add(buf.toString());
-                buf = new StringBuffer();
+                buf = new StringBuilder();
             } else {
                 buf.append(c);
             }
@@ -510,8 +510,8 @@ public abstract class BaseField {
      * @param to   the destination. It may be <CODE>null</CODE>
      */
     public static void moveFields(PdfDictionary from, PdfDictionary to) {
-        for (Iterator i = from.getKeys().iterator(); i.hasNext(); ) {
-            PdfName key = (PdfName) i.next();
+        for (Iterator<PdfName> i = from.getKeys().iterator(); i.hasNext(); ) {
+            PdfName key = i.next();
             if (fieldKeys.containsKey(key)) {
                 if (to != null) {
                     to.put(key, from.get(key));

@@ -60,7 +60,9 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.SimpleTable;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.pdf.draw.DrawInterface;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -1392,7 +1394,7 @@ public class ColumnText {
                 ListItem item = null;
                 float listIndentation = list.getIndentationLeft();
                 int count = 0;
-                private Deque<Object[]> stack = new ArrayDeque<>();
+                Deque<Object[]> stack = new ArrayDeque<>();
                 public void pushToStack(Object[] item) {
                     stack.addFirst(item);  // equivalent to Stack.push(item)
                 }
@@ -1434,13 +1436,13 @@ public class ColumnText {
                         continue;
                     }
                     if (k == items.size() - 1 && !stack.isEmpty()) {
-                        
-                            Object[] objs = stack.pop();
-                            list = (com.lowagie.text.List) objs[0];
-                            items = list.getItems();
-                            k = (Integer) objs[1];
-                            listIndentation = (Float) objs[2];
-                        
+
+                        Object[] objs = stack.pop();
+                        list = (com.lowagie.text.List) objs[0];
+                        items = list.getItems();
+                        k = (Integer) objs[1];
+                        listIndentation = (Float) objs[2];
+
                     }
                 }
                 int status = 0;
@@ -1605,7 +1607,7 @@ public class ColumnText {
                 if (!table.isComplete()) {
                     yTemp += footerHeight;
                 }
-                
+
                 if (k < table.size()) {
                     if (table.isSplitRows() && (!table.isSplitLate() || (k == listIdx && firstPass))) {
                         if (!splittedRow) {
@@ -1660,7 +1662,7 @@ public class ColumnText {
                     }
                     // then we add the real content
                     sub.addAll(table.getRows(listIdx, k));
-                    
+
                     // otherwise no footers will be added (because iText thinks the table continues on the same page)
                     boolean showFooter = !table.isSkipLastFooter();
                     boolean newPageFollows = false;
