@@ -1568,7 +1568,7 @@ public class PdfSignatureAppearance {
     public void setRunDirection(int runDirection) {
         if (runDirection < PdfWriter.RUN_DIRECTION_DEFAULT
                 || runDirection > PdfWriter.RUN_DIRECTION_RTL) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage(
+            throw new InvalidRunDirectionException(MessageLocalization.getComposedMessage(
                     "invalid.run.direction.1", runDirection));
         }
         this.runDirection = runDirection;
