@@ -57,6 +57,7 @@ import com.lowagie.text.LargeElement;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.IllegalNumberException;
 import com.lowagie.text.pdf.events.PdfPTableEventForwarder;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -530,13 +531,12 @@ public class PdfPTable implements LargeElement {
             if (runDirection == PdfWriter.RUN_DIRECTION_RTL) {
                 PdfPCell[] rtlRow = new PdfPCell[numCols];
                 int rev = currentRow.length;
-                int k = 0;
-                while (k < currentRow.length) {
+                for (int k = 0; k < currentRow.length; ++k) {
                     PdfPCell rcell = currentRow[k];
                     int cspan = rcell.getColspan();
                     rev -= cspan;
                     rtlRow[rev] = rcell;
-                    k += cspan;  // incrementing k explicitly
+                    k += cspan - 1;
                 }
                 currentRow = rtlRow;
             }
@@ -560,8 +560,6 @@ public class PdfPTable implements LargeElement {
         return ncell;
     }
 
-
-
     /**
      * When updating the row index, cells with rowspan should be taken into account. This is what happens in this
      * method.
@@ -582,9 +580,9 @@ public class PdfPTable implements LargeElement {
         PdfPCell[] cells = rows.get(row).getCells();
         for (int i = 0; i < cells.length; i++) {
             if (cells[i] != null && col >= i && col < (i + cells[i].getColspan())) {
-
-                return cells[i];
-
+                
+                    return cells[i];
+                
             }
         }
         return null;
@@ -726,7 +724,7 @@ public class PdfPTable implements LargeElement {
     public float writeSelectedRows(int colStart, int colEnd, int rowStart, int rowEnd, float xPos, float yPos,
             PdfContentByte[] canvases) {
         if (totalWidth <= 0) {
-            throw new RuntimeException(
+            throw new IllegalNumberException(
                     MessageLocalization.getComposedMessage("the.table.width.must.be.greater.than.zero"));
         }
 
@@ -1448,7 +1446,7 @@ public class PdfPTable implements LargeElement {
                 this.runDirection = runDirection;
                 break;
             default:
-                throw new RuntimeException(
+                throw new InvalidRunDirectionException(
                         MessageLocalization.getComposedMessage("invalid.run.direction.1", runDirection));
         }
     }
