@@ -69,6 +69,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.sun.jdi.InternalException;
 import org.xml.sax.SAXException;
 
 
@@ -841,7 +842,7 @@ class PdfStamperImp extends PdfWriter {
                 }
             }
             if (len == kids.size()) {
-                throw new RuntimeException(MessageLocalization.getComposedMessage("internal.inconsistence"));
+                throw new InternalException(MessageLocalization.getComposedMessage("internal.inconsistence"));
             }
             markUsed(kids);
             reader.pageRefs.insertPage(pageNumber, pref);
@@ -1330,7 +1331,7 @@ class PdfStamperImp extends PdfWriter {
         for (PdfTemplate template : fieldTemplates.keySet()) {
             PdfFormField.mergeResources(dr, (PdfDictionary) template.getResources(), this);
         }
-
+        
         PdfDictionary fonts = dr.getAsDict(PdfName.FONT);
         if (fonts == null) {
             fonts = new PdfDictionary();
