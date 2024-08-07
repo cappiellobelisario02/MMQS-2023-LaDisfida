@@ -67,6 +67,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.CharacterCodingException;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.cert.Certificate;
@@ -733,7 +734,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
             int n = PRTokeniser.getHex(ch);
             if (n == -1) {
-                throw new RuntimeException(
+                throw new IllegalBarcode128CharacterException(
                         MessageLocalization
                                 .getComposedMessage("illegal.character.in.asciihexdecode"));
             }
@@ -776,7 +777,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 continue;
             }
             if (ch < '!' || ch > 'u') {
-                throw new RuntimeException(
+                throw new IllegalBarcode128CharacterException(
                         MessageLocalization
                                 .getComposedMessage("illegal.character.in.ascii85decode"));
             }
