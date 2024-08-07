@@ -93,19 +93,14 @@ package com.lowagie.text;
  * @see Paragraph
  */
 
-public class ListItem extends Paragraph {
+public class ListItem {
 
     // constants
     private static final long serialVersionUID = 1970670787169329006L;
 
     // member variables
-
-    /**
-     * this is the symbol that will precede the listitem.
-     *
-     * @since 5.0    used to be private
-     */
     protected Chunk symbol;
+    private final Paragraph paragraph; // Use composition
 
     // constructors
 
@@ -113,7 +108,7 @@ public class ListItem extends Paragraph {
      * Constructs a <CODE>ListItem</CODE>.
      */
     public ListItem() {
-        super();
+        paragraph = new Paragraph();
     }
 
     /**
@@ -122,7 +117,7 @@ public class ListItem extends Paragraph {
      * @param leading the leading
      */
     public ListItem(float leading) {
-        super(leading);
+        paragraph = new Paragraph(leading);
     }
 
     /**
@@ -131,7 +126,7 @@ public class ListItem extends Paragraph {
      * @param chunk a <CODE>Chunk</CODE>
      */
     public ListItem(Chunk chunk) {
-        super(chunk);
+        paragraph = new Paragraph(chunk);
     }
 
     /**
@@ -140,7 +135,7 @@ public class ListItem extends Paragraph {
      * @param string a <CODE>String</CODE>
      */
     public ListItem(String string) {
-        super(string);
+        paragraph = new Paragraph(string);
     }
 
     /**
@@ -150,7 +145,7 @@ public class ListItem extends Paragraph {
      * @param font   a <CODE>String</CODE>
      */
     public ListItem(String string, Font font) {
-        super(string, font);
+        paragraph = new Paragraph(string, font);
     }
 
     /**
@@ -160,7 +155,7 @@ public class ListItem extends Paragraph {
      * @param chunk   a <CODE>Chunk</CODE>
      */
     public ListItem(float leading, Chunk chunk) {
-        super(leading, chunk);
+        paragraph = new Paragraph(leading, chunk);
     }
 
     /**
@@ -170,7 +165,7 @@ public class ListItem extends Paragraph {
      * @param string  a <CODE>String</CODE>
      */
     public ListItem(float leading, String string) {
-        super(leading, string);
+        paragraph = new Paragraph(leading, string);
     }
 
     /**
@@ -181,7 +176,7 @@ public class ListItem extends Paragraph {
      * @param font    a <CODE>Font</CODE>
      */
     public ListItem(float leading, String string, Font font) {
-        super(leading, string, font);
+        paragraph = new Paragraph(leading, string, font);
     }
 
     /**
@@ -190,29 +185,37 @@ public class ListItem extends Paragraph {
      * @param phrase a <CODE>Phrase</CODE>
      */
     public ListItem(Phrase phrase) {
-        super(phrase);
+        paragraph = new Paragraph(phrase);
     }
 
-    // implementation of the Element-methods
+    // methods delegating to Paragraph
 
-    /**
-     * Gets the type of the text element.
-     *
-     * @return a type
-     */
+    public void setAlignment(int alignment) {
+        paragraph.setAlignment(alignment);
+    }
+
+    public void setLeading(float fixedLeading) {
+        paragraph.setLeading(fixedLeading);
+    }
+
+    public void setLeading(float fixedLeading, float multipliedLeading) {
+        paragraph.setLeading(fixedLeading, multipliedLeading);
+    }
+
+    public void setIndentationLeft(float indentation) {
+        paragraph.setIndentationLeft(indentation);
+    }
+
+    public void setIndentationRight(float indentation) {
+        paragraph.setIndentationRight(indentation);
+    }
+
     public int type() {
         return Element.LISTITEM;
     }
 
-    // methods
+    // Additional methods of ListItem
 
-    /**
-     * Sets the indentation of this paragraph on the left side.
-     *
-     * @param indentation the new indentation
-     * @param autoindent  if auto indentation, if set as <code>true</code>
-     *                    <code>indentation</code> will not be used
-     */
     public void setIndentationLeft(float indentation, boolean autoindent) {
         if (autoindent) {
             setIndentationLeft(getListSymbol().getWidthPoint());
@@ -221,29 +224,16 @@ public class ListItem extends Paragraph {
         }
     }
 
-    /**
-     * Returns the listsymbol.
-     *
-     * @return a <CODE>Chunk</CODE>
-     */
     public Chunk getListSymbol() {
         return symbol;
     }
 
-    // methods to retrieve information
-
-    /**
-     * Sets the listsymbol.
-     *
-     * @param symbol a <CODE>Chunk</CODE>
-     */
     public void setListSymbol(Chunk symbol) {
         if (this.symbol == null) {
             this.symbol = symbol;
             if (this.symbol.getFont().isStandardFont()) {
-                this.symbol.setFont(font);
+                this.symbol.setFont(paragraph.getFont()); // Access paragraph's font
             }
         }
     }
-
 }

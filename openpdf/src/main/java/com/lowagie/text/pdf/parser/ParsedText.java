@@ -200,20 +200,25 @@ public class ParsedText extends ParsedTextImpl {
     }
 
     /**
-     * Decodes a Java String containing glyph ids encoded in the font's encoding, and determine the unicode equivalent
+     * Decodes a Java String containing glyph ids encoded in the font's encoding, and determines the Unicode equivalent.
      *
      * @param in the String that needs to be decoded
      * @return the decoded String
      */
-    // FIXME unreachable block and default encoding
     protected String decode(String in) {
         byte[] bytes;
+
+        // Check the font encoding to decide the appropriate character set for decoding
         if (BaseFont.IDENTITY_H.equals(graphicsState.getFont().getEncoding())) {
             bytes = in.getBytes(StandardCharsets.UTF_16);
+        } else {
+            // If not using IDENTITY_H encoding, default to the platform's default charset
+            bytes = in.getBytes(StandardCharsets.UTF_8); // Specify UTF-8 encoding as the default
         }
-        bytes = in.getBytes();
+
         return graphicsState.getFont().decode(bytes, 0, bytes.length);
     }
+
 
     /**
      * This constructor should only be called when the origin for text display is at (0,0) and the graphical state
@@ -249,7 +254,7 @@ public class ParsedText extends ParsedTextImpl {
         char[] chars = pdfText.getOriginalChars();
         boolean[] hasSpace = new boolean[chars.length];
         float totalWidth = 0;
-        StringBuffer wordAccum = new StringBuffer(3);
+        StringBuilder wordAccum = new StringBuilder(3);
         float wordStartOffset = 0;
         boolean wordsAreComplete = preprocessString(chars, hasSpace);
         // Set When a word is created by whitespace that occurred before it.
@@ -327,7 +332,7 @@ public class ParsedText extends ParsedTextImpl {
      *                           complete.
      * @return the new word
      */
-    private Word createWord(StringBuffer wordAccum,
+    private Word createWord(StringBuilder wordAccum,
             float wordStartOffset,
             float wordEndOffset,
             Vector baseline,

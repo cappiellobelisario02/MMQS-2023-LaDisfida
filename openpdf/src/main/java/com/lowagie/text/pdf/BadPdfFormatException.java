@@ -49,6 +49,8 @@
 
 package com.lowagie.text.pdf;
 
+import com.lowagie.text.DocumentException;
+
 /**
  * Signals that a bad PDF format has been used to construct a <CODE>PdfObject</CODE>.
  *
@@ -60,7 +62,7 @@ package com.lowagie.text.pdf;
  * @see PdfDictionary
  */
 
-public class BadPdfFormatException extends PdfException {
+public class BadPdfFormatException extends DocumentException {
 
     // constructors
 

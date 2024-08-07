@@ -48,6 +48,7 @@
 package com.lowagie.text;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import java.io.Serial;
 
 /**
  * Chapter with auto numbering.
@@ -57,6 +58,7 @@ import com.lowagie.text.error_messages.MessageLocalization;
 public class ChapterAutoNumber extends Chapter {
 
     // constant
+    @Serial
     private static final long serialVersionUID = -9217457637987854167L;
 
     /**

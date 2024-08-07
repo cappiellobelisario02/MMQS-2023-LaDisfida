@@ -227,10 +227,14 @@ public class FileList
         RowContainer(File file) {
             this.file = file;
             PdfReader reader = null;
+
             try {
                 reader = new PdfReader(file.getAbsolutePath());
-            } catch (IOException ignored) {
-                ignored.printStackTrace();
+                this.pages = reader.getNumberOfPages();  // Safe to access reader here
+            } catch (IOException e) {
+                // Handle the exception or log an error message
+                e.printStackTrace();  // You can replace this with a logger if needed
+                this.pages = 0;  // Set pages to 0 or an appropriate default value
             } finally {
                 if (reader != null) {
                     try {
@@ -240,7 +244,6 @@ public class FileList
                     }
                 }
             }
-            this.pages = reader.getNumberOfPages();
         }
 
         public File getFile() {
