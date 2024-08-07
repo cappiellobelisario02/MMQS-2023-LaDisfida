@@ -32,7 +32,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
@@ -43,7 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -62,6 +61,7 @@ import javax.swing.table.TableRowSorter;
 public class FileList
         extends JInternalFrame implements DropTargetListener {
 
+    public static final Logger logger = Logger.getLogger(FileList.class.getName());
     private static final long serialVersionUID = -7238230038043975672L;
 
     private final ArrayList<RowContainer> filevector = new ArrayList<>();
@@ -109,16 +109,19 @@ public class FileList
     }
 
     public void dragEnter(DropTargetDragEvent dtde) {
+        //empty on purpose, may change later
     }
 
     public void dragOver(DropTargetDragEvent dtde) {
+        //empty on purpose, may change later
     }
 
     public void dropActionChanged(DropTargetDragEvent dtde) {
-        System.out.println("actionchanged");
+        logger.info("actionchanged");
     }
 
     public void drop(DropTargetDropEvent dtde) {
+        String stringToLog;
         if ((dtde.getDropAction() & DnDConstants.ACTION_COPY_OR_MOVE) == 0) {
             dtde.rejectDrop();
             return;
@@ -134,7 +137,8 @@ public class FileList
                 filevector.add(new RowContainer(f));
 
                 model.fireTableDataChanged();
-                System.out.println(f.toString());
+                stringToLog = f.toString();
+                logger.info(stringToLog);
             }
         } catch (IOException | UnsupportedFlavorException ex) {
             ex.printStackTrace();
@@ -149,9 +153,10 @@ public class FileList
     }
 
     public void dragExit(DropTargetEvent dte) {
+        //empty on purpose, may change later
     }
 
-    public void jTable1_keyPressed(KeyEvent e) {
+    public void jTable1KeyPressed(KeyEvent e) {
         if (e.getKeyCode() == 127) {
             int[] selected = jTable1.getSelectedRows();
             for (int i = selected.length - 1; i >= 0; i--) {
@@ -161,7 +166,7 @@ public class FileList
         }
     }
 
-    public void ftm_tableChanged() {
+    public void ftmTableChanged() {
         int sum = 0;
         for (RowContainer c : filevector) {
             sum += c.getPages();
@@ -169,7 +174,7 @@ public class FileList
         this.jLabel2.setText(Integer.toString(sum));
     }
 
-    public ArrayList<RowContainer> getFilevector() {
+    public List<RowContainer> getFilevector() {
         return filevector;
     }
 
@@ -192,7 +197,7 @@ public class FileList
         }
 
         public void tableChanged(TableModelEvent e) {
-            adaptee.ftm_tableChanged(e);
+            adaptee.ftmTableChanged(e);
         }
     }
 
@@ -207,7 +212,7 @@ public class FileList
 
         @Override
         public void keyPressed(KeyEvent e) {
-            adaptee.jTable1_keyPressed(e);
+            adaptee.jTable1KeyPressed(e);
         }
     }
 

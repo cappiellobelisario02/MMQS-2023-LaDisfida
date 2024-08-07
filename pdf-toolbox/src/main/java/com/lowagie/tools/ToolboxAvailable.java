@@ -51,9 +51,12 @@ package com.lowagie.tools;
 import com.lowagie.text.Document;
 import com.lowagie.toolbox.Toolbox;
 import java.awt.GraphicsEnvironment;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class ToolboxAvailable {
+
+    public static final Logger logger = Logger.getLogger(ToolboxAvailable.class.getName());
 
     /**
      * Checks if the toolbox if available. If it is, the toolbox is started. If it isn't, an error message is shown.
@@ -61,8 +64,10 @@ public class ToolboxAvailable {
      * @param args the command-line args
      */
     public static void main(String[] args) {
+        String stringToLog;
         if (GraphicsEnvironment.isHeadless()) {
-            System.out.println(Document.getVersion() + " Toolbox error: headless display");
+            stringToLog = Document.getVersion() + " Toolbox error: headless display";
+            logger.info(stringToLog);
         } else {
             try {
                 Toolbox.main(args);

@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
@@ -253,7 +254,7 @@ public class Normalize
                     this.getPagecountrotatedpages();
             logger.info(stringToLog);
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            logger.log(Level.SEVERE, "An exception occurred ", e);
         } finally {
             if (reader != null && fouts != null && stp != null) {
                 try {
