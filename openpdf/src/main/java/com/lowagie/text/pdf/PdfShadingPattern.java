@@ -47,6 +47,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.IllegalNumberException;
 import java.io.IOException;
 
 /**
@@ -112,7 +113,7 @@ public class PdfShadingPattern extends PdfDictionary {
 
     public void setMatrix(float[] matrix) {
         if (matrix.length != 6) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("the.matrix.size.must.be.6"));
+            throw new IllegalNumberException(MessageLocalization.getComposedMessage("the.matrix.size.must.be.6"));
         }
         this.matrix = matrix;
     }
