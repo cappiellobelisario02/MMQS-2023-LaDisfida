@@ -444,7 +444,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
      * The specified value shall not be used if the annotation has an appearance stream in that case, the appearance
      * stream shall specify any transparency.
      */
-    public static final PdfName CA = new PdfName("ca");
+    public static final PdfName ca = new PdfName("ca");
     /**
      * A name
      */
@@ -2911,7 +2911,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
      *
      *  </ul>
      */
-    public static final PdfName type = new PdfName("Type");
+    public static final PdfName TYPE = new PdfName("Type");
     /**
      * A name
      */

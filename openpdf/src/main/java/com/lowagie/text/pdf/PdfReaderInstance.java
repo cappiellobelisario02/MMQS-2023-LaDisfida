@@ -92,14 +92,10 @@ class PdfReaderInstance {
             throw new IllegalArgumentException(
                     MessageLocalization.getComposedMessage("invalid.page.number.1", pageNumber));
         }
-        Integer i = pageNumber;
-        PdfImportedPage pageT = importedPages.get(i);
-        if (pageT == null) {
-            pageT = new PdfImportedPage(this, writer, pageNumber);
-            importedPages.put(i, pageT);
-        }
-        return pageT;
+
+        return importedPages.computeIfAbsent(pageNumber, i -> new PdfImportedPage(this, writer, pageNumber));
     }
+
 
     int getNewObjectNumber(int number) {
         if (myXref[number] == 0) {
@@ -114,8 +110,7 @@ class PdfReaderInstance {
     }
 
     PdfObject getResources(int pageNumber) {
-        PdfObject obj = PdfReader.getPdfObjectRelease(reader.getPageNRelease(pageNumber).get(PdfName.RESOURCES));
-        return obj;
+        return PdfReader.getPdfObjectRelease(reader.getPageNRelease(pageNumber).get(PdfName.RESOURCES));
     }
 
     /**
@@ -179,9 +174,8 @@ class PdfReaderInstance {
     void writeAllPages() throws IOException {
         try {
             file.reOpen();
-            for (Object o : importedPages.values()) {
-                PdfImportedPage ip = (PdfImportedPage) o;
-                writer.addToBody(ip.getFormXObject(writer.getCompressionLevel()), ip.getIndirectReference());
+            for (PdfImportedPage o : importedPages.values()) {
+                writer.addToBody(o.getFormXObject(writer.getCompressionLevel()), o.getIndirectReference());
             }
             writeAllVisited();
         } finally {

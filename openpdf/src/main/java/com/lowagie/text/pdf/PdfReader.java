@@ -69,15 +69,16 @@ import java.net.URL;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.cert.Certificate;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.zip.InflaterInputStream;
 
 /**
@@ -315,7 +316,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
         this.pageRefs = new PageRefs(reader.pageRefs, this);
         this.trailer = (PdfDictionary) duplicatePdfObject(reader.trailer, this);
-        this.catalog = trailer.getAsDict(PdfName.ROOT);
+        this.catalog = (trailer != null) ? trailer.getAsDict(PdfName.ROOT) : null;
+        assert catalog != null;
         this.rootPages = catalog.getAsDict(PdfName.PAGES);
         this.fileLength = reader.fileLength;
         this.partial = reader.partial;
@@ -348,17 +350,34 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return a normalized <CODE>Rectangle</CODE>
      */
     public static Rectangle getNormalizedRectangle(PdfArray box) {
-        float llx = ((PdfNumber) getPdfObjectRelease(box.getPdfObject(0)))
-                .floatValue();
-        float lly = ((PdfNumber) getPdfObjectRelease(box.getPdfObject(1)))
-                .floatValue();
-        float urx = ((PdfNumber) getPdfObjectRelease(box.getPdfObject(2)))
-                .floatValue();
-        float ury = ((PdfNumber) getPdfObjectRelease(box.getPdfObject(3)))
-                .floatValue();
-        return new Rectangle(Math.min(llx, urx), Math.min(lly, ury), Math.max(llx,
-                urx), Math.max(lly, ury));
+        // Check if the box array is null or has fewer than 4 elements
+        if (box == null || box.size() < 4) {
+            throw new IllegalArgumentException("PdfArray must contain at least four elements.");
+        }
+
+        float llx = getFloatValue(box, 0);
+        float lly = getFloatValue(box, 1);
+        float urx = getFloatValue(box, 2);
+        float ury = getFloatValue(box, 3);
+
+        return new Rectangle(
+                Math.min(llx, urx),
+                Math.min(lly, ury),
+                Math.max(llx, urx),
+                Math.max(lly, ury)
+        );
     }
+
+    private static float getFloatValue(PdfArray box, int index) {
+        PdfObject pdfObject = getPdfObjectRelease(box.getPdfObject(index));
+
+        if (!(pdfObject instanceof PdfNumber)) {
+            throw new IllegalArgumentException("Expected a PdfNumber at index " + index);
+        }
+
+        return ((PdfNumber) pdfObject).floatValue();
+    }
+
 
     /**
      * @param obj an object of {@link PdfObject}
@@ -736,7 +755,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param in the input data
      * @return the decoded data
      */
-    public static byte[] ASCII85Decode(byte[] in) {
+    public static byte[] ascii85Decode(byte[] in) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int state = 0;
         int[] chn = new int[5];
@@ -777,9 +796,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         int r;
         // We'll ignore the next two lines for the sake of perpetuating broken
         // PDFs
-        
-        
-        
+
+
+
         if (state == 2) {
             r = chn[0] * 85 * 85 * 85 * 85 + chn[1] * 85 * 85 * 85 + 85 * 85 * 85
                     + 85 * 85 + 85;
@@ -820,12 +839,13 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return the stream content
      * @throws IOException on error
      */
-    public static byte[] getStreamBytes(PRStream stream,
-            RandomAccessFileOrArray file) throws IOException {
+    public static byte[] getStreamBytes(PRStream stream, RandomAccessFileOrArray file) throws IOException {
         PdfObject filter = getPdfObjectRelease(stream.get(PdfName.FILTER));
         byte[] b = getStreamBytesRaw(stream, file);
+
         List<PdfObject> filters = new ArrayList<>();
         filters = addFilters(filters, filter);
+
         List<PdfObject> dp = new ArrayList<>();
         PdfObject dpo = getPdfObjectRelease(stream.get(PdfName.DECODEPARMS));
         if (dpo == null || (!dpo.isDictionary() && !dpo.isArray())) {
@@ -838,17 +858,23 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 dp = ((PdfArray) dpo).getElements();
             }
         }
+
         String name;
         for (int j = 0; j < filters.size(); ++j) {
-            name = getPdfObjectRelease(filters.get(j))
-                    .toString();
+            PdfObject filterObject = getPdfObjectRelease(filters.get(j));
+            if (filterObject == null) {
+                throw new UnsupportedPdfException(
+                        MessageLocalization.getComposedMessage("null.filter.object.found")
+                );
+            }
+
+            name = filterObject.toString();
             switch (name) {
                 case "/FlateDecode":
                 case "/Fl": {
                     b = FlateDecode(b);
-                    PdfObject dicParam;
-                    if (j < dp.size()) {
-                        dicParam = dp.get(j);
+                    PdfObject dicParam = (j < dp.size()) ? dp.get(j) : null;
+                    if (dicParam != null) {
                         b = decodePredictor(b, dicParam);
                     }
                     break;
@@ -859,27 +885,29 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     break;
                 case "/ASCII85Decode":
                 case "/A85":
-                    b = ASCII85Decode(b);
+                    b = ascii85Decode(b);
                     break;
                 case "/LZWDecode": {
                     b = LZWDecode(b);
-                    PdfObject dicParam;
-                    if (j < dp.size()) {
-                        dicParam = dp.get(j);
+                    PdfObject dicParam = (j < dp.size()) ? dp.get(j) : null;
+                    if (dicParam != null) {
                         b = decodePredictor(b, dicParam);
                     }
                     break;
                 }
                 case "/Crypt":
+                    // Handle Crypt filter if necessary
                     break;
                 default:
                     throw new UnsupportedPdfException(
                             MessageLocalization.getComposedMessage(
-                                    "the.filter.1.is.not.supported", name));
+                                    "the.filter.1.is.not.supported", name)
+                    );
             }
         }
         return b;
     }
+
 
     /**
      * Get the content from a stream applying the required filters.
@@ -1358,7 +1386,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
             strings.clear();
             readPages();
-            
+
             removeUnusedObjects();
         } finally {
             try {
@@ -1652,12 +1680,12 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 byte[] permsValue = com.lowagie.text.DocWriter.getISOBytes(s);
 
                 // step b of Algorithm 2.A
-                byte[] passwordByteThis = this.password;
-                if (passwordByteThis == null) {
-                    passwordByteThis = new byte[0];
-                } else if (passwordByteThis.length > 127) {
-                    passwordByteThis = Arrays.copyOf(passwordByteThis, 127);
-                }
+                //byte[] passwordByteThis = this.password
+//                if passwordByteThis == null
+//                    passwordByteThis = new byte[0
+//                 else if passwordByteThis.length > 127
+//                    passwordByteThis = Arrays.copyOf(passwordByteThis, 127
+//
 
                 // According to ISO 32000-2 the uValue is expected to be 48 bytes in length.
                 // Actual documents from the wild tend to have the uValue filled with zeroes
@@ -2985,9 +3013,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return the subset prefix
      */
     private String createRandomSubsetPrefix() {
-        String s = "";
+        StringBuilder s = new StringBuilder();
         for (int k = 0; k < 6; ++k) {
-            s += (char) (Math.random() * 26 + 'A');
+            s.append((char) (Math.random() * 26 + 'A'));
         }
         return s + "+";
     }
@@ -3146,32 +3174,44 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      */
     public void removeFields() {
         pageRefs.resetReleasePage();
+
+        // Iterate over the pages
         for (int k = 1; k <= pageRefs.size(); ++k) {
             PdfDictionary page = pageRefs.getPageN(k);
             PdfArray annots = page.getAsArray(PdfName.ANNOTS);
+
             if (annots == null) {
                 pageRefs.releasePage(k);
                 continue;
             }
-            for (int j = 0; j < annots.size(); ++j) {
-                PdfObject obj = getPdfObjectRelease(annots.getPdfObject(j));
-                if (obj == null || !obj.isDictionary()) {
-                    continue;
-                }
-                PdfDictionary annot = (PdfDictionary) obj;
-                if (PdfName.WIDGET.equals(annot.get(PdfName.SUBTYPE))) {
-                    annots.remove(j--);
+
+            // Use ListIterator for safe removal
+            ListIterator<PdfObject> iterator = annots.listIterator();
+
+            while (iterator.hasNext()) {
+                PdfObject obj = getPdfObjectRelease(iterator.next());
+
+                if (obj != null && obj.isDictionary()) {
+                    PdfDictionary annot = (PdfDictionary) obj;
+
+                    if (PdfName.WIDGET.equals(annot.get(PdfName.SUBTYPE))) {
+                        iterator.remove(); // Remove safely using iterator
+                    }
                 }
             }
+
+            // Remove annotations if empty
             if (annots.isEmpty()) {
                 page.remove(PdfName.ANNOTS);
             } else {
                 pageRefs.releasePage(k);
             }
         }
+
         catalog.remove(PdfName.ACROFORM);
         pageRefs.resetReleasePage();
     }
+
 
     /**
      * Removes all the annotations and fields from the document.
@@ -3190,18 +3230,21 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         pageRefs.resetReleasePage();
     }
 
-    public ArrayList<PdfAnnotation.PdfImportedLink> getLinks(int page) {
+    public List<PdfAnnotation.PdfImportedLink> getLinks(int page) {
         pageRefs.resetReleasePage();
         ArrayList<PdfAnnotation.PdfImportedLink> result = new ArrayList<>();
         PdfDictionary pageDic = pageRefs.getPageN(page);
-        if (pageDic.get(PdfName.ANNOTS) != null) {
-            PdfArray annots = pageDic.getAsArray(PdfName.ANNOTS);
-            for (int j = 0; j < annots.size(); ++j) {
-                PdfDictionary annot = (PdfDictionary) getPdfObjectRelease(annots
-                        .getPdfObject(j));
 
-                if (PdfName.LINK.equals(annot.get(PdfName.SUBTYPE))) {
-                    result.add(new PdfAnnotation.PdfImportedLink(annot));
+        if (pageDic != null) { // Check if pageDic is null
+            PdfArray annots = pageDic.getAsArray(PdfName.ANNOTS);
+
+            if (annots != null) { // Check if annots is null
+                for (int j = 0; j < annots.size(); ++j) {
+                    PdfDictionary annot = (PdfDictionary) getPdfObjectRelease(annots.getPdfObject(j));
+
+                    if (annot != null && PdfName.LINK.equals(annot.get(PdfName.SUBTYPE))) {
+                        result.add(new PdfAnnotation.PdfImportedLink(annot));
+                    }
                 }
             }
         }
@@ -3210,17 +3253,28 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         return result;
     }
 
+
     private void iterateBookmarks(PdfObject outlineRef, Map<Object, PdfObject> names) {
         while (outlineRef != null) {
             replaceNamedDestination(outlineRef, names);
+
             PdfDictionary outline = (PdfDictionary) getPdfObjectRelease(outlineRef);
-            PdfObject first = outline.get(PdfName.FIRST);
-            if (first != null) {
-                iterateBookmarks(first, names);
+
+            // Check if outline is null before accessing it
+            if (outline != null) {
+                PdfObject first = outline.get(PdfName.FIRST);
+                if (first != null) {
+                    iterateBookmarks(first, names);
+                }
+                outlineRef = outline.get(PdfName.NEXT);
+            } else {
+                // Handle the case where outline is null if necessary
+                // e.g., log a warning, throw an exception, or set outlineRef to null to exit the loop
+                outlineRef = null; // or continue/break, based on your needs
             }
-            outlineRef = outline.get(PdfName.NEXT);
         }
     }
+
 
     /**
      * Replaces remote named links with local destinations that have the same name.
@@ -3413,9 +3467,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     @SuppressWarnings("unchecked")
     protected void removeUnusedNode(PdfObject obj, boolean[] hits) {
-        Stack<PdfObject> state = new Stack<>();
+        Deque<PdfObject> state = new ArrayDeque<>();
         state.push(obj);
-        while (!state.empty()) {
+        while (!state.isEmpty()) {
             Object current = state.pop();
             if (current == null) {
                 continue;
@@ -3479,6 +3533,12 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     break;
                 }
             } else {
+                // Ensure keys is not null before proceeding with the loop
+                if (keys == null) {
+                    // Handle the null keys case appropriately
+                    // This could be returning early, throwing an exception, or logging
+                    throw new IllegalArgumentException("Keys array cannot be null");
+                }
                 for (int k = idx; k < keys.length; ++k) {
                     PdfName key = keys[k];
                     PdfObject v = dic.get(key);
@@ -3892,13 +3952,27 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             this.reader = reader;
             if (reader.partial) {
                 refsp = new IntHashtable();
-                PdfNumber npages = (PdfNumber) PdfReader
-                        .getPdfObjectRelease(reader.rootPages.get(PdfName.COUNT));
-                sizep = npages.intValue();
+                PdfNumber npages = (PdfNumber) PdfReader.getPdfObjectRelease(reader.rootPages.get(PdfName.COUNT));
+
+                // Check if npages is null before calling intValue()
+                if (npages != null) {
+                    sizep = npages.intValue();
+                } else {
+                    // Handle the case where npages is null
+                    // Option 1: Throw an exception
+                    throw new IllegalStateException("Page count is not available. 'npages' is null.");
+
+                    // Option 2: Set sizep to a default value
+                    // sizep = 0; // or another appropriate default value
+
+                    // Option 3: Log a warning message (if using a logging framework)
+                    // Logger.warn("Page count is null. Defaulting sizep to 0."
+                }
             } else {
                 readPages();
             }
         }
+
 
         PageRefs(PageRefs other, PdfReader reader) {
             this.reader = reader;
@@ -4192,10 +4266,22 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                         acc.put(pageInhCandidate, obj);
                     }
                 }
+
                 PdfArray kids = (PdfArray) PdfReader.getPdfObjectRelease(top.get(PdfName.KIDS));
+                // Null check for kids
+                if (kids == null) {
+                    throw new IllegalStateException("No kids found in the PDF structure.");
+                }
+
                 for (PdfObject pdfObject : kids.getElements()) {
                     PRIndirectReference ref = (PRIndirectReference) pdfObject;
                     PdfDictionary dic = (PdfDictionary) getPdfObject(ref);
+
+                    // Null check for dic
+                    if (dic == null) {
+                        throw new IllegalStateException("Dictionary not found for the PDF object.");
+                    }
+
                     int last = reader.lastXrefPartial;
                     PdfObject count = getPdfObjectRelease(dic.get(PdfName.COUNT));
                     reader.lastXrefPartial = last;
@@ -4218,36 +4304,48 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
         }
 
+
         private void selectPages(List<Integer> pagesToKeep) {
             IntHashtable pg = new IntHashtable();
             List<Integer> finalPages = new ArrayList<>();
             int psize = size();
+
             for (Integer aPagesToKeep : pagesToKeep) {
                 if (aPagesToKeep >= 1 && aPagesToKeep <= psize && pg.put(aPagesToKeep, 1) == 0) {
                     finalPages.add(aPagesToKeep);
                 }
             }
+
             if (reader.partial) {
                 for (int k = 1; k <= psize; ++k) {
                     getPageOrigRef(k);
                     resetReleasePage();
                 }
             }
-            PRIndirectReference parent = (PRIndirectReference) reader.catalog
-                    .get(PdfName.PAGES);
+
+            PRIndirectReference parent = (PRIndirectReference) reader.catalog.get(PdfName.PAGES);
             PdfDictionary topPages = (PdfDictionary) PdfReader.getPdfObject(parent);
+
+            if (topPages == null) {
+                // Handle the null case: log an error, throw an exception, or return from the method
+                throw new IllegalStateException("The top-level pages dictionary is null. Cannot proceed with page selection.");
+            }
+
             List<PdfObject> newPageRefs = new ArrayList<>(finalPages.size());
             PdfArray kids = new PdfArray();
-            for (Object finalPage : finalPages) {
-                int p = (Integer) finalPage;
+
+            for (Integer finalPage : finalPages) {
+                int p = finalPage;
                 PRIndirectReference pref = getPageOrigRef(p);
                 resetReleasePage();
                 kids.add(pref);
                 newPageRefs.add(pref);
                 getPageN(p).put(PdfName.PARENT, parent);
             }
+
             AcroFields af = reader.getAcroFields();
-            boolean removeFields = (af.getAllFields().size() > 0);
+            boolean removeFields = (!af.getAllFields().isEmpty());
+
             for (int k = 1; k <= psize; ++k) {
                 if (!pg.containsKey(k)) {
                     if (removeFields) {
@@ -4262,11 +4360,14 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     }
                 }
             }
+
+            // Now, safely use topPages since it's checked for null
             topPages.put(PdfName.COUNT, new PdfNumber(finalPages.size()));
             topPages.put(PdfName.KIDS, kids);
+
             refsp = null;
             refsn = newPageRefs;
         }
-    }
 
-}
+
+    }

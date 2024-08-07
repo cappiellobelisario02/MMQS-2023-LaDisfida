@@ -150,30 +150,43 @@ public class PdfPRow {
      */
     public boolean setWidths(float[] widths) {
         if (widths.length != cells.length) {
-            return false;
+            return false; // Return false if the length of widths and cells don't match
         }
-        System.arraycopy(widths, 0, this.widths, 0, cells.length);
-        float total = 0;
-        calculated = false;
-        for (int k = 0; k < widths.length; ++k) {
-            PdfPCell cell = cells[k];
 
-            if (cell == null) {
-                total += widths[k];
-                continue;
+        System.arraycopy(widths, 0, this.widths, 0, cells.length); // Copy input widths to the instance variable widths
+
+        float total = 0; // Variable to hold the total width
+        calculated = false; // Set calculated flag to false
+
+        int k = 0; // Initialize the loop counter outside of the for loop
+
+        while (k < widths.length) { // Use a while loop instead of a for loop
+            PdfPCell cell = cells[k]; // Get the cell at the current index
+
+            if (cell == null) { // Check if the cell is null
+                total += widths[k]; // If null, add the current width to the total
+                k++; // Move to the next index
+                continue; // Skip the rest of the loop and continue to the next iteration
             }
 
-            cell.setLeft(total);
-            int last = k + cell.getColspan();
-            for (; k < last; ++k) {
-                total += widths[k];
+            cell.setLeft(total); // Set the left position of the cell
+
+            // Calculate the total width for the colspan
+            int colspan = cell.getColspan(); // Get the colspan of the current cell
+            for (int j = 0; j < colspan && (k + j) < widths.length; j++) { // Iterate through each column span
+                total += widths[k + j]; // Add the width at the current position to the total
             }
-            --k;
-            cell.setRight(total);
-            cell.setTop(0);
+
+            cell.setRight(total); // Set the right position of the cell
+            cell.setTop(0); // Set the top position of the cell
+
+            k += colspan; // Move the outer loop counter to the end of the current colspan
         }
-        return true;
+
+        return true; // Return true if the process completes successfully
     }
+
+
 
     /**
      * Initializes the extra heights array.
@@ -210,9 +223,7 @@ public class PdfPRow {
         maxHeight = 0;
         for (PdfPCell cell : cells) {
             float height = 0;
-            if (cell == null) {
-                continue;
-            } else {
+            if (cell != null) {
                 height = cell.getMaxHeight();
                 if ((height > maxHeight) && (cell.getRowspan() == 1)) {
                     maxHeight = height;
@@ -514,10 +525,10 @@ public class PdfPRow {
                             - (currentMaxHeight
                             - cell.getEffectivePaddingTop() - cell.getEffectivePaddingBottom());
                     if (fixedHeight > 0 && cell.getHeight() > currentMaxHeight) {
-                        
-                            tly = cell.getTop() + yPos - cell.getEffectivePaddingTop();
-                            bry = cell.getTop() + yPos - currentMaxHeight + cell.getEffectivePaddingBottom();
-                     
+
+                        tly = cell.getTop() + yPos - cell.getEffectivePaddingTop();
+                        bry = cell.getTop() + yPos - currentMaxHeight + cell.getEffectivePaddingBottom();
+
                     }
                     if ((tly > bry || ct.zeroHeightElement()) && leftLimit < rightLimit) {
                         ct.setSimpleColumn(leftLimit, bry - 0.001f, rightLimit, tly);
@@ -606,28 +617,28 @@ public class PdfPRow {
      *
      * @param rowIndex   the row index
      * @param table      the PdfTable to get the row from
-     * @param new_height the new height
+     * @param newHeight the new height
      * @return the remainder row or null if the newHeight was so small that only an empty row would result
      */
-    public PdfPRow splitRow(PdfPTable table, int rowIndex, float new_height) {
+    public PdfPRow splitRow(PdfPTable table, int rowIndex, float newHeight) {
         PdfPCell[] newCells = new PdfPCell[cells.length];
         float[] fixHs = new float[cells.length];
         float[] minHs = new float[cells.length];
         boolean allEmpty = true;
         for (int k = 0; k < cells.length; ++k) {
-            float newHeight = new_height;
+            float newHeightLoop = newHeight;
             PdfPCell cell = cells[k];
             if (cell == null) {
                 int index = rowIndex;
                 if (table.rowSpanAbove(index, k)) {
-                    newHeight += table.getRowHeight(index);
+                    newHeightLoop += table.getRowHeight(index);
                     while (table.rowSpanAbove(--index, k)) {
-                        newHeight += table.getRowHeight(index);
+                        newHeightLoop += table.getRowHeight(index);
                     }
                     PdfPRow row = table.getRow(index);
                     if (row != null && row.getCells()[k] != null) {
                         newCells[k] = new PdfPCell(row.getCells()[k]);
-                        newCells[k].consumeHeight(newHeight);
+                        newCells[k].consumeHeight(newHeightLoop);
                         newCells[k].setRowspan(row.getCells()[k].getRowspan() - rowIndex + index);
                         allEmpty = false;
                     }
@@ -639,7 +650,7 @@ public class PdfPRow {
             Image img = cell.getImage();
             PdfPCell newCell = new PdfPCell(cell);
             if (img != null) {
-                if (newHeight > cell.getEffectivePaddingBottom() + cell.getEffectivePaddingTop() + 2) {
+                if (newHeightLoop > cell.getEffectivePaddingBottom() + cell.getEffectivePaddingTop() + 2) {
                     newCell.setPhrase(null);
                     allEmpty = false;
                 }
@@ -648,17 +659,12 @@ public class PdfPRow {
                 ColumnText ct = ColumnText.duplicate(cell.getColumn());
                 float left = cell.getLeft() + cell.getEffectivePaddingLeft();
                 float top = cell.getTop() - cell.getEffectivePaddingTop();
-                float bottom = cell.getTop() + cell.getEffectivePaddingBottom() - newHeight;
+                float bottom = cell.getTop() + cell.getEffectivePaddingBottom() - newHeightLoop;
                 float right = cell.getRight() - cell.getEffectivePaddingRight();
-                switch(cell.getRotation()) {
-                    case 90:
-                    case 270:
-                        y = setColumn(ct, left, bottom, right, top);
-                        break;
-                    default:
-                        y = setColumn(ct, left, bottom, cell.isNoWrap() ? RIGHT_LIMIT : right, top);
-                        break;
-                }
+                y = switch (cell.getRotation()) {
+                    case 90, 270 -> setColumn(ct, left, bottom, right, top);
+                    default -> setColumn(ct, left, bottom, cell.isNoWrap() ? RIGHT_LIMIT : right, top);
+                };
                 int status;
                 try {
                     status = ct.go(true);
@@ -678,7 +684,7 @@ public class PdfPRow {
                 allEmpty = (allEmpty && thisEmpty);
             }
             newCells[k] = newCell;
-            cell.setFixedHeight(newHeight);
+            cell.setFixedHeight(newHeightLoop);
         }
         if (allEmpty) {
             for (int k = 0; k < cells.length; ++k) {
