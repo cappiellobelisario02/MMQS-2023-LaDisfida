@@ -57,9 +57,12 @@ import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.text.ImgJBIG2;
 import com.lowagie.text.ImgWMF;
+import com.lowagie.text.PageSizeException;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Table;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.InvalidColorTypeException;
+import com.lowagie.text.exceptions.InvalidPatternTemplateException;
 import com.lowagie.text.pdf.TextDrawingConfig.PdfAcroForm;
 import com.lowagie.text.pdf.collection.PdfCollection;
 import com.lowagie.text.pdf.events.PdfPageEventForwarder;
@@ -74,6 +77,7 @@ import com.lowagie.text.pdf.interfaces.PdfXConformance;
 import com.lowagie.text.pdf.internal.PdfVersionImp;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import com.lowagie.text.xml.xmp.XmpWriter;
+import javax.management.openmbean.OpenDataException;
 import java.awt.Color;
 import java.awt.color.ICC_Profile;
 import java.io.ByteArrayOutputStream;
@@ -836,9 +840,9 @@ public class PdfWriter extends DocWriter implements
      * @return the direct content
      */
 
-    public PdfContentByte getDirectContent() {
+    public PdfContentByte getDirectContent(){
         if (!open) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("the.document.is.not.open"));
+            throw new DocumentException(MessageLocalization.getComposedMessage("the.document.is.not.open"));
         }
         return directContent;
     }
@@ -852,7 +856,7 @@ public class PdfWriter extends DocWriter implements
 
     public PdfContentByte getDirectContentUnder() {
         if (!open) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("the.document.is.not.open"));
+            throw new DocumentException(MessageLocalization.getComposedMessage("the.document.is.not.open"));
         }
         return directContentUnder;
     }
@@ -1258,7 +1262,7 @@ public class PdfWriter extends DocWriter implements
                 // ITextRenderer is not thread safe. So if you get this problem here, create a new
                 // instance, rather than re-using it.
                 // See: https://github.com/LibrePDF/OpenPDF/issues/164
-                throw new RuntimeException("The page " + pageReferences.size() +
+                throw new DocumentException("The page " + pageReferences.size() +
                         " was requested but the document has only " + (currentPageNumber - 1) + " pages.");
             }
 
@@ -2553,7 +2557,7 @@ public class PdfWriter extends DocWriter implements
      */
     public void setRunDirection(int runDirection) {
         if (runDirection < RUN_DIRECTION_NO_BIDI || runDirection > RUN_DIRECTION_RTL) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("invalid.run.direction.1", runDirection));
+            throw new InvalidRunDirectionException(MessageLocalization.getComposedMessage("invalid.run.direction.1", runDirection));
         }
         this.runDirection = runDirection;
     }
@@ -2617,7 +2621,7 @@ public class PdfWriter extends DocWriter implements
     ColorDetails addSimplePatternColorspace(Color color) {
         int type = ExtendedColor.getType(color);
         if (type == ExtendedColor.TYPE_PATTERN || type == ExtendedColor.TYPE_SHADING) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage(
+            throw new InvalidPatternTemplateException(MessageLocalization.getComposedMessage(
                     "an.uncolored.tile.pattern.can.not.have.another.pattern.or.shading.as.color"));
         }
         try {
@@ -2662,10 +2666,10 @@ public class PdfWriter extends DocWriter implements
                     return patternDetails;
                 }
                 default:
-                    throw new RuntimeException(MessageLocalization.getComposedMessage("invalid.color.type"));
+                    throw new InvalidColorTypeException(MessageLocalization.getComposedMessage("invalid.color.type"));
             }
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+            throw new DocumentException(e.getMessage());
         }
     }
 
