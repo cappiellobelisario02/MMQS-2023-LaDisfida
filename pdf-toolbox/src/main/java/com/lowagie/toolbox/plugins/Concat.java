@@ -45,7 +45,6 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +60,9 @@ import javax.swing.JInternalFrame;
 public class Concat extends AbstractTool {
 
     private static final Logger logger = Logger.getLogger(Concat.class.getName());
+    public static final String SRCFILE_1 = "srcfile1";
+    public static final String SRCFILE_2 = "srcfile2";
+    public static final String DESTFILE = "destfile";
 
     static {
         addVersion("$Id: Concat.java 3271 2008-04-18 20:39:42Z xlv $");
@@ -71,10 +73,10 @@ public class Concat extends AbstractTool {
      */
     public Concat() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW;
-        arguments.add(new FileArgument(this, "srcfile1", "The first PDF file", false, new PdfFilter()));
-        arguments.add(new FileArgument(this, "srcfile2", "The second PDF file", false, new PdfFilter()));
+        arguments.add(new FileArgument(this, SRCFILE_1, "The first PDF file", false, new PdfFilter()));
+        arguments.add(new FileArgument(this, SRCFILE_2, "The second PDF file", false, new PdfFilter()));
         arguments.add(
-                new FileArgument(this, "destfile", "The file to which the concatenated PDF has to be written", true,
+                new FileArgument(this, DESTFILE, "The file to which the concatenated PDF has to be written", true,
                         new PdfFilter()));
     }
 
@@ -110,25 +112,26 @@ public class Concat extends AbstractTool {
         Document document = null;
         FileOutputStream fos = null;
         PdfCopy writer = null;
+        String stringToLog;
         try {
             String[] files = new String[2];
-            if (getValue("srcfile1") == null) {
+            if (getValue(SRCFILE_1) == null) {
                 throw new InstantiationException("You need to choose a first sourcefile");
             }
-            files[0] = ((File) getValue("srcfile1")).getAbsolutePath();
-            if (getValue("srcfile2") == null) {
+            files[0] = ((File) getValue(SRCFILE_1)).getAbsolutePath();
+            if (getValue(SRCFILE_2) == null) {
                 throw new InstantiationException("You need to choose a second sourcefile");
             }
-            files[1] = ((File) getValue("srcfile2")).getAbsolutePath();
-            if (getValue("destfile") == null) {
+            files[1] = ((File) getValue(SRCFILE_2)).getAbsolutePath();
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException("You need to choose a destination file");
             }
-            File pdf_file = (File) getValue("destfile");
+            File pdfFile = (File) getValue(DESTFILE);
             int pageOffset = 0;
             List<Map<String, Object>> master = new ArrayList<>();
             for (int i = 0; i < 2; i++) {
                 // we create a reader for a certain document
-                /*PdfReader reader*/ reader = new PdfReader(files[i]);
+                reader = new PdfReader(files[i]);
                 reader.consolidateNamedDestinations();
                 // we retrieve the total number of pages
                 int n = reader.getNumberOfPages();
@@ -140,37 +143,27 @@ public class Concat extends AbstractTool {
                     master.addAll(bookmarks);
                 }
                 pageOffset += n;
-                String stringToLog = "There are " + n + " pages in " + files[i];
+                stringToLog = "There are " + n + " pages in " + files[i];
                 logger.info(stringToLog);
                 if (i == 0) {
                     // step 1: creation of a document-object
-                    try {
-                        document = new Document(reader.getPageSizeWithRotation(1));
-                    } catch (FileNotFoundException e){
-                        e.printStackTrace();
-                    }
+                    document = new Document(reader.getPageSizeWithRotation(1));
+
                     // step 2: we create a writer that listens to the document
-                    try {
-                        fos = new FileOutputStream(pdf_file);
-                    } catch (FileNotFoundException e) {
-                        // Handle the file not found exception here
-                        e.printStackTrace();
-                    }
-                    try{
-                        writer = new PdfCopy(document, fos);
-                    } catch (FileNotFoundException e){
-                        e.printStackTrace();
-                    }
+                    fos = new FileOutputStream(pdfFile);
+
+                    writer = new PdfCopy(document, fos);
+
                     // step 3: we open the document
                     document.open();
                 }
                 // step 4: we add content
                 PdfImportedPage page;
-                for (int p = 0; p < n; ) {
-                    ++p;
+                for (int p = 1; p <= n; p++) {  // Initialize p to 1 and iterate until p <= n
                     page = writer.getImportedPage(reader, p);
                     writer.addPage(page);
-                    logger.info("Processed page " + p);
+                    stringToLog = "Processed page " + p;
+                    logger.info(stringToLog);
                 }
             }
             if (!master.isEmpty()) {
@@ -181,7 +174,7 @@ public class Concat extends AbstractTool {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (reader != null && document != null && fos != null && writer != null){
+            if (reader != null && document != null && fos != null && writer != null) {
                 try {
                     reader.close();
                     document.close();
@@ -193,6 +186,7 @@ public class Concat extends AbstractTool {
             }
         }
     }
+
 
     /**
      * @param arg StringArgument
@@ -212,7 +206,7 @@ public class Concat extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 
 }

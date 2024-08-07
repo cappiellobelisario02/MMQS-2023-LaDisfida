@@ -67,7 +67,7 @@ public class ReversePages
                 "$Id: ReversePages.java 3271 2008-04-18 20:39:42Z xlv $");
     }
 
-    FileArgument destfile = null;
+    FileArgument destinationfile = null;
 
     /**
      * Constructs a ReversePages object.
@@ -79,11 +79,11 @@ public class ReversePages
                 "The file you want to reorder", false,
                 new PdfFilter());
         arguments.add(inputfile);
-        destfile = new FileArgument(this, DESTFILE,
+        destinationfile = new FileArgument(this, DESTFILE,
                 "The file to which the reordered version of the original PDF has to be written", true,
                 new PdfFilter());
-        arguments.add(destfile);
-        inputfile.addPropertyChangeListener(destfile);
+        arguments.add(destinationfile);
+        inputfile.addPropertyChangeListener(destinationfile);
     }
 
     /**
@@ -119,58 +119,64 @@ public class ReversePages
         PdfCopy copy = null;
         FileOutputStream fouts = null;
         String stringToLog = null;
+
         try {
             if (getValue(SRCFILE) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
             File src = (File) getValue(SRCFILE);
             if (getValue(DESTFILE) == null) {
-                throw new InstantiationException(
-                        "You need to choose a destination file");
+                throw new InstantiationException("You need to choose a destination file");
             }
             File dest = (File) getValue(DESTFILE);
 
-            // we create a reader for a certain document
-            /*PdfReader reader*/
-            try{
+            // We create a reader for a certain document
+            try {
                 reader = new PdfReader(src.getAbsolutePath());
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            stringToLog = "The original file had " + reader.getNumberOfPages() +
-                    " pages.";
+
+            stringToLog = "The original file had " + reader.getNumberOfPages() + " pages.";
             logger.info(stringToLog);
+
             int pages = reader.getNumberOfPages();
             ArrayList<Integer> li = new ArrayList<>();
+
             for (int i = pages; i > 0; i--) {
                 li.add(i);
             }
+
             reader.selectPages(li);
+
             stringToLog = "The new file has " + pages + " pages.";
             logger.severe(stringToLog);
-            /*Document document*/
-            try{
+
+            try {
                 document = new Document(reader.getPageSizeWithRotation(1));
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            try{
+
+            try {
                 fouts = new FileOutputStream(dest.getAbsolutePath());
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            /*PdfCopy copy*/
-            try{
+
+            try {
                 copy = new PdfCopy(document, fouts);
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
+
             document.open();
             PdfImportedPage page;
-            for (int i = 0; i < pages; ) {
-                ++i;
+
+            for (int i = 1; i <= pages; i++) {  // Start loop from 1 to pages inclusive
                 stringToLog = "Processed page " + i;
                 logger.info(stringToLog);
+
                 page = copy.getImportedPage(reader, i);
                 copy.addPage(page);
             }
@@ -179,16 +185,35 @@ public class ReversePages
             if (form != null) {
                 copy.copyAcroForm(reader);
             }
+
             document.close();
 
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (reader != null && document != null && copy != null && fouts != null) {
+            if (reader != null) {
                 try {
                     reader.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (document != null) {
+                try {
                     document.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (copy != null) {
+                try {
                     copy.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fouts != null) {
+                try {
                     fouts.close();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -196,6 +221,7 @@ public class ReversePages
             }
         }
     }
+
 
     /**
      * @param arg StringArgument
@@ -207,11 +233,11 @@ public class ReversePages
             return;
         }
 
-        if (destfile.getValue() == null && arg.getName().equalsIgnoreCase(SRCFILE)) {
+        if (destinationfile.getValue() == null && arg.getName().equalsIgnoreCase(SRCFILE)) {
             String filename = arg.getValue().toString();
             String filenameout = filename.substring(0, filename.indexOf(".",
                     filename.length() - 4)) + "_out.pdf";
-            destfile.setValue(filenameout);
+            destinationfile.setValue(filenameout);
         }
     }
 

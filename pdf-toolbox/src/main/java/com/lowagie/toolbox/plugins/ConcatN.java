@@ -113,73 +113,78 @@ public class ConcatN extends AbstractTool {
         FileOutputStream fos = null;
         PdfCopy writer = null;
         String stringToLog;
+
         try {
             File[] files;
             if (getValue(SRCFILES) == null) {
-                throw new InstantiationException(
-                        "You need to choose a list of sourcefiles");
+                throw new InstantiationException("You need to choose a list of sourcefiles");
             }
+
             files = ((File[]) getValue(SRCFILES));
+
             if (getValue(DESTFILE) == null) {
-                throw new InstantiationException(
-                        "You need to choose a destination file");
+                throw new InstantiationException("You need to choose a destination file");
             }
+
             File pdfFile = (File) getValue(DESTFILE);
             int pageOffset = 0;
             List<Map<String, Object>> master = new ArrayList<>();
+
             for (int i = 0; i < files.length; i++) {
-                // we create a reader for a certain document
+                // Create a reader for a specific document
                 reader = new PdfReader(files[i].getAbsolutePath());
                 reader.consolidateNamedDestinations();
-                // we retrieve the total number of pages
+
+                // Retrieve the total number of pages
                 int n = reader.getNumberOfPages();
                 List<Map<String, Object>> bookmarks = SimpleBookmark.getBookmarkList(reader);
+
                 if (bookmarks != null) {
                     if (pageOffset != 0) {
                         SimpleBookmark.shiftPageNumbersInRange(bookmarks, pageOffset, null);
                     }
                     master.addAll(bookmarks);
                 }
+
                 pageOffset += n;
                 stringToLog = "There are " + n + " pages in " + files[i];
                 logger.info(stringToLog);
-                if (i == 0) {
-                    // step 1: creation of a document-object
-                    try{
-                        document = new Document(reader.getPageSizeWithRotation(1));
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                    // step 2: we create a writer that listens to the document
-                    fos = new FileOutputStream(pdfFile);
-                    try {
-                        writer = new PdfCopy(document, fos);
-                        // Rest of your code here...
-                    } catch (Exception e) {
-                        // Handle the exception here...
-                    }
 
-                    // step 3: we open the document
+                if (i == 0) {
+                    // Step 1: Creation of a document object
+                    document = new Document(reader.getPageSizeWithRotation(1));
+
+                    // Step 2: Create a writer that listens to the document
+                    fos = new FileOutputStream(pdfFile);
+
+                    writer = new PdfCopy(document, fos);
+
+                    // Step 3: Open the document
                     document.open();
                 }
-                // step 4: we add content
+
+                // Step 4: Add content
                 PdfImportedPage page;
-                for (int p = 0; p < n; ) {
-                    ++p;
-                    page = writer.getImportedPage(reader, p);
+                for (int p = 0; p < n; p++) { // Increment moved here
+                    page = writer.getImportedPage(reader, p + 1); // Use p + 1 as pages are 1-indexed
                     writer.addPage(page);
-                    logger.info("Processed page " + p);
+                    stringToLog = "Processed page " + (p + 1);
+                    logger.info(stringToLog); // Adjust log to reflect actual page number
                 }
             }
+
             if (!master.isEmpty()) {
                 writer.setOutlines(master);
             }
-            // step 5: we close the document
+
+            // Step 5: Close the document
             document.close();
+
         } catch (Exception e) {
             e.printStackTrace();
-        } finally{
-            if (reader != null && document != null && fos != null && writer != null ) {
+        } finally {
+            // Ensure resources are closed
+            if (reader != null && document != null && fos != null && writer != null) {
                 try {
                     reader.close();
                     document.close();
@@ -191,6 +196,7 @@ public class ConcatN extends AbstractTool {
             }
         }
     }
+
 
     /**
      * @param arg StringArgument
