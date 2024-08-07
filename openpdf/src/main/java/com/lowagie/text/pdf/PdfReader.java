@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the License.
  *
  * The Original Code is 'iText, a free JAVA-PDF library'.
- *
+ * 
  * The Initial Developer of the Original Code is Bruno Lowagie. Portions created by
  * the Initial Developer are Copyright (C) 1999, 2000, 2001, 2002 by Bruno Lowagie.
  * All Rights Reserved.
@@ -59,6 +59,7 @@ import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.exceptions.UnsupportedPdfException;
 import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
 import com.lowagie.text.pdf.internal.PdfViewerPreferencesImp;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -567,7 +568,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param dicPar an object of {@link PdfObject}
      * @return a byte array
      */
-    public static byte[] decodePredictor(byte[] in, PdfObject dicPar) {
+    public static byte[] decodePredictor(byte[] in, PdfObject dicPar) throws PDFFilterException {
         if (dicPar == null || !dicPar.isDictionary()) {
             return in;
         }
@@ -667,7 +668,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     break;
                 default:
                     // Error -- unknown filter type
-                    throw new RuntimeException(
+                    throw new PDFFilterException(
                             MessageLocalization.getComposedMessage("png.filter.unknown"));
             }
             try {
@@ -796,9 +797,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         int r;
         // We'll ignore the next two lines for the sake of perpetuating broken
         // PDFs
-
-
-
+        
+        
+        
         if (state == 2) {
             r = chn[0] * 85 * 85 * 85 * 85 + chn[1] * 85 * 85 * 85 + 85 * 85 * 85
                     + 85 * 85 + 85;
@@ -1386,7 +1387,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
             strings.clear();
             readPages();
-
+            
             removeUnusedObjects();
         } finally {
             try {
