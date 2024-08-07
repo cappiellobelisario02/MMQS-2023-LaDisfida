@@ -531,12 +531,13 @@ public class PdfPTable implements LargeElement {
             if (runDirection == PdfWriter.RUN_DIRECTION_RTL) {
                 PdfPCell[] rtlRow = new PdfPCell[numCols];
                 int rev = currentRow.length;
-                for (int k = 0; k < currentRow.length; ++k) {
+                int k = 0;
+                while (k < currentRow.length) {
                     PdfPCell rcell = currentRow[k];
                     int cspan = rcell.getColspan();
                     rev -= cspan;
                     rtlRow[rev] = rcell;
-                    k += cspan - 1;
+                    k += cspan;  // incrementing k explicitly
                 }
                 currentRow = rtlRow;
             }
@@ -559,6 +560,8 @@ public class PdfPTable implements LargeElement {
 
         return ncell;
     }
+
+
 
     /**
      * When updating the row index, cells with rowspan should be taken into account. This is what happens in this
