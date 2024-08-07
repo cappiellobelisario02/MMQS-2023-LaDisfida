@@ -64,6 +64,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Tool that can be used to concatenate existing PDF files.
@@ -72,6 +73,8 @@ import java.util.Map;
  */
 public class ConcatPdf {
 
+    public static final Logger logger = Logger.getLogger(ConcatPdf.class.getName());
+
     /**
      * This class can be used to concatenate existing PDF files. (This was an example known as PdfCopy.java)
      *
@@ -79,7 +82,7 @@ public class ConcatPdf {
      */
     public static void main(String[] args) {
         if (args.length < 2) {
-            System.err.println("arguments: file1 [file2 ...] destfile");
+            logger.severe("arguments: file1 [file2 ...] destfile");
         } else {
             try {
                 File outFile = new File(args[args.length - 1]);
@@ -96,9 +99,10 @@ public class ConcatPdf {
 
     public static void concat(List<File> sources, File target) throws IOException {
 
+        PdfReader reader = null;
         try (Document document = new Document();
-             BufferedOutputStream bouts = new BufferedOutputStream(Files.newOutputStream(target.toPath()));
-             PdfCopy writer = new PdfCopy(document, bouts);){
+                BufferedOutputStream bouts = new BufferedOutputStream(Files.newOutputStream(target.toPath()));
+                PdfCopy writer = new PdfCopy(document, bouts);){
             for (File source : sources) {
                 if (!source.isFile() || !source.canRead()) {
                     throw new IOException("cannot read:" + source.getAbsolutePath());
@@ -113,11 +117,7 @@ public class ConcatPdf {
             document.open();
             for (File source : sources) {
                 // we create a reader for a certain document
-                try{
-                PdfReader reader = new PdfReader(new BufferedInputStream(Files.newInputStream(source.toPath())));
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
+                reader = new PdfReader(new BufferedInputStream(Files.newInputStream(source.toPath())));
                 reader.consolidateNamedDestinations();
                 // we retrieve the total number of pages
                 int numberOfPages = reader.getNumberOfPages();
@@ -144,6 +144,14 @@ public class ConcatPdf {
             // we close the document
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (reader != null){
+                try{
+                    reader.close();
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

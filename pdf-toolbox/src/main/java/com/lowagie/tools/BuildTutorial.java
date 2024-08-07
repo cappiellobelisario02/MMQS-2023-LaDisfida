@@ -53,6 +53,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -72,6 +73,8 @@ public class BuildTutorial {
     static String root;
     static FileWriter build;
 
+    public static final Logger logger = Logger.getLogger(BuildTutorial.class.getName());
+
     //~ Methods
     // ----------------------------------------------------------------
 
@@ -89,16 +92,16 @@ public class BuildTutorial {
         if (args.length == 4) {
             File srcdir = new File(args[0]);
             File destdir = new File(args[1]);
-            File xsl_examples = new File(srcdir, args[2]);
-            File xsl_site = new File(srcdir, args[3]);
+            File xslExamples = new File(srcdir, args[2]);
+            File xslSite = new File(srcdir, args[3]);
             try {
-                System.out.print("Building tutorial: ");
+                logger.info("Building tutorial: ");
                 root = new File(args[1], srcdir.getName()).getCanonicalPath();
-                System.out.println(root);
+                logger.info(root);
                 build = new FileWriter(new File(root, "build.xml"));
                 build.write("<project name=\"tutorial\" default=\"all\" basedir=\".\">\n");
                 build.write("<target name=\"all\">\n");
-                action(srcdir, destdir, xsl_examples, xsl_site);
+                action(srcdir, destdir, xslExamples, xslSite);
                 build.write("</target>\n</project>");
                 build.flush();
                 build.close();
@@ -106,8 +109,7 @@ public class BuildTutorial {
                 ioe.printStackTrace();
             }
         } else {
-            System.err
-                    .println("Wrong number of parameters.\nUsage: BuildSite srcdr destdir xsl_examples xsl_site");
+            logger.severe("Wrong number of parameters.\nUsage: BuildSite srcdr destdir xsl_examples xsl_site");
         }
     }
 
@@ -117,18 +119,18 @@ public class BuildTutorial {
      *
      * @param source       a sourcedirectory (possibly with a tutorial xml-file)
      * @param destination  a destination directory (where the html and build.xml file will be generated, if necessary)
-     * @param xsl_examples an xsl to transform the index.xml into a build.xml
-     * @param xsl_site     an xsl to transform the index.xml into am index.html
+     * @param xslExamplesIn an xsl to transform the index.xml into a build.xml
+     * @param xslSiteIn     an xsl to transform the index.xml into am index.html
      * @throws IOException when something goes wrong while reading or creating a file or directory
      */
-    public static void action(File source, File destination, File xsl_examples, File xsl_site) throws IOException {
+    public static void action(File source, File destination, File xslExamplesIn, File xslSiteIn) throws IOException {
         if (".svn".equals(source.getName())) {
             return;
         }
-        System.out.print(source.getName());
+        logger.info(source.getName());
         if (source.isDirectory()) {
-            System.out.print(" ");
-            System.out.println(source.getCanonicalPath());
+            logger.info(" ");
+            logger.info(source.getCanonicalPath());
             File dest = new File(destination, source.getName());
             dest.mkdir();
             File current;
@@ -136,26 +138,26 @@ public class BuildTutorial {
             if (xmlFiles != null) {
                 for (File xmlFile : xmlFiles) {
                     current = xmlFile;
-                    action(current, dest, xsl_examples, xsl_site);
+                    action(current, dest, xslExamplesIn, xslSiteIn);
                 }
             } else {
-                System.out.println("... skipped");
+                logger.info("... skipped");
             }
         } else if (source.getName().equals("index.xml")) {
-            System.out.println("... transformed");
-            convert(source, xsl_site, new File(destination, "index.php"));
+            logger.info("... transformed");
+            convert(source, xslSiteIn, new File(destination, "index.php"));
             File buildfile = new File(destination, "build.xml");
             String path = buildfile.getCanonicalPath().substring(root.length());
             path = path.replace(File.separatorChar, '/');
             if ("/build.xml".equals(path)) {
                 return;
             }
-            convert(source, xsl_examples, buildfile);
+            convert(source, xslExamplesIn, buildfile);
             build.write("\t<ant antfile=\"${basedir}");
             build.write(path);
             build.write("\" target=\"install\" inheritAll=\"false\" />\n");
         } else {
-            System.out.println("... skipped");
+            logger.info("... skipped");
         }
     }
 

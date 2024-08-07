@@ -49,6 +49,7 @@ import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
 /**
@@ -58,6 +59,11 @@ import javax.swing.JInternalFrame;
  */
 public class Split extends AbstractTool {
 
+    public static final Logger logger = Logger.getLogger(Split.class.getName());
+    public static final String SRCFILE = "srcfile";
+    public static final String DESTFILE_1 = "destfile1";
+    public static final String DESTFILE_2 = "destfile2";
+
     static {
         addVersion("$Id: Split.java 3271 2008-04-18 20:39:42Z xlv $");
     }
@@ -66,12 +72,12 @@ public class Split extends AbstractTool {
      * Constructs an Split object.
      */
     public Split() {
-        FileArgument f = new FileArgument(this, "srcfile", "The file you want to split", false, new PdfFilter());
+        FileArgument f = new FileArgument(this, SRCFILE, "The file you want to split", false, new PdfFilter());
         f.setLabel(new PdfInformationPanel());
         arguments.add(f);
-        arguments.add(new FileArgument(this, "destfile1",
+        arguments.add(new FileArgument(this, DESTFILE_1,
                 "The file to which the first part of the original PDF has to be written", true, new PdfFilter()));
-        arguments.add(new FileArgument(this, "destfile2",
+        arguments.add(new FileArgument(this, DESTFILE_2,
                 "The file to which the second part of the original PDF has to be written", true, new PdfFilter()));
         arguments.add(new IntegerArgument(this, "pagenumber", "The pagenumber where you want to split"));
     }
@@ -84,7 +90,7 @@ public class Split extends AbstractTool {
     public static void main(String[] args) {
         Split tool = new Split();
         if (args.length < 4) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -97,7 +103,7 @@ public class Split extends AbstractTool {
         internalFrame = new JInternalFrame("Split", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Split OPENED ===");
+        logger.info("=== Split OPENED ===");
     }
 
     /**
@@ -107,27 +113,34 @@ public class Split extends AbstractTool {
         PdfReader reader = null;
         Document document1 = null;
         Document document2 = null;
+        String stringToLog;
         try {
-            if (getValue("srcfile") == null) {
+            if (getValue(SRCFILE) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            File src = (File) getValue("srcfile");
-            if (getValue("destfile1") == null) {
+            File src = (File) getValue(SRCFILE);
+            if (getValue(DESTFILE_1) == null) {
                 throw new InstantiationException("You need to choose a destination file for the first part of the PDF");
             }
-            File file1 = (File) getValue("destfile1");
-            if (getValue("destfile2") == null) {
+            File file1 = (File) getValue(DESTFILE_1);
+            if (getValue(DESTFILE_2) == null) {
                 throw new InstantiationException(
                         "You need to choose a destination file for the second part of the PDF");
             }
-            File file2 = (File) getValue("destfile2");
+            File file2 = (File) getValue(DESTFILE_2);
             int pagenumber = Integer.parseInt((String) getValue("pagenumber"));
 
             // we create a reader for a certain document
-            /* PdfReader reader = */ reader = new PdfReader(src.getAbsolutePath());
+            /* PdfReader reader = */
+            try{
+                reader = new PdfReader(src.getAbsolutePath());
+            }catch(Exception e){
+                e.printStackTrace();
+            }
             // we retrieve the total number of pages
             int n = reader.getNumberOfPages();
-            System.out.println("There are " + n + " pages in the original file.");
+            stringToLog = "There are " + n + " pages in the original file.";
+            logger.info(stringToLog);
 
             if (pagenumber < 2 || pagenumber > n) {
                 throw new DocumentException(
@@ -209,6 +222,6 @@ public class Split extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile1");
+        return (File) getValue(DESTFILE_1);
     }
 }

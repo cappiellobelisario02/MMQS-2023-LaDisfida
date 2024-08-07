@@ -61,6 +61,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -71,6 +72,11 @@ import javax.swing.JOptionPane;
  */
 public class XML2Bookmarks extends AbstractTool {
 
+    public static final Logger logger = Logger.getLogger(XML2Bookmarks.class.getName());
+    public static final String PDFFILE = "pdffile";
+    public static final String XMLFILE = "xmlfile";
+    public static final String DESTFILE = "destfile";
+
     static {
         addVersion("$Id: XML2Bookmarks.java 3373 2008-05-12 16:21:24Z xlv $");
     }
@@ -79,10 +85,10 @@ public class XML2Bookmarks extends AbstractTool {
      * Constructs an XML2Bookmarks object.
      */
     public XML2Bookmarks() {
-        arguments.add(new FileArgument(this, "xmlfile", "the bookmarks in XML", false));
-        arguments.add(new FileArgument(this, "pdffile", "the PDF to which you want to add bookmarks", false,
+        arguments.add(new FileArgument(this, XMLFILE, "the bookmarks in XML", false));
+        arguments.add(new FileArgument(this, PDFFILE, "the PDF to which you want to add bookmarks", false,
                 new PdfFilter()));
-        arguments.add(new FileArgument(this, "destfile", "the resulting PDF", true, new PdfFilter()));
+        arguments.add(new FileArgument(this, DESTFILE, "the resulting PDF", true, new PdfFilter()));
     }
 
     /**
@@ -93,7 +99,7 @@ public class XML2Bookmarks extends AbstractTool {
     public static void main(String[] args) {
         XML2Bookmarks tool = new XML2Bookmarks();
         if (args.length < 3) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -106,33 +112,35 @@ public class XML2Bookmarks extends AbstractTool {
         internalFrame = new JInternalFrame("XML + PDF = PDF", true, true, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== XML2Bookmarks OPENED ===");
+        logger.info("=== XML2Bookmarks OPENED ===");
     }
 
     /**
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        PdfReader reader = null;
         FileOutputStream fouts = null;
         PdfStamper stamper = null;
-        try {
-            if (getValue("xmlfile") == null) {
+        try(FileInputStream bmReader = new FileInputStream((File) getValue(XMLFILE));
+                PdfReader reader = new PdfReader(((File) getValue(PDFFILE)).getAbsolutePath())){
+
+            if (getValue(XMLFILE) == null) {
                 throw new InstantiationException("You need to choose an xml file");
             }
-            if (getValue("pdffile") == null) {
+            if (getValue(PDFFILE) == null) {
                 throw new InstantiationException("You need to choose a source PDF file");
             }
-            if (getValue("destfile") == null) {
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException("You need to choose a destination PDF file");
             }
-            FileInputStream bmReader = new FileInputStream((File) getValue("xmlfile"));
+
             List<Map<String, Object>> bookmarks = SimpleBookmark.importFromXML(bmReader);
-            bmReader.close();
-            /* PdfReader reader = */ reader = new PdfReader(((File) getValue("pdffile")).getAbsolutePath());
+
             reader.consolidateNamedDestinations();
-            fouts = new FileOutputStream((File) getValue("destfile"));
-            /*PdfStamper stamper*/ stamper = new PdfStamper(reader, fouts);
+
+            fouts = new FileOutputStream((File) getValue(DESTFILE));
+
+            stamper = new PdfStamper(reader, fouts);
             stamper.setOutlines(bookmarks);
             stamper.setViewerPreferences(reader.getSimpleViewerPreferences() | PdfWriter.PageModeUseOutlines);
             stamper.close();
@@ -142,12 +150,17 @@ public class XML2Bookmarks extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.severe(e.getMessage());
         } finally {
-            if (reader != null && fouts != null && stamper != null) {
+            if (fouts != null) {
                 try {
-                    reader.close();
                     fouts.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (stamper != null) {
+                try {
                     stamper.close();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -174,7 +187,7 @@ public class XML2Bookmarks extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 
 }

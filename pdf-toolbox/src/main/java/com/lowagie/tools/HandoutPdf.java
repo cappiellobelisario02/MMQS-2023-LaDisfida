@@ -60,6 +60,7 @@ import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Takes an existing PDF file and makes handouts.
@@ -68,14 +69,17 @@ import java.io.FileOutputStream;
  */
 public class HandoutPdf {
 
+    public static final Logger logger = Logger.getLogger(HandoutPdf.class.getName());
+
     /**
      * Makes handouts based on an existing PDF file.
      *
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        String stringToLog;
         if (args.length != 3) {
-            System.err.println("arguments: srcfile destfile pages");
+            logger.severe("arguments: srcfile destfile pages");
         } else {
             try {
                 int pages = Integer.parseInt(args[2]);
@@ -105,7 +109,8 @@ public class HandoutPdf {
                 PdfReader reader = new PdfReader(args[0]);
                 // we retrieve the total number of pages
                 int n = reader.getNumberOfPages();
-                System.out.println("There are " + n + " pages in the original file.");
+                stringToLog = "There are " + n + " pages in the original file.";
+                logger.info(stringToLog);
 
                 // step 1: creation of a document-object
                 Document document = new Document(PageSize.A4);
@@ -124,7 +129,7 @@ public class HandoutPdf {
                     Rectangle rect = reader.getPageSizeWithRotation(i);
                     float factorx = (x2 - x1) / rect.getWidth();
                     float factory = (y1[p] - y2[p]) / rect.getHeight();
-                    float factor = (factorx < factory ? factorx : factory);
+                    float factor = (Math.min(factorx, factory));
                     float dx = (factorx == factor ? 0f : ((x2 - x1) - rect.getWidth() * factor) / 2f);
                     float dy = (factory == factor ? 0f : ((y1[p] - y2[p]) - rect.getHeight() * factor) / 2f);
                     page = writer.getImportedPage(reader, i);
@@ -142,7 +147,8 @@ public class HandoutPdf {
                     }
                     cb.rectangle(x1 + dx, y2[p] + dy, rect.getWidth() * factor, rect.getHeight() * factor);
                     cb.stroke();
-                    System.out.println("Processed page " + i);
+                    stringToLog = "Processed page " + i;
+                    logger.info(stringToLog);
                     p++;
                     if (p == pages) {
                         p = 0;
@@ -152,7 +158,7 @@ public class HandoutPdf {
                 // step 5: we close the document
                 document.close();
             } catch (Exception e) {
-                System.err.println(e.getClass().getName() + ": " + e.getMessage());
+                logger.severe(e.getClass().getName() + ": " + e.getMessage());
             }
         }
     }

@@ -53,6 +53,7 @@ import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -63,6 +64,10 @@ import javax.swing.JOptionPane;
  */
 public class PhotoAlbum extends AbstractTool {
 
+    public static final Logger logger = Logger.getLogger(PhotoAlbum.class.getName());
+    public static final String SRCDIR = "srcdir";
+    public static final String DESTFILE = "destfile";
+
     static {
         addVersion("$Id: PhotoAlbum.java 3451 2008-05-26 02:56:13Z xlv $");
     }
@@ -72,10 +77,10 @@ public class PhotoAlbum extends AbstractTool {
      */
     public PhotoAlbum() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW;
-        arguments.add(new FileArgument(this, "srcdir",
+        arguments.add(new FileArgument(this, SRCDIR,
                 "The directory containing the image files", false,
                 new DirFilter()));
-        arguments.add(new FileArgument(this, "destfile",
+        arguments.add(new FileArgument(this, DESTFILE,
                 "The file to which the converted TIFF has to be written", true,
                 new PdfFilter()));
     }
@@ -88,7 +93,7 @@ public class PhotoAlbum extends AbstractTool {
     public static void main(String[] args) {
         PhotoAlbum tool = new PhotoAlbum();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -101,7 +106,7 @@ public class PhotoAlbum extends AbstractTool {
         internalFrame = new JInternalFrame("PhotoAlbum", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== PhotoAlbum OPENED ===");
+        logger.info("=== PhotoAlbum OPENED ===");
     }
 
     /**
@@ -110,23 +115,23 @@ public class PhotoAlbum extends AbstractTool {
     public void execute() {
         try {
             // Validate source directory
-            if (getValue("srcdir") == null) {
+            if (getValue(SRCDIR) == null) {
                 throw new InstantiationException("You need to choose a source directory");
             }
 
-            File directory = (File) getValue("srcdir");
+            File directory = (File) getValue(SRCDIR);
             if (directory.isFile()) {
                 directory = directory.getParentFile();
             }
 
             // Validate destination file
-            if (getValue("destfile") == null) {
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException("You need to choose a destination file");
             }
 
-            File pdf_file = (File) getValue("destfile");
+            File pdfFile = (File) getValue(DESTFILE);
             Document document = new Document();
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(pdf_file));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
             writer.setViewerPreferences(PdfWriter.PageModeUseThumbs);
             PdfPageLabels pageLabels = new PdfPageLabels();
 
@@ -152,17 +157,17 @@ public class PhotoAlbum extends AbstractTool {
                 writer.setPageLabels(pageLabels);
                 document.close();
             } else {
-                System.err.println("No images were found in directory " + directory.getAbsolutePath());
+                logger.severe("No images were found in directory " + directory.getAbsolutePath());
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.severe(e.getMessage());
         }
     }
 
     private void processImage(File image, Document document, PdfWriter writer, PdfPageLabels pageLabels) {
         try {
-            System.out.println("Testing image: " + image.getName());
+            logger.info("Testing image: " + image.getName());
 
             // Get the image and set its properties
             Image img = Image.getInstance(image.getAbsolutePath());
@@ -211,9 +216,9 @@ public class PhotoAlbum extends AbstractTool {
             }
             pageLabels.addPageLabel(writer.getPageNumber(), PdfPageLabels.EMPTY, label);
 
-            System.out.println("Added image: " + image.getName());
+            logger.info("Added image: " + image.getName());
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            logger.severe(e.getMessage());
         }
     }
 
@@ -235,6 +240,6 @@ public class PhotoAlbum extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 }

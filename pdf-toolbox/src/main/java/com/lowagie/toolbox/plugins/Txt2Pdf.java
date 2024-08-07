@@ -51,6 +51,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -61,6 +62,10 @@ import javax.swing.JOptionPane;
  */
 public class Txt2Pdf extends AbstractTool {
 
+    public static final Logger logger = Logger.getLogger(Txt2Pdf.class.getName());
+    public static final String SRCFILE = "srcfile";
+    public static final String DESTFILE = "destfile";
+
     static {
         addVersion("$Id: Txt2Pdf.java 3271 2008-04-18 20:39:42Z xlv $");
     }
@@ -70,8 +75,8 @@ public class Txt2Pdf extends AbstractTool {
      */
     public Txt2Pdf() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW | MENU_EXECUTE_PRINT_SILENT;
-        arguments.add(new FileArgument(this, "srcfile", "The file you want to convert", false));
-        arguments.add(new FileArgument(this, "destfile", "The file to which the converted text has to be written", true,
+        arguments.add(new FileArgument(this, SRCFILE, "The file you want to convert", false));
+        arguments.add(new FileArgument(this, DESTFILE, "The file to which the converted text has to be written", true,
                 new PdfFilter()));
         PageSizeArgument oa1 = new PageSizeArgument(this, "pagesize", "Pagesize");
         arguments.add(oa1);
@@ -89,7 +94,7 @@ public class Txt2Pdf extends AbstractTool {
     public static void main(String[] args) {
         Txt2Pdf tool = new Txt2Pdf();
         if (args.length < 3) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -102,7 +107,7 @@ public class Txt2Pdf extends AbstractTool {
         internalFrame = new JInternalFrame("Txt2Pdf", true, true, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Txt2Pdf OPENED ===");
+        logger.info("=== Txt2Pdf OPENED ===");
     }
 
     /**
@@ -110,10 +115,10 @@ public class Txt2Pdf extends AbstractTool {
      */
     public void execute() {
         BufferedReader in = null;
+        Document document = null;
+        Font f;
         try {
             String line = null;
-            Document document;
-            Font f;
             Rectangle pagesize = (Rectangle) getValue("pagesize");
             if ("LANDSCAPE".equals(getValue("orientation"))) {
                 f = FontFactory.getFont(FontFactory.COURIER, 10);
@@ -122,8 +127,8 @@ public class Txt2Pdf extends AbstractTool {
                 f = FontFactory.getFont(FontFactory.COURIER, 11);
                 document = new Document(pagesize, 72, 36, 36, 36);
             }
-            /* BufferedReader in = */in = new BufferedReader(new FileReader((File) getValue("srcfile")));
-            PdfWriter.getInstance(document, new FileOutputStream((File) getValue("destfile")));
+            in = new BufferedReader(new FileReader((File) getValue(SRCFILE)));
+            PdfWriter.getInstance(document, new FileOutputStream((File) getValue(DESTFILE)));
             document.open();
             while ((line = in.readLine()) != null) {
                 document.add(new Paragraph(12, line, f));
@@ -134,12 +139,19 @@ public class Txt2Pdf extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.severe(e.getMessage());
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if(document != null) {
+                try{
+                    document.close();
+                }catch (Exception e){
                     e.printStackTrace();
                 }
             }
@@ -164,6 +176,6 @@ public class Txt2Pdf extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 }

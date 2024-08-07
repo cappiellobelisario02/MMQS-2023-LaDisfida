@@ -58,6 +58,7 @@ import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * This class demonstrates how to split a PDF file using iText.
@@ -67,22 +68,26 @@ import java.io.FileOutputStream;
  */
 public class SplitPdf extends java.lang.Object {
 
+    public static final Logger logger = Logger.getLogger(SplitPdf.class.getName());
+
     /**
      * This class can be used to split an existing PDF file.
      *
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        String stringToLog;
         if (args.length != 4) {
-            System.err.println("arguments: srcfile destfile1 destfile2 pagenumber");
+            logger.severe("arguments: srcfile destfile1 destfile2 pagenumber");
         } else {
             // we create a reader for a certain document
             try (PdfReader reader = new PdfReader(args[0]);){
                 int pagenumber = Integer.parseInt(args[3]);
-                
+
                 // we retrieve the total number of pages
                 int n = reader.getNumberOfPages();
-                System.out.println("There are " + n + " pages in the original file.");
+                stringToLog = "There are " + n + " pages in the original file.";
+                logger.info(stringToLog);
 
                 if (pagenumber < 2 || pagenumber > n) {
                     throw new DocumentException(MessageLocalization.getComposedMessage(
@@ -127,7 +132,8 @@ public class SplitPdf extends java.lang.Object {
                     } else {
                         cb2.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
                     }
-                    System.out.println("Processed page " + i);
+                    stringToLog = "Processed page " + i;
+                    logger.info(stringToLog);
                 }
                 // step 5: we close the document
                 document1.close();

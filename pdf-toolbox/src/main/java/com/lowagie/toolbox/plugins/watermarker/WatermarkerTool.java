@@ -52,6 +52,7 @@ import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -62,29 +63,37 @@ import javax.swing.JOptionPane;
  */
 public class WatermarkerTool extends AbstractTool {
 
-    FileArgument destfile;
+    public static final Logger logger = Logger.getLogger(WatermarkerTool.class.getName());
+    public static final String SRCFILE = "srcfile";
+    public static final String WATERMARK = "watermark";
+    public static final String FONTSIZE = "fontsize";
+    public static final String OPACITY = "opacity";
+    public static final String DESTFILE = "destfile";
+    public static final String COLOR = "color";
+
+    FileArgument destfileFileArgument;
 
     /**
      * This tool lets you add a text watermark to all pages of a document.
      */
     public WatermarkerTool() {
         super();
-        FileArgument inputfile = new FileArgument(this, "srcfile",
+        FileArgument inputfile = new FileArgument(this, SRCFILE,
                 "The file you want to watermark", false, new PdfFilter());
         arguments.add(inputfile);
-        arguments.add(new StringArgument(this, "watermark",
+        arguments.add(new StringArgument(this, WATERMARK,
                 "The text that can be used as watermark"));
-        arguments.add(new IntegerArgument(this, "fontsize",
+        arguments.add(new IntegerArgument(this, FONTSIZE,
                 "The fontsize of the watermark text"));
-        arguments.add(new FloatArgument(this, "opacity",
+        arguments.add(new FloatArgument(this, OPACITY,
                 "The opacity of the watermark text"));
-        destfile = new FileArgument(this, "destfile",
+        destfileFileArgument = new FileArgument(this, DESTFILE,
                 "The file to which the watermarked PDF has to be written",
                 true, new PdfFilter());
-        arguments.add(destfile);
-        arguments.add(new StringArgument(this, "color",
+        arguments.add(destfileFileArgument);
+        arguments.add(new StringArgument(this, COLOR,
                 "The color of the watermark text"));
-        inputfile.addPropertyChangeListener(destfile);
+        inputfile.addPropertyChangeListener(destfileFileArgument);
     }
 
     /**
@@ -118,7 +127,7 @@ public class WatermarkerTool extends AbstractTool {
     public static void main(String[] args) {
         WatermarkerTool watermarkerTool = new WatermarkerTool();
         if (args.length < 5 || args.length > 6) {
-            System.err.println(watermarkerTool.getUsage());
+            logger.severe(watermarkerTool.getUsage());
         }
         watermarkerTool.setMainArguments(args);
         watermarkerTool.execute();
@@ -132,7 +141,7 @@ public class WatermarkerTool extends AbstractTool {
         internalFrame = new JInternalFrame("Watermark", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Watermark OPENED ===");
+        logger.info("=== Watermark OPENED ===");
     }
 
     /**
@@ -140,60 +149,46 @@ public class WatermarkerTool extends AbstractTool {
      */
     @Override
     public void execute() {
-        PdfReader reader = null;
-        PdfStamper stamp = null;
-        FileOutputStream fouts = null;
-        try {
-            if (getValue("srcfile") == null) {
+        try (PdfReader reader = new PdfReader(((File) getValue(SRCFILE)).getAbsolutePath());
+                FileOutputStream fouts = new FileOutputStream((File) getValue(DESTFILE));
+                PdfStamper stamp = new PdfStamper(reader, fouts);
+        ){
+            if (getValue(SRCFILE) == null) {
                 throw new InstantiationException(
                         "You need to choose a sourcefile");
             }
-            if (getValue("destfile") == null) {
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException(
                         "You need to choose a destination file");
             }
-            if (getValue("watermark") == null) {
+            if (getValue(WATERMARK) == null) {
                 throw new InstantiationException(
                         "You need to add a text for the watermark");
             }
-            if (getValue("fontsize") == null) {
+            if (getValue(FONTSIZE) == null) {
                 throw new InstantiationException(
                         "You need to add a fontsize for the watermark");
             }
-            if (getValue("opacity") == null) {
+            if (getValue(OPACITY) == null) {
                 throw new InstantiationException(
                         "You need to add a opacity for the watermark");
             }
 
             Color color = BLACK;
-            if (getValue("color") != null) {
-                color = decode((String) getValue("color"));
+            if (getValue(COLOR) != null) {
+                color = decode((String) getValue(COLOR));
             }
 
-            /* PdfReader reader */reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath());
-            fouts = new FileOutputStream((File) getValue("destfile"));
-            /* PdfStamper stamp */stamp = new PdfStamper(reader, fouts);
-            String text = (String) getValue("watermark");
-            int fontsize = parseInt((String) getValue("fontsize"));
-            float opacity = parseFloat((String) getValue("opacity"));
+            String text = (String) getValue(WATERMARK);
+            int fontsize = parseInt((String) getValue(FONTSIZE));
+            float opacity = parseFloat((String) getValue(OPACITY));
 
             Writer writer = new Writer(reader, stamp, text, fontsize, opacity, color);
             writer.write();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e
                     .getClass().getName(), JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
-        } finally {
-
-            if (reader != null && stamp != null && fouts != null) {
-                try {
-                    reader.close();
-                    stamp.close();
-                    fouts.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            logger.severe(e.getMessage());
         }
     }
 
@@ -205,7 +200,7 @@ public class WatermarkerTool extends AbstractTool {
      */
     @Override
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 
     /**
@@ -220,13 +215,13 @@ public class WatermarkerTool extends AbstractTool {
             // command line
             return;
         }
-        if (destfile.getValue() == null
-                && arg.getName().equalsIgnoreCase("srcfile")) {
+        if (destfileFileArgument.getValue() == null
+                && arg.getName().equalsIgnoreCase(SRCFILE)) {
             String filename = arg.getValue().toString();
             String filenameout = filename.substring(0,
                     filename.indexOf(".", filename.length() - 4))
                     + "_out.pdf";
-            destfile.setValue(filenameout);
+            destfileFileArgument.setValue(filenameout);
         }
     }
 

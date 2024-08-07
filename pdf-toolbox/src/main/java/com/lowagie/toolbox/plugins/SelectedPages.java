@@ -47,6 +47,7 @@ import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
 /**
@@ -55,6 +56,10 @@ import javax.swing.JInternalFrame;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class SelectedPages extends AbstractTool {
+
+    public static final Logger logger = Logger.getLogger(SelectedPages.class.getName());
+    public static final String SRCFILE = "srcfile";
+    public static final String DESTFILE = "destfile";
 
     static {
         addVersion("$Id: SelectedPages.java 3271 2008-04-18 20:39:42Z xlv $");
@@ -65,8 +70,8 @@ public class SelectedPages extends AbstractTool {
      */
     public SelectedPages() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW;
-        arguments.add(new FileArgument(this, "srcfile", "The file you want to split", false, new PdfFilter()));
-        arguments.add(new FileArgument(this, "destfile",
+        arguments.add(new FileArgument(this, SRCFILE, "The file you want to split", false, new PdfFilter()));
+        arguments.add(new FileArgument(this, DESTFILE,
                 "The file to which the first part of the original PDF has to be written", true, new PdfFilter()));
         arguments.add(new StringArgument(this, "selection", "A selection of pages (see Help for more info)"));
     }
@@ -79,7 +84,7 @@ public class SelectedPages extends AbstractTool {
     public static void main(String[] args) {
         SelectedPages tool = new SelectedPages();
         if (args.length < 4) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -92,7 +97,7 @@ public class SelectedPages extends AbstractTool {
         internalFrame = new JInternalFrame("SelectedPages", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== SelectedPages OPENED ===");
+        logger.info("=== SelectedPages OPENED ===");
     }
 
     /**
@@ -103,31 +108,53 @@ public class SelectedPages extends AbstractTool {
         Document document = null;
         FileOutputStream fouts = null;
         PdfCopy copy = null;
+        String stringToLog = null;
         try {
-            if (getValue("srcfile") == null) {
+            if (getValue(SRCFILE) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            File src = (File) getValue("srcfile");
-            if (getValue("destfile") == null) {
+            File src = (File) getValue(SRCFILE);
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException("You need to choose a destination file for the first part of the PDF");
             }
-            File dest = (File) getValue("destfile");
+            File dest = (File) getValue(DESTFILE);
             String selection = (String) getValue("selection");
 
             // we create a reader for a certain document
-            /* PdfReader reader = */ reader = new PdfReader(src.getAbsolutePath());
-            System.out.println("The original file had " + reader.getNumberOfPages() + " pages.");
+            /* PdfReader reader = */
+            try{
+                reader = new PdfReader(src.getAbsolutePath());
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            logger.info("The original file had " + reader.getNumberOfPages() + " pages.");
             reader.selectPages(selection);
             int pages = reader.getNumberOfPages();
-            System.err.println("The new file has " + pages + " pages.");
-            /* Document document = */ document = new Document(reader.getPageSizeWithRotation(1));
-            fouts = new FileOutputStream(dest.getAbsolutePath());
-            /* PdfCopy copy = */ copy = new PdfCopy(document, fouts);
+            stringToLog = "The new file has " + pages + " pages.";
+            logger.severe(stringToLog);
+            /* Document document = */
+            try{
+                document = new Document(reader.getPageSizeWithRotation(1));
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            try{
+                fouts = new FileOutputStream(dest.getAbsolutePath());
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            /* PdfCopy copy = */
+            try{
+                copy = new PdfCopy(document, fouts);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
             document.open();
             PdfImportedPage page;
             for (int i = 0; i < pages; ) {
                 ++i;
-                System.out.println("Processed page " + i);
+                stringToLog = "Processed page " + i;
+                logger.info(stringToLog);
                 page = copy.getImportedPage(reader, i);
                 copy.addPage(page);
             }
@@ -170,6 +197,6 @@ public class SelectedPages extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 }

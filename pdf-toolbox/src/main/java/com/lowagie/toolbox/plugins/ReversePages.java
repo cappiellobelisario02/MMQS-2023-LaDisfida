@@ -47,6 +47,7 @@ import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
 /**
@@ -56,6 +57,10 @@ import javax.swing.JInternalFrame;
  */
 public class ReversePages
         extends AbstractTool {
+
+    public static final Logger logger = Logger.getLogger(ReversePages.class.getName());
+    public static final String SRCFILE = "srcfile";
+    public static final String DESTFILE = "destfile";
 
     static {
         addVersion(
@@ -70,11 +75,11 @@ public class ReversePages
     public ReversePages() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW;
         FileArgument inputfile = null;
-        inputfile = new FileArgument(this, "srcfile",
+        inputfile = new FileArgument(this, SRCFILE,
                 "The file you want to reorder", false,
                 new PdfFilter());
         arguments.add(inputfile);
-        destfile = new FileArgument(this, "destfile",
+        destfile = new FileArgument(this, DESTFILE,
                 "The file to which the reordered version of the original PDF has to be written", true,
                 new PdfFilter());
         arguments.add(destfile);
@@ -89,7 +94,7 @@ public class ReversePages
     public static void main(String[] args) {
         ReversePages tool = new ReversePages();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -102,48 +107,70 @@ public class ReversePages
         internalFrame = new JInternalFrame("ReversePages", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== ReversePages OPENED ===");
+        logger.info("=== ReversePages OPENED ===");
     }
 
     /**
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        PdfReader reader = null; 
+        PdfReader reader = null;
         Document document = null;
         PdfCopy copy = null;
         FileOutputStream fouts = null;
+        String stringToLog = null;
         try {
-            if (getValue("srcfile") == null) {
+            if (getValue(SRCFILE) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            File src = (File) getValue("srcfile");
-            if (getValue("destfile") == null) {
+            File src = (File) getValue(SRCFILE);
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException(
                         "You need to choose a destination file");
             }
-            File dest = (File) getValue("destfile");
+            File dest = (File) getValue(DESTFILE);
 
             // we create a reader for a certain document
-            /*PdfReader reader*/ reader = new PdfReader(src.getAbsolutePath());
-            System.out.println("The original file had " + reader.getNumberOfPages() +
-                    " pages.");
+            /*PdfReader reader*/
+            try{
+                reader = new PdfReader(src.getAbsolutePath());
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            stringToLog = "The original file had " + reader.getNumberOfPages() +
+                    " pages.";
+            logger.info(stringToLog);
             int pages = reader.getNumberOfPages();
             ArrayList<Integer> li = new ArrayList<>();
             for (int i = pages; i > 0; i--) {
                 li.add(i);
             }
             reader.selectPages(li);
-
-            System.err.println("The new file has " + pages + " pages.");
-            /*Document document*/ document = new Document(reader.getPageSizeWithRotation(1));
-            fouts = new FileOutputStream(dest.getAbsolutePath());
-            /*PdfCopy copy*/ copy = new PdfCopy(document, fouts);
+            stringToLog = "The new file has " + pages + " pages.";
+            logger.severe(stringToLog);
+            /*Document document*/
+            try{
+                document = new Document(reader.getPageSizeWithRotation(1));
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            try{
+                fouts = new FileOutputStream(dest.getAbsolutePath());
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            /*PdfCopy copy*/
+            try{
+                copy = new PdfCopy(document, fouts);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
             document.open();
             PdfImportedPage page;
             for (int i = 0; i < pages; ) {
                 ++i;
-                System.out.println("Processed page " + i);
+                stringToLog = "Processed page " + i;
+                logger.info(stringToLog);
                 page = copy.getImportedPage(reader, i);
                 copy.addPage(page);
             }
@@ -180,7 +207,7 @@ public class ReversePages
             return;
         }
 
-        if (destfile.getValue() == null && arg.getName().equalsIgnoreCase("srcfile")) {
+        if (destfile.getValue() == null && arg.getName().equalsIgnoreCase(SRCFILE)) {
             String filename = arg.getValue().toString();
             String filenameout = filename.substring(0, filename.indexOf(".",
                     filename.length() - 4)) + "_out.pdf";
@@ -194,7 +221,7 @@ public class ReversePages
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 
 }
