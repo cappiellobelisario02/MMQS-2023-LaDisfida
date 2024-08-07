@@ -53,6 +53,7 @@ import com.lowagie.text.DocWriter;
 import com.lowagie.text.Document;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.IllegalNumberException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -243,7 +244,7 @@ public class PdfStream extends PdfDictionary {
                     return;
                 }
             } else {
-                throw new RuntimeException(MessageLocalization.getComposedMessage(
+                throw new IllegalArgumentException(MessageLocalization.getComposedMessage(
                         "stream.could.not.be.compressed.filter.is.not.a.name.or.array"));
             }
         }
