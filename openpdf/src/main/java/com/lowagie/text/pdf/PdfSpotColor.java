@@ -111,7 +111,7 @@ public class PdfSpotColor {
                             new float[]{cmyk.getCyan(), cmyk.getMagenta(), cmyk.getYellow(), cmyk.getBlack()}, 1);
                     break;
                 default:
-                    throw new RuntimeException(MessageLocalization.getComposedMessage(
+                    throw new InvalidColorValueException(MessageLocalization.getComposedMessage(
                             "only.rgb.gray.and.cmyk.are.supported.as.alternative.color.spaces"));
             }
         } else {
