@@ -162,7 +162,7 @@ public class PdfPages {
 
     void setLinearMode(PdfIndirectReference topParent) {
         if (parents.size() > 1) {
-            throw new RuntimeException(
+            throw new UnsupportedOperationException(
                     MessageLocalization.getComposedMessage("linear.page.mode.can.only.be.called.with.a.single.parent"));
         }
         if (topParent != null) {
