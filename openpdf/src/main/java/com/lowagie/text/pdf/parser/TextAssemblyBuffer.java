@@ -4,6 +4,7 @@
 package com.lowagie.text.pdf.parser;
 
 import com.lowagie.text.pdf.PdfReader;
+import java.io.IOException;
 
 
 /**
@@ -24,7 +25,7 @@ public interface TextAssemblyBuffer {
      * @return the final text ready to concatenate into result string.
      */
     FinalText getFinalText(PdfReader reader, int page,
-            TextAssembler assembler, boolean useMarkup);
+            TextAssembler assembler, boolean useMarkup) throws IOException;
 
     /**
      * We pass ourselves to the assembler, which is a visitor, so that it can accumulate information on this text

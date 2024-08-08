@@ -48,6 +48,7 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.CMapAwareDocumentFont;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfString;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -268,7 +269,7 @@ public class ParsedText extends ParsedTextImpl {
                 if (wordAccum.length() > 0) {
                     result.add(createWord(wordAccum, wordStartOffset, totalWidth, getBaseline(),
                             wordsAreComplete, currentBreakBefore));
-                    wordAccum = new StringBuffer();
+                    wordAccum = new StringBuilder();
                 }
                 if (!Character.isWhitespace(c)) {
                     wordStartOffset = totalWidth;
@@ -400,8 +401,9 @@ public class ParsedText extends ParsedTextImpl {
      * com.lowagie.text.pdf.parser.TextAssembler, boolean)
      */
     @Override
-    public FinalText getFinalText(PdfReader reader, int page, TextAssembler assembler, boolean useMarkup) {
-        throw new RuntimeException("Final text should never be called on unprocessed word fragment.");
+    public FinalText getFinalText(PdfReader reader, int page, TextAssembler assembler, boolean useMarkup)
+            throws IOException {
+        throw new IOException("Final text should never be called on unprocessed word fragment.");
     }
 
     /**
