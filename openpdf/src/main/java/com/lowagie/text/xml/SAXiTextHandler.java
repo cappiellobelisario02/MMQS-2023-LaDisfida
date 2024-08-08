@@ -336,19 +336,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
         if (ElementTags.IMAGE.equals(name)) {
             try {
                 Image img = ElementFactory.getImage(attributes);
-                try {
-                    addImage(img);
-                    return;
-                } catch (EmptyStackException ese) {
-                    // if there is no element on the stack, the Image is added
-                    // to the document
-                    try {
-                        document.add(img);
-                    } catch (DocumentException de) {
-                        throw new ExceptionConverter(de);
-                    }
-                    return;
-                }
+                addingImage(img);
             } catch (Exception e) {
                 throw new ExceptionConverter(e);
             }
@@ -357,19 +345,8 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
         // annotations
         if (ElementTags.ANNOTATION.equals(name)) {
             Annotation annotation = ElementFactory.getAnnotation(attributes);
-            TextElementArray current;
             try {
-                try {
-                    current = (TextElementArray) stack.pop();
-                    try {
-                        current.add(annotation);
-                    } catch (Exception e) {
-                        document.add(annotation);
-                    }
-                    stack.push(current);
-                } catch (EmptyStackException ese) {
-                    document.add(annotation);
-                }
+                modifyTextElementArrayIntoStack(annotation);
                 return;
             } catch (DocumentException de) {
                 throw new ExceptionConverter(de);
@@ -496,6 +473,38 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             }
         }
 
+    }
+    
+    private void addingImage (Image img) {
+        try {
+            addImage(img);
+        } catch (EmptyStackException ese) {
+            // if there is no element on the stack, the Image is added
+            // to the document
+            try {
+                document.add(img);
+            } catch (DocumentException de) {
+                throw new ExceptionConverter(de);
+            }
+        }
+    }
+    
+    private void modifyTextElementArrayIntoStack(Annotation annotation) {
+        try {
+            TextElementArray current = (TextElementArray) stack.pop();
+            addAnnotationToTextElementArray(current, annotation);
+            stack.push(current);
+        } catch (EmptyStackException ese) {
+            document.add(annotation);
+        }
+    }
+    
+    private void addAnnotationToTextElementArray(TextElementArray current, Annotation annotation){
+        try {
+            current.add(annotation);
+        } catch (Exception e) {
+            document.add(annotation);
+        }
     }
 
     /**
@@ -625,12 +634,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
 
             // all other endtags
             if (currentChunk != null) {
-                TextElementArray current;
-                try {
-                    current = (TextElementArray) stack.pop();
-                } catch (EmptyStackException ese) {
-                    current = new Paragraph();
-                }
+                TextElementArray current = updateTextElementArray();
                 current.add(currentChunk);
                 stack.push(current);
                 currentChunk = null;
@@ -645,13 +649,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             if (ElementTags.PHRASE.equals(name) || ElementTags.ANCHOR.equals(name) || ElementTags.LIST.equals(name)
                     || ElementTags.PARAGRAPH.equals(name)) {
                 Element current = stack.pop();
-                try {
-                    TextElementArray previous = (TextElementArray) stack.pop();
-                    previous.add(current);
-                    stack.push(previous);
-                } catch (EmptyStackException ese) {
-                    document.add(current);
-                }
+                addTextElementArrayWithElementIntoStack(current);
                 return;
             }
 
@@ -666,13 +664,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             // tables
             if (ElementTags.TABLE.equals(name)) {
                 Table table = (Table) stack.pop();
-                try {
-                    TextElementArray previous = (TextElementArray) stack.pop();
-                    previous.add(table);
-                    stack.push(previous);
-                } catch (EmptyStackException ese) {
-                    document.add(table);
-                }
+                addTextElementArrayWithTableIntoStack(table);
                 return;
             }
 
@@ -711,23 +703,12 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
                     width = cell.getWidthAsString();
                     if (cell.getWidth() == 0) {
                         if (cell.getColspan() == 1 && cellWidths[j] == 0) {
-                            try {
-                                cellWidths[j] = 100.0f / columns;
-                                total += cellWidths[j];
-                            } catch (Exception e) {
-                                // empty on purpose
-                            }
+                            total = calculateTotalCellWidth(total, cellWidths, j, columns);
                         } else if (cell.getColspan() == 1) {
                             cellNulls[j] = false;
                         }
                     } else if (cell.getColspan() == 1 && width.endsWith("%")) {
-                        try {
-                            cellWidths[j] = Float.parseFloat(width.substring(0, width.length() - 1) + "f");
-                            total += cellWidths[j];
-                            cellNulls[j] = false;
-                        } catch (Exception e) {
-                            // empty on purpose
-                        }
+                        calculateTotalAndUpdateCellNulls(total, width, cellWidths, cellNulls, j);
                     }
                     j += cell.getColspan();
                     table.addCell(cell);
@@ -772,27 +753,77 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
 
             // the documentroot
             if (isDocumentRoot(name)) {
-                try {
-                    while (true) {
-                        Element element = stack.pop();
-                        try {
-                            TextElementArray previous = (TextElementArray) stack.pop();
-                            previous.add(element);
-                            stack.push(previous);
-                        } catch (EmptyStackException es) {
-                            document.add(element);
-                        }
-                        return;
-                    }
-                } catch (EmptyStackException ese) {
-                    // empty on purpose
-                }
+                updateStackWithTextElementArraysAndElements();
                 if (controlOpenClose) {
                     document.close();
                 }
             }
         } catch (DocumentException de) {
             throw new ExceptionConverter(de);
+        }
+    }
+    
+    private TextElementArray updateTextElementArray(){
+        try {
+             return (TextElementArray) stack.pop();
+        } catch (EmptyStackException ese) {
+            return new Paragraph();
+        }
+    }
+    
+    private void addTextElementArrayWithElementIntoStack(Element current){
+        try {
+            TextElementArray previous = (TextElementArray) stack.pop();
+            previous.add(current);
+            stack.push(previous);
+        } catch (EmptyStackException ese) {
+            document.add(current);
+        }
+    }
+    
+    private void addTextElementArrayWithTableIntoStack(Table table){
+        try {
+            TextElementArray previous = (TextElementArray) stack.pop();
+            previous.add(table);
+            stack.push(previous);
+        } catch (EmptyStackException ese) {
+            document.add(table);
+        }
+    }
+    
+    private float calculateTotalCellWidth(float total, float[] cellWidths, int j, int columns){
+        try {
+            cellWidths[j] = 100.0f / columns;
+            total += cellWidths[j];
+            return total;
+        } catch (Exception e) {
+            return total;
+            // empty on purpose
+        }
+    }
+    
+    private float calculateTotalAndUpdateCellNulls(float total, String width, float[] cellWidths,
+            boolean[] cellNulls, int j){
+        try {
+            cellWidths[j] = Float.parseFloat(width.substring(0, width.length() - 1) + "f");
+            total += cellWidths[j];
+            cellNulls[j] = false;
+            return total;
+        } catch (Exception e) {
+            return total;
+            // empty on purpose
+        }
+    }
+    
+    private void updateStackWithTextElementArraysAndElements(){
+        try {
+            while (true) {
+                Element element = stack.pop();
+                addTextElementArrayWithElementIntoStack(element);
+                return;
+            }
+        } catch (EmptyStackException ese) {
+            // empty on purpose
         }
     }
 
