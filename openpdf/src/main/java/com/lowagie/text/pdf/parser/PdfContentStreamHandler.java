@@ -299,9 +299,9 @@ public class PdfContentStreamHandler {
     /**
      * @return result text
      */
-    public String getResultantText() {
+    public String getResultantText() throws IOException {
         if (contextNames.size() > 0) {
-            throw new RuntimeException("can't get text with unprocessed stack items");
+            throw new IOException("can't get text with unprocessed stack items");
         }
         StringBuilder res = new StringBuilder();
         for (TextAssemblyBuffer fragment : textFragments) {
