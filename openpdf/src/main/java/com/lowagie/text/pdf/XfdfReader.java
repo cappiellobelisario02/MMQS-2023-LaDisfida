@@ -49,6 +49,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.TagException;
 import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
 import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
 import java.io.ByteArrayInputStream;
@@ -163,7 +164,7 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
     public void startElement(String tag, Map<String, String> h) {
         if (!foundRoot) {
             if (!tag.equals("xfdf")) {
-                throw new RuntimeException(MessageLocalization.getComposedMessage("root.element.is.not.xfdf.1", tag));
+                throw new TagException(MessageLocalization.getComposedMessage("root.element.is.not.xfdf.1", tag));
             } else {
                 foundRoot = true;
             }
