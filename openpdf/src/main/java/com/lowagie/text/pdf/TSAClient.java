@@ -49,6 +49,7 @@
 
 package com.lowagie.text.pdf;
 
+import com.lowagie.text.exceptions.InvalidTokenException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 
@@ -87,6 +88,6 @@ public interface TSAClient {
      * @return byte[] - encoded, TSA signed data of the timeStampToken
      * @throws Exception - TSA request failed
      */
-    byte[] getTimeStampToken(PdfPKCS7 caller, byte[] imprint) throws Exception;
+    byte[] getTimeStampToken(PdfPKCS7 caller, byte[] imprint) throws InvalidTokenException;
 
 }

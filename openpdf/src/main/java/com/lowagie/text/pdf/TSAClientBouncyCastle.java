@@ -50,9 +50,11 @@
 package com.lowagie.text.pdf;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
@@ -60,6 +62,7 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.util.Base64;
 
+import com.lowagie.text.exceptions.InvalidTokenException;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
@@ -175,8 +178,7 @@ public class TSAClientBouncyCastle implements TSAClient {
      * @see com.lowagie.text.pdf.TSAClient#getTimeStampToken(com.lowagie.text.pdf.PdfPKCS7, byte[])
      */
     @Override
-    public byte[] getTimeStampToken(PdfPKCS7 caller, byte[] imprint)
-            throws Exception {
+    public byte[] getTimeStampToken(PdfPKCS7 caller, byte[] imprint) throws InvalidTokenException {
         return getTimeStampToken(imprint);
     }
 
@@ -187,7 +189,7 @@ public class TSAClientBouncyCastle implements TSAClient {
      * @return the timestamp token
      * @throws Exception on error
      */
-    protected byte[] getTimeStampToken(byte[] imprint) throws Exception {
+    protected byte[] getTimeStampToken(byte[] imprint) throws InvalidTokenException {
         byte[] respBytes = null;
         try {
             // Setup the time stamp request
@@ -217,7 +219,7 @@ public class TSAClientBouncyCastle implements TSAClient {
             if (value != 0) {
                 // @todo: Translate value of 15 error codes defined by
                 // PKIFailureInfo to string
-                throw new Exception(MessageLocalization.getComposedMessage(
+                throw new InvalidTokenException(MessageLocalization.getComposedMessage(
                         "invalid.tsa.1.response.code.2", tsaURL, String.valueOf(value)));
             }
             // @todo: validate the time stap certificate chain (if we want
@@ -227,7 +229,7 @@ public class TSAClientBouncyCastle implements TSAClient {
             // info)
             TimeStampToken tsToken = response.getTimeStampToken();
             if (tsToken == null) {
-                throw new Exception(MessageLocalization.getComposedMessage(
+                throw new InvalidTokenException(MessageLocalization.getComposedMessage(
                         "tsa.1.failed.to.return.time.stamp.token.2", tsaURL,
                         response.getStatusString()));
             }
@@ -240,11 +242,11 @@ public class TSAClientBouncyCastle implements TSAClient {
             // safe)
             this.tokSzEstimate = encoded.length + 32;
             return encoded;
-        } catch (Exception e) {
+        } catch (InvalidTokenException e) {
             throw e;
         } catch (Throwable t) {
-            throw new Exception(MessageLocalization.getComposedMessage(
-                    "failed.to.get.tsa.response.from.1", tsaURL), t);
+            throw new InvalidTokenException(MessageLocalization.getComposedMessage(
+                    "failed.to.get.tsa.response.from.1", tsaURL));
         }
     }
 
@@ -255,7 +257,7 @@ public class TSAClientBouncyCastle implements TSAClient {
      * @return - byte[] - TSA response, raw bytes (RFC 3161 encoded)
      * @throws Exception on error
      */
-    protected byte[] getTSAResponse(byte[] requestBytes) throws Exception {
+    protected byte[] getTSAResponse(byte[] requestBytes) throws IOException {
         // Setup the TSA connection
         URL url = new URL(tsaURL);
         URLConnection tsaConnection;
