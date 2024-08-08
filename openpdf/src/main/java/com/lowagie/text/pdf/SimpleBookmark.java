@@ -48,6 +48,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.TagException;
 import com.lowagie.text.xml.XMLUtil;
 import com.lowagie.text.xml.simpleparser.IanaEncodings;
 import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
@@ -730,11 +731,11 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
             if (attr.isEmpty()) {
                 return;
             } else {
-                throw new RuntimeException(MessageLocalization.getComposedMessage("bookmark.end.tag.out.of.place"));
+                throw new TagException(MessageLocalization.getComposedMessage("bookmark.end.tag.out.of.place"));
             }
         }
         if (!tag.equals("Title")) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("invalid.end.tag.1", tag));
+            throw new TagException(MessageLocalization.getComposedMessage("invalid.end.tag.1", tag));
         }
         Map<String, Object> attributes = attr.pop();
         String title = (String) attributes.get("Title");
@@ -770,12 +771,12 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
                 topList = new ArrayList<>();
                 return;
             } else {
-                throw new RuntimeException(
+                throw new TagException(
                         MessageLocalization.getComposedMessage("root.element.is.not.bookmark.1", tag));
             }
         }
         if (!tag.equals("Title")) {
-            throw new RuntimeException(MessageLocalization.getComposedMessage("tag.1.not.allowed", tag));
+            throw new TagException(MessageLocalization.getComposedMessage("tag.1.not.allowed", tag));
         }
         Map<String, Object> attributes = new HashMap<>(h);
         attributes.put("Title", "");
