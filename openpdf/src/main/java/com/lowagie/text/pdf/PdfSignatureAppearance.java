@@ -74,11 +74,14 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * This class takes care of the cryptographic options and appearances that form a signature.
  */
 public class PdfSignatureAppearance {
+
+    static Logger logger = Logger.getLogger(PdfSignatureAppearance.class.getName());
 
     /**
      * The rendering mode is just the description
@@ -1273,7 +1276,7 @@ public class PdfSignatureAppearance {
             try{
                 bf = new ByteBuffer();
             } catch(Exception e){
-                System.err.println("ByteBuffer error: " + e.getMessage());
+                logger.info("ByteBuffer error: " + e.getMessage());
             }
             bf.append('[');
             for (long i : range) {
@@ -1315,7 +1318,7 @@ public class PdfSignatureAppearance {
         try {
             return new ByteBuffer();
         } catch (Exception e) {
-            System.err.println("ByteBuffer error: " + e.getMessage());
+            logger.info("ByteBuffer error: " + e.getMessage());
             return null;
         }
     }

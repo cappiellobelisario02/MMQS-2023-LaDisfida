@@ -19,6 +19,7 @@ package com.lowagie.text.pdf.hyphenation;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Stack;
+import java.util.logging.Logger;
 
 /**
  * <h2>Ternary Search Tree.</h2>
@@ -50,6 +51,8 @@ import java.util.Stack;
  */
 
 public class TernaryTree implements Cloneable, Serializable {
+
+    static Logger logger = Logger.getLogger(TernaryTree.class.getName());
 
     protected static final int BLOCK_SIZE = 2048;    // allocation size for arrays
     /**
@@ -440,9 +443,9 @@ public class TernaryTree implements Cloneable, Serializable {
     }
 
     public void printStats() {
-        System.out.println("Number of keys = " + length);
-        System.out.println("Node count = " + freenode);
-        System.out.println("Key Array length = "
+        logger.info("Number of keys = " + length);
+        logger.info("Node count = " + freenode);
+        logger.info("Key Array length = "
                 + kv.length());
 
     }

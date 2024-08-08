@@ -22,11 +22,14 @@ package com.lowagie.rups.model;
 
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
+import java.util.logging.Logger;
 
 /**
  * Loads all the PDFPage objects for SUN's PDF Renderer in Background.
  */
 public class PageLoader extends BackgroundTask {
+
+    static Logger logger = Logger.getLogger(PageLoader.class.getName());
 
     /**
      * The PDFFile (SUN's PDF Renderer class)
@@ -82,7 +85,7 @@ public class PageLoader extends BackgroundTask {
         busy[pageNumber] = true;
         PDFPage page = file.getPage(pageNumber + 1, true);
         if (!done[pageNumber]) {
-            System.out.println("Loading page " + (pageNumber + 1));
+            logger.info("Loading page " + (pageNumber + 1));
         }
         done[pageNumber] = true;
         busy[pageNumber] = false;

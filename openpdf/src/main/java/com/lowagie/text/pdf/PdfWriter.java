@@ -96,6 +96,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -114,6 +115,8 @@ public class PdfWriter extends DocWriter implements
         PdfXConformance,
         PdfRunDirection,
         PdfAnnotations {
+
+    static Logger logger = Logger.getLogger(PdfWriter.class.getName());
 
     /**
      * The highest generation number possible.
@@ -3175,7 +3178,7 @@ public class PdfWriter extends DocWriter implements
                 try{
                     ByteBuffer buf = new ByteBuffer();
                 } catch (Exception e){
-                    System.out.println("ERROR ByteBuffer >> ", e);
+                    logger.info("ERROR ByteBuffer >> " + e.getMessage());
                 }
 
                 for (PdfCrossReference xref : xrefs) {

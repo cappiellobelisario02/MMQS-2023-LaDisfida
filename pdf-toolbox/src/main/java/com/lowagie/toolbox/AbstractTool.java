@@ -43,6 +43,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -57,6 +58,8 @@ import javax.swing.JOptionPane;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public abstract class AbstractTool implements ActionListener {
+
+    static Logger logger = Logger.getLogger(AbstractTool.class.getName());
 
     /**
      * a menu option
@@ -295,7 +298,7 @@ public abstract class AbstractTool implements ActionListener {
      */
     public void actionPerformed(ActionEvent evt) {
         if (ToolMenuItems.CLOSE.equals(evt.getActionCommand())) {
-            System.out.println("=== " + getInternalFrame().getTitle() +
+            logger.info("=== " + getInternalFrame().getTitle() +
                     " CLOSED ===");
             internalFrame.dispose();
         }
@@ -318,7 +321,7 @@ public abstract class AbstractTool implements ActionListener {
                     Executable.openDocument(getDestPathPDF());
                 }
             } catch (Exception e) {
-                System.err.println(e.getMessage());
+                logger.info(e.getMessage());
             }
         }
         if (ToolMenuItems.EXECUTEPRINT.equals(evt.getActionCommand())) {
@@ -331,7 +334,7 @@ public abstract class AbstractTool implements ActionListener {
                     Executable.printDocument(getDestPathPDF());
                 }
             } catch (Exception e) {
-                System.err.println(e.getMessage());
+                logger.info(e.getMessage());
             }
         }
         if (ToolMenuItems.EXECUTEPRINTSILENT.equals(evt.getActionCommand())) {
@@ -339,7 +342,7 @@ public abstract class AbstractTool implements ActionListener {
             try {
                 Executable.printDocumentSilent(getDestPathPDF());
             } catch (Exception e) {
-                System.err.println(e.getMessage());
+                logger.info(e.getMessage());
             }
         }
     }

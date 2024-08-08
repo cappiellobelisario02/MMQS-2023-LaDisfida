@@ -52,6 +52,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
 /**
@@ -64,6 +65,8 @@ public class ExtractAttachments extends AbstractTool {
     static {
         addVersion("$Id: ExtractAttachments.java 3712 2009-02-20 20:11:31Z xlv $");
     }
+
+    static Logger logger = Logger.getLogger(ExtractAttachments.class.getName());
 
     /**
      * Constructs a ExtractAttachements object.
@@ -83,7 +86,7 @@ public class ExtractAttachments extends AbstractTool {
     public static void main(String[] args) {
         ExtractAttachments tool = new ExtractAttachments();
         if (args.length < 1) {
-            System.err.println(tool.getUsage());
+            logger.info(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -110,7 +113,7 @@ public class ExtractAttachments extends AbstractTool {
             return;
         }
         PdfString fn = filespec.getAsString(PdfName.F);
-        System.out.println("Unpacking file '" + fn + "' to " + outPath);
+        logger.info("Unpacking file '" + fn + "' to " + outPath);
         if (fn == null) {
             return;
         }
@@ -139,7 +142,7 @@ public class ExtractAttachments extends AbstractTool {
                 true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== ExtractAttachments OPENED ===");
+        logger.info("=== ExtractAttachments OPENED ===");
     }
 
     /**

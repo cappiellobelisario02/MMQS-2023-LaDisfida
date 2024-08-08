@@ -55,6 +55,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * <CODE>PdfName</CODE> is an object that can be used as a name in a PDF-file.
@@ -72,6 +73,8 @@ import java.util.Map;
  */
 
 public class PdfName extends PdfObject implements Comparable<PdfName> {
+
+    static Logger logger = Logger.getLogger(PdfName.class.getName());
 
     // CLASS CONSTANTS (a variety of standard names used in PDF))
     /**
@@ -3369,7 +3372,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
         try{
             buf = new ByteBuffer(length + 20);
         } catch(Exception e){
-            System.err.println("ByteBuffer error: " + e.getMessage());
+            logger.info("ByteBuffer error: " + e.getMessage());
         }
         buf.append('/');
         char c;

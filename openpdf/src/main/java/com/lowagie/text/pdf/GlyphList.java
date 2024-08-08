@@ -54,6 +54,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 // File: GlyphListNotFoundException.java
 package com.lowagie.text.pdf.fonts;
@@ -74,6 +75,8 @@ public class GlyphListNotFoundException extends RuntimeException {
 public class GlyphList {
 
     private GlyphList(){}
+
+    static Logger logger = Logger.getLogger(GlyphList.class.getName());
 
     private static HashMap<Integer, String> unicode2names = new HashMap<>();
     private static HashMap<String, int[]> names2unicode = new HashMap<>();
@@ -121,7 +124,7 @@ public class GlyphList {
                 names2unicode.put(name, new int[]{num});
             }
         } catch (Exception e) {
-            System.err.println("glyphlist.txt loading error: " + e.getMessage());
+            logger.info("glyphlist.txt loading error: " + e.getMessage());
         } finally {
             if (is != null) {
                 try {

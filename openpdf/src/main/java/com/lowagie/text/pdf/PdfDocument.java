@@ -91,6 +91,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 
 /**
@@ -107,6 +108,8 @@ import java.util.TreeMap;
  */
 
 public class PdfDocument extends Document {
+
+    static Logger logger = Logger.getLogger(PdfDocument.class.getName());
 
     protected static final DecimalFormat SIXTEEN_DIGITS = new DecimalFormat("0000000000000000");
     /**
@@ -2545,7 +2548,7 @@ public class PdfDocument extends Document {
 
     protected void addDelay(Image image) {
         if (image.hasAbsoluteY()) {
-            System.out.println("Warning: absoluteY of image is invalid in footer");
+            logger.info("Warning: absoluteY of image is invalid in footer");
         }
 
         image.setRelativeTop(currentHeight); // set the offset relative to the top

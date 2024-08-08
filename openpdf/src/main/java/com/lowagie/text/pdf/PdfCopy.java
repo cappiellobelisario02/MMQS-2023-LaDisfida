@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Make copies of PDF documents. Documents can be edited after reading and before writing them out.
@@ -74,6 +75,7 @@ public class PdfCopy extends PdfWriter {
     protected int[] namePtr = {0};
     protected PdfArray fieldArray;
     protected HashMap<PdfTemplate, Object> fieldTemplates;
+    static Logger logger = Logger.getLogger(PdfCopy.class.getName());
     /**
      * Holds value of property rotateContents.
      */
@@ -278,7 +280,7 @@ public class PdfCopy extends PdfWriter {
                     }
                     return new PdfLiteral(lit);
                 }
-                System.out.println("CANNOT COPY type " + in.type);
+                logger.info("CANNOT COPY type " + in.type);
                 return null;
         }
     }
@@ -672,7 +674,7 @@ public class PdfCopy extends PdfWriter {
             try{
                 ByteBuffer out = new ByteBuffer();
             } catch (Exception e){
-                System.err.println("ByteBuffer error: " + e.getMessage());
+                logger.info("ByteBuffer error: " + e.getMessage());
             }
             if (under != null) {
                 out.append(PdfContents.SAVESTATE);
@@ -851,7 +853,7 @@ public class PdfCopy extends PdfWriter {
         public PdfContentByte getDuplicate() {
             return new PdfCopy.StampContent(writer, pageResources);
         }
-
+        
         @Override
         PageResources getPageResources() {
             return pageResources;

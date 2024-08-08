@@ -46,6 +46,7 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
 /**
@@ -58,6 +59,8 @@ public class Divide extends AbstractTool {
     static {
         addVersion("$Id: Divide.java 3271 2008-04-18 20:39:42Z xlv $");
     }
+
+    static Logger logger = Logger.getLogger(Divide.class.getName());
 
     /**
      * Constructs an Divide object.
@@ -78,7 +81,7 @@ public class Divide extends AbstractTool {
     public static void main(String[] args) {
         Divide tool = new Divide();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.info(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -91,7 +94,7 @@ public class Divide extends AbstractTool {
         internalFrame = new JInternalFrame("Divide", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Divide OPENED ===");
+        logger.info("=== Divide OPENED ===");
     }
 
     /**
@@ -113,7 +116,12 @@ public class Divide extends AbstractTool {
             File dest = (File) getValue("destfile");
 
             // we create a reader for a certain document
-            /*PdfReader reader*/ reader = new PdfReader(src.getAbsolutePath());
+            /*PdfReader reader*/  
+            try{
+                reader = new PdfReader(src.getAbsolutePath());
+            } catch (Exception e){
+                e.printStackTrace();
+            }
             // we retrieve the total number of pages and the page size
             int total = reader.getNumberOfPages();
             System.out.println("There are " + total
@@ -123,7 +131,12 @@ public class Divide extends AbstractTool {
             Rectangle newSize = new Rectangle(pageSize.getWidth() / 2, pageSize
                     .getHeight());
             // step 1: creation of a document-object
-            /*Document document */ document = new Document(newSize, 0, 0, 0, 0);
+            /*Document document */ 
+            try{
+                document = new Document(newSize, 0, 0, 0, 0);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
             // step 2: we create a writer that listens to the document
             PdfWriter writer = PdfWriter.getInstance(document,
                     new FileOutputStream(dest));

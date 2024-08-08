@@ -52,11 +52,14 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.InvalidPdfException;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * @author Paulo Soares (psoares@consiste.pt)
  */
 public class PRTokeniser implements AutoCloseable {
+
+    static Logger logger = Logger.getLogger(PRTokeniser.class.getName());
 
     public static final int TK_NUMBER = 1;
     public static final int TK_STRING = 2;
@@ -178,7 +181,7 @@ public class PRTokeniser implements AutoCloseable {
         try {
             return new PRTokeniser(line);
         } catch (Exception e) {
-            System.out.println("ERROR >> PRTokeniser");
+            logger.info("ERROR >> PRTokeniser");
             return null;
         }
     }

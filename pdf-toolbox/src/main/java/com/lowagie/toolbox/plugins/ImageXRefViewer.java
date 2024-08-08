@@ -163,7 +163,7 @@ public class ImageXRefViewer extends AbstractTool {
 
         master_panel.add(spinner_panel, java.awt.BorderLayout.NORTH);
 
-        System.out.println("=== Image XObject Viewer OPENED ===");
+        logger.info("=== Image XObject Viewer OPENED ===");
     }
 
     /**
@@ -213,37 +213,37 @@ public class ImageXRefViewer extends AbstractTool {
                             PdfObject pdfobj = reader.getPdfObject(i);
                             if (pdfobj != null && pdfobj.isStream()) {
 
-                                PdfStream pdfdict = (PdfStream) pdfobj;
-                                PdfObject pdfsubtype = pdfdict
-                                        .get(PdfName.SUBTYPE);
-                                if (pdfsubtype == null) {
-                                    continue;
-                                }
-                                if (!pdfsubtype.toString().equals(
-                                        PdfName.IMAGE.toString())) {
-                                    continue;
-                                }
-                                stringToLog = "total_number_of_pictures: "
-                                        + totalNumberOfPictures;
-                                logger.info(stringToLog);
-                                stringToLog = "height:"
+                                    PdfStream pdfdict = (PdfStream) pdfobj;
+                                    PdfObject pdfsubtype = pdfdict
+                                            .get(PdfName.SUBTYPE);
+                                    if (pdfsubtype == null) {
+                                        continue;
+                                    }
+                                    if (!pdfsubtype.toString().equals(
+                                            PdfName.IMAGE.toString())) {
+                                        continue;
+                                    }
+                                    stringToLog = "total_number_of_pictures: "
+                                            + totalNumberOfPictures;
+                                    logger.info(stringToLog);
+                                    stringToLog = "height:"
                                         + pdfdict.get(PdfName.HEIGHT)
-                                logger.info(stringToLog);
-                                stringToLog = "width:"
-                                        + pdfdict.get(PdfName.WIDTH);
-                                logger.info(stringToLog);
-                                stringToLog = "bitspercomponent:"
-                                        + pdfdict.get(PdfName.BITSPERCOMPONENT)
-                                logger.info(stringToLog);
-                                byte[] barr = PdfReader
-                                        .getStreamBytesRaw((PRStream) pdfdict);
-                                java.awt.Image im = Toolkit
-                                        .getDefaultToolkit().createImage(barr);
-                                javax.swing.ImageIcon ii = new javax.swing.ImageIcon(im);
+                                    logger.info(stringToLog);
+                                    stringToLog = "width:"
+                                            + pdfdict.get(PdfName.WIDTH);
+                                    logger.info(stringToLog);
+                                    stringToLog = "bitspercomponent:"
+                                            + pdfdict.get(PdfName.BITSPERCOMPONENT)
+                                    logger.info(stringToLog);
+                                    byte[] barr = PdfReader
+                                            .getStreamBytesRaw((PRStream) pdfdict);
+                                    java.awt.Image im = Toolkit
+                                            .getDefaultToolkit().createImage(barr);
+                                    javax.swing.ImageIcon ii = new javax.swing.ImageIcon(im);
 
-                                JLabel label = new JLabel();
-                                label.setIcon(ii);
-                                imagePanel.add(label, String.valueOf(totalNumberOfPictures++));
+                                    JLabel label = new JLabel();
+                                    label.setIcon(ii);
+                                    imagePanel.add(label, String.valueOf(totalNumberOfPictures++));
 
                             }
                         }
@@ -267,7 +267,7 @@ public class ImageXRefViewer extends AbstractTool {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e
                     .getClass().getName(), JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.info(e.getMessage());
         }
     }
 

@@ -49,6 +49,7 @@ import com.lowagie.toolbox.arguments.OptionArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -62,6 +63,8 @@ public class Handouts extends AbstractTool {
     static {
         addVersion("$Id: Handouts.java 3271 2008-04-18 20:39:42Z xlv $");
     }
+
+    static Logger logger = Logger.getLogger(Handouts.class.getName());
 
     /**
      * Constructs a Handouts object.
@@ -89,7 +92,7 @@ public class Handouts extends AbstractTool {
     public static void main(String[] args) {
         Handouts tool = new Handouts();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.info(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -102,7 +105,7 @@ public class Handouts extends AbstractTool {
         internalFrame = new JInternalFrame("Handouts", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Handouts OPENED ===");
+        logger.info("=== Handouts OPENED ===");
     }
 
     /**
@@ -141,7 +144,7 @@ public class Handouts extends AbstractTool {
             PdfReader reader = new PdfReader(src.getAbsolutePath());
             // we retrieve the total number of pages
             int n = reader.getNumberOfPages();
-            System.out.println("There are " + n + " pages in the original file.");
+            logger.info("There are " + n + " pages in the original file.");
 
             // step 1: creation of a document-object
             Document document = new Document(PageSize.A4);
@@ -178,7 +181,7 @@ public class Handouts extends AbstractTool {
                 }
                 cb.rectangle(x1 + dx, y2[p] + dy, rect.getWidth() * factor, rect.getHeight() * factor);
                 cb.stroke();
-                System.out.println("Processed page " + i);
+                logger.info("Processed page " + i);
                 p++;
                 if (p == pages) {
                     p = 0;
@@ -192,7 +195,7 @@ public class Handouts extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.info(e.getMessage());
         }
     }
 

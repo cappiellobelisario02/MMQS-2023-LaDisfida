@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * This tree structure stores the hyphenation patterns in an efficient way for fast lookup. It provides the provides the
@@ -32,6 +33,8 @@ import java.util.Map;
  */
 public class HyphenationTree extends TernaryTree
         implements PatternConsumer {
+    
+    static Logger logger = Logger.getLogger(HyphenationTree.class.getName());
 
     private static final long serialVersionUID = -7763254239309429432L;
 
@@ -443,7 +446,7 @@ public class HyphenationTree extends TernaryTree
 
     @Override
     public void printStats() {
-        System.out.println("Value space size = "
+        logger.info("Value space size = "
                 + vspace.length());
         super.printStats();
     }

@@ -47,6 +47,7 @@ import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -56,6 +57,8 @@ import javax.swing.JOptionPane;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class Encrypt extends AbstractTool {
+
+    static Logger logger = Logger.getLogger(Encrypt.class.getName());
 
     private final static int[] PERMISSIONS = {
             PdfWriter.ALLOW_PRINTING,
@@ -105,7 +108,7 @@ public class Encrypt extends AbstractTool {
     public static void main(String[] args) {
         Encrypt tool = new Encrypt();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.info(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -118,7 +121,7 @@ public class Encrypt extends AbstractTool {
         internalFrame = new JInternalFrame("Encrypt", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Encrypt OPENED ===");
+        logger.info("=== Encrypt OPENED ===");
     }
 
     /**
@@ -162,7 +165,7 @@ public class Encrypt extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.info(e.getMessage());
         }
     }
 

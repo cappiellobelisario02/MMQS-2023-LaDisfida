@@ -4,12 +4,15 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * This class is the main entry point to the hyphenation package. You can use only the static methods or create an
  * instance.
  */
 public class Hyphenator {
+
+    static Logger logger = Logger.getLogger(Hyphenator.class.getName());
 
     private static final String defaultHyphLocation = "com/lowagie/text/pdf/hyphenation/hyph/";
     /**
@@ -118,7 +121,7 @@ public class Hyphenator {
         try {
             stream = new FileInputStream(hyphenFile);
         } catch (Exception e) {
-            System.out.println("ERROR FileInputStream >> " + e);
+            logger.info("ERROR FileInputStream >> " + e);
         }
         return stream;
     }

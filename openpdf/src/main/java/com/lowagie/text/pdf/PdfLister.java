@@ -53,6 +53,7 @@ package com.lowagie.text.pdf;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.logging.Logger;
 
 /**
  * List a PDF file in human-readable form (for debugging reasons mostly)
@@ -61,6 +62,8 @@ import java.io.PrintStream;
  */
 
 public class PdfLister {
+    
+    static Logger logger = Logger.getLogger(PdfLister.class.getName());
 
     /**
      * the printStream you want to write the output to.
@@ -148,7 +151,7 @@ public class PdfLister {
             out.println(new String(b));
             out.println("endstream");
         } catch (IOException e) {
-            System.err.println("I/O exception: " + e);
+            logger.info("I/O exception: " + e);
         }
     }
 

@@ -52,6 +52,7 @@ package com.lowagie.text.pdf;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 /**
  * A <CODE>PdfString</CODE>-class is the PDF-equivalent of a JAVA-<CODE>String</CODE>-object.
@@ -68,6 +69,8 @@ import java.nio.charset.StandardCharsets;
  * @see BadPdfFormatException
  */
 public class PdfString extends PdfObject {
+    
+    static Logger logger = Logger.getLogger(PdfString.class.getName());
 
     // CLASS VARIABLES
 
@@ -161,7 +164,7 @@ public class PdfString extends PdfObject {
                     buf.appendHex(b1);
                 }
             } catch (IOException e) {
-                System.err.println("ByteBuffer error: " + e.getMessage());
+                 logger.info("ByteBuffer error: " + e.getMessage());
             }
             buf.append('>');
             os.write(buf.toByteArray());

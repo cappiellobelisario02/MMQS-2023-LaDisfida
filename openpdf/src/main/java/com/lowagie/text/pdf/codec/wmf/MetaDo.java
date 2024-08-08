@@ -63,8 +63,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class MetaDo {
+
+    static Logger logger = Logger.getLogger(MetaDo.class.getName());
 
     public static final int META_SETBKCOLOR = 0x0201;
     public static final int META_SETBKMODE = 0x0102;
@@ -167,7 +170,7 @@ public class MetaDo {
             try{
                 imgIn = image.getUrl().openStream();
             } catch(Exception e){
-                System.out.println("ERROR image.getUrl().openStream() >> ", e);
+                logger.info("ERROR image.getUrl().openStream() >> ", e);
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             int b = 0;

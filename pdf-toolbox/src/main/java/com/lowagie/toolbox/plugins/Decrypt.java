@@ -44,6 +44,7 @@ import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -53,6 +54,8 @@ import javax.swing.JOptionPane;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class Decrypt extends AbstractTool {
+
+    static Logger logger = Logger.getLogger(Decrypt.class.getName());
 
     static {
         addVersion("$Id: Decrypt.java 3271 2008-04-18 20:39:42Z xlv $");
@@ -77,7 +80,7 @@ public class Decrypt extends AbstractTool {
     public static void main(String[] args) {
         Decrypt tool = new Decrypt();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.info(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -90,7 +93,7 @@ public class Decrypt extends AbstractTool {
         internalFrame = new JInternalFrame("Decrypt", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Decrypt OPENED ===");
+        logger.info("=== Decrypt OPENED ===");
     }
 
     /**
@@ -110,8 +113,17 @@ public class Decrypt extends AbstractTool {
             if (getValue("ownerpassword") != null) {
                 ownerpassword = ((String) getValue("ownerpassword")).getBytes();
             }
-            reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath(), ownerpassword);
-            fos = new FileOutputStream((File) getValue("destfile"));
+            try {
+                reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath(), ownerpassword);
+                // Rest of your code here...
+            } catch (Exception e) {
+                // Handle the exception here...
+            }
+            try{
+                fos = new FileOutputStream((File) getValue("destfile"));
+            } catch(Exception e){
+                e.printStackTrace();
+            }
             PdfStamper stamper = new PdfStamper(reader, fos);
             stamper.close();
         } catch (Exception e) {
@@ -119,7 +131,7 @@ public class Decrypt extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.info(e.getMessage());
         } finally{
             if(reader != null && fos != null){
                 try{

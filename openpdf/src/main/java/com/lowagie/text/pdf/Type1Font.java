@@ -59,6 +59,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 /**
  * Reads a Type1 font
@@ -66,6 +67,8 @@ import java.util.StringTokenizer;
  * @author Paulo Soares (psoares@consiste.pt)
  */
 class Type1Font extends BaseFont {
+    
+    static Logger logger = Logger.getLogger(Type1Font.class.getName());
 
     /**
      * Types of records in a PFB file. ASCII is 1 and BINARY is 2. They have to appear in the PFB file in this
@@ -219,7 +222,7 @@ class Type1Font extends BaseFont {
                 is = getResourceStream(RESOURCE_PATH + afmFile + ".afm", resourceAnchor.getClass().getClassLoader());
                 if (is == null) {
                     String msg = MessageLocalization.getComposedMessage("1.not.found.as.resource", afmFile);
-                    System.err.println(msg);
+                    logger.info(msg);
                     throw new DocumentException(msg);
                 }
                 ByteArrayOutputStream out = new ByteArrayOutputStream();

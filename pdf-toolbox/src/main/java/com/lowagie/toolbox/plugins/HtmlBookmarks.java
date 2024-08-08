@@ -70,6 +70,7 @@ import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -83,6 +84,8 @@ public class HtmlBookmarks extends AbstractTool {
     static {
         addVersion("$Id: HtmlBookmarks.java 3373 2008-05-12 16:21:24Z xlv $");
     }
+
+    static Logger logger = Logger.getLogger(HtmlBookmarks.class.getName());
 
     /**
      * Constructs an HtmlBookmarks object.
@@ -124,7 +127,7 @@ public class HtmlBookmarks extends AbstractTool {
     private static Section createBookmark(String pdf, Section section, Map<String, Object> bookmark) {
         Section s;
         Paragraph title = new Paragraph((String) bookmark.get("Title"));
-        System.out.println((String) bookmark.get("Title"));
+        logger.info((String) bookmark.get("Title"));
         String action = (String) bookmark.get("Action");
         if ("GoTo".equals(action)) {
             if (bookmark.get("Page") != null) {
@@ -173,7 +176,7 @@ public class HtmlBookmarks extends AbstractTool {
     public static void main(String[] args) {
         HtmlBookmarks tool = new HtmlBookmarks();
         if (args.length < 1) {
-            System.err.println(tool.getUsage());
+            logger.info(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -186,7 +189,7 @@ public class HtmlBookmarks extends AbstractTool {
         internalFrame = new JInternalFrame("Html Bookmarks", true, true, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Html Bookmarks OPENED ===");
+        logger.info("=== Html Bookmarks OPENED ===");
     }
 
     /**
@@ -266,7 +269,7 @@ public class HtmlBookmarks extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.info(e.getMessage());
         } finally{
             if (reader != null) {
                 try {

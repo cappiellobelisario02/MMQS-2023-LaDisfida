@@ -27,6 +27,7 @@ import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Logger;
 import javax.swing.JTextPane;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -40,6 +41,8 @@ import javax.swing.text.StyleContext;
  * A Class that redirects everything written to System.out and System.err to a JTextPane.
  */
 public class Console implements Observer {
+
+    static Logger logger = Logger.getLogger(Console.class.getName());
 
     /**
      * Single Console instance.
@@ -141,7 +144,7 @@ public class Console implements Observer {
     public static void println(String s) {
         PrintStream ps = getInstance().getPrintStream();
         if (ps == null) {
-            System.out.println(s);
+            logger.info(s);
         } else {
             ps.println(s);
             ps.flush();

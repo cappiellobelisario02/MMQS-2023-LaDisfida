@@ -59,6 +59,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Tool that parses the content of a PDF document.
@@ -67,6 +68,8 @@ import java.util.List;
  */
 @SuppressWarnings("WeakerAccess")
 public class PdfContentReaderTool {
+
+    static Logger logger = Logger.getLogger(PdfContentReaderTool.class.getName());
 
     /**
      * Shows the detail of a dictionary. This is similar to the PdfLister functionality.
@@ -201,7 +204,7 @@ public class PdfContentReaderTool {
     public static void main(String[] args) {
         try {
             if (args.length < 1 || args.length > 3) {
-                System.out.println("Usage:  PdfContentReaderTool <pdf file> [<output file>|stdout] [<page num>]");
+                logger.info("Usage:  PdfContentReaderTool <pdf file> [<output file>|stdout] [<page num>]");
                 return;
             }
 
@@ -221,10 +224,10 @@ public class PdfContentReaderTool {
 
             if (args.length >= 2) {
                 writer.close();
-                System.out.println("Finished writing content to " + args[1]);
+                logger.info("Finished writing content to " + args[1]);
             }
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            logger.info(e.getMessage());
         }
     }
 
@@ -234,7 +237,7 @@ public class PdfContentReaderTool {
                 : new PrintWriter(System.out)) {
 
             if (args.length >= 2 && !args[1].equalsIgnoreCase("stdout")) {
-                System.out.println("Writing PDF content to " + args[1]);
+                logger.info("Writing PDF content to " + args[1]);
             }
 
             int pageNum = -1;
@@ -250,10 +253,10 @@ public class PdfContentReaderTool {
             writer.flush();
 
             if (args.length >= 2 && !args[1].equalsIgnoreCase("stdout")) {
-                System.out.println("Finished writing content to " + args[1]);
+                logger.info("Finished writing content to " + args[1]);
             }
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            logger.info(e.getMessage());
         }
     }
 

@@ -53,6 +53,7 @@ import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -66,6 +67,8 @@ public class DvdCover extends AbstractTool {
     static {
         addVersion("$Id: DvdCover.java 3271 2008-04-18 20:39:42Z xlv $");
     }
+
+    static Logger logger = Logger.getLogger(DvdCover.class.getName());
 
     /**
      * Constructs a DvdCover object.
@@ -91,7 +94,7 @@ public class DvdCover extends AbstractTool {
     public static void main(String[] args) {
         DvdCover tool = new DvdCover();
         if (args.length == 0) {
-            System.err.println(tool.getUsage());
+            logger.info(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -104,7 +107,7 @@ public class DvdCover extends AbstractTool {
         internalFrame = new JInternalFrame("Make your own DVD Cover", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== DvdCover OPENED ===");
+        logger.info("=== DvdCover OPENED ===");
     }
 
     /**
@@ -176,7 +179,7 @@ public class DvdCover extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.info(e.getMessage());
         } finally{
             if (document != null) {
                 try {

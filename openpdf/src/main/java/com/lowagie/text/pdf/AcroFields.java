@@ -45,8 +45,6 @@
  * https://github.com/LibrePDF/OpenPDF
  */
 package com.lowagie.text.pdf;
-package com.example.exceptions; 
-package com.yourpackage;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -67,6 +65,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.w3c.dom.Node;
 
 public class InvalidColorValueException extends RuntimeException {
@@ -142,6 +141,8 @@ public class FontProcessingException extends RuntimeException {
  * @author Paulo Soares (psoares@consiste.pt)
  */
 public class AcroFields {
+    
+    Logger logger = Logger.getLogger(AcroFields.class.getName());
 
     public static final int DA_FONT = 0;
     public static final int DA_SIZE = 1;
@@ -309,7 +310,7 @@ public class AcroFields {
         try {
             tk = new PRTokeniser(PdfEncodings.convertToBytes(da, null));
         } catch (Exception e) {
-            System.err.println("PRTokeniser error: " + e.getMessage());
+            logger.info("PRTokeniser error: " + e.getMessage());
         } finally {
             closePRTokeniser(tk);
         }
@@ -322,7 +323,7 @@ public class AcroFields {
             try {
                 tk.close();
             } catch (IOException e) {
-                System.err.println("Error in PRTokeniser closing: " + e.getMessage());
+                logger.info("Error in PRTokeniser closing: " + e.getMessage());
             }
         }
     }
@@ -1592,10 +1593,10 @@ public class AcroFields {
      */
     public boolean setFieldProperty(Item item, String name, int value, int[] inst) {
         if (writer == null) {
-                throw new ReadOnlyAcroFieldsException(
+            throw new ReadOnlyAcroFieldsException(
                     MessageLocalization.getComposedMessage("this.acrofields.instance.is.read.only")
-                );
-            }
+            );
+        }
         if (item == null) {
             return false;
         }
@@ -2023,7 +2024,7 @@ public class AcroFields {
 
     /**
      * Gets the field box positions in the document. The return is an array of <CODE>float</CODE> multiple of 5. For
-     * each of this groups the values are: [page, llx, lly, urx, ury]. The coordinates have the page rotation in
+     * each of these groups the values are: [page, llx, lly, urx, ury]. The coordinates have the page rotation in
      * consideration.
      *
      * @param name the field name
@@ -3213,7 +3214,7 @@ public class AcroFields {
             }
             return b[0] & 0xff;
         }
-        
+
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
             if (b == null) {

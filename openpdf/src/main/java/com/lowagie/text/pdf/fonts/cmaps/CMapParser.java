@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * This will parser a CMap stream.
@@ -41,6 +42,8 @@ import java.util.Map;
  * @since 2.1.4
  */
 public class CMapParser {
+    
+    static Logger logger = Logger.getLogger(MessageLocalization.class.getName());
 
     private static final String BEGIN_CODESPACE_RANGE = "begincodespacerange";
     private static final String BEGIN_BASE_FONT_CHAR = "beginbfchar";
@@ -65,12 +68,12 @@ public class CMapParser {
      */
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
-            System.err.println("usage: java org.pdfbox.cmapparser.CMapParser <CMAP File>");
+            logger.info("usage: java org.pdfbox.cmapparser.CMapParser <CMAP File>");
             System.exit(-1);
         }
         CMapParser parser = new CMapParser();
         CMap result = parser.parse(new FileInputStream(args[0]));
-        System.out.println("Result:" + result);
+        logger.info("Result:" + result);
     }
 
     /**

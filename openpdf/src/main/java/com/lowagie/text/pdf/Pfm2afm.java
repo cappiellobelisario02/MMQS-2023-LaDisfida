@@ -148,11 +148,14 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /**
  * Converts a PFM file into an AFM file.
  */
 public final class Pfm2afm {
+
+    static Logger logger = Logger.getLogger(Pfm2afm.class.getName());
 
     private RandomAccessFileOrArray in;
     private PrintWriter out;
@@ -547,7 +550,7 @@ public final class Pfm2afm {
             try {
                 return new RandomAccessFileOrArray(fileName);
             } catch (Exception e) {
-                System.out.println("ERROR RandomAccessFileOrArray >> " + e);
+                logger.info("ERROR RandomAccessFileOrArray >> " + e);
                 return null;
             }
         }

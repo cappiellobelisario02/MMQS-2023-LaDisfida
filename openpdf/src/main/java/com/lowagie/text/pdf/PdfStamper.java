@@ -69,6 +69,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Applies extra content to the pages of a PDF document. This extra content can be all the objects allowed in
@@ -81,6 +82,8 @@ import java.util.Map;
  */
 public class PdfStamper
         implements PdfViewerPreferences, PdfEncryptionSettings, AutoCloseable {
+
+    static Logger logger = Logger.getLogger(PdfStamper.class.getName());
 
     /**
      * The writer
@@ -178,7 +181,7 @@ public class PdfStamper
             try{
                 bout = new ByteBuffer();
             } catch(Exception e){
-                System.err.println("ByteBuffer error: " + e.getMessage());
+                logger.info("ByteBuffer error: " + e.getMessage());
             }
             stp = new PdfStamper(reader, bout, pdfVersion, append);
             stp.sigApp = new PdfSignatureAppearance(stp.stamper);
