@@ -175,32 +175,29 @@ public class PdfShading {
         return sp;
     }
 
-    public static PdfShading simpleAxial(PdfWriter writer, float x0, float y0, float x1, float y1, Color startColor,
-            Color endColor, boolean extendStart, boolean extendEnd) {
-        checkCompatibleColors(startColor, endColor);
-        PdfFunction function = PdfFunction.type2(writer, new float[]{0, 1}, null, getColorArray(startColor),
-                getColorArray(endColor), 1);
-        return type2(writer, startColor, new float[]{x0, y0, x1, y1}, null, function,
+    public static PdfShading simpleAxial(PdfWriter writer, Coordinates coords, ColorPair colors, boolean extendStart,
+            boolean extendEnd) {
+        checkCompatibleColors(colors.getStartColor(), colors.getEndColor());
+        PdfFunction function = PdfFunction.type2(writer, new float[]{0, 1}, null, getColorArray(colors.getStartColor()),
+                getColorArray(colors.getEndColor()), 1);
+        return type2(writer, colors.getStartColor(), new float[]{coords.getX0(), coords.getY0(), coords.getX1(), coords.getY1()}, null, function,
                 new boolean[]{extendStart, extendEnd});
     }
 
-    public static PdfShading simpleAxial(PdfWriter writer, float x0, float y0, float x1, float y1, Color startColor,
-            Color endColor) {
-        return simpleAxial(writer, x0, y0, x1, y1, startColor, endColor, true, true);
+    public static PdfShading simpleAxial(PdfWriter writer, Coordinates coords, ColorPair colors) {
+        return simpleAxial(writer, coords, colors, true, true);
     }
 
-    public static PdfShading simpleRadial(PdfWriter writer, float x0, float y0, float r0, float x1, float y1, float r1,
-            Color startColor, Color endColor, boolean extendStart, boolean extendEnd) {
-        checkCompatibleColors(startColor, endColor);
-        PdfFunction function = PdfFunction.type2(writer, new float[]{0, 1}, null, getColorArray(startColor),
-                getColorArray(endColor), 1);
-        return type3(writer, startColor, new float[]{x0, y0, r0, x1, y1, r1}, null, function,
+    public static PdfShading simpleRadial(PdfWriter writer, RadialCoordinates coords, ColorPair colors, boolean extendStart, boolean extendEnd) {
+        checkCompatibleColors(colors.getStartColor(), colors.getEndColor());
+        PdfFunction function = PdfFunction.type2(writer, new float[]{0, 1}, null, getColorArray(colors.getStartColor()),
+                getColorArray(colors.getEndColor()), 1);
+        return type3(writer, colors.getStartColor(), new float[]{coords.getX0(), coords.getY0(), coords.getR0(), coords.getX1(), coords.getY1(), coords.getR1()}, null, function,
                 new boolean[]{extendStart, extendEnd});
     }
 
-    public static PdfShading simpleRadial(PdfWriter writer, float x0, float y0, float r0, float x1, float y1, float r1,
-            Color startColor, Color endColor) {
-        return simpleRadial(writer, x0, y0, r0, x1, y1, r1, startColor, endColor, true, true);
+    public static PdfShading simpleRadial(PdfWriter writer, RadialCoordinates coords, ColorPair colors) {
+        return simpleRadial(writer, coords, colors, true, true);
     }
 
     public Color getColorSpace() {

@@ -3,6 +3,8 @@ package com.lowagie.examples.directcontent;
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.ColorPair;
+import com.lowagie.text.pdf.Coordinates;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfShading;
@@ -37,10 +39,12 @@ public class GradientBackgroundPageEvent {
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
             Rectangle pageSize = document.getPageSize();
-            PdfShading axial = PdfShading.simpleAxial(writer,
-                    pageSize.getLeft(pageSize.getWidth() / 10), pageSize.getBottom(),
-                    pageSize.getRight(pageSize.getWidth() / 10), pageSize.getBottom(),
-                    new Color(50, 55, 190), new Color(0, 180, 250), true, true);
+            Coordinates coords = new Coordinates(pageSize.getLeft(pageSize.getWidth() / 10),
+                    pageSize.getBottom(), pageSize.getRight(pageSize.getWidth() / 10),
+                    pageSize.getBottom());
+            ColorPair colors = new ColorPair(new Color(50, 55, 190), new Color(0, 180, 250));
+            PdfShading axial = PdfShading.simpleAxial(writer, coords,
+                    colors, true, true);
             PdfContentByte canvas = writer.getDirectContentUnder();
             canvas.paintShading(axial);
         }

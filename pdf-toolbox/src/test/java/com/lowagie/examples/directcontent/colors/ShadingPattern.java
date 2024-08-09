@@ -16,10 +16,13 @@ package com.lowagie.examples.directcontent.colors;
 import com.lowagie.text.Document;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.ColorPair;
+import com.lowagie.text.pdf.Coordinates;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfShading;
 import com.lowagie.text.pdf.PdfShadingPattern;
 import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.RadialCoordinates;
 import java.awt.Color;
 import java.io.FileOutputStream;
 
@@ -40,7 +43,9 @@ public class ShadingPattern {
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("shading_pattern.pdf"));
             document.open();
 
-            PdfShading shading = PdfShading.simpleAxial(writer, 100, 100, 400, 100, Color.red, Color.cyan);
+            ColorPair colors = new ColorPair(Color.red, Color.cyan);
+            Coordinates coords = new Coordinates(100, 100, 400, 100);
+            PdfShading shading = PdfShading.simpleAxial(writer, coords, colors);
             PdfShadingPattern shadingPattern = new PdfShadingPattern(shading);
             PdfContentByte cb = writer.getDirectContent();
             BaseFont bf = BaseFont.createFont(BaseFont.TIMES_BOLD, BaseFont.WINANSI, false);
@@ -50,8 +55,9 @@ public class ShadingPattern {
             cb.setFontAndSize(bf, 40);
             cb.showText("Look at this text!");
             cb.endText();
-            PdfShading shadingR = PdfShading.simpleRadial(writer, 200, 500, 50, 300, 500, 100, new Color(255, 247, 148),
-                    new Color(247, 138, 107), false, false);
+            RadialCoordinates rCoords = new RadialCoordinates(200, 500, 50, 300, 500, 100);
+            ColorPair rColors = new ColorPair(new Color(255, 247, 148), new Color(247, 138, 107));
+            PdfShading shadingR = PdfShading.simpleRadial(writer, rCoords, rColors, false, false);
             cb.paintShading(shadingR);
             cb.sanityCheck();
             document.close();

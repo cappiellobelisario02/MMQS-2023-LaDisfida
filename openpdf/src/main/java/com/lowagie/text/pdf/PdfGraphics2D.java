@@ -439,7 +439,6 @@ public class PdfGraphics2D extends Graphics2D {
             }
             if (underline) {
                 // These two are supposed to be taken from the .AFM file
-                int UnderlinePosition = -100;
                 int UnderlineThickness = 50;
                 //
                 double d = asPoints(UnderlineThickness, (int) fontSize);
@@ -737,7 +736,6 @@ public class PdfGraphics2D extends Graphics2D {
                 cb.setLiteral("[]0 d\n");
             } else {
                 cb.setLiteral('[');
-                int lim = dash.length;
                 for (float dash1 : dash) {
                     cb.setLiteral(dash1);
                     cb.setLiteral(' ');
@@ -1155,6 +1153,7 @@ public class PdfGraphics2D extends Graphics2D {
     /**
      * @see Graphics#fillRect(int, int, int, int)
      */
+    @Override
     public void drawRect(int x, int y, int width, int height) {
         draw(new Rectangle(x, y, width, height));
     }
@@ -1537,7 +1536,6 @@ public class PdfGraphics2D extends Graphics2D {
                 ios.close();
 
                 scaled.flush();
-                scaled = null;
                 image = com.lowagie.text.Image.getInstance(baos.toByteArray());
 
             }
@@ -1618,10 +1616,10 @@ public class PdfGraphics2D extends Graphics2D {
             transform.transform(p1, p1);
             Point2D p2 = gp.getPoint2();
             transform.transform(p2, p2);
-            Color c1 = gp.getColor1();
-            Color c2 = gp.getColor2();
-            PdfShading shading = PdfShading.simpleAxial(cb.getPdfWriter(), (float) p1.getX(),
-                    normalizeY((float) p1.getY()), (float) p2.getX(), normalizeY((float) p2.getY()), c1, c2);
+            Coordinates coords = new Coordinates((float) p1.getX(), normalizeY((float) p1.getY()),
+                    (float) p2.getX(), normalizeY((float) p2.getY()));
+            ColorPair colors = new ColorPair(gp.getColor1(), gp.getColor2());
+            PdfShading shading = PdfShading.simpleAxial(cb.getPdfWriter(), coords, colors);
             PdfShadingPattern pat = new PdfShadingPattern(shading);
             if (fill) {
                 cb.setShadingFill(pat);
@@ -1678,7 +1676,6 @@ public class PdfGraphics2D extends Graphics2D {
                     g.drawImage(img, tx, null);
                 }
                 g.dispose();
-                g = null;
                 com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
                 PdfPatternPainter pattern = cb.createPattern(width, height);
                 image.setAbsolutePosition(0, 0);
@@ -1717,7 +1714,8 @@ public class PdfGraphics2D extends Graphics2D {
         try {
             mediaTracker.waitForID(0);
         } catch (InterruptedException e) {
-            // empty on purpose
+            // Re-interrupt the current thread
+            Thread.currentThread().interrupt();
         }
         mediaTracker.removeImage(image);
     }
