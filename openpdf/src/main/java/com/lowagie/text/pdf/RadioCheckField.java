@@ -150,25 +150,41 @@ public class RadioCheckField extends BaseField {
      *
      * @return the appearance
      */
-    public static PdfAppearance getAppearance(boolean on, PdfWriter writer, int checkType, int rotation,
-            int borderStyle, Rectangle box, float borderWidth, float fontSize, String text, Color textColor,
-            Color backgroundColor, Color borderColor, BaseFont ufont) {
+    public static PdfAppearance getAppearance(boolean on, PdfWriter writer, BorderSettings borderSettings,
+            RadioCheckFieldAppearanceSettings appearanceSettings) {
+        int checkType = appearanceSettings.getRCFCheckType();
+        int rotation = appearanceSettings.getRCFRotation();
+        Rectangle box = appearanceSettings.getRCFBox();
+        Color backgroundColor = appearanceSettings.getRCFBackgroundColor();
+        float borderWidth = borderSettings.getBorderWidth();
+        Color borderColor = borderSettings.getBorderColor();
+        int borderStyle = borderSettings.getBorderStyle();
+        Color textColor = appearanceSettings.getRCFTextColor();
+        String text = appearanceSettings.getRCFText();
+        float fontSize = appearanceSettings.getRCFFontSize();
+        BaseFont ufont = appearanceSettings.getRCF_Ufont();
+
         if (checkType == TYPE_CIRCLE) {
-            return getAppearanceRadioCircle(on, writer, box, rotation, backgroundColor, borderWidth, borderColor,
-                    textColor);
+            RadioCheckFieldAppearanceSettings settings = new RadioCheckFieldAppearanceSettings(0, rotation, box,
+                    0, null, textColor, backgroundColor, null);
+            BorderSettings borderSettings1 = new BorderSettings(0, borderWidth, borderColor);
+            return getAppearanceRadioCircle(on, writer, settings, borderSettings1);
         } else if (checkType == TYPE_CROSS) {
-            return getAppearanceRadioCross(on, writer, box, rotation, backgroundColor, borderWidth, borderColor,
-                    textColor);
+            RadioCheckFieldAppearanceSettings settings = new RadioCheckFieldAppearanceSettings(0, rotation, box,
+                    0, null, textColor, backgroundColor, null);
+            BorderSettings borderSettings1 = new BorderSettings(0, borderWidth, borderColor);
+            return getAppearanceRadioCross(on, writer, settings, borderSettings1);
         }
 
-        //setting last two parameters (options and maxlength) to 0 since those are only valid for textfields
-        PdfAppearance app = getBorderAppearance(writer, box, rotation, backgroundColor, borderStyle, borderWidth,
-                borderColor, 0, 0);
+        BoxSettings settings = new BoxSettings(box, rotation);
+        AppearanceSettings baseFieldAppearanceSettings = new AppearanceSettings(backgroundColor, borderStyle,
+                borderWidth, borderColor, 0, 0);
+        PdfAppearance app = getBorderAppearance(writer, settings, baseFieldAppearanceSettings);
         if (!on) {
             return app;
         }
-        boolean borderExtra =
-                borderStyle == PdfBorderDictionary.STYLE_BEVELED || borderStyle == PdfBorderDictionary.STYLE_INSET;
+
+        boolean borderExtra = borderStyle == PdfBorderDictionary.STYLE_BEVELED || borderStyle == PdfBorderDictionary.STYLE_INSET;
         float h = box.getHeight() - borderWidth * 2;
         float bw2 = borderWidth;
         if (borderExtra) {
@@ -210,14 +226,23 @@ public class RadioCheckField extends BaseField {
         return app;
     }
 
+
     /**
      * Gets the special field appearance for the radio circle.
      *
      * @param on <CODE>true</CODE> for the checked state otherwise, <CODE>false</CODE>
      * @return the appearance
      */
-    public static PdfAppearance getAppearanceRadioCircle(boolean on, PdfWriter writer, Rectangle box, int rotation,
-            Color backgroundColor, float borderWidth, Color borderColor, Color textColor) {
+    public static PdfAppearance getAppearanceRadioCircle(boolean on, PdfWriter writer,
+            RadioCheckFieldAppearanceSettings settings, BorderSettings borderSettings) {
+        
+        Rectangle box = settings.getRCFBox();
+        int rotation = settings.getRCFRotation();
+        Color backgroundColor = settings.getRCFBackgroundColor();
+        Color textColor = settings.getRCFTextColor();
+        float borderWidth = borderSettings.getBorderWidth();
+        Color borderColor = borderSettings.getBorderColor();
+        
         PdfAppearance app = PdfAppearance.createAppearance(writer, box.getWidth(), box.getHeight());
         switch (rotation) {
             case 90:
@@ -270,9 +295,16 @@ public class RadioCheckField extends BaseField {
      *           otherwise
      * @return the appearance
      */
-    public static PdfAppearance getAppearanceRadioCross(boolean on, PdfWriter writer, Rectangle box, int rotation,
-            Color backgroundColor, float borderWidth, Color borderColor, Color textColor) {
-
+    public static PdfAppearance getAppearanceRadioCross(boolean on, PdfWriter writer,
+            RadioCheckFieldAppearanceSettings settings, BorderSettings borderSettings) {
+        
+        Rectangle box = settings.getRCFBox();
+        int rotation = settings.getRCFRotation();
+        Color backgroundColor = settings.getRCFBackgroundColor();
+        Color textColor = settings.getRCFTextColor();
+        float borderWidth = borderSettings.getBorderWidth();
+        Color borderColor = borderSettings.getBorderColor();
+        
         PdfAppearance app = PdfAppearance.createAppearance(writer, box.getWidth(), box.getHeight());
         switch (rotation) {
             case 90:
@@ -529,12 +561,11 @@ public class RadioCheckField extends BaseField {
             field.setMKRotation(rotation);
         }
         field.setBorderStyle(new PdfBorderDictionary(borderWidth, borderStyle, new PdfDashPattern(3)));
-        PdfAppearance tpon = getAppearance(true, super.writer, this.checkType, super.rotation, super.borderStyle,
-                super.box, super.borderWidth, super.fontSize, super.text, super.textColor,
-                super.backgroundColor, super.borderColor, super.getRealFont());
-        PdfAppearance tpoff = getAppearance(false, super.writer, this.checkType, super.rotation, super.borderStyle,
-                super.box, super.borderWidth, super.fontSize, super.text, super.textColor,
-                super.backgroundColor, super.borderColor, super.getRealFont());
+        BorderSettings borderSettings = new BorderSettings(super.borderStyle, super.borderWidth, super.borderColor);
+        RadioCheckFieldAppearanceSettings appearanceSettings = new RadioCheckFieldAppearanceSettings(this.checkType, super.rotation, super.box,
+                super.fontSize, super.text, super.textColor, super.backgroundColor, super.getRealFont());
+        PdfAppearance tpon = getAppearance(true, super.writer, borderSettings, appearanceSettings);
+        PdfAppearance tpoff = getAppearance(false, super.writer, borderSettings, appearanceSettings);
         field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, onValue, tpon);
         field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, "Off", tpoff);
         field.setAppearanceState(checked ? onValue : "Off");
