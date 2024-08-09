@@ -32,6 +32,7 @@
 package com.lowagie.text.pdf.parser;
 
 import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.parser.Word.Builder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -217,15 +218,11 @@ public class MarkedUpTextAssembler implements TextAssembler {
             }
             inProgress = partialWord;
         } else if (spacing < partialWord.getSingleSpaceWidth() / 2.3 || inProgress.shouldNotSplit()) {
-            inProgress = new Word(inProgress.getText() + partialWord.getText().trim(),
-                    partialWord.getAscent(),
-                    partialWord.getDescent(),
-                    lastStart,
-                    partialWord.getEndPoint(),
-                    inProgress.getBaseline(),
-                    partialWord.getSingleSpaceWidth(),
-                    inProgress.shouldNotSplit(),
-                    inProgress.breakBefore());
+            Builder inProgressBuilder = new Builder(inProgress.getText() + partialWord.getText().trim(),
+                    partialWord.getAscent(), partialWord.getDescent(), lastStart, partialWord.getEndPoint(),
+                    inProgress.getBaseline(), partialWord.getSingleSpaceWidth());
+            inProgress = new Word(inProgressBuilder);
+
         } else {
             result.add(inProgress.getFinalText(reader, page, this, usePdfMarkupElements));
             inProgress = partialWord;

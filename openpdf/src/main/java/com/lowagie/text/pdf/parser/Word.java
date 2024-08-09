@@ -73,11 +73,10 @@ public class Word extends ParsedTextImpl {
      * @param isCompleteWord word should never be split
      * @param breakBefore    word starts here, should never combine to the left.
      */
-    Word(String text, float ascent, float descent, Vector startPoint,
-            Vector endPoint, Vector baseline, float spaceWidth, boolean isCompleteWord, boolean breakBefore) {
-        super(text, startPoint, endPoint, baseline, ascent, descent, spaceWidth);
-        shouldNotSplit = isCompleteWord;
-        this.breakBefore = breakBefore;
+    Word(Builder builder) {
+        super(builder.text, builder.startPoint, builder.endPoint, builder.baseline, builder.ascent, builder.descent, builder.spaceWidth);
+        shouldNotSplit = builder.isCompleteWord;
+        breakBefore = builder.breakBefore;
     }
 
     private static String formatPercent(float f) {
@@ -211,5 +210,41 @@ public class Word extends ParsedTextImpl {
     @Override
     public boolean breakBefore() {
         return breakBefore;
+    }
+
+    public static class Builder {
+        private final String text;
+        private final float ascent;
+        private final float descent;
+        private final Vector startPoint;
+        private final Vector endPoint;
+        private final Vector baseline;
+        private final float spaceWidth;
+        private boolean isCompleteWord;
+        private boolean breakBefore;
+
+        public Builder(String text, float ascent, float descent, Vector startPoint, Vector endPoint, Vector baseline, float spaceWidth) {
+            this.text = text;
+            this.ascent = ascent;
+            this.descent = descent;
+            this.startPoint = startPoint;
+            this.endPoint = endPoint;
+            this.baseline = baseline;
+            this.spaceWidth = spaceWidth;
+        }
+
+        public Builder isCompleteWord(boolean isCompleteWord) {
+            this.isCompleteWord = isCompleteWord;
+            return this;
+        }
+
+        public Builder breakBefore(boolean breakBefore) {
+            this.breakBefore = breakBefore;
+            return this;
+        }
+
+        public Word build() {
+            return new Word(this);
+        }
     }
 }

@@ -48,6 +48,7 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.CMapAwareDocumentFont;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfString;
+import com.lowagie.text.pdf.parser.Word.Builder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -339,10 +340,13 @@ public class ParsedText extends ParsedTextImpl {
             Vector baseline,
             boolean wordsAreComplete,
             boolean currentBreakBefore) {
-        return new Word(graphicsState.getFont().decode(wordAccum.toString()), getAscent(), getDescent(),
+        Builder builder = new Builder(graphicsState.getFont().decode(wordAccum.toString()), getAscent(), getDescent(),
                 pointToUserSpace(wordStartOffset, 0f, textToUserSpaceTransformMatrix),
                 pointToUserSpace(wordEndOffset, 0f, textToUserSpaceTransformMatrix), baseline,
-                getSingleSpaceWidth(), wordsAreComplete, currentBreakBefore);
+                getSingleSpaceWidth());
+        builder.isCompleteWord(wordsAreComplete);
+        builder.breakBefore(currentBreakBefore);
+        return new Word(builder);
     }
 
     /**
