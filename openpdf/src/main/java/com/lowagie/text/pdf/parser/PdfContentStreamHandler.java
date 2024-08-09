@@ -60,7 +60,9 @@ import com.lowagie.text.pdf.PdfStream;
 import com.lowagie.text.pdf.PdfString;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -74,8 +76,8 @@ import java.util.Stack;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class PdfContentStreamHandler {
 
-    private final Stack<List<TextAssemblyBuffer>> textFragmentStreams = new Stack<>();
-    private final Stack<String> contextNames = new Stack<>();
+    private final Deque<List<TextAssemblyBuffer>> textFragmentStreams = new ArrayDeque<>();
+    private final Deque<String> contextNames = new ArrayDeque<>();
     /**
      * detail parser for text within a marked section. used by TextAssembler
      */
@@ -87,7 +89,7 @@ public class PdfContentStreamHandler {
     /**
      * Stack keeping track of the graphics state.
      */
-    private Stack<GraphicsState> gsStack;
+    private Deque<GraphicsState> gsStack;
     /**
      * Text matrix.
      */
@@ -238,7 +240,7 @@ public class PdfContentStreamHandler {
 
     public void reset() {
         if (gsStack == null || gsStack.isEmpty()) {
-            gsStack = new Stack<>();
+            gsStack = new ArrayDeque<>();
         }
         gsStack.add(new GraphicsState());
         textMatrix = null;

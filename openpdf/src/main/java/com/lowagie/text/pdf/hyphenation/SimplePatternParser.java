@@ -79,7 +79,7 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
     static final int ELEM_HYPHEN = 4;
     int currElement;
     PatternConsumer consumer;
-    StringBuffer token;
+    StringBuilder token;
     List<Object> exception;
     char hyphenChar;
     SimpleXMLParser parser;
@@ -88,7 +88,7 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
      * Creates a new instance of PatternParser2
      */
     public SimplePatternParser() {
-        token = new StringBuffer();
+        token = new StringBuilder();
         hyphenChar = '-'; // default
     }
 

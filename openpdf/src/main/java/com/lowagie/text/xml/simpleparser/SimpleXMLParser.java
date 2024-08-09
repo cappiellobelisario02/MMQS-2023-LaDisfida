@@ -52,6 +52,8 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -78,16 +80,16 @@ public final class SimpleXMLParser {
      * possible states
      */
     private final static int UNKNOWN = 0;
-    private final static int text = 1;
+    private final static int TEXT = 1;
     private final static int TAG_ENCOUNTERED = 2;
     private final static int EXAMIN_TAG = 3;
     private final static int TAG_EXAMINED = 4;
     private final static int IN_CLOSETAG = 5;
     private final static int SINGLE_TAG = 6;
     private final static int CDATA = 7;
-    private final static int comment = 8;
+    private final static int COMMENT = 8;
     private final static int PI = 9;
-    private final static int entity = 10;
+    private final static int ENTITY = 10;
     private final static int QUOTE = 11;
     private final static int ATTRIBUTE_KEY = 12;
     private final static int ATTRIBUTE_EQUAL = 13;
@@ -96,7 +98,7 @@ public final class SimpleXMLParser {
     /**
      * the state stack
      */
-    Stack<Integer> stack;
+    Deque<Integer> stack;
     /**
      * The current character.
      */
@@ -135,11 +137,11 @@ public final class SimpleXMLParser {
     /**
      * current text (whatever is encountered between tags)
      */
-    StringBuffer text = new StringBuffer();
+    StringBuilder textSB = new StringBuilder();
     /**
      * current entity (whatever is encountered between & and ;)
      */
-    StringBuffer entity = new StringBuffer();
+    StringBuilder entitySB = new StringBuilder();
     /**
      * current tagname
      */
@@ -180,7 +182,7 @@ public final class SimpleXMLParser {
         this.doc = doc;
         this.comment = comment;
         this.html = html;
-        stack = new Stack<>();
+        stack = new ArrayDeque<>();
         state = html ? TEXT : UNKNOWN;
     }
 
@@ -376,16 +378,16 @@ public final class SimpleXMLParser {
                         state = TAG_ENCOUNTERED;
                     } else if (character == '&') {
                         saveState(state);
-                        entity.setLength(0);
+                        entitySB.setLength(0);
                         state = ENTITY;
                         nowhite = true;
                     } else if (Character.isWhitespace((char) character)) {
                         if (nowhite) {
-                            text.append((char) character);
+                            textSB.append((char) character);
                         }
                         nowhite = false;
                     } else {
-                        text.append((char) character);
+                        textSB.append((char) character);
                         nowhite = true;
                     }
                     break;
@@ -399,7 +401,7 @@ public final class SimpleXMLParser {
                         restoreState();
                         state = PI;
                     } else {
-                        text.append((char) character);
+                        textSB.append((char) character);
                         state = EXAMIN_TAG;
                     }
                     break;
@@ -413,20 +415,20 @@ public final class SimpleXMLParser {
                         state = restoreState();
                     } else if (character == '/') {
                         state = SINGLE_TAG;
-                    } else if (character == '-' && text.toString().equals("!-")) {
+                    } else if (character == '-' && textSB.toString().equals("!-")) {
                         flush();
                         state = COMMENT;
-                    } else if (character == '[' && text.toString().equals("![CDATA")) {
+                    } else if (character == '[' && textSB.toString().equals("![CDATA")) {
                         flush();
                         state = CDATA;
-                    } else if (character == 'E' && text.toString().equals("!DOCTYP")) {
+                    } else if (character == 'E' && textSB.toString().equals("!DOCTYP")) {
                         flush();
                         state = PI;
                     } else if (Character.isWhitespace((char) character)) {
                         doTag();
                         state = TAG_EXAMINED;
                     } else {
-                        text.append((char) character);
+                        textSB.append((char) character);
                     }
                     break;
                 // we know the name of the tag now.
@@ -440,7 +442,7 @@ public final class SimpleXMLParser {
                     } else if (Character.isWhitespace((char) character)) {
                         // empty
                     } else {
-                        text.append((char) character);
+                        textSB.append((char) character);
                         state = ATTRIBUTE_KEY;
                     }
                     break;
@@ -456,7 +458,7 @@ public final class SimpleXMLParser {
                         state = restoreState();
                     } else {
                         if (!Character.isWhitespace((char) character)) {
-                            text.append((char) character);
+                            textSB.append((char) character);
                         }
                     }
                     break;
@@ -481,12 +483,12 @@ public final class SimpleXMLParser {
                 // we are processing CDATA
                 case CDATA:
                     if (character == '>'
-                            && text.toString().endsWith("]]")) {
-                        text.setLength(text.length() - 2);
+                            && textSB.toString().endsWith("]]")) {
+                        textSB.setLength(textSB.length() - 2);
                         flush();
                         state = restoreState();
                     } else {
-                        text.append((char) character);
+                        textSB.append((char) character);
                     }
                     break;
 
@@ -494,12 +496,12 @@ public final class SimpleXMLParser {
                 // the <!-- .... --> looking for the -->.
                 case COMMENT:
                     if (character == '>'
-                            && text.toString().endsWith("--")) {
-                        text.setLength(text.length() - 2);
+                            && textSB.toString().endsWith("--")) {
+                        textSB.setLength(textSB.length() - 2);
                         flush();
                         state = restoreState();
                     } else {
-                        text.append((char) character);
+                        textSB.append((char) character);
                     }
                     break;
 
@@ -517,23 +519,23 @@ public final class SimpleXMLParser {
                 case ENTITY:
                     if (character == ';') {
                         state = restoreState();
-                        String cent = entity.toString();
-                        entity.setLength(0);
+                        String cent = entitySB.toString();
+                        entitySB.setLength(0);
                         char ce = EntitiesToUnicode.decodeEntity(cent);
                         if (ce == '\0') {
-                            text.append('&').append(cent).append(';');
+                            textSB.append('&').append(cent).append(';');
                         } else {
-                            text.append(ce);
+                            textSB.append(ce);
                         }
                     } else if ((character != '#' && (character < '0' || character > '9') && (character < 'a'
                             || character > 'z')
-                            && (character < 'A' || character > 'Z')) || entity.length() >= 7) {
+                            && (character < 'A' || character > 'Z')) || entitySB.length() >= 7) {
                         state = restoreState();
                         previousCharacter = character;
-                        text.append('&').append(entity.toString());
-                        entity.setLength(0);
+                        textSB.append('&').append(entitySB.toString());
+                        entitySB.setLength(0);
                     } else {
-                        entity.append((char) character);
+                        entitySB.append((char) character);
                     }
                     break;
                 // We are processing the quoted right-hand side of an element's attribute.
@@ -547,18 +549,18 @@ public final class SimpleXMLParser {
                         flush();
                         state = TAG_EXAMINED;
                     } else if (html && quoteCharacter == ' ') {
-                        text.append((char) character);
+                        textSB.append((char) character);
                     } else if (character == quoteCharacter) {
                         flush();
                         state = TAG_EXAMINED;
                     } else if (" \r\n\t".indexOf(character) >= 0) {
-                        text.append(' ');
+                        textSB.append(' ');
                     } else if (character == '&') {
                         saveState(state);
                         state = ENTITY;
-                        entity.setLength(0);
+                        entitySB.setLength(0);
                     } else {
-                        text.append((char) character);
+                        textSB.append((char) character);
                     }
                     break;
 
@@ -570,12 +572,12 @@ public final class SimpleXMLParser {
                         flush();
                         state = ATTRIBUTE_VALUE;
                     } else if (html && character == '>') {
-                        text.setLength(0);
+                        textSB.setLength(0);
                         processTag(true);
                         initTag();
                         state = restoreState();
                     } else {
-                        text.append((char) character);
+                        textSB.append((char) character);
                     }
                     break;
 
@@ -585,7 +587,7 @@ public final class SimpleXMLParser {
                     } else if (Character.isWhitespace((char) character)) {
                         // empty
                     } else if (html && character == '>') {
-                        text.setLength(0);
+                        textSB.setLength(0);
                         processTag(true);
                         initTag();
                         state = restoreState();
@@ -594,7 +596,7 @@ public final class SimpleXMLParser {
                         state = SINGLE_TAG;
                     } else if (html) {
                         flush();
-                        text.append((char) character);
+                        textSB.append((char) character);
                         state = ATTRIBUTE_KEY;
                     } else {
                         throwException(MessageLocalization.getComposedMessage("error.in.attribute.processing"));
@@ -613,7 +615,7 @@ public final class SimpleXMLParser {
                         initTag();
                         state = restoreState();
                     } else if (html) {
-                        text.append((char) character);
+                        textSB.append((char) character);
                         quoteCharacter = ' ';
                         state = QUOTE;
                     } else {
@@ -630,7 +632,7 @@ public final class SimpleXMLParser {
      * @return the previous state
      */
     private int restoreState() {
-        if (!stack.empty()) {
+        if (!stack.isEmpty()) {
             return stack.pop();
         } else {
             return UNKNOWN;
@@ -654,30 +656,30 @@ public final class SimpleXMLParser {
         switch (state) {
             case TEXT:
             case CDATA:
-                if (text.length() > 0) {
-                    doc.text(text.toString());
+                if (textSB.length() > 0) {
+                    doc.text(textSB.toString());
                 }
                 break;
             case COMMENT:
                 if (comment != null) {
-                    comment.comment(text.toString());
+                    comment.comment(textSB.toString());
                 }
                 break;
             case ATTRIBUTE_KEY:
-                attributekey = text.toString();
+                attributekey = textSB.toString();
                 if (html) {
                     attributekey = attributekey.toLowerCase();
                 }
                 break;
             case QUOTE:
             case ATTRIBUTE_VALUE:
-                attributevalue = text.toString();
+                attributevalue = textSB.toString();
                 attributes.put(attributekey, attributevalue);
                 break;
             default:
                 // do nothing
         }
-        text.setLength(0);
+        textSB.setLength(0);
     }
 
     /**
@@ -693,12 +695,12 @@ public final class SimpleXMLParser {
      */
     private void doTag() {
         if (tag == null) {
-            tag = text.toString();
+            tag = textSB.toString();
         }
         if (html) {
             tag = tag.toLowerCase();
         }
-        text.setLength(0);
+        textSB.setLength(0);
     }
 
     /**

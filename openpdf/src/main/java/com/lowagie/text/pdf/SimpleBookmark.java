@@ -60,7 +60,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -108,7 +110,7 @@ import java.util.StringTokenizer;
  */
 public final class SimpleBookmark implements SimpleXMLDocHandler {
 
-    private final Stack<Map<String, Object>> attr = new Stack<>();
+    private final Deque<Map<String, Object>> attr = new ArrayDeque<>();
     private List<Map<String, Object>> topList;
 
     /**

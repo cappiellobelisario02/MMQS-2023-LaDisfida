@@ -398,7 +398,7 @@ public class TextField extends BaseField {
                     Chunk ck = (Chunk) o;
                     BaseFont bf = ck.getFont().getBaseFont();
                     app.setFontAndSize(bf, usize);
-                    StringBuffer sb = ck.append("");
+                    StringBuilder sb = ck.append("");
                     for (int j = 0; j < sb.length(); ++j) {
                         String c = sb.substring(j, j + 1);
                         float wd = bf.getWidthPoint(c, usize);

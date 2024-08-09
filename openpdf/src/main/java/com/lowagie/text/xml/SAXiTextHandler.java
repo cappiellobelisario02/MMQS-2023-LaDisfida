@@ -76,8 +76,10 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.draw.LineSeparator;
 import com.lowagie.text.xml.simpleparser.EntitiesToSymbol;
 import java.lang.reflect.Field;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EmptyStackException;
 import java.util.Map;
 import java.util.Properties;
@@ -100,7 +102,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
     /**
      * This is a <CODE>Stack</CODE> of objects, waiting to be added to the document.
      */
-    protected Stack<Element> stack;
+    protected Deque<Element> stack;
 
     /**
      * Counts the number of chapters in this document.
@@ -147,7 +149,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
      */
     public SAXiTextHandler(DocListener document) {
         this.document = document;
-        stack = new Stack<>();
+        stack = new ArrayDeque<>();
     }
 
     /**
@@ -474,7 +476,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
         }
 
     }
-    
+
     private void addingImage (Image img) {
         try {
             addImage(img);
@@ -488,7 +490,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             }
         }
     }
-    
+
     private void modifyTextElementArrayIntoStack(Annotation annotation) {
         try {
             TextElementArray current = (TextElementArray) stack.pop();
@@ -498,7 +500,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             document.add(annotation);
         }
     }
-    
+
     private void addAnnotationToTextElementArray(TextElementArray current, Annotation annotation){
         try {
             current.add(annotation);
@@ -762,7 +764,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             throw new ExceptionConverter(de);
         }
     }
-    
+
     private TextElementArray updateTextElementArray(){
         try {
              return (TextElementArray) stack.pop();
@@ -770,7 +772,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             return new Paragraph();
         }
     }
-    
+
     private void addTextElementArrayWithElementIntoStack(Element current){
         try {
             TextElementArray previous = (TextElementArray) stack.pop();
@@ -780,7 +782,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             document.add(current);
         }
     }
-    
+
     private void addTextElementArrayWithTableIntoStack(Table table){
         try {
             TextElementArray previous = (TextElementArray) stack.pop();
@@ -790,7 +792,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             document.add(table);
         }
     }
-    
+
     private float calculateTotalCellWidth(float total, float[] cellWidths, int j, int columns){
         try {
             cellWidths[j] = 100.0f / columns;
@@ -801,7 +803,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             // empty on purpose
         }
     }
-    
+
     private float calculateTotalAndUpdateCellNulls(float total, String width, float[] cellWidths,
             boolean[] cellNulls, int j){
         try {
@@ -814,7 +816,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             // empty on purpose
         }
     }
-    
+
     private void updateStackWithTextElementArraysAndElements(){
         try {
             while (true) {
@@ -845,7 +847,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             stack.push(current);
         } else {
             // ...if not, we need to to a lot of stuff
-            Stack<Element> newStack = new Stack<>();
+            Deque<Element> newStack = new ArrayDeque<>();
             while (!(current instanceof Section || current instanceof Cell)) {
                 newStack.push(current);
                 if (current instanceof Anchor) {
@@ -856,7 +858,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             }
             ((TextElementArray) current).add(img);
             stack.push(current);
-            while (!newStack.empty()) {
+            while (!newStack.isEmpty()) {
                 stack.push(newStack.pop());
             }
         }

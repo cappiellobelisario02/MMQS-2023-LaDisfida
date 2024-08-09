@@ -17,6 +17,8 @@
 package com.lowagie.text.pdf.hyphenation;
 
 import java.io.Serializable;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.Stack;
 import java.util.logging.Logger;
@@ -464,21 +466,21 @@ public class TernaryTree implements Cloneable, Serializable {
         /**
          * Node stack
          */
-        Stack<Item> ns;
+        Deque<Item> ns;
         /**
          * key stack implemented with a StringBuffer
          */
-        StringBuffer ks;
+        StringBuilder ks;
 
         public Iterator() {
             cur = -1;
-            ns = new Stack<>();
-            ks = new StringBuffer();
+            ns = new ArrayDeque<>();
+            ks = new StringBuilder();
             rewind();
         }
 
         public void rewind() {
-            ns.removeAllElements();
+            ns.clear();
             ks.setLength(0);
             cur = root;
             run();
@@ -510,7 +512,7 @@ public class TernaryTree implements Cloneable, Serializable {
             Item i = new Item();
             int res = 0;
 
-            if (ns.empty()) {
+            if (ns.isEmpty()) {
                 return -1;
             }
 
@@ -547,7 +549,7 @@ public class TernaryTree implements Cloneable, Serializable {
                         break;
 
                     default:
-                        if (ns.empty()) {
+                        if (ns.isEmpty()) {
                             return -1;
                         }
                         climb = true;

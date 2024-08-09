@@ -96,7 +96,7 @@ public class LangAlt extends Properties {
      * @param buf  buffer
      * @param lang object
      */
-    protected void process(StringBuffer buf, Object lang) {
+    protected void process(StringBuilder buf, Object lang) {
         buf.append("<rdf:li xml:lang=\"");
         buf.append(lang);
         buf.append("\" >");
@@ -109,7 +109,7 @@ public class LangAlt extends Properties {
      */
     @Override
     public synchronized String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("<rdf:Alt>");
         for (Enumeration<?> e = this.propertyNames(); e.hasMoreElements(); ) {
             process(sb, e.nextElement());

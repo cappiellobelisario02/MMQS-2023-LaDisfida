@@ -1,7 +1,12 @@
+package com.lowagie.text.pdf.hyphenation;
+
 import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.hyphenation.HyphenationTree;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -18,7 +23,7 @@ public class Hyphenator {
     /**
      * TODO: Don't use statics
      */
-    private static Map<String, HyphenationTree> hyphenTrees = new Hashtable<>();
+    private static Map<String, HyphenationTree> hyphenTrees = new HashMap<>();
     /**
      * Holds value of property hyphenDir.
      */
