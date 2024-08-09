@@ -67,6 +67,7 @@ import com.lowagie.text.exceptions.InvalidColorTypeException;
 import com.lowagie.text.exceptions.InvalidPatternTemplateException;
 import com.lowagie.text.exceptions.NotEqualWritersException;
 import com.lowagie.text.exceptions.ZeroValueException;
+import com.lowagie.text.pdf.PdfPrinterGraphics2D.Builder;
 import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import java.awt.Color;
@@ -3183,7 +3184,8 @@ public class PdfContentByte {
      * @return a <CODE>Graphics2D</CODE>
      */
     public java.awt.Graphics2D createPrinterGraphicsShapes(float width, float height, PrinterJob printerJob) {
-        return new PdfPrinterGraphics2D(this, width, height, null, true, false, 0, printerJob);
+        Builder builder = new Builder(this, width, height, null, true, false, 0);
+        return new PdfPrinterGraphics2D(builder.build(printerJob));
     }
 
     /**
@@ -3206,7 +3208,8 @@ public class PdfContentByte {
      * @return a <CODE>Graphics2D</CODE>
      */
     public java.awt.Graphics2D createPrinterGraphics(float width, float height, PrinterJob printerJob) {
-        return new PdfPrinterGraphics2D(this, width, height, null, false, false, 0, printerJob);
+        Builder builder = new Builder(this, width, height, null, false, false, 0);
+        return new PdfPrinterGraphics2D(builder.build(printerJob));
     }
 
     /**
@@ -3234,7 +3237,8 @@ public class PdfContentByte {
      */
     public java.awt.Graphics2D createPrinterGraphics(float width, float height, boolean convertImagesToJPEG,
             float quality, PrinterJob printerJob) {
-        return new PdfPrinterGraphics2D(this, width, height, null, false, convertImagesToJPEG, quality, printerJob);
+        Builder builder = new Builder(this, width, height, null, false, convertImagesToJPEG, quality);
+        return new PdfPrinterGraphics2D(builder.build(printerJob));
     }
 
     /**
@@ -3263,7 +3267,8 @@ public class PdfContentByte {
      */
     public java.awt.Graphics2D createPrinterGraphicsShapes(float width, float height, boolean convertImagesToJPEG,
             float quality, PrinterJob printerJob) {
-        return new PdfPrinterGraphics2D(this, width, height, null, true, convertImagesToJPEG, quality, printerJob);
+        Builder builder = new Builder(this, width, height, null, true, convertImagesToJPEG, quality);
+        return new PdfPrinterGraphics2D(builder.build(printerJob));
     }
 
     /**
@@ -3289,7 +3294,8 @@ public class PdfContentByte {
      */
     public java.awt.Graphics2D createPrinterGraphics(float width, float height, FontMapper fontMapper,
             PrinterJob printerJob) {
-        return new PdfPrinterGraphics2D(this, width, height, fontMapper, false, false, 0, printerJob);
+        Builder builder = new Builder(this, width, height, null, false, false, 0);
+        return new PdfPrinterGraphics2D(builder.build(printerJob));
     }
 
     /**
@@ -3320,8 +3326,8 @@ public class PdfContentByte {
      */
     public java.awt.Graphics2D createPrinterGraphics(float width, float height, FontMapper fontMapper,
             boolean convertImagesToJPEG, float quality, PrinterJob printerJob) {
-        return new PdfPrinterGraphics2D(this, width, height, fontMapper, false, convertImagesToJPEG, quality,
-                printerJob);
+        Builder builder = new Builder(this, width, height, fontMapper, false, convertImagesToJPEG, quality);
+        return new PdfPrinterGraphics2D(builder.build(printerJob));
     }
 
     PageResources getPageResources() {

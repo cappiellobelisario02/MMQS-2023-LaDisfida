@@ -54,15 +54,14 @@ import java.awt.print.PrinterJob;
 
 /**
  * This is an extension class for the sole purpose of implementing the
- * {@link java.awt.print.PrinterGraphics PrinterGraphics} interface.
+ * {@link PrinterGraphics PrinterGraphics} interface.
  */
 public class PdfPrinterGraphics2D extends PdfGraphics2D implements PrinterGraphics {
 
     private PrinterJob printerJob;
 
-    public PdfPrinterGraphics2D(PdfContentByte cb, float width, float height, FontMapper fontMapper,
-            boolean onlyShapes, boolean convertImagesToJPEG, float quality, PrinterJob printerJob) {
-        super(cb, width, height, fontMapper, onlyShapes, convertImagesToJPEG, quality);
+    PdfPrinterGraphics2D(Builder builder, PrinterJob printerJob) {
+        super(builder.cb, builder.width, builder.height, builder.fontMapper, builder.onlyShapes, builder.convertImagesToJPEG, builder.quality);
         this.printerJob = printerJob;
     }
 
@@ -78,5 +77,30 @@ public class PdfPrinterGraphics2D extends PdfGraphics2D implements PrinterGraphi
     @Override
     protected PdfGraphics2D createChild() {
         return new PdfPrinterGraphics2D(this);
+    }
+
+    public static class Builder {
+        private final PdfContentByte cb;
+        private final float width;
+        private final float height;
+        private final FontMapper fontMapper;
+        private final boolean onlyShapes;
+        private final boolean convertImagesToJPEG;
+        private final float quality;
+
+        public Builder(PdfContentByte cb, float width, float height, FontMapper fontMapper, boolean onlyShapes, boolean convertImagesToJPEG, float quality)
+        {
+            this.cb = cb;
+            this.width = width;
+            this.height = height;
+            this.fontMapper = fontMapper;
+            this.onlyShapes = onlyShapes;
+            this.convertImagesToJPEG = convertImagesToJPEG;
+            this.quality = quality;
+        }
+
+        public PdfPrinterGraphics2D build(PrinterJob printerJob) {
+            return new PdfPrinterGraphics2D(this, printerJob);
+        }
     }
 }

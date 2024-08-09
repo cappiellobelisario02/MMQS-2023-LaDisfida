@@ -49,6 +49,7 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.pdf.Type3Glyph.Builder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -149,7 +150,8 @@ public class Type3Font extends BaseFont {
                 this.ury = Math.max(this.ury, ury);
             }
         }
-        glyph = new Type3Glyph(writer, pageResources, wx, llx, lly, urx, ury, colorized);
+        Builder builder = new Builder(writer, pageResources, wx, llx, lly, urx, ury, colorized);
+        glyph = new Type3Glyph(builder);
         char2glyph.put(ck, glyph);
         return glyph;
     }

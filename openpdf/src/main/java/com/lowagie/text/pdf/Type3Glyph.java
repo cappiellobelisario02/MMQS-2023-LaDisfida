@@ -63,16 +63,15 @@ public final class Type3Glyph extends PdfContentByte {
         super(null);
     }
 
-    Type3Glyph(PdfWriter writer, PageResources pageResources, float wx, float llx, float lly, float urx, float ury,
-            boolean colorized) {
-        super(writer);
-        this.pageResources = pageResources;
-        this.colorized = colorized;
+    Type3Glyph(Builder builder) {
+        super(builder.writer);
+        this.pageResources = builder.pageResources;
+        this.colorized = builder.colorized;
         if (colorized) {
-            content.append(wx).append(" 0 d0\n");
+            content.append(builder.wx).append(" 0 d0\n");
         } else {
-            content.append(wx).append(" 0 ").append(llx).append(' ').append(lly).append(' ').append(urx).append(' ')
-                    .append(ury).append(" d1\n");
+            content.append(builder.wx).append(" 0 ").append(builder.llx).append(' ').append(builder.lly).append(' ').append(builder.urx).append(' ')
+                    .append(builder.ury).append(" d1\n");
         }
     }
 
@@ -101,4 +100,29 @@ public final class Type3Glyph extends PdfContentByte {
         return dup;
     }
 
+    public static class Builder {
+        private final PdfWriter writer;
+        private final PageResources pageResources;
+        private final float wx;
+        private final float llx;
+        private final float lly;
+        private final float urx;
+        private final float ury;
+        private final boolean colorized;
+
+        public Builder(PdfWriter writer, PageResources pageResources, float wx, float llx, float lly, float urx, float ury, boolean colorized) {
+            this.writer = writer;
+            this.pageResources = pageResources;
+            this.wx = wx;
+            this.llx = llx;
+            this.lly = lly;
+            this.urx = urx;
+            this.ury = ury;
+            this.colorized = colorized;
+        }
+
+        public Type3Glyph build() {
+            return new Type3Glyph(this);
+        }
+    }
 }
