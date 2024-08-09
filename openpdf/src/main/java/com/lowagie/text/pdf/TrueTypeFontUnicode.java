@@ -223,13 +223,15 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
             }
         } else {
             int len = text.length();
-            for (int k = 0; k < len; ++k) {
+            int k = 0;
+            while (k < len) {
                 if (Utilities.isSurrogatePair(text, k)) {
                     total += getRawWidth(Utilities.convertToUtf32(text, k), encoding);
                     ++k;
                 } else {
                     total += getRawWidth(text.charAt(k), encoding);
                 }
+                ++k;
             }
         }
         return total;

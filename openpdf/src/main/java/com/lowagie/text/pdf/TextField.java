@@ -200,7 +200,8 @@ public class TextField extends BaseField {
         if (text.indexOf('\n') >= 0 || text.indexOf('\r') >= 0) {
             char[] p = text.toCharArray();
             StringBuilder sb = new StringBuilder(p.length);
-            for (int k = 0; k < p.length; ++k) {
+            int k = 0;
+            while (k < p.length) {
                 char c = p[k];
                 if (c == '\n') {
                     sb.append(' ');
@@ -212,6 +213,7 @@ public class TextField extends BaseField {
                 } else {
                     sb.append(c);
                 }
+                k++;
             }
             return sb.toString();
         }

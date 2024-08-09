@@ -144,9 +144,11 @@ public class PdfNumberTree {
     private static void iterateItems(PdfDictionary dic, Map<Integer, PdfObject> items) {
         PdfArray nn = (PdfArray) PdfReader.getPdfObjectRelease(dic.get(PdfName.NUMS));
         if (nn != null) {
-            for (int k = 0; k < nn.size(); ++k) {
-                PdfNumber s = (PdfNumber) PdfReader.getPdfObjectRelease(nn.getPdfObject(k++));
+            int k = 0;
+            while (k < nn.size()) {
+                PdfNumber s = (PdfNumber) PdfReader.getPdfObjectRelease(nn.getPdfObject(k+1));
                 items.put(s.intValue(), nn.getPdfObject(k));
+                k++;
             }
         } else if ((nn = (PdfArray) PdfReader.getPdfObjectRelease(dic.get(PdfName.KIDS))) != null) {
             for (int k = 0; k < nn.size(); ++k) {

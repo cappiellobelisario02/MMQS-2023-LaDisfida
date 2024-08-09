@@ -328,7 +328,8 @@ class TrueTypeFont extends BaseFont {
             }
         }
         for (int k1 = 0; k1 < simp.size() - 1; ++k1) {
-            for (int k2 = k1 + 1; k2 < simp.size(); ++k2) {
+            int k2 = k1 + 1;
+            while (k2 < simp.size()) {
                 int[] r1 = simp.get(k1);
                 int[] r2 = simp.get(k2);
                 if ((r1[0] >= r2[0] && r1[0] <= r2[1]) || (r1[1] >= r2[0] && r1[0] <= r2[1])) {
@@ -337,6 +338,8 @@ class TrueTypeFont extends BaseFont {
                     simp.remove(k2);
                     --k2;
                 }
+
+                ++k2;
             }
         }
         int[] s = new int[simp.size() * 2];

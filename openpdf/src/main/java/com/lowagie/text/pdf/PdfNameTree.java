@@ -162,9 +162,11 @@ public class PdfNameTree {
     private static void iterateItems(PdfDictionary dic, HashMap<String, PdfObject> items) {
         PdfArray nn = (PdfArray) PdfReader.getPdfObjectRelease(dic.get(PdfName.NAMES));
         if (nn != null) {
-            for (int k = 0; k < nn.size(); ++k) {
-                PdfString s = (PdfString) PdfReader.getPdfObjectRelease(nn.getPdfObject(k++));
+            int k = 0;
+            while (k < nn.size()) {
+                PdfString s = (PdfString) PdfReader.getPdfObjectRelease(nn.getPdfObject(k+1));
                 items.put(PdfEncodings.convertToString(s.getBytes(), null), nn.getPdfObject(k));
+                k++;
             }
         } else if ((nn = (PdfArray) PdfReader.getPdfObjectRelease(dic.get(PdfName.KIDS))) != null) {
             for (int k = 0; k < nn.size(); ++k) {

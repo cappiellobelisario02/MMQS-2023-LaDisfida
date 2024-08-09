@@ -3422,7 +3422,8 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
         StringBuilder buf = new StringBuilder();
         try {
             int len = name.length();
-            for (int k = 1; k < len; ++k) {
+            int k = 1;
+            while (k < len) {
                 char c = name.charAt(k);
                 if (c == '#') {
                     char c1 = name.charAt(k + 1);
@@ -3431,6 +3432,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
                     k += 2;
                 }
                 buf.append(c);
+                k++;
             }
         } catch (IndexOutOfBoundsException e) {
             // empty on purpose

@@ -107,7 +107,8 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
         StringBuilder il = new StringBuilder();
         String word = pat + "a"; // add dummy letter to serve as sentinel
         int len = word.length();
-        for (int i = 0; i < len; i++) {
+        int i = 0;
+        while (i < len) {
             char c = word.charAt(i);
             if (Character.isDigit(c)) {
                 il.append(c);
@@ -115,6 +116,7 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
             } else {
                 il.append('0');
             }
+            i++;
         }
         return il.toString();
     }

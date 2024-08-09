@@ -794,12 +794,15 @@ public final class Pfm2afm {
         int count = in.readUnsignedShortLE();
         int nzero = 0;
         int[] kerns = new int[count * 3];
-        for (int k = 0; k < kerns.length; ) {
+        int k = 0;
+        while (k < kerns.length) {
             kerns[k++] = in.read();
             kerns[k++] = in.read();
             if ((kerns[k++] = in.readShortLE()) != 0) {
                 ++nzero;
+
             }
+            k++;
         }
         if (nzero == 0) {
             return;

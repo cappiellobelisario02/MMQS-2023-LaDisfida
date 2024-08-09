@@ -262,7 +262,9 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
         StringBuilder buf = new StringBuilder();
         char[] cc = s.toCharArray();
         int len = cc.length;
-        for (int k = 0; k < len; ++k) {
+        int k = 0;
+
+        while (k < len) {
             char c = cc[k];
             if (c == '\\') {
                 if (++k >= len) {
@@ -290,6 +292,7 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
             } else {
                 buf.append(c);
             }
+            k++;
         }
         return buf.toString();
     }

@@ -1104,11 +1104,14 @@ public class PdfPKCS7 {
         List<Certificate> cc = new ArrayList<>();
         cc.add(signCert);
         List<Certificate> oc = new ArrayList<>(certs);
-        for (int k = 0; k < oc.size(); ++k) {
+        int k = 0;
+        while (k < oc.size()) {
             if (signCert.getSerialNumber().equals(
                     ((X509Certificate) oc.get(k)).getSerialNumber())) {
                 oc.remove(k);
-                --k;
+            }
+            else{
+                k++;
             }
         }
         boolean found = true;
