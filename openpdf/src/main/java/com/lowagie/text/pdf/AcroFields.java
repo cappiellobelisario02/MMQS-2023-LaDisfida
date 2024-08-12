@@ -58,7 +58,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,73 +65,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import com.lowagie.text.exceptions.ColorParseException;
+import com.lowagie.text.exceptions.FontProcessingException;
+import com.lowagie.text.exceptions.InvalidColorValueException;
+import com.lowagie.text.exceptions.NoReaderException;
+import com.lowagie.text.exceptions.ReadOnlyAcroFieldsException;
+import com.lowagie.text.exceptions.ReadOnlyException;
 import org.w3c.dom.Node;
-
-public class InvalidColorValueException extends RuntimeException {
-    public InvalidColorValueException(String message) {
-        super(message);
-    }
-
-    public InvalidColorValueException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-
-public class ReadOnlyException extends RuntimeException {
-    public ReadOnlyException(String message) {
-        super(message);
-    }
-}
-
-
-public class NoReaderException extends RuntimeException {
-
-    // Constructor with a custom message
-    public NoReaderException(String message) {
-        super(message);
-    }
-
-    // Optional: Constructor with a custom message and a cause
-    public NoReaderException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-
-
-public class ReadOnlyAcroFieldsException extends RuntimeException {
-
-    // Constructor that accepts a message
-    public ReadOnlyAcroFieldsException(String message) {
-        super(message);
-    }
-
-    // Constructor that accepts a message and a cause
-    public ReadOnlyAcroFieldsException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-
-public class ColorParseException extends RuntimeException {
-    public ColorParseException(String message) {
-        super(message);
-    }
-
-    public ColorParseException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-
-
-// Define a custom exception for font processing issues
-public class FontProcessingException extends RuntimeException {
-    public FontProcessingException(String message) {
-        super(message);
-    }
-
-    public FontProcessingException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
 
 
 /**
@@ -141,8 +80,8 @@ public class FontProcessingException extends RuntimeException {
  * @author Paulo Soares (psoares@consiste.pt)
  */
 public class AcroFields {
-    
-    Logger logger = Logger.getLogger(AcroFields.class.getName());
+
+    static Logger logger = Logger.getLogger(AcroFields.class.getName());
 
     public static final int DA_FONT = 0;
     public static final int DA_SIZE = 1;
@@ -305,7 +244,7 @@ public class AcroFields {
         }
     }
 
-    private PRTokeniser createPRTokeniser(byte[] da) {
+    private static PRTokeniser createPRTokeniser(byte[] da) {
         PRTokeniser tk = null;
         try {
             tk = new PRTokeniser(PdfEncodings.convertToBytes(da, null));
@@ -318,7 +257,7 @@ public class AcroFields {
     }
 
     // Method to handle PRTokeniser closing
-    private void closePRTokeniser(PRTokeniser tk) {
+    private static void closePRTokeniser(PRTokeniser tk) {
         if (tk != null) {
             try {
                 tk.close();
@@ -347,13 +286,6 @@ public class AcroFields {
                 PdfNumber red = pdfColor.getAsNumber(0);
                 PdfNumber green = pdfColor.getAsNumber(1);
                 PdfNumber blue = pdfColor.getAsNumber(2);
-
-                public Color createColor(Float red, Float green, Float blue) {
-                    if (red == null || green == null || blue == null) {
-                        throw new InvalidColorValueException("Red, green, and blue values must all be provided.");
-                    }
-                    return new Color(red.floatValue(), green.floatValue(), blue.floatValue());
-                }
             } else if (pdfColor.size() == 4) {
                 PdfNumber c = pdfColor.getAsNumber(0);
                 PdfNumber m = pdfColor.getAsNumber(1);
@@ -370,6 +302,13 @@ public class AcroFields {
             }
         }
         return null;
+    }
+
+    public Color createColor(Float red, Float green, Float blue) {
+        if (red == null || green == null || blue == null) {
+            throw new InvalidColorValueException("Red, green, and blue values must all be provided.");
+        }
+        return new Color(red.floatValue(), green.floatValue(), blue.floatValue());
     }
 
     void fill() {
@@ -841,8 +780,9 @@ public class AcroFields {
                                         extensionFonts.put(porkey, null);
                                     } else {
                                         try {
-                                            porf = BaseFont.createFont("font.ttf", BaseFont.IDENTITY_H, true, false,
-                                                    PdfReader.getStreamBytes(prs), null);
+                                            porf = BaseFont.createFont("font.ttf", BaseFont.IDENTITY_H, true, false, PdfReader.getStreamBytes(prs), null);
+                                        } catch(IOException ignored){
+                                            ignored.printStackTrace();
                                         }
                                         extensionFonts.put(porkey, porf);
                                     }
@@ -1155,6 +1095,8 @@ public class AcroFields {
                     PdfString ps = opts.getAsString(idx);
                     value = ps.toUnicodeString();
                     lastWasString = true;
+                } catch( NumberFormatException e ) {
+                    e.printStackTrace();
                 }
             }
             return value;
@@ -2568,6 +2510,8 @@ public class AcroFields {
         } finally {
             try {
                 rf.close();
+            } catch(IOException ignored) {
+                ignored.printStackTrace();
             }
         }
     }

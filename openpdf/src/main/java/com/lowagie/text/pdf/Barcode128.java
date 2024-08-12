@@ -52,20 +52,11 @@ import com.lowagie.text.Element;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.IllegalBarcode128CharacterException;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.MemoryImageSource;
-
-public class IllegalBarcode128CharacterException extends RuntimeException {
-    public IllegalBarcode128CharacterException(String message) {
-        super(message);
-    }
-
-    public IllegalBarcode128CharacterException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
 
 /**
  * Implements the code 128 and UCC/EAN-128. Other symbologies are allowed in raw mode.<p> The code types allowed
