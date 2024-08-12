@@ -658,10 +658,7 @@ public class PdfCopy extends PdfWriter {
             }
             PdfArray ar = null;
             PdfObject content = PdfReader.getPdfObject(pageN.get(PdfName.CONTENTS), pageN);
-            if (content == null) {
-                ar = new PdfArray();
-                pageN.put(PdfName.CONTENTS, ar);
-            } else if (content.isArray()) {
+            if (content.isArray()) {
                 ar = (PdfArray) content;
             } else if (content.isStream()) {
                 ar = new PdfArray();
