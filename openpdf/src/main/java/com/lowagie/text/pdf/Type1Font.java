@@ -67,7 +67,7 @@ import java.util.logging.Logger;
  * @author Paulo Soares (psoares@consiste.pt)
  */
 class Type1Font extends BaseFont {
-    
+
     static Logger logger = Logger.getLogger(Type1Font.class.getName());
 
     /**
@@ -75,7 +75,7 @@ class Type1Font extends BaseFont {
      * sequence.
      */
     private static final int[] PFB_TYPES = {1, 2, 1};
-    private static FontsResourceAnchor resourceAnchor;
+    private FontsResourceAnchor resourceAnchor;
     /**
      * The PFB file if the input was made with a <CODE>byte</CODE> array.
      */
