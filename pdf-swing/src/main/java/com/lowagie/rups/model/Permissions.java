@@ -42,7 +42,7 @@ public class Permissions {
     /**
      * What are the document permissions?
      */
-    protected int permissions = 0;
+    protected int docPermissions = 0;
     /**
      * How was the document encrypted?
      */
@@ -108,7 +108,7 @@ public class Permissions {
      * @return the value for the permissions
      */
     public int getPermissions() {
-        return permissions;
+        return docPermissions;
     }
 
     /**
@@ -117,7 +117,7 @@ public class Permissions {
      * @param permissions the permissions in the form of an int
      */
     public void setPermissions(int permissions) {
-        this.permissions = permissions;
+        this.docPermissions = permissions;
     }
 
     /**
@@ -146,7 +146,7 @@ public class Permissions {
     public boolean isAllowPrinting() {
         return
                 !encrypted
-                        || (PdfWriter.ALLOW_PRINTING & permissions) == PdfWriter.ALLOW_PRINTING;
+                        || (PdfWriter.ALLOW_PRINTING & docPermissions) == PdfWriter.ALLOW_PRINTING;
     }
 
     /**
@@ -158,7 +158,7 @@ public class Permissions {
     public boolean isAllowModifyContents(boolean decrypted) {
         return
                 !encrypted
-                        || (PdfWriter.ALLOW_MODIFY_CONTENTS & permissions) == PdfWriter.ALLOW_MODIFY_CONTENTS;
+                        || (PdfWriter.ALLOW_MODIFY_CONTENTS & docPermissions) == PdfWriter.ALLOW_MODIFY_CONTENTS;
     }
 
     /**
@@ -170,7 +170,7 @@ public class Permissions {
     public boolean isAllowCopy(boolean decrypted) {
         return
                 !encrypted
-                        || (PdfWriter.ALLOW_COPY & permissions) == PdfWriter.ALLOW_COPY;
+                        || (PdfWriter.ALLOW_COPY & docPermissions) == PdfWriter.ALLOW_COPY;
     }
 
     /**
@@ -181,7 +181,7 @@ public class Permissions {
     public boolean isAllowModifyAnnotations() {
         return
                 !encrypted
-                        || (PdfWriter.ALLOW_MODIFY_ANNOTATIONS & permissions) == PdfWriter.ALLOW_MODIFY_ANNOTATIONS;
+                        || (PdfWriter.ALLOW_MODIFY_ANNOTATIONS & docPermissions) == PdfWriter.ALLOW_MODIFY_ANNOTATIONS;
     }
 
     /**
@@ -192,7 +192,7 @@ public class Permissions {
     public boolean isAllowFillIn() {
         return
                 !encrypted
-                        || (PdfWriter.ALLOW_FILL_IN & permissions) == PdfWriter.ALLOW_FILL_IN;
+                        || (PdfWriter.ALLOW_FILL_IN & docPermissions) == PdfWriter.ALLOW_FILL_IN;
     }
 
     /**
@@ -203,7 +203,7 @@ public class Permissions {
     public boolean isAllowScreenReaders() {
         return
                 !encrypted
-                        || (PdfWriter.ALLOW_SCREENREADERS & permissions) == PdfWriter.ALLOW_SCREENREADERS;
+                        || (PdfWriter.ALLOW_SCREENREADERS & docPermissions) == PdfWriter.ALLOW_SCREENREADERS;
     }
 
     /**
@@ -214,7 +214,7 @@ public class Permissions {
     public boolean isAllowAssembly() {
         return
                 !encrypted
-                        || (PdfWriter.ALLOW_ASSEMBLY & permissions) == PdfWriter.ALLOW_ASSEMBLY;
+                        || (PdfWriter.ALLOW_ASSEMBLY & docPermissions) == PdfWriter.ALLOW_ASSEMBLY;
     }
 
     /**
@@ -225,6 +225,6 @@ public class Permissions {
     public boolean isAllowDegradedPrinting() {
         return
                 !encrypted
-                        || (PdfWriter.ALLOW_DEGRADED_PRINTING & permissions) == PdfWriter.ALLOW_DEGRADED_PRINTING;
+                        || (PdfWriter.ALLOW_DEGRADED_PRINTING & docPermissions) == PdfWriter.ALLOW_DEGRADED_PRINTING;
     }
 }
