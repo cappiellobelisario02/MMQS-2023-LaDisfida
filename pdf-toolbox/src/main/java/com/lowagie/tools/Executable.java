@@ -52,7 +52,9 @@ package com.lowagie.tools;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.Logger;
 
 /**
  * This class enables you to call an executable that will show a PDF file.
@@ -66,7 +68,7 @@ public class Executable {
      * The path to Acrobat Reader.
      */
     private static String acroread = null;
-
+    static Logger logger = Logger.getLogger(Executable.class.getName());
 
     /**
      * Performs an action on a PDF document.
@@ -109,8 +111,10 @@ public class Executable {
             if (process != null && waitForTermination) {
                 process.waitFor();
             }
-        } catch (InterruptedException ignored) {
-            ignored.printStackTrace();
+        } catch (ThreadDeath | InterruptedException e) {
+            process.destroy();
+            logger.info("Interrupted >> " + e.getMessage());
+            throw new ThreadDeath();
         }
         return process;
     }
@@ -275,12 +279,10 @@ public class Executable {
      * @param url the URL you want to open in the browser
      * @throws IOException on error
      */
-    public static void launchBrowser(String url) throws IOException {
+    public static void launchBrowser(String url) throws IOException, InterruptedException, ReflectiveOperationException {
         try {
             if (isMac()) {
-                Class<?> macUtils = Class.forName("com.apple.mrj.MRJFileUtils");
-                Method openURL = macUtils.getDeclaredMethod("openURL", String.class);
-                openURL.invoke(null, url);
+                launchMacBrowser(url);
             } else if (isWindows()) {
                 Runtime.getRuntime().exec(createCommand("rundll32 url.dll,FileProtocolHandler ", url));
             } else { //assume Unix or Linux
@@ -298,8 +300,20 @@ public class Executable {
                     Runtime.getRuntime().exec(new String[]{browser, url});
                 }
             }
-        } catch (Exception e) {
-            throw new IOException(MessageLocalization.getComposedMessage("error.attempting.to.launch.web.browser"));
+        } catch (InterruptedException e) {
+            throw new InterruptedException(MessageLocalization.getComposedMessage("error.attempting.to.launch.web.browser"));
+        } catch (ReflectiveOperationException e) {
+            throw new ReflectiveOperationException("Error >> ", e);
+        }
+    }
+    
+    private static void launchMacBrowser(String url) throws ReflectiveOperationException {
+        try{
+            Class<?> macUtils = Class.forName("com.apple.mrj.MRJFileUtils");
+            Method openURL = macUtils.getDeclaredMethod("openURL", String.class);
+            openURL.invoke(null, url);
+        } catch(ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new ReflectiveOperationException("Error >> ", e);
         }
     }
 
