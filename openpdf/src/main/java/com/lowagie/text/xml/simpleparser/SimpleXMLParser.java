@@ -545,14 +545,12 @@ public final class SimpleXMLParser {
                         processTag(true);
                         initTag();
                         state = restoreState();
-                    } else if (html && quoteCharacter == ' ' && Character.isWhitespace((char) character)) {
+                    } else if (html && quoteCharacter == ' ' && Character.isWhitespace((char) character) 
+                            && character == quoteCharacter) {
                         flush();
                         state = TAG_EXAMINED;
                     } else if (html && quoteCharacter == ' ') {
                         textSB.append((char) character);
-                    } else if (character == quoteCharacter) {
-                        flush();
-                        state = TAG_EXAMINED;
                     } else if (" \r\n\t".indexOf(character) >= 0) {
                         textSB.append(' ');
                     } else if (character == '&') {
