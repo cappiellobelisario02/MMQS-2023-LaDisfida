@@ -331,7 +331,8 @@ public class PdfDocument extends Document {
         PdfPCell cell = new PdfPCell();
         cell.setBorder(Table.NO_BORDER);
         cell.setPadding(0);
-        for (int i = 0; i < paragraph.size(); i++) {
+        int i = 0;
+        while (i < paragraph.size()) {
             if (paragraph.get(i) instanceof Chunk) {
                 Paragraph subParagraph = new Paragraph();
                 boolean hasNewLine = false;
@@ -355,6 +356,7 @@ public class PdfDocument extends Document {
             } else {
                 cell.addElement(paragraph.get(i));
             }
+            i++;
         }
         table.addCell(cell);
         return table;
@@ -2695,7 +2697,6 @@ public class PdfDocument extends Document {
         java.util.List<java.util.List<PdfCell>> rows = extractRows(cells, ctx);
         boolean isContinue = false;
         while (!cells.isEmpty()) {
-            // initialization of some extra parameters;
             ctx.lostTableBottom = 0;
 
             // loop over the cells
