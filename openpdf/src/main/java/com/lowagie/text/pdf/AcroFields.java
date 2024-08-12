@@ -529,11 +529,11 @@ public class AcroFields {
     private String[] getListOption(String fieldName, int idx) {
         Item fd = getFieldItem(fieldName);
         if (fd == null) {
-            return null;
+            return new String[0];
         }
         PdfArray ar = fd.getMerged(0).getAsArray(PdfName.OPT);
         if (ar == null) {
-            return null;
+            return new String[0];
         }
         String[] ret = new String[ar.size()];
         for (int k = 0; k < ar.size(); ++k) {
@@ -1975,7 +1975,7 @@ public class AcroFields {
     public float[] getFieldPositions(String name) {
         Item item = getFieldItem(name);
         if (item == null) {
-            return null;
+            return new float[0];
         }
         float[] ret = new float[item.size() * 5];
         int ptr = 0;
