@@ -423,7 +423,7 @@ public class PdfOutline extends PdfDictionary {
      * @param os     the OutputStream o write the bytes to
      * @throws IOException on error of super.toPdf()
      */
-
+    @Override
     public void toPdf(PdfWriter writer, OutputStream os) throws IOException {
         if (color != null && !color.equals(Color.black)) {
             put(PdfName.C,
