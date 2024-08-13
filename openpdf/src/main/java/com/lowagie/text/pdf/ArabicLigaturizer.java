@@ -57,10 +57,10 @@ public class ArabicLigaturizer {
 
     private ArabicLigaturizer(){}
 
-    public static final int ar_nothing = 0x0;
-    public static final int ar_novowel = 0x1;
-    public static final int ar_composedtashkeel = 0x4;
-    public static final int ar_lig = 0x8;
+    public static final int AR_NOTHING = 0x0;
+    public static final int AR_NOVOWEL = 0x1;
+    public static final int AR_COMPOSEDTASHKEEL = 0x4;
+    public static final int AR_LIG = 0x8;
     /**
      * Digit shaping option: Replace European digits (U+0030...U+0039) by Arabic-Indic digits.
      */
@@ -378,7 +378,7 @@ public class ArabicLigaturizer {
         string.append(s.basechar);
         s.lignum--;
         if (s.mark1 != 0) {
-            if ((level & ar_novowel) == 0) {
+            if ((level & AR_NOVOWEL) == 0) {
                 string.append(s.mark1);
                 s.lignum--;
             } else {
@@ -386,7 +386,7 @@ public class ArabicLigaturizer {
             }
         }
         if (s.vowel != 0) {
-            if ((level & ar_novowel) == 0) {
+            if ((level & AR_NOVOWEL) == 0) {
                 string.append(s.vowel);
                 s.lignum--;
             } else {                       /* vowel elimination */
@@ -405,7 +405,7 @@ public class ArabicLigaturizer {
 
         while (si < olen) {
             lapresult = 0;
-            if ((level & ar_composedtashkeel) != 0) {
+            if ((level & AR_COMPOSEDTASHKEEL) != 0) {
                 switch (string.charAt(j)) {
                     case SHADDA:
                         switch (string.charAt(si)) {
@@ -444,7 +444,7 @@ public class ArabicLigaturizer {
                 }
             }
 
-            if ((level & ar_lig) != 0) {
+            if ((level & AR_LIG) != 0) {
                 switch (string.charAt(j)) {
                     case 0xFEDF:       /* LAM initial */
                         switch (string.charAt(si)) {
@@ -613,7 +613,7 @@ public class ArabicLigaturizer {
                 curchar.basechar = nextletter;
                 curchar.numshapes = nc;
                 curchar.lignum++;
-                
+
             }
         }
 
@@ -639,7 +639,7 @@ public class ArabicLigaturizer {
         }
         StringBuilder string = new StringBuilder(srclength);
         shape(str, string, level);
-        if ((level & (ar_composedtashkeel | ar_lig)) != 0) {
+        if ((level & (AR_COMPOSEDTASHKEEL | AR_LIG)) != 0) {
             doublelig(string, level);
         }
         string.reverse();

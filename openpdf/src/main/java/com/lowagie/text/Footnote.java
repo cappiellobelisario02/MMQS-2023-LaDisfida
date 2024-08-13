@@ -72,7 +72,7 @@ public class Footnote extends Phrase {
     /**
      * This is a possible attribute.
      */
-    public static final String font = "font";
+    public static final String FONT = "font";
 
     /**
      * This is a possible attribute.
@@ -108,8 +108,8 @@ public class Footnote extends Phrase {
         super(chunk);
     }
 
-    public Footnote(String text, Font font) {
-        super(text, font);
+    public Footnote(String text, Font fontAttr) {
+        super(text, fontAttr);
     }
 
     public Footnote(String text) {

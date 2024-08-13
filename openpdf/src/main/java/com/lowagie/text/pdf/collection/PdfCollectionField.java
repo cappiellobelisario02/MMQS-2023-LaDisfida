@@ -45,7 +45,7 @@ public class PdfCollectionField extends PdfDictionary {
     /**
      * A possible type of collection field.
      */
-    public static final int size = 7;
+    public static final int SIZE_CONST = 7;
 
     /**
      * The type of the PDF collection field.
@@ -86,7 +86,7 @@ public class PdfCollectionField extends PdfDictionary {
             case CREATIONDATE:
                 put(PdfName.SUBTYPE, PdfName.CREATIONDATE);
                 break;
-            case SIZE:
+            case SIZE_CONST:
                 put(PdfName.SUBTYPE, PdfName.SIZE);
                 break;
         }

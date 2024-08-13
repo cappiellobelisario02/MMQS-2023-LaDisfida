@@ -97,7 +97,7 @@ public abstract class DocWriter implements DocListener {
     /**
      * This is some byte that is often used.
      */
-    public static final byte equals = (byte) '=';
+    public static final byte EQUALS_CONST = (byte) '=';
 
     /**
      * This is some byte that is often used.
@@ -410,7 +410,7 @@ public abstract class DocWriter implements DocListener {
             throws IOException {
         os.write(SPACE);
         write(key);
-        os.write(EQUALS);
+        os.write(EQUALS_CONST);
         os.write(QUOTE);
         write(value);
         os.write(QUOTE);

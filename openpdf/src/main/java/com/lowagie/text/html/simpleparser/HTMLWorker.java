@@ -87,13 +87,13 @@ import java.util.StringTokenizer;
 
 public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
 
-    public static final String tagsSupportedString =
+        public static final String TAGS_SUPPORTED_STRING =
             "ol ul li a pre font span br p div body table td th tr i b u sub sup em strong s strike"
                     + " h1 h2 h3 h4 h5 h6 img hr";
     public static final Map<String, Object> tagsSupported = new HashMap<>();
 
     static {
-        StringTokenizer tok = new StringTokenizer(tagsSupportedString);
+        StringTokenizer tok = new StringTokenizer(TAGS_SUPPORTED_STRING);
         while (tok.hasMoreTokens()) {
             tagsSupported.put(tok.nextToken(), null);
         }

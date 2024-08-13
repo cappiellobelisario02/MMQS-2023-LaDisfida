@@ -96,7 +96,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     /**
      * This is the font of this phrase.
      */
-    protected Font font;
+    protected Font fontAttr;
 
     /**
      * Null, unless the Phrase has to be hyphenated.
@@ -123,7 +123,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
         super();
         this.addAll(phrase);
         leading = phrase.getLeading();
-        font = phrase.getFont();
+        fontAttr = phrase.getFont();
         setHyphenation(phrase.getHyphenation());
     }
 
@@ -134,7 +134,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      */
     public Phrase(float leading) {
         this.leading = leading;
-        font = new Font();
+        fontAttr = new Font();
     }
 
     /**
@@ -144,7 +144,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      */
     public Phrase(Chunk chunk) {
         super.add(chunk);
-        font = chunk.getFont();
+        fontAttr = chunk.getFont();
         setHyphenation(chunk.getHyphenation());
     }
 
@@ -157,7 +157,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     public Phrase(float leading, Chunk chunk) {
         this.leading = leading;
         super.add(chunk);
-        font = chunk.getFont();
+        fontAttr = chunk.getFont();
         setHyphenation(chunk.getHyphenation());
     }
 
@@ -174,10 +174,10 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      * Constructs a <CODE>Phrase</CODE> with a certain <CODE>String</CODE> and a certain <CODE>Font</CODE>.
      *
      * @param string a <CODE>String</CODE>
-     * @param font   a <CODE>Font</CODE>
+     * @param fontAttr   a <CODE>Font</CODE>
      */
-    public Phrase(String string, Font font) {
-        this(Float.NaN, string, font);
+    public Phrase(String string, Font fontAttr) {
+        this(Float.NaN, string, fontAttr);
     }
 
     /**
@@ -196,14 +196,14 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      *
      * @param leading the leading
      * @param string  a <CODE>String</CODE>
-     * @param font    a <CODE>Font</CODE>
+     * @param fontAttr    a <CODE>Font</CODE>
      */
-    public Phrase(float leading, String string, Font font) {
+    public Phrase(float leading, String string, Font fontAttr) {
         this.leading = leading;
-        this.font = font;
+        this.fontAttr = fontAttr;
         /* bugfix by August Detlefsen */
         if (string != null && string.length() != 0) {
-            super.add(new Chunk(string, font));
+            super.add(new Chunk(string, fontAttr));
         }
     }
 
@@ -241,22 +241,22 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      *
      * @param leading leading spaces
      * @param string  input
-     * @param font    font to be used
+     * @param fontAttr    font to be used
      * @return a newly constructed Phrase
      */
-    public static final Phrase getInstance(int leading, String string, Font font) {
+    public static final Phrase getInstance(int leading, String string, Font fontAttr) {
         Phrase p = new Phrase(true);
         p.setLeading(leading);
-        p.font = font;
-        if (font.getFamily() != Font.SYMBOL && font.getFamily() != Font.ZAPFDINGBATS && font.getBaseFont() == null) {
+        p.fontAttr = fontAttr;
+        if (fontAttr.getFamily() != Font.SYMBOL && fontAttr.getFamily() != Font.ZAPFDINGBATS && fontAttr.getBaseFont() == null) {
             int index;
             while ((index = SpecialSymbol.index(string)) > -1) {
                 if (index > 0) {
                     String firstPart = string.substring(0, index);
-                    p.add(new Chunk(firstPart, font));
+                    p.add(new Chunk(firstPart, fontAttr));
                     string = string.substring(index);
                 }
-                Font symbol = new Font(Font.SYMBOL, font.getSize(), font.getStyle(), font.getColor());
+                Font symbol = new Font(Font.SYMBOL, fontAttr.getSize(), fontAttr.getStyle(), fontAttr.getColor());
                 StringBuilder buf = new StringBuilder();
                 buf.append(SpecialSymbol.getCorrespondingSymbol(string.charAt(0)));
                 string = string.substring(1);
@@ -268,7 +268,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
             }
         }
         if (string != null && string.length() != 0) {
-            p.add(new Chunk(string, font));
+            p.add(new Chunk(string, fontAttr));
         }
         return p;
     }
@@ -352,8 +352,8 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
         try {
             if (element.type() == Element.CHUNK) {
                 Chunk chunk = (Chunk) element;
-                if (!font.isStandardFont()) {
-                    chunk.setFont(font.difference(chunk.getFont()));
+                if (!fontAttr.isStandardFont()) {
+                    chunk.setFont(fontAttr.difference(chunk.getFont()));
                 }
                 if (hyphenation != null && chunk.getHyphenation() == null && !chunk.isEmpty()) {
                     chunk.setHyphenation(hyphenation);
@@ -387,7 +387,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
         if (o == null) {
             return false;
         }
-        return super.add(new Chunk(o, font));
+        return super.add(new Chunk(o, fontAttr));
     }
 
     // other methods that change the member variables
@@ -466,8 +466,8 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     protected boolean addChunk(Chunk chunk) {
         Font f = chunk.getFont();
         String c = chunk.getContent();
-        if (font != null && !font.isStandardFont()) {
-            f = font.difference(chunk.getFont());
+        if (fontAttr != null && !fontAttr.isStandardFont()) {
+            f = fontAttr.difference(chunk.getFont());
         }
         if (size() > 0 && !chunk.hasAttributes()) {
             try {
@@ -505,8 +505,8 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      * @return the linespacing
      */
     public float getLeading() {
-        if (Float.isNaN(leading) && font != null) {
-            return font.getCalculatedLeading(1.5f);
+        if (Float.isNaN(leading) && fontAttr != null) {
+            return fontAttr.getCalculatedLeading(1.5f);
         }
         return leading;
     }
@@ -536,7 +536,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      * @return a <CODE>Font</CODE>
      */
     public Font getFont() {
-        return font;
+        return fontAttr;
     }
 
     /**
@@ -547,8 +547,8 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      *
      * @param font the new font
      */
-    public void setFont(Font font) {
-        this.font = font;
+    public void setFont(Font fontAttr) {
+        this.fontAttr = fontAttr;
     }
 
     // kept for historical reasons; people should use FontSelector

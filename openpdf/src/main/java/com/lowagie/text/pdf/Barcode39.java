@@ -136,7 +136,7 @@ public class Barcode39 extends Barcode {
     /**
      * The character combinations to make the code 39 extended.
      */
-    private static final String extended = "%U" +
+    private static final String EXTENDED_CONST = "%U" +
             "$A$B$C$D$E$F$G$H$I$J$K$L$M$N$O$P$Q$R$S$T$U$V$W$X$Y$Z" +
             "%A%B%C%D%E  /A/B/C/D/E/F/G/H/I/J/K/L - ./O" +
             " 0 1 2 3 4 5 6 7 8 9/Z%F%G%H%I%J%V" +
@@ -200,8 +200,8 @@ public class Barcode39 extends Barcode {
                 throw new IllegalArgumentException(
                         MessageLocalization.getComposedMessage("the.character.1.is.illegal.in.code.39.extended", c));
             }
-            char c1 = EXTENDED.charAt(c * 2);
-            char c2 = EXTENDED.charAt(c * 2 + 1);
+            char c1 = EXTENDED_CONST.charAt(c * 2);
+            char c2 = EXTENDED_CONST.charAt(c * 2 + 1);
             if (c1 != ' ') {
                 out += c1;
             }

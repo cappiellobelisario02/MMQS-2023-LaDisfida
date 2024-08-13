@@ -156,7 +156,7 @@ public class BarcodeDatamatrix {
             new DmParams(132, 132, 22, 22, 1304, 163, 62),
             new DmParams(144, 144, 24, 24, 1558, 156, 62)};
 
-    private static final String x12 = "\r*> 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String X12 = "\r*> 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private final BarcodeDimensions dimensions = new BarcodeDimensions();
     private int extOut;
     private short[] place;
@@ -253,7 +253,7 @@ public class BarcodeDatamatrix {
         byte[] x = new byte[textLength];
         int count = 0;
         for (; ptrIn < textLength; ++ptrIn) {
-            int i = x12.indexOf((char) text[ptrIn + textOffset]);
+            int i = X12.indexOf((char) text[ptrIn + textOffset]);
             if (i >= 0) {
                 x[ptrIn] = (byte) i;
                 ++count;
