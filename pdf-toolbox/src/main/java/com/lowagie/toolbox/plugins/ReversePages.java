@@ -131,11 +131,7 @@ public class ReversePages
             File dest = (File) getValue(DESTFILE);
 
             // We create a reader for a certain document
-            try {
-                reader = new PdfReader(src.getAbsolutePath());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            reader = getReader(src);
 
             stringToLog = "The original file had " + reader.getNumberOfPages() + " pages.";
             logger.info(stringToLog);
@@ -152,23 +148,11 @@ public class ReversePages
             stringToLog = "The new file has " + pages + " pages.";
             logger.severe(stringToLog);
 
-            try {
-                document = new Document(reader.getPageSizeWithRotation(1));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            document = getDocument(reader);
 
-            try {
-                fouts = new FileOutputStream(dest.getAbsolutePath());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            fouts = getOutputStream(dest);
 
-            try {
-                copy = new PdfCopy(document, fouts);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            copy = getCopy(document, fouts);
 
             document.open();
             PdfImportedPage page;
@@ -191,37 +175,91 @@ public class ReversePages
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            if (document != null) {
-                try {
-                    document.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            if (copy != null) {
-                try {
-                    copy.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            if (fouts != null) {
-                try {
-                    fouts.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            closeReader(reader);
+            
+            closeDocument(document);
+            
+            closePdfCopy(copy);
+            
+            closeFileOutputStream(fouts);
         }
     }
 
+    private PdfReader getReader(File src) {
+        try {
+            return new PdfReader(src.getAbsolutePath());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private Document getDocument(PdfReader reader) {
+        try {
+            return new Document(reader.getPageSizeWithRotation(1));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    private FileOutputStream getOutputStream(File dest) {
+        try {
+            return new FileOutputStream(dest.getAbsolutePath());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    private PdfCopy getCopy(Document document, FileOutputStream fos) {
+        try {
+            return new PdfCopy(document, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    private void closeReader(PdfReader reader) {
+        if (reader != null) {
+            try {
+                reader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private void closeDocument(Document document) {
+        if (document != null) {
+            try {
+                document.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private void closePdfCopy(PdfCopy copy) {
+        if (copy != null) {
+            try {
+                copy.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private void closeFileOutputStream(FileOutputStream fos) {
+        if (fos != null) {
+            try {
+                fos.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /**
      * @param arg StringArgument
