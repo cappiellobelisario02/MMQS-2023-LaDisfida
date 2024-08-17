@@ -477,101 +477,119 @@ public class BarcodeDatamatrix {
         return ptrOut + i;
     }
 
-private static int getEncodation(EncodingParams params) {
-    int[] e1 = new int[6];
-    if (params.getDataSize() < 0) {
-        return -1;
-    }
-    int options = params.getOptions() & 7;
-    if (options == 0) {
-        e1[0] = asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                 params.getData(), params.getDataOffset(), params.getDataSize());
-        if (params.isFirstMatch() && e1[0] >= 0) {
-            return e1[0];
-        }
-        e1[1] = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                     params.getData(), params.getDataOffset(), params.getDataSize(), false);
-        if (params.isFirstMatch() && e1[1] >= 0) {
-            return e1[1];
-        }
-        e1[2] = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                     params.getData(), params.getDataOffset(), params.getDataSize(), true);
-        if (params.isFirstMatch() && e1[2] >= 0) {
-            return e1[2];
-        }
-        e1[3] = b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                               params.getData(), params.getDataOffset(), params.getDataSize());
-        if (params.isFirstMatch() && e1[3] >= 0) {
-            return e1[3];
-        }
-        e1[4] = X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                               params.getData(), params.getDataOffset(), params.getDataSize());
-        if (params.isFirstMatch() && e1[4] >= 0) {
-            return e1[4];
-        }
-        e1[5] = EdifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                  params.getData(), params.getDataOffset(), params.getDataSize());
-        if (params.isFirstMatch() && e1[5] >= 0) {
-            return e1[5];
-        }
-        if (e1[0] < 0 && e1[1] < 0 && e1[2] < 0 && e1[3] < 0 && e1[4] < 0 && e1[5] < 0) {
+    private static int getEncodation(EncodingParams params) {
+        if (params.getDataSize() < 0) {
             return -1;
         }
-        int j = 0;
-        int e = 99999;
-        for (int k = 0; k < 6; ++k) {
-            if (e1[k] >= 0 && e1[k] < e) {
-                e = e1[k];
-                j = k;
+
+        int options = params.getOptions() & 7;
+        if (options == 0) {
+            return handleDefaultOptions(params);
+        } else {
+            return handleSpecificOptions(params, options);
+        }
+    }
+
+    private static int handleDefaultOptions(EncodingParams params) {
+        int[] e1 = new int[6];
+        e1[0] = asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                params.getData(), params.getDataOffset(), params.getDataSize());
+        e1[1] = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                params.getData(), params.getDataOffset(), params.getDataSize(), false);
+        e1[2] = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                params.getData(), params.getDataOffset(), params.getDataSize(), true);
+        e1[3] = b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                params.getData(), params.getDataOffset(), params.getDataSize());
+        e1[4] = X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                params.getData(), params.getDataOffset(), params.getDataSize());
+        e1[5] = EdifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                params.getData(), params.getDataOffset(), params.getDataSize());
+
+        return findBestEncodation(params, e1);
+    }
+
+    private static int findBestEncodation(EncodingParams params, int[] e1) {
+        if (params.isFirstMatch()) {
+            for (int enc : e1) {
+                if (enc >= 0) return enc;
+            }
+            return -1;
+        }
+
+        int minEnc = findMinEncodation(e1);
+        if (minEnc < 0) return -1;
+
+        return performBestEncodation(params, minEnc);
+    }
+
+    private static int findMinEncodation(int[] e1) {
+        int minIndex = -1;
+        int minValue = Integer.MAX_VALUE;
+
+        for (int i = 0; i < e1.length; i++) {
+            if (e1[i] >= 0 && e1[i] < minValue) {
+                minValue = e1[i];
+                minIndex = i;
             }
         }
-        if (j == 0) {
-            e = asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                 params.getData(), params.getDataOffset(), params.getDataSize());
-        } else if (j == 1) {
-            e = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                     params.getData(), params.getDataOffset(), params.getDataSize(), false);
-        } else if (j == 2) {
-            e = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                     params.getData(), params.getDataOffset(), params.getDataSize(), true);
-        } else if (j == 3) {
-            e = b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                               params.getData(), params.getDataOffset(), params.getDataSize());
-        } else if (j == 4) {
-            e = X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                               params.getData(), params.getDataOffset(), params.getDataSize());
-        }
-        return e;
+
+        return minIndex;
     }
-    switch (options) {
-        case DM_ASCII:
-            return asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                     params.getData(), params.getDataOffset(), params.getDataSize());
-        case DM_C40:
-            return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                        params.getData(), params.getDataOffset(), params.getDataSize(), true);
-        case DM_TEXT:
-            return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                        params.getData(), params.getDataOffset(), params.getDataSize(), false);
-        case DM_B256:
-            return b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                  params.getData(), params.getDataOffset(), params.getDataSize());
-        case DM_X21:
-            return X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                  params.getData(), params.getDataOffset(), params.getDataSize());
-        case DM_EDIFACT:
-            return EdifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
-                                     params.getData(), params.getDataOffset(), params.getDataSize());
-        case DM_RAW:
-            if (params.getTextSize() > params.getDataSize()) {
+
+    private static int performBestEncodation(EncodingParams params, int minEnc) {
+        switch (minEnc) {
+            case 0: return asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                    params.getData(), params.getDataOffset(), params.getDataSize());
+            case 1: return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                    params.getData(), params.getDataOffset(), params.getDataSize(), false);
+            case 2: return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                    params.getData(), params.getDataOffset(), params.getDataSize(), true);
+            case 3: return b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                    params.getData(), params.getDataOffset(), params.getDataSize());
+            case 4: return X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                    params.getData(), params.getDataOffset(), params.getDataSize());
+            case 5: return EdifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                    params.getData(), params.getDataOffset(), params.getDataSize());
+            default: return -1;
+        }
+    }
+
+    private static int handleSpecificOptions(EncodingParams params, int options) {
+        switch (options) {
+            case DM_ASCII:
+                return asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                        params.getData(), params.getDataOffset(), params.getDataSize());
+            case DM_C40:
+                return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                        params.getData(), params.getDataOffset(), params.getDataSize(), true);
+            case DM_TEXT:
+                return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                        params.getData(), params.getDataOffset(), params.getDataSize(), false);
+            case DM_B256:
+                return b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                        params.getData(), params.getDataOffset(), params.getDataSize());
+            case DM_X21:
+                return X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                        params.getData(), params.getDataOffset(), params.getDataSize());
+            case DM_EDIFACT:
+                return EdifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                        params.getData(), params.getDataOffset(), params.getDataSize());
+            case DM_RAW:
+                return handleRawOption(params);
+            default:
                 return -1;
-            }
-            System.arraycopy(params.getText(), params.getTextOffset(), params.getData(), params.getDataOffset(),
-                             params.getTextSize());
-            return params.getTextSize();
+        }
     }
-    return -1;
-}
+
+    private static int handleRawOption(EncodingParams params) {
+        if (params.getTextSize() > params.getDataSize()) {
+            return -1;
+        }
+        System.arraycopy(params.getText(), params.getTextOffset(), params.getData(), params.getDataOffset(),
+                params.getTextSize());
+        return params.getTextSize();
+    }
+
 
     private static int getNumber(byte[] text, int ptrIn, int n) {
         int v = 0;
@@ -594,38 +612,57 @@ private static int getEncodation(EncodingParams params) {
         int xByte = (dm.width + ws * 2 + 7) / 8;
         Arrays.fill(image, (byte) 0);
 
-        //alignment patterns
-        //dotted horizontal line
+        drawAlignmentPatterns(dm, ws, xByte);
+        drawDataBits(data, dm, ws, xByte);
+    }
+
+    private void drawAlignmentPatterns(DmParams dm, int ws, int xByte) {
+        drawDottedHorizontalLines(dm, ws, xByte);
+        drawSolidHorizontalLines(dm, ws, xByte);
+        drawSolidVerticalLines(dm, ws, xByte);
+        drawDottedVerticalLines(dm, ws, xByte);
+    }
+
+    private void drawDottedHorizontalLines(DmParams dm, int ws, int xByte) {
         for (int i = ws; i < dm.height + ws; i += dm.heightSection) {
             for (int j = ws; j < dm.width + ws; j += 2) {
                 setBit(j, i, xByte);
             }
         }
-        //solid horizontal line
+    }
+
+    private void drawSolidHorizontalLines(DmParams dm, int ws, int xByte) {
         for (int i = dm.heightSection - 1 + ws; i < dm.height + ws; i += dm.heightSection) {
             for (int j = ws; j < dm.width + ws; ++j) {
                 setBit(j, i, xByte);
             }
         }
-        //solid vertical line
+    }
+
+    private void drawSolidVerticalLines(DmParams dm, int ws, int xByte) {
         for (int i = ws; i < dm.width + ws; i += dm.widthSection) {
             for (int j = ws; j < dm.height + ws; ++j) {
                 setBit(i, j, xByte);
             }
         }
-        //dotted vertical line
+    }
+
+    private void drawDottedVerticalLines(DmParams dm, int ws, int xByte) {
         for (int i = dm.widthSection - 1 + ws; i < dm.width + ws; i += dm.widthSection) {
             for (int j = 1 + ws; j < dm.height + ws; j += 2) {
                 setBit(i, j, xByte);
             }
         }
+    }
+
+    private void drawDataBits(byte[] data, DmParams dm, int ws, int xByte) {
         int p = 0;
         for (int ys = 0; ys < dm.height; ys += dm.heightSection) {
             for (int y = 1; y < dm.heightSection - 1; ++y) {
                 for (int xs = 0; xs < dm.width; xs += dm.widthSection) {
                     for (int x = 1; x < dm.widthSection - 1; ++x) {
                         int z = place[p++];
-                        if (z == 1 || (z > 1 && ((data[z / 8 - 1] & 0xff) & (128 >> (z % 8))) != 0)) {
+                        if (shouldSetBit(z, data)) {
                             setBit(x + xs + ws, y + ys + ws, xByte);
                         }
                     }
@@ -633,6 +670,11 @@ private static int getEncodation(EncodingParams params) {
             }
         }
     }
+
+    private boolean shouldSetBit(int z, byte[] data) {
+        return z == 1 || (z > 1 && ((data[z / 8 - 1] & 0xff) & (128 >> (z % 8))) != 0);
+    }
+
 
     private int processExtensions(byte[] text, int textOffset, int textSize, byte[] data) {
         if ((this.options & DM_EXTENSION) == 0) {

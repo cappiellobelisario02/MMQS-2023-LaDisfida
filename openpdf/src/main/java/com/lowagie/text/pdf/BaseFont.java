@@ -291,7 +291,7 @@ public abstract class BaseFont {
     /**
      * if the font has to be embedded
      */
-    public static final boolean embedded = true;
+    public static final boolean EMBEDDED = true;
 
     /**
      * if the font doesn't have to be embedded
@@ -317,7 +317,7 @@ public abstract class BaseFont {
     /**
      * a not defined character in a custom PDF encoding
      */
-    public static final String notdef = ".notdef";
+    public static final String NOTDEF = ".notdef";
     /**
      * list of the 14 built in fonts.
      */
@@ -761,61 +761,85 @@ public abstract class BaseFont {
     public static BaseFont createFont(FontOptions options) throws DocumentException, IOException {
         String name = options.getName();
         String encoding = normalizeEncoding(options.getEncoding());
-        boolean embedded = options.isEmbedded();
-        boolean cached = options.isCached();
-        byte[] ttfAfm = options.getTtfAfm();
-        byte[] pfb = options.getPfb();
-        boolean noThrow = options.isNoThrow();
-        boolean forceRead = options.isForceRead();
+        boolean embedded = shouldEmbedFont(options, name, encoding);
+        String key = buildFontCacheKey(name, encoding, embedded);
 
+        BaseFont cachedFont = getCachedFont(key, options.isCached(), name);
+        if (cachedFont != null) {
+            return cachedFont;
+        }
+
+        BaseFont fontBuilt = buildFont(name, encoding, embedded, options);
+        if (fontBuilt == null && options.isNoThrow()) {
+            return null;
+        } else if (fontBuilt == null) {
+            throw new DocumentException(MessageLocalization.getComposedMessage("font.1.with.2.is.not.recognized", name, encoding));
+        }
+
+        cacheFont(key, fontBuilt, options.isCached());
+        return fontBuilt;
+    }
+
+    private static boolean shouldEmbedFont(FontOptions options, String name, String encoding) {
         String nameBase = getBaseName(name);
         boolean isBuiltinFonts14 = BuiltinFonts14.containsKey(name);
         boolean isCJKFont = !isBuiltinFonts14 && CJKFont.isCJKFont(nameBase, encoding);
-        if (isBuiltinFonts14 || isCJKFont) {
-            embedded = false;
-        } else if (encoding.equals(IDENTITY_H) || encoding.equals(IDENTITY_V)) {
-            embedded = true;
-        }
 
-        BaseFont fontFound = null;
-        BaseFont fontBuilt = null;
-        String key = name + "\n" + encoding + "\n" + embedded;
+        if (isBuiltinFonts14 || isCJKFont) {
+            return false;
+        } else if (encoding.equals(IDENTITY_H) || encoding.equals(IDENTITY_V)) {
+            return true;
+        }
+        return options.isEmbedded();
+    }
+
+    private static String buildFontCacheKey(String name, String encoding, boolean embedded) {
+        return name + "\n" + encoding + "\n" + embedded;
+    }
+
+    private static BaseFont getCachedFont(String key, boolean cached, String name) throws IOException, DocumentException {
         if (cached) {
-            fontFound = fontCache.get(key);
+            BaseFont fontFound = fontCache.get(key);
             if (fontFound != null) {
                 LayoutProcessor.loadFont(fontFound, name);
                 return fontFound;
             }
         }
+        return null;
+    }
 
-        if (isBuiltinFonts14 || name.toLowerCase().endsWith(".afm")
-                || name.toLowerCase().endsWith(".pfm")) {
-            fontBuilt = new Type1Font(name, encoding, embedded, ttfAfm, pfb, forceRead);
-            fontBuilt.fastWinansi = encoding.equals(CP1252);
-        } else if (nameBase.toLowerCase().endsWith(".ttf")
-                || nameBase.toLowerCase().endsWith(".otf")
-                || nameBase.toLowerCase().indexOf(".ttc,") > 0) {
+    private static BaseFont buildFont(String name, String encoding, boolean embedded, FontOptions options) throws DocumentException, IOException {
+        String nameBase = getBaseName(name);
+        byte[] ttfAfm = options.getTtfAfm();
+        byte[] pfb = options.getPfb();
+        boolean forceRead = options.isForceRead();
+
+        if (BuiltinFonts14.containsKey(name) || name.toLowerCase().endsWith(".afm") || name.toLowerCase().endsWith(".pfm")) {
+            Type1Font type1Font = new Type1Font(name, encoding, embedded, ttfAfm, pfb, forceRead);
+            type1Font.fastWinansi = encoding.equals(CP1252);
+            return type1Font;
+        } else if (nameBase.toLowerCase().endsWith(".ttf") || nameBase.toLowerCase().endsWith(".otf") || nameBase.toLowerCase().indexOf(".ttc,") > 0) {
             if (encoding.equals(IDENTITY_H) || encoding.equals(IDENTITY_V)) {
-                fontBuilt = new TrueTypeFontUnicode(name, encoding, embedded, ttfAfm, forceRead);
-                LayoutProcessor.loadFont(fontBuilt, name);
+                TrueTypeFontUnicode trueTypeFontUnicode = new TrueTypeFontUnicode(name, encoding, embedded, ttfAfm, forceRead);
+                LayoutProcessor.loadFont(trueTypeFontUnicode, name);
+                return trueTypeFontUnicode;
             } else {
-                fontBuilt = new TrueTypeFont(name, encoding, embedded, ttfAfm, false, forceRead);
-                fontBuilt.fastWinansi = encoding.equals(CP1252);
+                TrueTypeFont trueTypeFont = new TrueTypeFont(name, encoding, embedded, ttfAfm, false, forceRead);
+                trueTypeFont.fastWinansi = encoding.equals(CP1252);
+                return trueTypeFont;
             }
-        } else if (isCJKFont) {
-            fontBuilt = new CJKFont(name, encoding, embedded);
-        } else if (noThrow) {
-            return null;
-        } else {
-            throw new DocumentException(MessageLocalization.getComposedMessage("font.1.with.2.is.not.recognized", name, encoding));
+        } else if (CJKFont.isCJKFont(nameBase, encoding)) {
+            return new CJKFont(name, encoding, embedded);
         }
+        return null;
+    }
 
+    private static void cacheFont(String key, BaseFont fontBuilt, boolean cached) {
         if (cached) {
             fontCache.putIfAbsent(key, fontBuilt);
-            return fontCache.get(key);
         }
-        return fontBuilt;
     }
+
 
 
     /**
@@ -1082,80 +1106,99 @@ public abstract class BaseFont {
      */
     protected void createEncoding() {
         if (encoding.startsWith("#")) {
-            specialMap = new IntHashtable();
-            StringTokenizer tok = new StringTokenizer(encoding.substring(1),
-                    " ,\t\n\r\f");
-            if (tok.nextToken().equals("full")) {
-                while (tok.hasMoreTokens()) {
-                    String order = tok.nextToken();
-                    String name = tok.nextToken();
-                    char uni = (char) Integer.parseInt(tok.nextToken(), 16);
-                    int orderK;
-                    if (order.startsWith("'")) {
-                        orderK = order.charAt(1);
-                    } else {
-                        orderK = Integer.parseInt(order);
-                    }
-                    orderK %= 256;
-                    specialMap.put(uni, orderK);
-                    differences[orderK] = name;
-                    unicodeDifferences[orderK] = uni;
-                    widths[orderK] = getRawWidth(uni, name);
-                    charBBoxes[orderK] = getRawCharBBox(uni, name);
-                }
-            } else {
-                int k = 0;
-                if (tok.hasMoreTokens()) {
-                    k = Integer.parseInt(tok.nextToken());
-                }
-                while (tok.hasMoreTokens() && k < 256) {
-                    String hex = tok.nextToken();
-                    int uni = Integer.parseInt(hex, 16) % 0x10000;
-                    String name = GlyphList.unicodeToName(uni);
-                    if (name != null) {
-                        specialMap.put(uni, k);
-                        differences[k] = name;
-                        unicodeDifferences[k] = (char) uni;
-                        widths[k] = getRawWidth(uni, name);
-                        charBBoxes[k] = getRawCharBBox(uni, name);
-                        ++k;
-                    }
-                }
-            }
-            for (int k = 0; k < 256; ++k) {
-                if (differences[k] == null) {
-                    differences[k] = notdef;
-                }
-            }
+            handleSpecialEncoding();
         } else if (fontSpecific) {
-            for (int k = 0; k < 256; ++k) {
-                widths[k] = getRawWidth(k, null);
-                charBBoxes[k] = getRawCharBBox(k, null);
-            }
+            handleFontSpecificEncoding();
         } else {
-            String s;
-            String name;
-            char c;
-            byte[] b = new byte[1];
-            for (int k = 0; k < 256; ++k) {
-                b[0] = (byte) k;
-                s = PdfEncodings.convertToString(b, encoding);
-                if (s.length() > 0) {
-                    c = s.charAt(0);
-                } else {
-                    c = '?';
-                }
-                name = GlyphList.unicodeToName(c);
-                if (name == null) {
-                    name = notdef;
-                }
-                differences[k] = name;
-                unicodeDifferences[k] = c;
-                widths[k] = getRawWidth(c, name);
-                charBBoxes[k] = getRawCharBBox(c, name);
+            handleDefaultEncoding();
+        }
+    }
+
+    private void handleSpecialEncoding() {
+        specialMap = new IntHashtable();
+        StringTokenizer tok = new StringTokenizer(encoding.substring(1), " ,\t\n\r\f");
+        if (tok.nextToken().equals("full")) {
+            handleFullEncoding(tok);
+        } else {
+            handlePartialEncoding(tok);
+        }
+        fillRemainingDifferences();
+    }
+
+    private void handleFullEncoding(StringTokenizer tok) {
+        while (tok.hasMoreTokens()) {
+            int orderK = parseOrder(tok.nextToken());
+            String name = tok.nextToken();
+            char uni = (char) Integer.parseInt(tok.nextToken(), 16);
+            updateEncoding(orderK, name, uni);
+        }
+    }
+
+    private void handlePartialEncoding(StringTokenizer tok) {
+        int k = tok.hasMoreTokens() ? Integer.parseInt(tok.nextToken()) : 0;
+        while (tok.hasMoreTokens() && k < 256) {
+            String hex = tok.nextToken();
+            int uni = Integer.parseInt(hex, 16) % 0x10000;
+            String name = GlyphList.unicodeToName(uni);
+            if (name != null) {
+                updateEncoding(k, name, (char) uni);
+                ++k;
             }
         }
     }
+
+    private int parseOrder(String order) {
+        if (order.startsWith("'")) {
+            return order.charAt(1) % 256;
+        } else {
+            return Integer.parseInt(order) % 256;
+        }
+    }
+
+    private void updateEncoding(int orderK, String name, char uni) {
+        specialMap.put(uni, orderK);
+        differences[orderK] = name;
+        unicodeDifferences[orderK] = uni;
+        widths[orderK] = getRawWidth(uni, name);
+        charBBoxes[orderK] = getRawCharBBox(uni, name);
+    }
+
+    private void fillRemainingDifferences() {
+        for (int k = 0; k < 256; ++k) {
+            if (differences[k] == null) {
+                differences[k] = NOTDEF;
+            }
+        }
+    }
+
+    private void handleFontSpecificEncoding() {
+        for (int k = 0; k < 256; ++k) {
+            widths[k] = getRawWidth(k, null);
+            charBBoxes[k] = getRawCharBBox(k, null);
+        }
+    }
+
+    private void handleDefaultEncoding() {
+        byte[] b = new byte[1];
+        for (int k = 0; k < 256; ++k) {
+            b[0] = (byte) k;
+            char c = getCharFromEncoding(b);
+            String name = GlyphList.unicodeToName(c);
+            if (name == null) {
+                name = NOTDEF;
+            }
+            differences[k] = name;
+            unicodeDifferences[k] = c;
+            widths[k] = getRawWidth(c, name);
+            charBBoxes[k] = getRawCharBBox(c, name);
+        }
+    }
+
+    private char getCharFromEncoding(byte[] b) {
+        String s = PdfEncodings.convertToString(b, encoding);
+        return s.length() > 0 ? s.charAt(0) : '?';
+    }
+
 
     /**
      * Gets the width from the font according to the Unicode char <CODE>c</CODE> or the <CODE>name</CODE>. If the

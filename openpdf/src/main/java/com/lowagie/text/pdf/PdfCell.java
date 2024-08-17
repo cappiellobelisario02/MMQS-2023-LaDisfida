@@ -1,7 +1,7 @@
 /*
- * $Id: PdfPCell.java 4065 2009-09-16 23:09:11Z psoares33 $
+ * $Id: PdfCell.java 3671 2009-02-01 14:46:09Z blowagie $
  *
- * Copyright 2001, 2002 Paulo Soares
+ * Copyright 1999, 2000, 2001, 2002 Bruno Lowagie
  *
  * The contents of this file are subject to the Mozilla Public License Version 1.1
  * (the "License"); you may not use this file except in compliance with the License.
@@ -49,975 +49,868 @@
 
 package com.lowagie.text.pdf;
 
+import com.lowagie.text.Anchor;
+import com.lowagie.text.Cell;
 import com.lowagie.text.Chunk;
-import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
-import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
+import com.lowagie.text.List;
+import com.lowagie.text.ListItem;
+import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
-import com.lowagie.text.error_messages.MessageLocalization;
-import com.lowagie.text.pdf.events.PdfPCellEventForwarder;
-
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
- * A cell in a PdfPTable.
+ * A <CODE>PdfCell</CODE> is the PDF translation of a <CODE>Cell</CODE>.
+ * <p>
+ * A <CODE>PdfCell</CODE> is an <CODE>ArrayList</CODE> of <CODE>PdfLine</CODE>s.
+ * <p>
+ * When using variable borders ({@link com.lowagie.text.Rectangle#isUseVariableBorders isUseVariableBorders()} == true),
+ * the borders are drawn completely inside the cell Rectangle so that adjacent cell borders will not overlap. Otherwise,
+ * the borders are drawn on top of the edges of the cell Rectangle and will overlap the borders of adjacent cells.
+ *
+ * @see com.lowagie.text.Rectangle
+ * @see com.lowagie.text.Cell
+ * @see PdfLine
+ * @see PdfTable
  */
 
-public class PdfPCell extends Rectangle {
+public class PdfCell extends Rectangle {
+
+    // membervariables
 
     /**
-     * The text in the cell.
+     * These are the PdfLines in the Cell.
      */
-    protected Phrase phrase;
-    private ColumnText column = new ColumnText(null);
+    private java.util.List<PdfLine> lines;
+
     /**
-     * Vertical alignment of the cell.
+     * These are the PdfLines in the Cell.
      */
-    private int verticalAlignment = Element.ALIGN_TOP;
+    private PdfLine line;
+
     /**
-     * Left padding of the cell.
+     * These are the Images in the Cell.
      */
-    private float paddingLeft = 2;
+    private java.util.List<Image> images;
+
     /**
-     * Right padding of the cell.
+     * This is the leading of the lines.
      */
-    private float paddingRight = 2;
+    private float leading;
+
     /**
-     * Top padding of the cell.
+     * This is the number of the row the cell is in.
      */
-    private float paddingTop = 2;
+    private int rownumber;
+
     /**
-     * Bottom padding of the cell.
+     * This is the rowspan of the cell.
      */
-    private float paddingBottom = 2;
+    private int rowspan;
+
     /**
-     * Fixed height of the cell.
+     * This is the cellspacing of the cell.
      */
-    private float fixedHeight = 0;
+    private float cellspacing;
+
     /**
-     * Minimum height of the cell.
+     * This is the cellpadding of the cell.
      */
-    private float minimumHeight;
+    private float cellpadding;
+
     /**
-     * Holds value of property noWrap.
+     * Indicates if this cell belongs to the header of a <CODE>PdfTable</CODE>
      */
-    private boolean noWrap = false;
+    private boolean header = false;
+
     /**
-     * Holds value of property table.
+     * This is the total height of the content of the cell.  Note that the actual cell height may be larger due to
+     * another cell on the row *
      */
-    private PdfPTable table;
+    private float contentHeight = 0.0f;
+
     /**
-     * Holds value of property colspan.
+     * Indicates that the largest ascender height should be used to determine the height of the first line. Setting this
+     * to true can help with vertical alignment problems.
      */
-    private int colspan = 1;
+    private boolean useAscender;
+
     /**
-     * Holds value of property rowspan.
-     *
-     * @since 2.1.6
-     */
-    private int rowspan = 1;
-    /**
-     * Holds value of property image.
-     */
-    private Image image;
-    /**
-     * Holds value of property cellEvent.
-     */
-    private PdfPCellEvent cellEvent;
-    /**
-     * Holds value of property useDescender.
+     * Indicates that the largest descender height should be added to the height of the last line (so characters like y
+     * don't dip into the border).
      */
     private boolean useDescender;
-    /**
-     * Increases padding to include border if true
-     */
-    private boolean useBorderPadding = false;
-    /**
-     * The rotation of the cell. Possible values are 0, 90, 180 and 270.
-     */
-    private int rotation;
 
     /**
-     * Constructs an empty <CODE>PdfPCell</CODE>. The default padding is 2.
+     * Adjusts the cell contents to compensate for border widths.
      */
-    public PdfPCell() {
-        super(0, 0, 0, 0);
-        borderWidth = 0.5f;
-        border = BOX;
-        column.setLeading(0, 1);
-    }
+    private boolean useBorderPadding;
+
+    private int verticalAlignment;
+
+    private PdfLine firstLine;
+    private PdfLine lastLine;
+
+    // constructors
+    /**
+     * This is the number of the group the cell is in.
+     */
+    private int groupNumber;
 
     /**
-     * Constructs a <CODE>PdfPCell</CODE> with a <CODE>Phrase</CODE>. The default padding is 2.
+     * Constructs a <CODE>PdfCell</CODE>-object.
      *
-     * @param phrase the text
+     * @param cell        the original <CODE>Cell</CODE>
+     * @param rownumber   the number of the <CODE>Row</CODE> the <CODE>Cell</CODE> was in.
+     * @param left        the left border of the <CODE>PdfCell</CODE>
+     * @param right       the right border of the <CODE>PdfCell</CODE>
+     * @param top         the top border of the <CODE>PdfCell</CODE>
+     * @param cellspacing the cellspacing of the <CODE>Table</CODE>
+     * @param cellpadding the cellpadding    of the <CODE>Table</CODE>
      */
-    public PdfPCell(Phrase phrase) {
-        super(0, 0, 0, 0);
-        borderWidth = 0.5f;
-        border = BOX;
-        this.phrase = phrase;
-        column.addText(this.phrase);
-        column.setLeading(0, 1);
-    }
 
-    /**
-     * Constructs a <CODE>PdfPCell</CODE> with an <CODE>Image</CODE>. The default padding is 0.
-     *
-     * @param image the <CODE>Image</CODE>
-     */
-    public PdfPCell(Image image) {
-        this(image, false);
-    }
-
-    /**
-     * Constructs a <CODE>PdfPCell</CODE> with an <CODE>Image</CODE>. The default padding is 0.25 for a border width of
-     * 0.5.
-     *
-     * @param image the <CODE>Image</CODE>
-     * @param fit   <CODE>true</CODE> to fit the image to the cell
-     */
-    public PdfPCell(Image image, boolean fit) {
-        super(0, 0, 0, 0);
-        borderWidth = 0.5f;
-        border = BOX;
-        if (fit) {
-            this.image = image;
-            column.setLeading(0, 1);
-            setPadding(borderWidth / 2);
-        } else {
-            this.phrase = new Phrase(new Chunk(image, 0, 0));
-            column.addText(this.phrase);
-            column.setLeading(0, 1);
-            setPadding(0);
-        }
-    }
-
-    /**
-     * Constructs a <CODE>PdfPCell</CODE> with a <CODE>PdfPtable</CODE>. This constructor allows nested tables. The
-     * default padding is 0.
-     *
-     * @param table The <CODE>PdfPTable</CODE>
-     */
-    public PdfPCell(PdfPTable table) {
-        this(table, null);
-    }
-
-    /**
-     * Constructs a <CODE>PdfPCell</CODE> with a <CODE>PdfPtable</CODE>. This constructor allows nested tables.
-     *
-     * @param table The <CODE>PdfPTable</CODE>
-     * @param style The style to apply to the cell (you could use getDefaultCell())
-     * @since 2.1.0
-     */
-    public PdfPCell(PdfPTable table, PdfPCell style) {
-        super(0, 0, 0, 0);
-        borderWidth = 0.5f;
-        border = BOX;
-        column.setLeading(0, 1);
-        this.table = table;
-        table.setWidthPercentage(100);
-        table.setExtendLastRow(true);
-        column.addElement(table);
-        if (style != null) {
-            cloneNonPositionParameters(style);
-            verticalAlignment = style.verticalAlignment;
-            paddingLeft = style.paddingLeft;
-            paddingRight = style.paddingRight;
-            paddingTop = style.paddingTop;
-            paddingBottom = style.paddingBottom;
-            colspan = style.colspan;
-            rowspan = style.rowspan;
-            cellEvent = style.cellEvent;
-            useDescender = style.useDescender;
-            useBorderPadding = style.useBorderPadding;
-            rotation = style.rotation;
-        } else {
-            setPadding(0);
-        }
-    }
-
-    /**
-     * Constructs a deep copy of a <CODE>PdfPCell</CODE>.
-     *
-     * @param cell the <CODE>PdfPCell</CODE> to duplicate
-     */
-    public PdfPCell(PdfPCell cell) {
-        super(cell.llx, cell.lly, cell.urx, cell.ury);
+    public PdfCell(Cell cell, int rownumber, float left, float right, float top, float cellspacing, float cellpadding) {
+        // constructs a Rectangle (the bottomvalue will be changed afterwards)
+        super(left, top, right, top);
+        // copying the other Rectangle attributes from class Cell
         cloneNonPositionParameters(cell);
-        verticalAlignment = cell.verticalAlignment;
-        paddingLeft = cell.paddingLeft;
-        paddingRight = cell.paddingRight;
-        paddingTop = cell.paddingTop;
-        paddingBottom = cell.paddingBottom;
-        phrase = cell.phrase;
-        fixedHeight = cell.fixedHeight;
-        minimumHeight = cell.minimumHeight;
-        noWrap = cell.noWrap;
-        colspan = cell.colspan;
-        rowspan = cell.rowspan;
-        if (cell.table != null) {
-            table = new PdfPTable(cell.table);
+        this.cellpadding = cellpadding;
+        this.cellspacing = cellspacing;
+        this.verticalAlignment = cell.getVerticalAlignment();
+        this.useAscender = cell.isUseAscender();
+        this.useDescender = cell.isUseDescender();
+        this.useBorderPadding = cell.isUseBorderPadding();
+
+        // initialization of some parameters
+        PdfChunk chunk;
+        Element element;
+        PdfChunk overflow;
+        lines = new ArrayList<>();
+        images = new ArrayList<>();
+        leading = cell.getLeading();
+        int alignment = cell.getHorizontalAlignment();
+        left += cellspacing + cellpadding;
+        right -= cellspacing + cellpadding;
+
+        left += getBorderWidthInside(LEFT);
+        right -= getBorderWidthInside(RIGHT);
+
+        contentHeight = 0;
+
+        rowspan = cell.getRowspan();
+
+        java.util.List<PdfAction> allActions;
+        int aCounter;
+        // we loop over all the elements of the cell
+        for (Iterator i = cell.getElements(); i.hasNext(); ) {
+            element = (Element) i.next();
+            switch (element.type()) {
+                case Element.JPEG:
+                case Element.JPEG2000:
+                case Element.JBIG2:
+                case Element.IMGRAW:
+                case Element.IMGTEMPLATE:
+                    addImage((Image) element, left, right, alignment); //
+                    break;
+                // if the element is a list
+                case Element.LIST:
+                    if (line != null && line.size() > 0) {
+                        line.resetAlignment();
+                        addLine(line);
+                    }
+                    // we loop over all the listitems
+                    addList((List) element, left, right, alignment);
+                    line = new PdfLine(left, right, alignment, leading);
+                    break;
+                // if the element is something else
+                default:
+                    allActions = new ArrayList<>();
+                    processActions(element, null, allActions);
+                    aCounter = 0;
+
+                    float currentLineLeading = leading;
+                    float currentLeft = left;
+                    float currentRight = right;
+                    if (element instanceof Phrase) {
+                        currentLineLeading = ((Phrase) element).getLeading();
+                    }
+                    if (element instanceof Paragraph) {
+                        Paragraph p = (Paragraph) element;
+                        currentLeft += p.getIndentationLeft();
+                        currentRight -= p.getIndentationRight();
+                    }
+                    if (line == null) {
+                        line = new PdfLine(currentLeft, currentRight, alignment, currentLineLeading);
+                    }
+                    // we loop over the chunks
+                    java.util.List<? extends Object> chunks = element.getChunks();
+                    if (chunks.isEmpty()) {
+                        addLine(line); // add empty line - all cells need some lines even if they are empty
+                        line = new PdfLine(currentLeft, currentRight, alignment, currentLineLeading);
+                    } else {
+                        for (Object chunk1 : chunks) {
+                            Chunk c = (Chunk) chunk1;
+                            chunk = new PdfChunk(c, (allActions.get(aCounter++)));
+                            while ((overflow = line.add(chunk)) != null) {
+                                addLine(line);
+                                line = new PdfLine(currentLeft, currentRight, alignment, currentLineLeading);
+                                chunk = overflow;
+                            }
+                        }
+                    }
+                    // if the element is a paragraph, section or chapter, we reset the alignment and add the line
+                    switch (element.type()) {
+                        case Element.PARAGRAPH:
+                        case Element.SECTION:
+                        case Element.CHAPTER:
+                            line.resetAlignment();
+                            flushCurrentLine();
+                    }
+            }
         }
-        image = Image.getInstance(cell.image);
-        cellEvent = cell.cellEvent;
-        useDescender = cell.useDescender;
-        column = ColumnText.duplicate(cell.column);
-        useBorderPadding = cell.useBorderPadding;
-        rotation = cell.rotation;
-    }
-
-    /**
-     * Adds an iText element to the cell.
-     *
-     * @param element the iText element to add to the cell
-     */
-    public void addElement(Element element) {
-        if (table != null) {
-            table = null;
-            column.setText(null);
+        flushCurrentLine();
+        if (lines.size() > cell.getMaxLines()) {
+            while (lines.size() > cell.getMaxLines()) {
+                removeLine(lines.size() - 1);
+            }
+            if (cell.getMaxLines() > 0) {
+                String more = cell.getShowTruncation();
+                if (more != null && more.length() > 0) {
+                    // Denote that the content has been truncated
+                    lastLine = lines.get(lines.size() - 1);
+                    if (lastLine.size() >= 0) {
+                        PdfChunk lastChunk = lastLine.getChunk(lastLine.size() - 1);
+                        float moreWidth = new PdfChunk(more, lastChunk).width();
+                        while (lastChunk.toString().length() > 0 && lastChunk.width() + moreWidth > right - left) {
+                            // Remove characters to leave room for the 'more' indicator
+                            lastChunk.setValue(lastChunk.toString().substring(0, lastChunk.length() - 1));
+                        }
+                        lastChunk.setValue(lastChunk.toString() + more);
+                    } else {
+                        lastLine.add(new PdfChunk(new Chunk(more), null));
+                    }
+                }
+            }
         }
-        column.addElement(element);
-    }
-
-    /**
-     * Gets the <CODE>Phrase</CODE> from this cell.
-     *
-     * @return the <CODE>Phrase</CODE>
-     */
-    public Phrase getPhrase() {
-        return phrase;
-    }
-
-    /**
-     * Sets the <CODE>Phrase</CODE> for this cell.
-     *
-     * @param phrase the <CODE>Phrase</CODE>
-     */
-    public void setPhrase(Phrase phrase) {
-        table = null;
-        image = null;
-        this.phrase = phrase;
-        column.setText(this.phrase);
-    }
-
-    /**
-     * Gets the horizontal alignment for the cell.
-     *
-     * @return the horizontal alignment for the cell
-     */
-    public int getHorizontalAlignment() {
-        return column.getAlignment();
-    }
-
-    /**
-     * Sets the horizontal alignment for the cell. It could be
-     * <CODE>Element.ALIGN_CENTER</CODE> for example.
-     *
-     * @param horizontalAlignment The horizontal alignment
-     */
-    public void setHorizontalAlignment(int horizontalAlignment) {
-        column.setAlignment(horizontalAlignment);
-    }
-
-    /**
-     * Gets the vertical alignment for the cell.
-     *
-     * @return the vertical alignment for the cell
-     */
-    public int getVerticalAlignment() {
-        return verticalAlignment;
-    }
-
-    /**
-     * Sets the vertical alignment for the cell. It could be
-     * <CODE>Element.ALIGN_MIDDLE</CODE> for example.
-     *
-     * @param verticalAlignment The vertical alignment
-     */
-    public void setVerticalAlignment(int verticalAlignment) {
-        if (table != null) {
-            table.setExtendLastRow(verticalAlignment == Element.ALIGN_TOP);
+        // we set some additional parameters
+        if (useDescender && lastLine != null) {
+            contentHeight -= lastLine.getDescender();
         }
-        this.verticalAlignment = verticalAlignment;
-    }
 
-    /**
-     * Gets the effective left padding. This will include the left border width if {@link #isUseBorderPadding()} is
-     * true.
-     *
-     * @return effective value of property paddingLeft.
-     */
-    public float getEffectivePaddingLeft() {
-        if (isUseBorderPadding()) {
-            float border = getBorderWidthLeft() / (isUseVariableBorders() ? 1f : 2f);
-            return paddingLeft + border;
+        // adjust first line height so that it touches the top
+        if (!lines.isEmpty()) {
+            firstLine = lines.get(0);
+            float firstLineRealHeight = firstLineRealHeight();
+            contentHeight -= firstLine.height();
+            firstLine.height = firstLineRealHeight;
+            contentHeight += firstLineRealHeight;
         }
-        return paddingLeft;
+
+        float newBottom = top - contentHeight - (2f * cellpadding()) - (2f * cellspacing());
+        newBottom -= getBorderWidthInside(TOP) + getBorderWidthInside(BOTTOM);
+        setBottom(newBottom);
+
+        this.rownumber = rownumber;
     }
 
-    /**
-     * @return Value of property paddingLeft.
-     */
-    public float getPaddingLeft() {
-        return paddingLeft;
-    }
+    // overriding of the Rectangle methods
 
-    /**
-     * Setter for property paddingLeft.
-     *
-     * @param paddingLeft New value of property paddingLeft.
-     */
-    public void setPaddingLeft(float paddingLeft) {
-        this.paddingLeft = paddingLeft;
-    }
-
-    /**
-     * Gets the effective right padding.  This will include the right border width if {@link #isUseBorderPadding()} is
-     * true.
-     *
-     * @return effective value of property paddingRight.
-     */
-    public float getEffectivePaddingRight() {
-        if (isUseBorderPadding()) {
-            float border = getBorderWidthRight() / (isUseVariableBorders() ? 1f : 2f);
-            return paddingRight + border;
-        }
-        return paddingRight;
-    }
-
-    /**
-     * Getter for property paddingRight.
-     *
-     * @return Value of property paddingRight.
-     */
-    public float getPaddingRight() {
-        return paddingRight;
-    }
-
-    /**
-     * Setter for property paddingRight.
-     *
-     * @param paddingRight New value of property paddingRight.
-     */
-    public void setPaddingRight(float paddingRight) {
-        this.paddingRight = paddingRight;
-    }
-
-    /**
-     * Gets the effective top padding.  This will include the top border width if {@link #isUseBorderPadding()} is
-     * true.
-     *
-     * @return effective value of property paddingTop.
-     */
-    public float getEffectivePaddingTop() {
-        if (isUseBorderPadding()) {
-            float border = getBorderWidthTop() / (isUseVariableBorders() ? 1f : 2f);
-            return paddingTop + border;
-        }
-        return paddingTop;
-    }
-
-    /**
-     * Getter for property paddingTop.
-     *
-     * @return Value of property paddingTop.
-     */
-    public float getPaddingTop() {
-        return paddingTop;
-    }
-
-    /**
-     * Setter for property paddingTop.
-     *
-     * @param paddingTop New value of property paddingTop.
-     */
-    public void setPaddingTop(float paddingTop) {
-        this.paddingTop = paddingTop;
-    }
-
-    /**
-     * Gets the effective bottom padding. This will include  the bottom border width if {@link #isUseBorderPadding()} is
-     * true.
-     *
-     * @return effective value of property paddingBottom.
-     */
-    public float getEffectivePaddingBottom() {
-        if (isUseBorderPadding()) {
-            float border = getBorderWidthBottom() / (isUseVariableBorders() ? 1f : 2f);
-            return paddingBottom + border;
-        }
-        return paddingBottom;
-    }
-
-    /**
-     * Getter for property paddingBottom.
-     *
-     * @return Value of property paddingBottom.
-     */
-    public float getPaddingBottom() {
-        return paddingBottom;
-    }
-
-    /**
-     * Setter for property paddingBottom.
-     *
-     * @param paddingBottom New value of property paddingBottom.
-     */
-    public void setPaddingBottom(float paddingBottom) {
-        this.paddingBottom = paddingBottom;
-    }
-
-    /**
-     * Sets the padding of the contents in the cell (space between content and border).
-     *
-     * @param padding the padding
-     */
-    public void setPadding(float padding) {
-        paddingBottom = padding;
-        paddingTop = padding;
-        paddingLeft = padding;
-        paddingRight = padding;
-    }
-
-    /**
-     * If true, then effective padding will include border widths
-     *
-     * @return true if effective padding includes border widths
-     */
-    public boolean isUseBorderPadding() {
-        return useBorderPadding;
-    }
-
-    /**
-     * Adjusts effective padding to include border widths.
-     *
-     * @param use adjust effective padding if true
-     */
-    public void setUseBorderPadding(boolean use) {
-        useBorderPadding = use;
-    }
-
-    /**
-     * Sets the leading fixed and variable. The resultant leading will be: fixedLeading+multipliedLeading*maxFontSize
-     * where maxFontSize is the size of the biggest font in the line.
-     *
-     * @param fixedLeading      the fixed leading
-     * @param multipliedLeading the variable leading
-     */
-    public void setLeading(float fixedLeading, float multipliedLeading) {
-        column.setLeading(fixedLeading, multipliedLeading);
-    }
-
-    /**
-     * Gets the fixed leading.
-     *
-     * @return the leading
-     */
-    public float getLeading() {
-        return column.getLeading();
-    }
-
-    /**
-     * Gets the variable leading.
-     *
-     * @return the leading
-     */
-    public float getMultipliedLeading() {
-        return column.getMultipliedLeading();
-    }
-
-    /**
-     * Gets the first paragraph line indent.
-     *
-     * @return the indent
-     */
-    public float getIndent() {
-        return column.getIndent();
-    }
-
-    /**
-     * Sets the first paragraph line indent.
-     *
-     * @param indent the indent
-     */
-    public void setIndent(float indent) {
-        column.setIndent(indent);
-    }
-
-    /**
-     * Gets the extra space between paragraphs.
-     *
-     * @return the extra space between paragraphs
-     */
-    public float getExtraParagraphSpace() {
-        return column.getExtraParagraphSpace();
-    }
-
-    /**
-     * Sets the extra space between paragraphs.
-     *
-     * @param extraParagraphSpace the extra space between paragraphs
-     */
-    public void setExtraParagraphSpace(float extraParagraphSpace) {
-        column.setExtraParagraphSpace(extraParagraphSpace);
-    }
-
-    /**
-     * Get the fixed height of the cell.
-     *
-     * @return Value of property fixedHeight.
-     */
-    public float getFixedHeight() {
-        return fixedHeight;
-    }
-
-    /**
-     * Set a fixed height for the cell. This will automatically unset minimumHeight, if set.
-     *
-     * @param fixedHeight New value of property fixedHeight.
-     */
-    public void setFixedHeight(float fixedHeight) {
-        this.fixedHeight = fixedHeight;
-        minimumHeight = 0;
-    }
-
-    /**
-     * Tells you whether the cell has a fixed height.
-     *
-     * @return true is a fixed height was set.
-     * @since 2.1.5
-     */
-    public boolean hasFixedHeight() {
-        return getFixedHeight() > 0;
-    }
-
-    /**
-     * Get the minimum height of the cell.
-     *
-     * @return Value of property minimumHeight.
-     */
-    public float getMinimumHeight() {
-        return minimumHeight;
-    }
-
-    /**
-     * Set a minimum height for the cell. This will automatically unset fixedHeight, if set.
-     *
-     * @param minimumHeight New value of property minimumHeight.
-     */
-    public void setMinimumHeight(float minimumHeight) {
-        this.minimumHeight = minimumHeight;
-        fixedHeight = 0;
-    }
-
-    /**
-     * Tells you whether the cell has a minimum height.
-     *
-     * @return true if a minimum height was set.
-     * @since 2.1.5
-     */
-    public boolean hasMinimumHeight() {
-        return getMinimumHeight() > 0;
-    }
-
-    /**
-     * Getter for property noWrap.
-     *
-     * @return Value of property noWrap.
-     */
-    public boolean isNoWrap() {
-        return noWrap;
-    }
-
-    /**
-     * Setter for property noWrap.
-     *
-     * @param noWrap New value of property noWrap.
-     */
-    public void setNoWrap(boolean noWrap) {
-        this.noWrap = noWrap;
-    }
-
-    /**
-     * Getter for property table.
-     *
-     * @return Value of property table.
-     * @since 2.x
-     */
-    public PdfPTable getTable() {
-        return table;
-    }
-
-    void setTable(PdfPTable table) {
-        this.table = table;
-        column.setText(null);
-        image = null;
-        if (table != null) {
-            table.setExtendLastRow(verticalAlignment == Element.ALIGN_TOP);
-            column.addElement(table);
-            table.setWidthPercentage(100);
+    private void addList(List list, float left, float right, int alignment) {
+        PdfChunk chunk;
+        PdfChunk overflow;
+        java.util.List<PdfAction> allActions = new ArrayList<>();
+        processActions(list, null, allActions);
+        int aCounter = 0;
+        for (Object o1 : list.getItems()) {
+            Element ele = (Element) o1;
+            switch (ele.type()) {
+                case Element.LISTITEM:
+                    ListItem item = (ListItem) ele;
+                    line = new PdfLine(left + item.getIndentationLeft(), right, alignment, item.getLeading());
+                    line.setListItem(item);
+                    for (Object o : item.getChunks()) {
+                        chunk = new PdfChunk((Chunk) o, allActions.get(aCounter++));
+                        while ((overflow = line.add(chunk)) != null) {
+                            addLine(line);
+                            line = new PdfLine(left + item.getIndentationLeft(), right, alignment, item.getLeading());
+                            chunk = overflow;
+                        }
+                        line.resetAlignment();
+                        addLine(line);
+                        line = new PdfLine(left + item.getIndentationLeft(), right, alignment, leading);
+                    }
+                    break;
+                case Element.LIST:
+                    List sublist = (List) ele;
+                    addList(sublist, left + sublist.getIndentationLeft(), right, alignment);
+                    break;
+            }
         }
     }
 
     /**
-     * Getter for property colspan.
+     * Returns the lower left x-coordinate.
      *
-     * @return Value of property colspan.
+     * @return the lower left x-coordinate
      */
-    public int getColspan() {
-        return colspan;
+
+    @Override
+    public float getLeft() {
+        return super.getLeft(cellspacing);
     }
 
     /**
-     * Setter for property colspan.
+     * Returns the upper right x-coordinate.
      *
-     * @param colspan New value of property colspan.
+     * @return the upper right x-coordinate
      */
-    public void setColspan(int colspan) {
-        this.colspan = colspan;
+
+    @Override
+    public float getRight() {
+        return super.getRight(cellspacing);
     }
 
     /**
-     * Getter for property rowspan.
+     * Returns the upper right y-coordinate.
      *
-     * @return Value of property rowspan.
-     * @since 2.1.6
+     * @return the upper right y-coordinate
      */
-    public int getRowspan() {
+
+    @Override
+    public float getTop() {
+        return super.getTop(cellspacing);
+    }
+
+    /**
+     * Returns the lower left y-coordinate.
+     *
+     * @return the lower left y-coordinate
+     */
+
+    @Override
+    public float getBottom() {
+        return super.getBottom(cellspacing);
+    }
+
+    // methods
+
+    /**
+     * Sets the bottom of the Rectangle and determines the proper {link #verticalOffset} to appropriately align the
+     * contents vertically.
+     *
+     * @param value the lower-left y-coordinate of the rectangle
+     */
+    @Override
+    public void setBottom(float value) {
+        super.setBottom(value);
+        float firstLineRealHeight = firstLineRealHeight();
+
+        float totalHeight = ury - value; // can't use top (already compensates for cellspacing)
+        float nonContentHeight = (cellpadding() * 2f) + (cellspacing() * 2f);
+        nonContentHeight += getBorderWidthInside(TOP) + getBorderWidthInside(BOTTOM);
+
+        float interiorHeight = totalHeight - nonContentHeight;
+        float extraHeight = 0.0f;
+
+        switch (verticalAlignment) {
+            case Element.ALIGN_BOTTOM:
+                extraHeight = interiorHeight - contentHeight;
+                break;
+            case Element.ALIGN_MIDDLE:
+                extraHeight = (interiorHeight - contentHeight) / 2.0f;
+                break;
+            default:    // ALIGN_TOP
+                extraHeight = 0f;
+        }
+
+        extraHeight += cellpadding() + cellspacing();
+        extraHeight += getBorderWidthInside(TOP);
+        if (firstLine != null) {
+            firstLine.height = firstLineRealHeight + extraHeight;
+            contentHeight += extraHeight;
+        }
+    }
+
+    private void addLine(PdfLine line) {
+        lines.add(line);
+        contentHeight += line.height();
+        lastLine = line;
+        this.line = null;
+    }
+
+    private PdfLine removeLine(int index) {
+        PdfLine oldLine = lines.remove(index);
+        contentHeight -= oldLine.height();
+        if ((index == 0) && (!lines.isEmpty()))  {
+                firstLine = lines.get(0);
+                float firstLineRealHeight = firstLineRealHeight();
+                contentHeight -= firstLine.height();
+                firstLine.height = firstLineRealHeight;
+                contentHeight += firstLineRealHeight;
+        }
+        return oldLine;
+    }
+
+    private void flushCurrentLine() {
+        if (line != null && line.size() > 0) {
+            addLine(line);
+        }
+    }
+
+    /**
+     * Calculates what the height of the first line should be so that the content will be flush with the top.  For text,
+     * this is the height of the ascender.  For an image, it is the actual height of the image.
+     *
+     * @return the real height of the first line
+     */
+    private float firstLineRealHeight() {
+        float firstLineRealHeight = 0f;
+        if (firstLine != null) {
+            PdfChunk chunk = firstLine.getChunk(0);
+            if (chunk != null) {
+                Image image = chunk.getImage();
+                if (image != null) {
+                    firstLineRealHeight = firstLine.getChunk(0).getImage().getScaledHeight();
+                } else {
+                    firstLineRealHeight = useAscender ? firstLine.getAscender() : leading;
+                }
+            }
+        }
+        return firstLineRealHeight;
+    }
+
+    /**
+     * Gets the amount of the border for the specified side that is inside the Rectangle. For non-variable width borders
+     * this is only 1/2 the border width on that side.  This always returns 0 if {@link #useBorderPadding} is false;
+     *
+     * @param side the side to check.  One of the side constants in {@link com.lowagie.text.Rectangle}
+     * @return the borderwidth inside the cell
+     */
+    private float getBorderWidthInside(int side) {
+        float width = 0f;
+        if (useBorderPadding) {
+            switch (side) {
+                case Rectangle.LEFT:
+                    width = getBorderWidthLeft();
+                    break;
+
+                case Rectangle.RIGHT:
+                    width = getBorderWidthRight();
+                    break;
+
+                case Rectangle.TOP:
+                    width = getBorderWidthTop();
+                    break;
+
+                default:    // default and BOTTOM
+                    width = getBorderWidthBottom();
+                    break;
+            }
+            // non-variable (original style) borders overlap the rectangle (only 1/2 counts)
+            if (!isUseVariableBorders()) {
+                width = width / 2f;
+            }
+        }
+        return width;
+    }
+
+    /**
+     * Adds an image to this Cell.
+     *
+     * @param i           the image to add
+     * @param left        the left border
+     * @param right       the right border
+     * @param extraHeight extra height to add above image
+     * @param alignment   horizontal alignment (constant from Element class)
+     * @return the height of the image
+     */
+
+    private float addImage(Image i, float left, float right, int alignment) {
+        Image image = Image.getInstance(i);
+        if (image.getScaledWidth() > right - left) {
+            image.scaleToFit(right - left, Float.MAX_VALUE);
+        }
+        flushCurrentLine();
+        if (line == null) {
+            line = new PdfLine(left, right, alignment, leading);
+        }
+        PdfLine imageLine = line;
+
+        // left and right in chunk is relative to the start of the line
+        right = right - left;
+        left = 0f;
+
+        if ((image.getAlignment() & Image.RIGHT) == Image.RIGHT) {
+            left = right - image.getScaledWidth();
+        } else if ((image.getAlignment() & Image.MIDDLE) == Image.MIDDLE) {
+            left = left + ((right - left - image.getScaledWidth()) / 2f);
+        }
+        Chunk imageChunk = new Chunk(image, left, 0);
+        imageLine.add(new PdfChunk(imageChunk, null));
+        addLine(imageLine);
+        return imageLine.height();
+    }
+
+    /**
+     * Gets the lines of a cell that can be drawn between certain limits.
+     * <p>
+     * Remark: all the lines that can be drawn are removed from the object!
+     *
+     * @param top    the top of the part of the table that can be drawn
+     * @param bottom the bottom of the part of the table that can be drawn
+     * @return an <CODE>ArrayList</CODE> of <CODE>PdfLine</CODE>s
+     */
+
+    public java.util.ArrayList<PdfLine> getLines(float top, float bottom) {
+        float lineHeight;
+        float currentPosition = Math.min(getTop(), top);
+        setTop(currentPosition + cellspacing);
+        java.util.ArrayList<PdfLine> result = new ArrayList<>();
+
+        // if the bottom of the page is higher than the top of the cell: do nothing
+        if (getTop() < bottom) {
+            return result;
+        }
+
+        // we loop over the lines
+        int size = lines.size();
+        boolean aboveBottom = true;
+        for (int i = 0; i < size && aboveBottom; i++) {
+            line = lines.get(i);
+            lineHeight = line.height();
+            currentPosition -= lineHeight;
+            // if the currentPosition is higher than the bottom, we add the line to the result
+            if (currentPosition > (bottom + cellpadding + getBorderWidthInside(BOTTOM))) {
+                result.add(line);
+            } else {
+                aboveBottom = false;
+            }
+        }
+        // if the bottom of the cell is higher than the bottom of the page, the cell is written, so we can remove all lines
+        float difference = 0f;
+        if (!header) {
+            if (aboveBottom) {
+                lines = new ArrayList<>();
+                contentHeight = 0f;
+            } else {
+                size = result.size();
+                for (int i = 0; i < size; i++) {
+                    line = removeLine(0);
+                    difference += line.height();
+                }
+            }
+        }
+        if (difference > 0) {
+            for (Image image : images) {
+                image.setAbsolutePosition(image.getAbsoluteX(), image.getAbsoluteY() - difference - leading);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Gets the images of a cell that can be drawn between certain limits.
+     * <p>
+     * Remark: all the lines that can be drawn are removed from the object!
+     *
+     * @param top    the top of the part of the table that can be drawn
+     * @param bottom the bottom of the part of the table that can be drawn
+     * @return an <CODE>ArrayList</CODE> of <CODE>Image</CODE>s
+     */
+
+    public java.util.ArrayList<Image> getImages(float top, float bottom) {
+
+        // if the bottom of the page is higher than the top of the cell: do nothing
+        if (getTop() < bottom) {
+            return new ArrayList<>();
+        }
+        top = Math.min(getTop(), top);
+        // initializations
+        Image image;
+        float height;
+        java.util.ArrayList<Image> result = new ArrayList<>();
+        // we loop over the images
+        for (Iterator<Image> i = images.iterator(); i.hasNext() && !header; ) {
+            image = i.next();
+            height = image.getAbsoluteY();
+            // if the currentPosition is higher than the bottom, we add the line to the result
+            if (top - height > (bottom + cellpadding)) {
+                image.setAbsolutePosition(image.getAbsoluteX(), top - height);
+                result.add(image);
+                i.remove();
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Checks if this cell belongs to the header of a <CODE>PdfTable</CODE>.
+     *
+     * @return <CODE>void</CODE>
+     */
+
+    boolean isHeader() {
+        return header;
+    }
+
+    /**
+     * Indicates that this cell belongs to the header of a <CODE>PdfTable</CODE>.
+     */
+
+    void setHeader() {
+        header = true;
+    }
+
+    /**
+     * Checks if the cell may be removed.
+     * <p>
+     * Headers may always be removed, even if they are drawn only partially: they will be repeated on each following
+     * page anyway!
+     *
+     * @return <CODE>true</CODE> if all the lines are already drawn; <CODE>false</CODE> otherwise.
+     */
+
+    boolean mayBeRemoved() {
+        return (header || (lines.isEmpty() && images.isEmpty()));
+    }
+
+    /**
+     * Returns the number of lines in the cell.
+     *
+     * @return a value
+     */
+
+    public int size() {
+        return lines.size();
+    }
+
+    /**
+     * Returns the total height of all the lines in the cell.
+     *
+     * @return a value
+     */
+    private float remainingLinesHeight() {
+        if (lines.isEmpty()) {
+            return 0;
+        }
+        float result = 0;
+        int size = lines.size();
+        PdfLine line;
+        for (Object line1 : lines) {
+            line = (PdfLine) line1;
+            result += line.height();
+        }
+        return result;
+    }
+
+    // methods to retrieve membervariables
+
+    /**
+     * Returns the height needed to draw the remaining text.
+     *
+     * @return a height
+     */
+
+    public float remainingHeight() {
+        float result = 0f;
+        for (Object image1 : images) {
+            Image image = (Image) image1;
+            result += image.getScaledHeight();
+        }
+        return remainingLinesHeight() + cellspacing + 2 * cellpadding + result;
+    }
+
+    /**
+     * Gets the leading of a cell.
+     *
+     * @return the leading of the lines is the cell.
+     */
+
+    public float leading() {
+        return leading;
+    }
+
+    /**
+     * Gets the number of the row this cell is in..
+     *
+     * @return a number
+     */
+
+    public int rownumber() {
+        return rownumber;
+    }
+
+    /**
+     * Gets the rowspan of a cell.
+     *
+     * @return the rowspan of the cell
+     */
+
+    public int rowspan() {
         return rowspan;
     }
 
     /**
-     * Setter for property rowspan.
+     * Gets the cellspacing of a cell.
      *
-     * @param rowspan New value of property rowspan.
-     * @since 2.1.6
+     * @return a value
      */
-    public void setRowspan(int rowspan) {
-        this.rowspan = rowspan;
+
+    public float cellspacing() {
+        return cellspacing;
     }
 
     /**
-     * Gets the following paragraph lines indent.
+     * Gets the cellpadding of a cell..
      *
-     * @return the indent
+     * @return a value
      */
-    public float getFollowingIndent() {
-        return column.getFollowingIndent();
+
+    public float cellpadding() {
+        return cellpadding;
     }
 
     /**
-     * Sets the following paragraph lines indent.
+     * Processes all actions contained in the cell.
      *
-     * @param indent the indent
+     * @param element    an element in the cell
+     * @param action     an action that should be coupled to the cell
+     * @param allActions a list of PdfAction to execute
      */
-    public void setFollowingIndent(float indent) {
-        column.setFollowingIndent(indent);
-    }
 
-    /**
-     * Gets the right paragraph lines indent.
-     *
-     * @return the indent
-     */
-    public float getRightIndent() {
-        return column.getRightIndent();
-    }
-
-    /**
-     * Sets the right paragraph lines indent.
-     *
-     * @param indent the indent
-     */
-    public void setRightIndent(float indent) {
-        column.setRightIndent(indent);
-    }
-
-    /**
-     * Gets the space/character extra spacing ratio for fully justified text.
-     *
-     * @return the space/character extra spacing ratio
-     */
-    public float getSpaceCharRatio() {
-        return column.getSpaceCharRatio();
-    }
-
-    /**
-     * Sets the ratio between the extra word spacing and the extra character spacing when the text is fully justified.
-     * Extra word spacing will grow <CODE>spaceCharRatio</CODE> times more than extra character spacing. If the ratio
-     * is
-     * <CODE>PdfWriter.NO_SPACE_CHAR_RATIO</CODE> then the extra character spacing will be zero.
-     *
-     * @param spaceCharRatio the ratio between the extra word spacing and the extra character spacing
-     */
-    public void setSpaceCharRatio(float spaceCharRatio) {
-        column.setSpaceCharRatio(spaceCharRatio);
-    }
-
-    /**
-     * Gets the run direction of the text content in the cell
-     *
-     * @return One of the following values: PdfWriter.RUN_DIRECTION_DEFAULT, PdfWriter.RUN_DIRECTION_NO_BIDI,
-     * PdfWriter.RUN_DIRECTION_LTR or PdfWriter.RUN_DIRECTION_RTL.
-     */
-    public int getRunDirection() {
-        return column.getRunDirection();
-    }
-
-    /**
-     * Sets the run direction of the text content in the cell. May be either of: PdfWriter.RUN_DIRECTION_DEFAULT,
-     * PdfWriter.RUN_DIRECTION_NO_BIDI, PdfWriter.RUN_DIRECTION_LTR or PdfWriter.RUN_DIRECTION_RTL.
-     *
-     * @param runDirection the run direction (see above)
-     */
-    public void setRunDirection(int runDirection) {
-        column.setRunDirection(runDirection);
-    }
-
-    /**
-     * Getter for property image.
-     *
-     * @return Value of property image.
-     */
-    public Image getImage() {
-        return image;
-    }
-
-    /**
-     * Setter for property image.
-     *
-     * @param image New value of property image.
-     */
-    public void setImage(Image image) {
-        column.setText(null);
-        table = null;
-        this.image = image;
-    }
-
-    /**
-     * Gets the cell event for this cell.
-     *
-     * @return the cell event
-     */
-    public PdfPCellEvent getCellEvent() {
-        return cellEvent;
-    }
-
-    /**
-     * Sets the cell event for this cell.
-     *
-     * @param cellEvent the cell event
-     */
-    public void setCellEvent(PdfPCellEvent cellEvent) {
-        if (cellEvent == null) {
-            this.cellEvent = null;
-        } else if (this.cellEvent == null) {
-            this.cellEvent = cellEvent;
-        } else if (this.cellEvent instanceof PdfPCellEventForwarder) {
-            ((PdfPCellEventForwarder) this.cellEvent).addCellEvent(cellEvent);
-        } else {
-            PdfPCellEventForwarder forward = new PdfPCellEventForwarder();
-            forward.addCellEvent(this.cellEvent);
-            forward.addCellEvent(cellEvent);
-            this.cellEvent = forward;
+    protected void processActions(Element element, PdfAction action, java.util.List<PdfAction> allActions) {
+        if (element.type() == Element.ANCHOR) {
+            String url = ((Anchor) element).getReference();
+            if (url != null) {
+                action = new PdfAction(url);
+            }
+        }
+        Iterator<String> i;
+        switch (element.type()) {
+            case Element.PHRASE:
+            case Element.SECTION:
+            case Element.ANCHOR:
+            case Element.CHAPTER:
+            case Element.LISTITEM:
+            case Element.PARAGRAPH:
+                for (i = ((ArrayList) element).iterator(); i.hasNext(); ) {
+                    processActions((Element) i.next(), action, allActions);
+                }
+                break;
+            case Element.CHUNK:
+                allActions.add(action);
+                break;
+            case Element.LIST:
+                for (i = ((List) element).getItems().iterator(); i.hasNext(); ) {
+                    processActions((Element) i.next(), action, allActions);
+                }
+                break;
+            default:
+                int n = element.getChunks().size();
+                while (n-- > 0) {
+                    allActions.add(action);
+                }
+                break;
         }
     }
 
     /**
-     * Gets the arabic shaping options.
+     * Gets the number of the group this cell is in..
      *
-     * @return the arabic shaping options
+     * @return a number
      */
-    public int getArabicOptions() {
-        return column.getArabicOptions();
+
+    public int getGroupNumber() {
+        return groupNumber;
     }
 
     /**
-     * Sets the arabic shaping options. The option can be AR_NOVOWEL, AR_COMPOSEDTASHKEEL and AR_LIG.
+     * Sets the group number.
      *
-     * @param arabicOptions the arabic shaping options
+     * @param number
      */
-    public void setArabicOptions(int arabicOptions) {
-        column.setArabicOptions(arabicOptions);
+
+    void setGroupNumber(int number) {
+        groupNumber = number;
     }
 
     /**
-     * Gets state of first line height based on max ascender
+     * Gets a Rectangle that is altered to fit on the page.
      *
-     * @return true if an ascender is to be used.
+     * @param top    the top position
+     * @param bottom the bottom position
+     * @return a <CODE>Rectangle</CODE>
+     */
+
+    public Rectangle RECTANGLE(float top, float bottom) {
+        Rectangle tmp = new Rectangle(getLeft(), getBottom(), getRight(), getTop());
+        tmp.cloneNonPositionParameters(this);
+        if (getTop() > top) {
+            tmp.setTop(top);
+            tmp.setBorder(border - (border & TOP));
+        }
+        if (getBottom() < bottom) {
+            tmp.setBottom(bottom);
+            tmp.setBorder(border - (border & BOTTOM));
+        }
+        return tmp;
+    }
+
+    /**
+     * Gets the value of useAscender
+     *
+     * @return useAscender
      */
     public boolean isUseAscender() {
-        return column.isUseAscender();
+        return useAscender;
     }
 
     /**
-     * Enables/ Disables adjustment of first line height based on max ascender.
+     * Sets the value of useAscender.
      *
-     * @param useAscender adjust height if true
+     * @param use use ascender height if true
      */
-    public void setUseAscender(boolean useAscender) {
-        column.setUseAscender(useAscender);
+    public void setUseAscender(boolean use) {
+        useAscender = use;
     }
 
-
     /**
-     * Getter for property useDescender.
+     * gets the value of useDescender
      *
-     * @return Value of property useDescender.
+     * @return useDescender
      */
     public boolean isUseDescender() {
         return useDescender;
     }
 
     /**
-     * Setter for property useDescender.
+     * Sets the value of useDescender.
      *
-     * @param useDescender New value of property useDescender.
+     * @param use use descender height if true
      */
-    public void setUseDescender(boolean useDescender) {
-        this.useDescender = useDescender;
+    public void setUseDescender(boolean use) {
+        useDescender = use;
     }
 
     /**
-     * Gets the ColumnText with the content of the cell.
+     * Gets the value of useBorderPadding.
      *
-     * @return a columntext object
+     * @return useBorderPadding
      */
-    public ColumnText getColumn() {
-        return column;
+    public boolean isUseBorderPadding() {
+        return useBorderPadding;
     }
 
     /**
-     * Sets the ColumnText in the cell.
+     * Sets the value of useBorderPadding.
      *
-     * @param column the ColumnText to put in the cell
+     * @param use adjust layout for borders if true
      */
-    public void setColumn(ColumnText column) {
-        this.column = column;
+    public void setUseBorderPadding(boolean use) {
+        useBorderPadding = use;
     }
 
-    /**
-     * Returns the list of composite elements of the column.
-     *
-     * @return a List object.
-     * @since 2.1.1
-     */
-    public List<Element> getCompositeElements() {
-        return getColumn().compositeElements;
-    }
-
-    /**
-     * Gets the rotation of the cell.
-     *
-     * @return the rotation of the cell.
-     */
-    @Override
-    public int getRotation() {
-        return rotation;
-    }
-
-    /**
-     * Sets the rotation of the cell. Possible values are 0, 90, 180 and 270.
-     *
-     * @param rotation the rotation of the cell
-     */
-    @Override
-    public void setRotation(int rotation) {
-        rotation %= 360;
-        if (rotation < 0) {
-            rotation += 360;
-        }
-        if ((rotation % 90) != 0) {
-            throw new IllegalArgumentException(
-                    MessageLocalization.getComposedMessage("rotation.must.be.a.multiple.of.90"));
-        }
-        this.rotation = rotation;
-    }
-
-    /**
-     * Consumes part of the content of the cell.
-     *
-     * @param height the hight of the part that has to be consumed
-     * @since 2.1.6
-     */
-    void consumeHeight(float height) {
-        float rightLimit = getRight() - getEffectivePaddingRight();
-        float leftLimit = getLeft() + getEffectivePaddingLeft();
-        float bry = height - getEffectivePaddingTop() - getEffectivePaddingBottom();
-        if (getRotation() != 90 && getRotation() != 270) {
-            column.setSimpleColumn(leftLimit, bry + 0.001f, rightLimit, 0);
-        } else {
-            column.setSimpleColumn(0, leftLimit, bry + 0.001f, rightLimit);
-        }
-        try {
-            column.go(true);
-        } catch (DocumentException e) {
-            // do nothing
-        }
-    }
-
-    /**
-     * Returns the height of the cell.
-     *
-     * @return the height of the cell
-     * @since 3.0.0
-     */
-    public float getMaxHeight() {
-        boolean pivoted = (getRotation() == 90 || getRotation() == 270);
-        Image img = getImage();
-        if (img != null) {
-            img.scalePercent(100);
-            float refWidth = pivoted ? img.getScaledHeight() : img.getScaledWidth();
-            float scale = (getRight() - getEffectivePaddingRight()
-                    - getEffectivePaddingLeft() - getLeft()) / refWidth;
-            img.scalePercent(scale * 100);
-            float refHeight = pivoted ? img.getScaledWidth() : img.getScaledHeight();
-            setBottom(getTop() - getEffectivePaddingTop() - getEffectivePaddingBottom() - refHeight);
-        } else {
-            if ((pivoted && hasFixedHeight()) || getColumn() == null) {
-                setBottom(getTop() - getFixedHeight());
-            } else {
-                ColumnText ct = ColumnText.duplicate(getColumn());
-                float right, top, left, bottom;
-                if (pivoted) {
-                    right = PdfPRow.RIGHT_LIMIT;
-                    top = getRight() - getEffectivePaddingRight();
-                    left = 0;
-                    bottom = getLeft() + getEffectivePaddingLeft();
-                } else {
-                    right = isNoWrap() ? PdfPRow.RIGHT_LIMIT : getRight() - getEffectivePaddingRight();
-                    top = getTop() - getEffectivePaddingTop();
-                    left = getLeft() + getEffectivePaddingLeft();
-                    bottom = hasFixedHeight() ? getTop() + getEffectivePaddingBottom() - getFixedHeight()
-                            : PdfPRow.BOTTOM_LIMIT;
-                }
-                PdfPRow.setColumn(ct, left, bottom, right, top);
-                try {
-                    ct.go(true);
-                } catch (DocumentException e) {
-                    throw new ExceptionConverter(e);
-                }
-                if (pivoted) {
-                    setBottom(getTop() - getEffectivePaddingTop() - getEffectivePaddingBottom() - ct.getFilledWidth());
-                } else {
-                    float yLine = ct.getYLine();
-                    if (isUseDescender()) {
-                        yLine += ct.getDescender();
-                    }
-                    setBottom(yLine - getEffectivePaddingBottom());
-                }
-            }
-        }
-        float height = getHeight();
-        if (hasFixedHeight()) {
-            height = getFixedHeight();
-        } else if (height < getMinimumHeight()) {
-            height = getMinimumHeight();
-        }
-        return height;
-    }
 }

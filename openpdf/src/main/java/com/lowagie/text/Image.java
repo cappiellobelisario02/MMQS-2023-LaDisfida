@@ -67,6 +67,7 @@ import com.lowagie.text.pdf.codec.CCITTG4Encoder;
 import java.awt.Graphics2D;
 import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -467,74 +468,83 @@ public abstract class Image extends Rectangle {
      * @throws MalformedURLException if bad url
      * @throws IOException           if image is not recognized
      */
-    public static Image getInstance(URL url) throws BadElementException,
-            IOException {
+    public static Image getInstance(URL url) throws BadElementException, IOException {
         InputStream is = null;
         Image img = null;
         try {
             is = url.openStream();
-            int c1 = is.read();
-            int c2 = is.read();
-            int c3 = is.read();
-            int c4 = is.read();
-            // jbig2
-            int c5 = is.read();
-            int c6 = is.read();
-            int c7 = is.read();
-            int c8 = is.read();
-            is.close();
+            byte[] headerBytes = new byte[8]; // Read 8 bytes for identification
+            if (is.read(headerBytes) != 8) {
+                throw new IOException("Failed to read image header from URL: " + url);
+            }
 
-            is = null;
-            if (c1 == 'G' && c2 == 'I' && c3 == 'F') {
-                img = ImageLoader.getGifImage(url);
-                return img;
+            img = identifyAndLoadImage(headerBytes, url);
+
+            if (img == null) {
+                throw new IOException(url.toString() + " is not a recognized image format.");
             }
-            if (c1 == 0xFF && c2 == 0xD8) {
-                img = ImageLoader.getJpegImage(url);
-                return img;
-            }
-            if (c1 == 0x00 && c2 == 0x00 && c3 == 0x00 && c4 == 0x0c) {
-                img = ImageLoader.getJpeg2000Image(url);
-                return img;
-            }
-            if (c1 == 0xff && c2 == 0x4f && c3 == 0xff && c4 == 0x51) {
-                img = ImageLoader.getJpeg2000Image(url);
-                return img;
-            }
-            if (c1 == PNGID[0] && c2 == PNGID[1]
-                    && c3 == PNGID[2] && c4 == PNGID[3]) {
-                img = ImageLoader.getPngImage(url);
-                return img;
-            }
-            if (c1 == 0xD7 && c2 == 0xCD) {
-                img = new ImgWMF(url);
-                return img;
-            }
-            if (c1 == 'B' && c2 == 'M') {
-                img = ImageLoader.getBmpImage(url);
-                return img;
-            }
-            if ((c1 == 'M' && c2 == 'M' && c3 == 0 && c4 == 42)
-                    || (c1 == 'I' && c2 == 'I' && c3 == 42 && c4 == 0)) {
-                img = ImageLoader.getTiffImage(url);
-                return img;
-            }
-            if (c1 == 0x97 && c2 == 'J' && c3 == 'B' && c4 == '2' &&
-                    c5 == '\r' && c6 == '\n' && c7 == 0x1a && c8 == '\n') {
-                throw new IOException(url.toString()
-                        + " is not a recognized imageformat. JBIG2 support has been removed.");
-            }
-            throw new IOException(url.toString()
-                    + " is not a recognized imageformat.");
+
+            return img;
         } finally {
             if (is != null) {
                 is.close();
             }
             if (img != null) {
-                // Make sure the URL is always set
                 img.setUrl(url);
             }
         }
+    }
+
+    private static Image identifyAndLoadImage(byte[] headerBytes, URL url) throws IOException {
+        if (isGifHeader(headerBytes)) {
+            return ImageLoader.getGifImage(url);
+        } else if (isJpegHeader(headerBytes)) {
+            return ImageLoader.getJpegImage(url);
+        } else if (isJpeg2000Header(headerBytes)) {
+            return ImageLoader.getJpeg2000Image(url);
+        } else if (isPngHeader(headerBytes)) {
+            return ImageLoader.getPngImage(url);
+        } else if (isWmfHeader(headerBytes)) {
+            return new ImgWMF(url);
+        } else if (isBmpHeader(headerBytes)) {
+            return ImageLoader.getBmpImage(url);
+        } else if (isTiffHeader(headerBytes)) {
+            return ImageLoader.getTiffImage(url);
+        } else {
+            throw new IOException(url.toString() + " is not a recognized image format.");
+        }
+    }
+
+    // Helper methods for checking header bytes (can be private)
+    private static boolean isGifHeader(byte[] header) {
+        return header[0] == 'G' && header[1] == 'I' && header[2] == 'F';
+    }
+
+    private static boolean isJpegHeader(byte[] header) {
+        return header[0] == 0xFF && header[1] == 0xD8;
+    }
+
+    private static boolean isJpeg2000Header(byte[] header) {
+        return (header[0] == 0x00 && header[1] == 0x00 && header[2] == 0x00 && header[3] == 0x0c) ||
+                (header[0] == 0xff && header[1] == 0x4f && header[2] == 0xff && header[3] == 0x51);
+    }
+
+    private static boolean isPngHeader(byte[] header) {
+        return header[0] == PNGID[0] && header[1] == PNGID[1] &&
+                header[2] == PNGID[2] && header[3] == PNGID[3];
+    }
+
+    private static boolean isWmfHeader(byte[] header) {
+        return header[0] == 0xD7 && header[1] == 0xCD;
+    }
+
+    private static boolean isBmpHeader(byte[] header) {
+        return header[0] == 'B' && header[1] == 'M';
+    }
+
+    private static boolean isTiffHeader(byte[] header) {
+        return (header[0] == 'M' && header[1] == 'M' && header[2] == 0 && header[3] == 42) ||
+                (header[0] == 'I' && header[1] == 'I' && header[2] == 42 && header[3] == 0);
     }
 
     /**
@@ -574,64 +584,68 @@ public abstract class Image extends Rectangle {
      * @throws BadElementException if error in creating {@link ImgWMF#ImgWMF(byte[]) ImgWMF}
      * @throws IOException         if image is not recognized
      */
-    public static Image getInstance(byte[] imgb) throws BadElementException,
-            IOException {
+    public static Image getInstance(byte[] imgb) throws BadElementException, IOException {
         InputStream is = null;
         try {
-            is = new java.io.ByteArrayInputStream(imgb);
-            int c1 = is.read();
-            int c2 = is.read();
-            int c3 = is.read();
-            int c4 = is.read();
-            is.close();
+            is = new ByteArrayInputStream(imgb);
+            byte[] headerBytes = new byte[8]; // Read 8 bytes for identification
+            if (is.read(headerBytes) != 8) {
+                throw new IOException("Failed to read image header from byte array");
+            }
 
-            is = null;
-            if (c1 == 'G' && c2 == 'I' && c3 == 'F') {
-                return ImageLoader.getGifImage(imgb);
+            Image img = identifyAndLoadImage(headerBytes, imgb);
+
+            if (img == null) {
+                throw new IOException(MessageLocalization.getComposedMessage("the.byte.array.is.not.a.recognized.imageformat"));
             }
-            if (c1 == 0xFF && c2 == 0xD8) {
-                return ImageLoader.getJpegImage(imgb);
-            }
-            if (c1 == 0x00 && c2 == 0x00 && c3 == 0x00 && c4 == 0x0c) {
-                return ImageLoader.getJpeg2000Image(imgb);
-            }
-            if (c1 == 0xff && c2 == 0x4f && c3 == 0xff && c4 == 0x51) {
-                return ImageLoader.getJpeg2000Image(imgb);
-            }
-            if (c1 == PNGID[0] && c2 == PNGID[1]
-                    && c3 == PNGID[2] && c4 == PNGID[3]) {
-                return ImageLoader.getPngImage(imgb);
-            }
-            if (c1 == 0xD7 && c2 == 0xCD) {
-                return new ImgWMF(imgb);
-            }
-            if (c1 == 'B' && c2 == 'M') {
-                return ImageLoader.getBmpImage(imgb);
-            }
-            if ((c1 == 'M' && c2 == 'M' && c3 == 0 && c4 == 42)
-                    || (c1 == 'I' && c2 == 'I' && c3 == 42 && c4 == 0)) {
-                return ImageLoader.getTiffImage(imgb);
-            }
-            if (c1 == 0x97 && c2 == 'J' && c3 == 'B' && c4 == '2') {
-                is = new java.io.ByteArrayInputStream(imgb);
-                is.skip(4);
-                int c5 = is.read();
-                int c6 = is.read();
-                int c7 = is.read();
-                int c8 = is.read();
-                if (c5 == '\r' && c6 == '\n' && c7 == 0x1a && c8 == '\n') {
-                    throw new IOException(
-                            MessageLocalization.getComposedMessage("the.byte.array.is.not.a.recognized.imageformat"));
-                }
-            }
-            throw new IOException(
-                    MessageLocalization.getComposedMessage("the.byte.array.is.not.a.recognized.imageformat"));
+
+            return img;
         } finally {
             if (is != null) {
                 is.close();
             }
         }
     }
+
+    private static Image identifyAndLoadImage(byte[] headerBytes, byte[] imageData) throws IOException {
+        if (isGifHeader(headerBytes)) {
+            return ImageLoader.getGifImage(imageData);
+        } else if (isJpegHeader(headerBytes)) {
+            return ImageLoader.getJpegImage(imageData);
+        } else if (isJpeg2000Header(headerBytes)) {
+            return ImageLoader.getJpeg2000Image(imageData);
+        } else if (isPngHeader(headerBytes)) {
+            return ImageLoader.getPngImage(imageData);
+        } else if (isWmfHeader(headerBytes)) {
+            return new ImgWMF(imageData);
+        } else if (isBmpHeader(headerBytes)) {
+            return ImageLoader.getBmpImage(imageData);
+        } else if (isTiffHeader(headerBytes)) {
+            return ImageLoader.getTiffImage(imageData);
+        } else if (isJbig2Header(headerBytes, imageData)) {
+            throw new IOException(MessageLocalization.getComposedMessage("jbig2.support.removed"));
+        } else {
+            throw new IOException(MessageLocalization.getComposedMessage("the.byte.array.is.not.a.recognized.imageformat"));
+        }
+    }
+
+    // Special check for JBIG2 with additional byte reading
+    private static boolean isJbig2Header(byte[] headerBytes, byte[] imageData) throws IOException {
+        if (headerBytes[0] != 0x97 || headerBytes[1] != 'J' || headerBytes[2] != 'B' || headerBytes[3] != '2') {
+            return false;
+        }
+
+        InputStream is = new ByteArrayInputStream(imageData);
+        is.skip(4); // Skip first 4 bytes already read
+        int c5 = is.read();
+        int c6 = is.read();
+        int c7 = is.read();
+        int c8 = is.read();
+        is.close();
+
+        return c5 == '\r' && c6 == '\n' && c7 == 0x1a && c8 == '\n';
+    }
+
 
     /**
      * Gets an instance of an Image in raw mode.
@@ -762,174 +776,168 @@ public abstract class Image extends Rectangle {
      * @throws BadElementException on error
      * @throws IOException         on error
      */
-    public static Image getInstance(java.awt.Image image, java.awt.Color color,
-            boolean forceBW) throws BadElementException, IOException {
+    public static Image getInstance(java.awt.Image image, java.awt.Color color, boolean forceBW)
+            throws BadElementException, IOException, InterruptedException {
+        BufferedImage bufferedImage = convertToBufferedImage(image);
+        if (bufferedImage != null && isBinaryImage(bufferedImage)) {
+            forceBW = true;
+        }
 
+        java.awt.image.PixelGrabber pg = new java.awt.image.PixelGrabber(image, 0, 0, -1, -1, true);
+
+        int[] pixels = getImagePixels(pg);
+        int width = pg.getWidth();
+        int height = pg.getHeight();
+
+        if (forceBW) {
+            return createBlackAndWhiteImage(pixels, width, height, color);
+        } else {
+            return createColorImage(pixels, width, height, color);
+        }
+    }
+
+    private static BufferedImage convertToBufferedImage(java.awt.Image image) {
         if (image instanceof BufferedImage) {
-            BufferedImage bi = (BufferedImage) image;
-            if (bi.getType() == BufferedImage.TYPE_BYTE_BINARY && bi.getColorModel().getNumColorComponents() <= 2) {
-                forceBW = true;
-            }
+            return (BufferedImage) image;
         }
+        return null;
+    }
 
-        java.awt.image.PixelGrabber pg = new java.awt.image.PixelGrabber(image,
-                0, 0, -1, -1, true);
-        try {
-            pg.grabPixels();
-        } catch (InterruptedException e) {
-            // Re-interrupt the current thread
-            Thread.currentThread().interrupt();
-            throw new IOException(
-                    MessageLocalization.getComposedMessage("java.awt.image.interrupted.waiting.for.pixels"));
-        }
+    private static boolean isBinaryImage(BufferedImage bi) {
+        return bi.getType() == BufferedImage.TYPE_BYTE_BINARY && bi.getColorModel().getNumColorComponents() <= 2;
+    }
+
+    private static int[] getImagePixels(java.awt.image.PixelGrabber pg) throws IOException, InterruptedException {
+        pg.grabPixels();
         if ((pg.getStatus() & java.awt.image.ImageObserver.ABORT) != 0) {
             throw new IOException(MessageLocalization.getComposedMessage("java.awt.image.fetch.aborted.or.errored"));
         }
-        int w = pg.getWidth();
-        int h = pg.getHeight();
-        int[] pixels = (int[]) pg.getPixels();
-        if (forceBW) {
-            int byteWidth = (w / 8) + ((w & 7) != 0 ? 1 : 0);
-            byte[] pixelsByte = new byte[byteWidth * h];
+        return (int[]) pg.getPixels();
+    }
 
-            int index = 0;
-            int size = h * w;
-            int transColor = 1;
-            if (color != null) {
-                transColor = (color.getRed() + color.getGreen()
-                        + color.getBlue() < 384) ? 0 : 1;
-            }
-            int[] transparency = null;
-            int cbyte = 0x80;
-            int wMarker = 0;
-            int currByte = 0;
-            if (color != null) {
-                for (int j = 0; j < size; j++) {
-                    int alpha = (pixels[j] >> 24) & 0xff;
-                    if (alpha < 250) {
-                        if (transColor == 1) {
-                            currByte |= cbyte;
-                        }
-                    } else {
-                        if ((pixels[j] & 0x888) != 0) {
-                            currByte |= cbyte;
-                        }
-                    }
-                    cbyte >>= 1;
-                    if (cbyte == 0 || wMarker + 1 >= w) {
-                        pixelsByte[index++] = (byte) currByte;
-                        cbyte = 0x80;
-                        currByte = 0;
-                    }
-                    ++wMarker;
-                    if (wMarker >= w) {
-                        wMarker = 0;
-                    }
-                }
-            } else {
-                for (int j = 0; j < size; j++) {
-                    if (transparency == null) {
-                        int alpha = (pixels[j] >> 24) & 0xff;
-                        if (alpha == 0) {
-                            transparency = new int[2];
-                            transparency[0] = transparency[1] = ((pixels[j] & 0x888) != 0) ? 0xff : 0;
-                        }
-                    }
-                    if ((pixels[j] & 0x888) != 0) {
-                        currByte |= cbyte;
-                    }
-                    cbyte >>= 1;
-                    if (cbyte == 0 || wMarker + 1 >= w) {
-                        pixelsByte[index++] = (byte) currByte;
-                        cbyte = 0x80;
-                        currByte = 0;
-                    }
-                    ++wMarker;
-                    if (wMarker >= w) {
-                        wMarker = 0;
-                    }
-                }
-            }
-            return Image.getInstance(w, h, 1, 1, pixelsByte, transparency);
-        } else {
-            byte[] pixelsByte = new byte[w * h * 3];
-            byte[] smask = null;
+    private static Image createBlackAndWhiteImage(int[] pixels, int width, int height, java.awt.Color color) throws BadElementException, IOException {
+        int byteWidth = calculateByteWidth(width);
+        byte[] pixelsByte = new byte[byteWidth * height];
 
-            int index = 0;
-            int size = h * w;
-            int red = 255;
-            int green = 255;
-            int blue = 255;
-            if (color != null) {
-                red = color.getRed();
-                green = color.getGreen();
-                blue = color.getBlue();
+        int index = 0;
+        int transColor = determineTransColor(color);
+        int[] transparency = null;
+
+        int currByte = 0;
+        int cbyte = 0x80;
+        int wMarker = 0;
+
+        for (int j = 0; j < height * width; j++) {
+            int alpha = extractAlpha(pixels[j]);
+
+            currByte = processPixel(pixels[j], alpha, color, transColor, currByte);
+
+            if (transparency == null && alpha == 0) {
+                transparency = initializeTransparency(pixels[j]);
             }
-            int[] transparency = null;
+
+            cbyte = updateCurrentByteAndMarker(pixelsByte, currByte, cbyte, wMarker, width, index);
+            if (cbyte == 0) {
+                index++;
+                cbyte = 0x80;
+                currByte = 0;
+            }
+
+            wMarker = updateWidthMarker(wMarker, width);
+        }
+
+        return Image.getInstance(width, height, 1, 1, pixelsByte, transparency);
+    }
+
+    private static int calculateByteWidth(int width) {
+        return (width / 8) + ((width & 7) != 0 ? 1 : 0);
+    }
+
+    private static int determineTransColor(java.awt.Color color) {
+        return color != null ? (color.getRed() + color.getGreen() + color.getBlue() < 384) ? 0 : 1 : 1;
+    }
+
+    private static int extractAlpha(int pixel) {
+        return (pixel >> 24) & 0xff;
+    }
+
+    private static int processPixel(int pixel, int alpha, java.awt.Color color, int transColor, int currByte) {
+        if ((pixel & 0x888) != 0) {
+            currByte |= 0x80;
+        }
+        if (color != null && alpha < 250 && transColor == 1) {
+                currByte |= 0x80;
+        }
+
+        return currByte;
+    }
+
+    private static int[] initializeTransparency(int pixel) {
+        int[] transparency = new int[2];
+        transparency[0] = transparency[1] = ((pixel & 0x888) != 0) ? 0xff : 0;
+        return transparency;
+    }
+
+    private static int updateCurrentByteAndMarker(byte[] pixelsByte, int currByte, int cbyte, int wMarker, int width, int index) {
+        cbyte >>= 1;
+        if (cbyte == 0 || wMarker + 1 >= width) {
+            pixelsByte[index] = (byte) currByte;
+        }
+        return cbyte;
+    }
+
+    private static int updateWidthMarker(int wMarker, int width) {
+        wMarker++;
+        if (wMarker >= width) {
+            wMarker = 0;
+        }
+        return wMarker;
+    }
+
+
+    private static Image createColorImage(int[] pixels, int width, int height, java.awt.Color color) throws BadElementException, IOException {
+        byte[] pixelsByte = new byte[width * height * 3];
+        byte[] smask = null;
+
+        int index = 0;
+        int size = height * width;
+        int red = color != null ? color.getRed() : 255;
+        int green = color != null ? color.getGreen() : 255;
+        int blue = color != null ? color.getBlue() : 255;
+        int[] transparency = null;
+
+        for (int j = 0; j < size; j++) {
+            int alpha = (pixels[j] >> 24) & 0xff;
             if (color != null) {
-                for (int j = 0; j < size; j++) {
-                    int alpha = (pixels[j] >> 24) & 0xff;
-                    if (alpha < 250) {
-                        pixelsByte[index++] = (byte) red;
-                        pixelsByte[index++] = (byte) green;
-                        pixelsByte[index++] = (byte) blue;
-                    } else {
-                        pixelsByte[index++] = (byte) ((pixels[j] >> 16) & 0xff);
-                        pixelsByte[index++] = (byte) ((pixels[j] >> 8) & 0xff);
-                        pixelsByte[index++] = (byte) ((pixels[j]) & 0xff);
-                    }
-                }
-            } else {
-                int transparentPixel = 0;
-                smask = new byte[w * h];
-                boolean shades = false;
-                for (int j = 0; j < size; j++) {
-                    byte alpha = smask[j] = (byte) ((pixels[j] >> 24) & 0xff);
-                    /* bugfix by Chris Nokleberg */
-                    if (!shades) {
-                        if (alpha != 0 && alpha != -1) {
-                            shades = true;
-                        } else if (transparency == null) {
-                            if (alpha == 0) {
-                                transparentPixel = pixels[j] & 0xffffff;
-                                transparency = new int[6];
-                                transparency[0] = transparency[1] = (transparentPixel >> 16) & 0xff;
-                                transparency[2] = transparency[3] = (transparentPixel >> 8) & 0xff;
-                                transparency[4] = transparency[5] = transparentPixel & 0xff;
-                                for (int prevPixel = 0; prevPixel < j; prevPixel++) {
-                                    if ((pixels[prevPixel] & 0xffffff) == transparentPixel) {
-                                        shades = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        } else if ((pixels[j] & 0xffffff) != transparentPixel && alpha == 0
-                                || (pixels[j] & 0xffffff) == transparentPixel && alpha != 0) {
-                            shades = true;
-                        }
-                    }
+                if (alpha < 250) {
+                    pixelsByte[index++] = (byte) red;
+                    pixelsByte[index++] = (byte) green;
+                    pixelsByte[index++] = (byte) blue;
+                } else {
                     pixelsByte[index++] = (byte) ((pixels[j] >> 16) & 0xff);
                     pixelsByte[index++] = (byte) ((pixels[j] >> 8) & 0xff);
                     pixelsByte[index++] = (byte) ((pixels[j]) & 0xff);
                 }
-                if (shades) {
-                    transparency = null;
-                } else {
-                    smask = null;
-                }
+            } else {
+                byte alphaByte = (byte) alpha;
+                smask[j] = alphaByte;
+                pixelsByte[index++] = (byte) ((pixels[j] >> 16) & 0xff);
+                pixelsByte[index++] = (byte) ((pixels[j] >> 8) & 0xff);
+                pixelsByte[index++] = (byte) ((pixels[j]) & 0xff);
             }
-            Image img = Image.getInstance(w, h, 3, 8, pixelsByte, transparency);
-            if (smask != null) {
-                Image sm = Image.getInstance(w, h, 1, 8, smask);
-                try {
-                    sm.makeMask();
-                    img.setImageMask(sm);
-                } catch (DocumentException de) {
-                    throw new ExceptionConverter(de);
-                }
-            }
-            return img;
         }
+
+        Image img = Image.getInstance(width, height, 3, 8, pixelsByte, transparency);
+        if (smask != null) {
+            Image sm = Image.getInstance(width, height, 1, 8, smask);
+            try {
+                sm.makeMask();
+                img.setImageMask(sm);
+            } catch (DocumentException de) {
+                throw new ExceptionConverter(de);
+            }
+        }
+        return img;
     }
 
     /**
@@ -942,7 +950,7 @@ public abstract class Image extends Rectangle {
      * @throws IOException         on error
      */
     public static Image getInstance(java.awt.Image image, java.awt.Color color)
-            throws BadElementException, IOException {
+            throws BadElementException, IOException, InterruptedException {
         return Image.getInstance(image, color, false);
     }
 
@@ -1861,8 +1869,8 @@ public abstract class Image extends Rectangle {
             PdfName first = value.getAsName(0);
             if (PdfName.INDEXED.equals(first) && (value.size() >= 2 && second != null)) {
 
-                PdfArray second = value.getAsArray(1);
-                value.set(1, simplifyColorspace(second));
+                    PdfArray second = value.getAsArray(1);
+                    value.set(1, simplifyColorspace(second));
 
             }
         }

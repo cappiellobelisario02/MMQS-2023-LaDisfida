@@ -513,56 +513,81 @@ class PdfStamperImp extends PdfWriter {
         for (PageStamp ps : pagesToContent.values()) {
             PdfDictionary pageN = ps.pageN;
             markUsed(pageN);
-            PdfArray ar;
-            PdfObject content = PdfReader.getPdfObject(pageN.get(PdfName.CONTENTS), pageN);
-            if (content != null) {
-                if (content.isArray()) {
-                    ar = (PdfArray) content;
-                    markUsed(ar);
-                }
-                if (content.isStream()) {
-                    ar = new PdfArray();
-                    ar.add(pageN.get(PdfName.CONTENTS));
-                    pageN.put(PdfName.CONTENTS, ar);
-                }
+
+            PdfArray ar = processPageContent(pageN);
+
+            ByteBuffer out = new ByteBuffer();
+            try {
+                handleUnderContent(ps, pageN, out);
+                handleOverContent(ps, pageN, ar, out);
+            } catch (Exception e) {
+                logger.info("ERROR ByteBuffer >> " + e.getMessage());
+            }
+
+            alterResources(ps);
+        }
+    }
+
+    private PdfArray processPageContent(PdfDictionary pageN) throws IOException {
+        PdfArray ar;
+        PdfObject content = PdfReader.getPdfObject(pageN.get(PdfName.CONTENTS), pageN);
+        if (content != null) {
+            if (content.isArray()) {
+                ar = (PdfArray) content;
+                markUsed(ar);
+            } else if (content.isStream()) {
+                ar = new PdfArray();
+                ar.add(pageN.get(PdfName.CONTENTS));
+                pageN.put(PdfName.CONTENTS, ar);
             } else {
                 ar = new PdfArray();
                 pageN.put(PdfName.CONTENTS, ar);
             }
-            try{
-                ByteBuffer out = new ByteBuffer();
-            } catch(Exception e){
-                logger.info("ERROR ByteBuffer >> ");
-            }
-            if (ps.under != null) {
-                out.append(PdfContents.SAVESTATE);
-                applyRotation(pageN, out);
-                out.append(ps.under.getInternalBuffer());
-                out.append(PdfContents.RESTORESTATE);
-            }
-            if (ps.over != null) {
-                out.append(PdfContents.SAVESTATE);
-            }
+        } else {
+            ar = new PdfArray();
+            pageN.put(PdfName.CONTENTS, ar);
+        }
+        return ar;
+    }
+
+    private void handleUnderContent(PageStamp ps, PdfDictionary pageN, ByteBuffer out) throws IOException {
+        if (ps.under != null) {
+            out.append(PdfContents.SAVESTATE);
+            applyRotation(pageN, out);
+            out.append(ps.under.getInternalBuffer());
+            out.append(PdfContents.RESTORESTATE);
+
+            PdfStream stream = new PdfStream(out.toByteArray());
+            stream.flateCompress(compressionLevel);
+            addToBody(stream).getIndirectReference();
+            out.reset();
+        }
+    }
+
+    private void handleOverContent(PageStamp ps, PdfDictionary pageN, PdfArray ar, ByteBuffer out) throws IOException {
+        if (ps.over != null) {
+            out.append(PdfContents.SAVESTATE);
+
             PdfStream stream = new PdfStream(out.toByteArray());
             stream.flateCompress(compressionLevel);
             ar.addFirst(addToBody(stream).getIndirectReference());
             out.reset();
-            if (ps.over != null) {
-                out.append(' ');
-                out.append(PdfContents.RESTORESTATE);
-                ByteBuffer buf = ps.over.getInternalBuffer();
-                out.append(buf.getBuffer(), 0, ps.replacePoint);
-                out.append(PdfContents.SAVESTATE);
-                applyRotation(pageN, out);
-                out.append(buf.getBuffer(), ps.replacePoint, buf.size() - ps.replacePoint);
-                out.append(PdfContents.RESTORESTATE);
-                stream = new PdfStream(out.toByteArray());
-                stream.flateCompress(compressionLevel);
-                ar.add(addToBody(stream).getIndirectReference());
-            }
-            alterResources(ps);
+
+            out.append(' ');
+            out.append(PdfContents.RESTORESTATE);
+            ByteBuffer buf = ps.over.getInternalBuffer();
+            out.append(buf.getBuffer(), 0, ps.replacePoint);
+            out.append(PdfContents.SAVESTATE);
+            applyRotation(pageN, out);
+            out.append(buf.getBuffer(), ps.replacePoint, buf.size() - ps.replacePoint);
+            out.append(PdfContents.RESTORESTATE);
+
+            stream = new PdfStream(out.toByteArray());
+            stream.flateCompress(compressionLevel);
+            ar.add(addToBody(stream).getIndirectReference());
         }
     }
+
 
     void alterResources(PageStamp ps) {
         ps.pageN.put(PdfName.RESOURCES, ps.pageResources.getResources());
@@ -1974,53 +1999,63 @@ class PdfStamperImp extends PdfWriter {
 
     private void addOrderHelper(PdfLayer parent, PdfArray arr, Map<String, PdfLayer> ocgmap, int startIndex) {
         int size = arr.size();
-
         for (int i = startIndex; i < size; i++) {
             PdfObject obj = arr.getPdfObject(i);
 
             if (obj.isIndirect()) {
-                PdfLayer layer = ocgmap.get(obj.toString());
-                layer.setOnPanel(true);
-                registerLayer(layer);
-
-                if (parent != null) {
-                    parent.addChild(layer);
-                }
-
-                // Check for the next element to determine if we need to recurse
-                if (i + 1 < size && arr.getPdfObject(i + 1).isArray()) {
-                    // Recurse with the new start index
-                    addOrderHelper(layer, (PdfArray) arr.getPdfObject(i + 1), ocgmap, 0);
-                    // Skip to the index after recursion
-                    // No need to increment 'i' here as the loop will handle it naturally
-                    return; // Exit the current method call to avoid continuing in the current loop
-                }
+                handleIndirectObject(parent, arr, ocgmap, i, size);
+                return; // Exit the loop after handling recursion
             } else if (obj.isArray()) {
-                PdfArray sub = (PdfArray) obj;
-
-                if (sub.isEmpty()) {
-                    return; // Exit if the array is empty
-                }
-
-                obj = sub.getPdfObject(0);
-                if (obj.isString()) {
-                    PdfLayer layer = new PdfLayer(obj.toString());
-                    layer.setOnPanel(true);
-                    registerLayer(layer);
-
-                    if (parent != null) {
-                        parent.addChild(layer);
-                    }
-
-                    PdfArray array = new PdfArray();
-                    sub.getElements().forEach(array::add);
-                    addOrderHelper(layer, array, ocgmap, 0);
-                } else {
-                    addOrderHelper(parent, (PdfArray) obj, ocgmap, 0);
-                }
+                handleArrayObject(parent, (PdfArray) obj, ocgmap);
             }
         }
     }
+
+    private void handleIndirectObject(PdfLayer parent, PdfArray arr, Map<String, PdfLayer> ocgmap, int index, int size) {
+        PdfLayer layer = ocgmap.get(arr.getPdfObject(index).toString());
+        layer.setOnPanel(true);
+        registerLayer(layer);
+
+        if (parent != null) {
+            parent.addChild(layer);
+        }
+
+        if (shouldRecurse(arr, index, size)) {
+            addOrderHelper(layer, (PdfArray) arr.getPdfObject(index + 1), ocgmap, 0);
+        }
+    }
+
+    private boolean shouldRecurse(PdfArray arr, int index, int size) {
+        return (index + 1 < size && arr.getPdfObject(index + 1).isArray());
+    }
+
+    private void handleArrayObject(PdfLayer parent, PdfArray sub, Map<String, PdfLayer> ocgmap) {
+        if (sub.isEmpty()) {
+            return; // Exit if the array is empty
+        }
+
+        PdfObject obj = sub.getPdfObject(0);
+        if (obj.isString()) {
+            handleStringInArray(parent, sub, ocgmap, obj);
+        } else {
+            addOrderHelper(parent, sub, ocgmap, 0);
+        }
+    }
+
+    private void handleStringInArray(PdfLayer parent, PdfArray sub, Map<String, PdfLayer> ocgmap, PdfObject obj) {
+        PdfLayer layer = new PdfLayer(obj.toString());
+        layer.setOnPanel(true);
+        registerLayer(layer);
+
+        if (parent != null) {
+            parent.addChild(layer);
+        }
+
+        PdfArray array = new PdfArray();
+        sub.getElements().forEach(array::add);
+        addOrderHelper(layer, array, ocgmap, 0);
+    }
+
 
 
 

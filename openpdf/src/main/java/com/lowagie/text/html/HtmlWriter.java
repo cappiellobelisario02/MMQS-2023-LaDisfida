@@ -134,7 +134,7 @@ public class HtmlWriter extends DocWriter {
     /**
      * This is the current font of the HTML.
      */
-    protected Deque<Font> currentfont = new ArrayDeque<>();
+    protected Stack<Font> currentfont = new Stack<>();
 
     /**
      * This is the standard font of the HTML.
@@ -154,7 +154,7 @@ public class HtmlWriter extends DocWriter {
     /**
      * This is the textual part of a header
      */
-    protected HeaderFooter HEader = null;
+    protected Header header = null;
 
     /**
      * This is the textual part of the footer
@@ -251,9 +251,15 @@ public class HtmlWriter extends DocWriter {
                 case Element.HEADER:
                     try {
                         Header header = (Header) element;
-                        return handleHeaderElement(header);
+                        if (HtmlTags.STYLESHEET.equals(header.getName())) {
+                            writeLink(header);
+                        } else if (HtmlTags.JAVASCRIPT.equals(header.getName())) {
+                            writeJavaScript(header);
+                        } else {
+                            writeHeader(header);
+                        }
                     } catch (IOException ioe) {
-                        throw new ExceptionConverter(ioe);
+                        throw new IOException(ioe);
                     }
                     return true;
                 case Element.SUBJECT:
@@ -308,18 +314,6 @@ public class HtmlWriter extends DocWriter {
             throw new ExceptionConverter(ioe);
         }
     }
-
-    private boolean handleHeaderElement(Header header) throws IOException, DocumentException {
-    if (HtmlTags.STYLESHEET.equals(header.getName())) {
-        writeLink(header);
-    } else if (HtmlTags.JAVASCRIPT.equals(header.getName())) {
-        writeJavaScript(header);
-    } else {
-        writeHeader(header);
-    }
-    return true;
-}
-
 
     /**
      * Signals that the <CODE>Document</CODE> has been opened and that
@@ -566,7 +560,7 @@ public class HtmlWriter extends DocWriter {
      * @param header the new header
      */
     @Override
-    public void setHeader(HeaderFooter header) {
+    public void setHeader(Header header) {
         this.header = header;
     }
 
@@ -606,382 +600,283 @@ public class HtmlWriter extends DocWriter {
      * @throws IOException thrown when an I/O operation fails
      */
     protected void write(Element element, int indent) throws IOException {
-        Properties styleAttributes;
         switch (element.type()) {
-            case Element.MARKED: {
-                try {
-                    add(element);
-                } catch (DocumentException e) {
-                    e.printStackTrace();
-                }
-                return;
-            }
-            case Element.CHUNK: {
-                Chunk chunk = (Chunk) element;
-                // if the chunk contains an image, return the image representation
-                Image image = chunk.getImage();
-                if (image != null) {
-                    write(image, indent);
-                    return;
-                }
-
-                if (chunk.isEmpty()) {
-                    return;
-                }
-                Map<String, Object> attributes = chunk.getChunkAttributes();
-                if (attributes != null && attributes.get(Chunk.NEWPAGE) != null) {
-                    return;
-                }
-                boolean tag = isOtherFont(chunk.getFont()) || markup.size() > 0;
-                if (tag) {
-                    // start span tag
-                    addTabs(indent);
-                    writeStart(HtmlTags.SPAN);
-                    if (isOtherFont(chunk.getFont())) {
-                        write(chunk.getFont(), null);
-                    }
-                    writeMarkupAttributes(markup);
-                    os.write(GT);
-                }
-                if (attributes != null && attributes.get(Chunk.SUBSUPSCRIPT) != null) {
-                    // start sup or sub tag
-                    if ((Float) attributes.get(Chunk.SUBSUPSCRIPT) > 0) {
-                        writeStart(HtmlTags.SUP);
-                    } else {
-                        writeStart(HtmlTags.SUB);
-                    }
-                    os.write(GT);
-                }
-                // contents
-                write(HtmlEncoder.encode(chunk.getContent()));
-                if (attributes != null && attributes.get(Chunk.SUBSUPSCRIPT) != null) {
-                    // end sup or sub tag
-                    os.write(LT);
-                    os.write(FORWARD);
-                    if ((Float) attributes.get(Chunk.SUBSUPSCRIPT) > 0) {
-                        write(HtmlTags.SUP);
-                    } else {
-                        write(HtmlTags.SUB);
-                    }
-                    os.write(GT);
-                }
-                if (tag) {
-                    // end tag
-                    writeEnd(Markup.HTML_TAG_SPAN);
-                }
-                return;
-            }
-            case Element.PHRASE: {
-                Phrase phrase = (Phrase) element;
-                styleAttributes = new Properties();
-                if (phrase.hasLeading()) {
-                    styleAttributes.setProperty(Markup.CSS_KEY_LINEHEIGHT, phrase.getLeading() + "pt");
-                }
-
-                // start tag
-                addTabs(indent);
-                writeStart(Markup.HTML_TAG_SPAN);
-                writeMarkupAttributes(markup);
-                write(phrase.getFont(), styleAttributes);
-                os.write(GT);
-                currentfont.push(phrase.getFont());
-                // contents
-                for (Object o : phrase) {
-                    write((Element) o, indent + 1);
-                }
-                // end tag
-                addTabs(indent);
-                writeEnd(Markup.HTML_TAG_SPAN);
-                currentfont.pop();
-                return;
-            }
-            case Element.ANCHOR: {
-                Anchor anchor = (Anchor) element;
-                styleAttributes = new Properties();
-                if (anchor.hasLeading()) {
-                    styleAttributes.setProperty(Markup.CSS_KEY_LINEHEIGHT, anchor.getLeading() + "pt");
-                }
-
-                // start tag
-                addTabs(indent);
-                writeStart(HtmlTags.ANCHOR);
-                if (anchor.getName() != null) {
-                    write(HtmlTags.NAME, anchor.getName());
-                }
-                if (anchor.getReference() != null) {
-                    write(HtmlTags.REFERENCE, anchor.getReference());
-                }
-                writeMarkupAttributes(markup);
-                write(anchor.getFont(), styleAttributes);
-                os.write(GT);
-                currentfont.push(anchor.getFont());
-                // contents
-                for (Object o : anchor) {
-                    write((Element) o, indent + 1);
-                }
-                // end tag
-                addTabs(indent);
-                writeEnd(HtmlTags.ANCHOR);
-                currentfont.pop();
-                return;
-            }
-            case Element.PARAGRAPH: {
-                Paragraph paragraph = (Paragraph) element;
-                styleAttributes = new Properties();
-                if (paragraph.hasLeading()) {
-                    styleAttributes.setProperty(Markup.CSS_KEY_LINEHEIGHT, paragraph.getTotalLeading() + "pt");
-                }
-                // start tag
-                addTabs(indent);
-                writeStart(HtmlTags.DIV);
-                writeMarkupAttributes(markup);
-                String alignment = HtmlEncoder.getAlignment(paragraph.getAlignment());
-                if (!"".equals(alignment)) {
-                    write(HtmlTags.ALIGN, alignment);
-                }
-                write(paragraph.getFont(), styleAttributes);
-                os.write(GT);
-                currentfont.push(paragraph.getFont());
-                // contents
-                for (Object o : paragraph) {
-                    write((Element) o, indent + 1);
-                }
-                // end tag
-                addTabs(indent);
-                writeEnd(HtmlTags.DIV);
-                currentfont.pop();
-                return;
-            }
+            case Element.MARKED:
+                handleMarked(element);
+                break;
+            case Element.CHUNK:
+                handleChunk((Chunk) element, indent);
+                break;
+            case Element.PHRASE:
+                handlePhrase((Phrase) element, indent);
+                break;
+            case Element.ANCHOR:
+                handleAnchor((Anchor) element, indent);
+                break;
+            case Element.PARAGRAPH:
+                handleParagraph((Paragraph) element, indent);
+                break;
             case Element.SECTION:
-            case Element.CHAPTER: {
-                // part of the start tag + contents
-                writeSection((Section) element, indent);
-                return;
-            }
-            case Element.LIST: {
-                List list = (List) element;
-                // start tag
-                addTabs(indent);
-                if (list.isNumbered()) {
-                    writeStart(HtmlTags.ORDEREDLIST);
-                } else {
-                    writeStart(HtmlTags.UNORDEREDLIST);
-                }
-                writeMarkupAttributes(markup);
-                os.write(GT);
-                // contents
-                for (Object o : list.getItems()) {
-                    write((Element) o, indent + 1);
-                }
-                // end tag
-                addTabs(indent);
-                if (list.isNumbered()) {
-                    writeEnd(HtmlTags.ORDEREDLIST);
-                } else {
-                    writeEnd(HtmlTags.UNORDEREDLIST);
-                }
-                return;
-            }
-            case Element.LISTITEM: {
-                ListItem listItem = (ListItem) element;
-                styleAttributes = new Properties();
-                if (listItem.hasLeading()) {
-                    styleAttributes.setProperty(Markup.CSS_KEY_LINEHEIGHT, listItem.getTotalLeading() + "pt");
-                }
-
-                // start tag
-                addTabs(indent);
-                writeStart(HtmlTags.LISTITEM);
-                writeMarkupAttributes(markup);
-                write(listItem.getFont(), styleAttributes);
-                os.write(GT);
-                currentfont.push(listItem.getFont());
-                // contents
-                for (Object o : listItem) {
-                    write((Element) o, indent + 1);
-                }
-                // end tag
-                addTabs(indent);
-                writeEnd(HtmlTags.LISTITEM);
-                currentfont.pop();
-                return;
-            }
-            case Element.CELL: {
-                Cell cell = (Cell) element;
-
-                // start tag
-                addTabs(indent);
-                if (cell.isHeader()) {
-                    writeStart(HtmlTags.HEADERCELL);
-                } else {
-                    writeStart(HtmlTags.CELL);
-                }
-                writeMarkupAttributes(markup);
-                if (cell.getBorderWidth() != Rectangle.UNDEFINED) {
-                    write(HtmlTags.BORDERWIDTH, String.valueOf(cell.getBorderWidth()));
-                }
-                if (cell.getBorderColor() != null) {
-                    write(HtmlTags.BORDERCOLOR, HtmlEncoder.encode(cell.getBorderColor()));
-                }
-                if (cell.getBackgroundColor() != null) {
-                    write(HtmlTags.BACKGROUNDCOLOR, HtmlEncoder.encode(cell.getBackgroundColor()));
-                }
-                String alignment = HtmlEncoder.getAlignment(cell.getHorizontalAlignment());
-                if (!"".equals(alignment)) {
-                    write(HtmlTags.HORIZONTALALIGN, alignment);
-                }
-                alignment = HtmlEncoder.getAlignment(cell.getVerticalAlignment());
-                if (!"".equals(alignment)) {
-                    write(HtmlTags.VERTICALALIGN, alignment);
-                }
-                if (cell.getWidthAsString() != null) {
-                    write(HtmlTags.WIDTH, cell.getWidthAsString());
-                }
-                if (cell.getColspan() != 1) {
-                    write(HtmlTags.COLSPAN, String.valueOf(cell.getColspan()));
-                }
-                if (cell.getRowspan() != 1) {
-                    write(HtmlTags.ROWSPAN, String.valueOf(cell.getRowspan()));
-                }
-                if (cell.getMaxLines() == 1) {
-                    write(HtmlTags.STYLE, "white-space: nowrap;");
-                }
-                os.write(GT);
-                // contents
-                if (cell.isEmpty()) {
-                    write(NBSP);
-                } else {
-                    for (Iterator<Element> i = cell.getElements(); i.hasNext(); ) {
-                        write((Element) i.next(), indent + 1);
-                    }
-                }
-                // end tag
-                addTabs(indent);
-                if (cell.isHeader()) {
-                    writeEnd(HtmlTags.HEADERCELL);
-                } else {
-                    writeEnd(HtmlTags.CELL);
-                }
-                return;
-            }
-            case Element.ROW: {
-                Row row = (Row) element;
-
-                // start tag
-                addTabs(indent);
-                writeStart(HtmlTags.ROW);
-                writeMarkupAttributes(markup);
-                os.write(GT);
-                // contents
-                Element cell;
-                for (int i = 0; i < row.getColumns(); i++) {
-                    if ((cell = row.getCell(i)) != null) {
-                        write(cell, indent + 1);
-                    }
-                }
-                // end tag
-                addTabs(indent);
-                writeEnd(HtmlTags.ROW);
-                return;
-            }
-            case Element.TABLE: {
-                Table table;
-                try {
-                    table = (Table) element;
-                } catch (ClassCastException cce) {
-                    try {
-                        table = ((SimpleTable) element).createTable();
-                    } catch (BadElementException e) {
-                        throw new ExceptionConverter(e);
-                    }
-                }
-                table.complete();
-                // start tag
-                addTabs(indent);
-                writeStart(HtmlTags.TABLE);
-                writeMarkupAttributes(markup);
-                os.write(SPACE);
-                write(HtmlTags.WIDTH);
-                os.write(EQUALS);
-                os.write(QUOTE);
-                write(String.valueOf(table.getWidth()));
-                if (!table.isLocked()) {
-                    write("%");
-                }
-                os.write(QUOTE);
-                String alignment = HtmlEncoder.getAlignment(table.getAlignment());
-                if (!"".equals(alignment)) {
-                    write(HtmlTags.ALIGN, alignment);
-                }
-                write(HtmlTags.CELLPADDING, String.valueOf(table.getPadding()));
-                write(HtmlTags.CELLSPACING, String.valueOf(table.getSpacing()));
-                if (table.getBorderWidth() != Rectangle.UNDEFINED) {
-                    write(HtmlTags.BORDERWIDTH, String.valueOf(table.getBorderWidth()));
-                }
-                if (table.getBorderColor() != null) {
-                    write(HtmlTags.BORDERCOLOR, HtmlEncoder.encode(table.getBorderColor()));
-                }
-                if (table.getBackgroundColor() != null) {
-                    write(HtmlTags.BACKGROUNDCOLOR, HtmlEncoder.encode(table.getBackgroundColor()));
-                }
-                os.write(GT);
-                // contents
-                Row row;
-                for (Iterator<String> iterator = table.iterator(); iterator.hasNext(); ) {
-                    row = (Row) iterator.next();
-                    write(row, indent + 1);
-                }
-                // end tag
-                addTabs(indent);
-                writeEnd(HtmlTags.TABLE);
-                return;
-            }
-            case Element.ANNOTATION: {
-                Annotation annotation = (Annotation) element;
-                writeComment(annotation.title() + ": " + annotation.content());
-                return;
-            }
+            case Element.CHAPTER:
+                handleSection((Section) element, indent);
+                break;
+            case Element.LIST:
+                handleList((List) element, indent);
+                break;
+            case Element.LISTITEM:
+                handleListItem((ListItem) element, indent);
+                break;
+            case Element.CELL:
+                handleCell((Cell) element, indent);
+                break;
+            case Element.ROW:
+                handleRow((Row) element, indent);
+                break;
+            case Element.TABLE:
+                handleTable((Table) element, indent);
+                break;
+            case Element.ANNOTATION:
+                handleAnnotation((Annotation) element);
+                break;
             case Element.IMGRAW:
             case Element.JPEG:
             case Element.JPEG2000:
-            case Element.IMGTEMPLATE: {
-                Image image = (Image) element;
-                if (image.getUrl() == null) {
-                    return;
-                }
-
-                // start tag
-                addTabs(indent);
-                writeStart(HtmlTags.IMAGE);
-                String path = image.getUrl().toString();
-                if (imagepath != null) {
-                    if (path.indexOf('/') > 0) {
-                        path = imagepath + path.substring(path.lastIndexOf('/') + 1);
-                    } else {
-                        path = imagepath + path;
-                    }
-                }
-                write(HtmlTags.URL, path);
-                if ((image.getAlignment() & Image.RIGHT) > 0) {
-                    write(HtmlTags.ALIGN, HtmlTags.ALIGN_RIGHT);
-                } else if ((image.getAlignment() & Image.MIDDLE) > 0) {
-                    write(HtmlTags.ALIGN, HtmlTags.ALIGN_MIDDLE);
-                } else {
-                    write(HtmlTags.ALIGN, HtmlTags.ALIGN_LEFT);
-                }
-                if (image.getAlt() != null) {
-                    write(HtmlTags.ALT, image.getAlt());
-                }
-                write(HtmlTags.PLAINWIDTH, String.valueOf(image.getScaledWidth()));
-                write(HtmlTags.PLAINHEIGHT, String.valueOf(image.getScaledHeight()));
-                writeMarkupAttributes(markup);
-                writeEnd();
-                return;
-            }
-
+            case Element.IMGTEMPLATE:
+                handleImage((Image) element, indent);
+                break;
             default:
+                break;
         }
     }
+
+    private void handleMarked(Element element) {
+        try {
+            add(element);
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleChunk(Chunk chunk, int indent) throws IOException {
+        Image image = chunk.getImage();
+        if (image != null) {
+            write(image, indent);
+            return;
+        }
+
+        if (chunk.isEmpty()) {
+            return;
+        }
+
+        boolean tag = isOtherFont(chunk.getFont()) || markup.size() > 0;
+        if (tag) {
+            writeStartTag(HtmlTags.SPAN, chunk.getFont(), indent);
+        }
+
+        writeSubSupScript(chunk);
+
+        write(HtmlEncoder.encode(chunk.getContent()));
+
+        writeClosingSubSupScript(chunk);
+
+        if (tag) {
+            writeEnd(Markup.HTML_TAG_SPAN);
+        }
+    }
+
+    private void writeSubSupScript(Chunk chunk) throws IOException {
+        Map<String, Object> attributes = chunk.getChunkAttributes();
+        if (attributes != null && attributes.get(Chunk.SUBSUPSCRIPT) != null) {
+            if ((Float) attributes.get(Chunk.SUBSUPSCRIPT) > 0) {
+                writeStart(HtmlTags.SUP);
+            } else {
+                writeStart(HtmlTags.SUB);
+            }
+            os.write(GT);
+        }
+    }
+
+    private void writeClosingSubSupScript(Chunk chunk) throws IOException {
+        Map<String, Object> attributes = chunk.getChunkAttributes();
+        if (attributes != null && attributes.get(Chunk.SUBSUPSCRIPT) != null) {
+            os.write(LT);
+            os.write(FORWARD);
+            if ((Float) attributes.get(Chunk.SUBSUPSCRIPT) > 0) {
+                write(HtmlTags.SUP);
+            } else {
+                write(HtmlTags.SUB);
+            }
+            os.write(GT);
+        }
+    }
+
+    private void handlePhrase(Phrase phrase, int indent) throws IOException {
+        writeStartTag(Markup.HTML_TAG_SPAN, phrase.getFont(), indent);
+        currentfont.push(phrase.getFont());
+        for (Object o : phrase) {
+            write((Element) o, indent + 1);
+        }
+        writeEnd(Markup.HTML_TAG_SPAN);
+        currentfont.pop();
+    }
+
+    private void handleAnchor(Anchor anchor, int indent) throws IOException {
+        writeStartTag(HtmlTags.ANCHOR, anchor.getFont(), indent);
+        currentfont.push(anchor.getFont());
+        for (Object o : anchor) {
+            write((Element) o, indent + 1);
+        }
+        writeEnd(HtmlTags.ANCHOR);
+        currentfont.pop();
+    }
+
+    private void handleParagraph(Paragraph paragraph, int indent) throws IOException {
+        writeStartTag(HtmlTags.DIV, paragraph.getFont(), indent);
+        currentfont.push(paragraph.getFont());
+        for (Object o : paragraph) {
+            write((Element) o, indent + 1);
+        }
+        writeEnd(HtmlTags.DIV);
+        currentfont.pop();
+    }
+
+    private void handleSection(Section section, int indent) throws IOException {
+        writeSection(section, indent);
+    }
+
+    private void handleList(List list, int indent) throws IOException {
+        addTabs(indent);
+        if (list.isNumbered()) {
+            writeStart(HtmlTags.ORDEREDLIST);
+        } else {
+            writeStart(HtmlTags.UNORDEREDLIST);
+        }
+        writeMarkupAttributes(markup);
+        os.write(GT);
+        for (Object o : list.getItems()) {
+            write((Element) o, indent + 1);
+        }
+        addTabs(indent);
+        if (list.isNumbered()) {
+            writeEnd(HtmlTags.ORDEREDLIST);
+        } else {
+            writeEnd(HtmlTags.UNORDEREDLIST);
+        }
+    }
+
+    private void handleListItem(ListItem listItem, int indent) throws IOException {
+        writeStartTag(HtmlTags.LISTITEM, listItem.getFont(), indent);
+        currentfont.push(listItem.getFont());
+        for (Object o : listItem) {
+            write((Element) o, indent + 1);
+        }
+        writeEnd(HtmlTags.LISTITEM);
+        currentfont.pop();
+    }
+
+    private void handleCell(Cell cell, int indent) throws IOException {
+        writeStartTag(cell.isHeader() ? HtmlTags.HEADERCELL : HtmlTags.CELL, cell.getFont(), indent);
+        if (cell.isEmpty()) {
+            write(NBSP);
+        } else {
+            for (Iterator<Element> i = cell.getElements(); i.hasNext(); ) {
+                write((Element) i.next(), indent + 1);
+            }
+        }
+        writeEnd(cell.isHeader() ? HtmlTags.HEADERCELL : HtmlTags.CELL);
+    }
+
+    private void handleRow(Row row, int indent) throws IOException {
+        addTabs(indent);
+        writeStart(HtmlTags.ROW);
+        writeMarkupAttributes(markup);
+        os.write(GT);
+        Element cell;
+        for (int i = 0; i < row.getColumns(); i++) {
+            if ((cell = row.getCell(i)) != null) {
+                write(cell, indent + 1);
+            }
+        }
+        writeEnd(HtmlTags.ROW);
+    }
+
+    private void handleTable(Table table, int indent) throws IOException {
+        table.complete();
+        addTabs(indent);
+        writeStart(HtmlTags.TABLE);
+        writeMarkupAttributes(markup);
+        os.write(SPACE);
+        write(HtmlTags.WIDTH);
+        os.write(EQUALS);
+        os.write(QUOTE);
+        write(String.valueOf(table.getWidth()));
+        if (!table.isLocked()) {
+            write("%");
+        }
+        os.write(QUOTE);
+        String alignment = HtmlEncoder.getAlignment(table.getAlignment());
+        if (!"".equals(alignment)) {
+            write(HtmlTags.ALIGN, alignment);
+        }
+        write(HtmlTags.CELLPADDING, String.valueOf(table.getPadding()));
+        write(HtmlTags.CELLSPACING, String.valueOf(table.getSpacing()));
+        if (table.getBorderWidth() != Rectangle.UNDEFINED) {
+            write(HtmlTags.BORDERWIDTH, String.valueOf(table.getBorderWidth()));
+        }
+        if (table.getBorderColor() != null) {
+            write(HtmlTags.BORDERCOLOR, HtmlEncoder.encode(table.getBorderColor()));
+        }
+        if (table.getBackgroundColor() != null) {
+            write(HtmlTags.BACKGROUNDCOLOR, HtmlEncoder.encode(table.getBackgroundColor()));
+        }
+        os.write(GT);
+        for (Iterator<String> iterator = table.iterator(); iterator.hasNext(); ) {
+            write((Row) iterator.next(), indent + 1);
+        }
+        writeEnd(HtmlTags.TABLE);
+    }
+
+    private void handleAnnotation(Annotation annotation) throws IOException {
+        writeComment(annotation.TITLE() + ": " + annotation.CONTENT());
+    }
+
+    private void handleImage(Image image, int indent) throws IOException {
+        if (image.getUrl() == null) {
+            return;
+        }
+        addTabs(indent);
+        writeStart(HtmlTags.IMAGE);
+        String path = image.getUrl().toString();
+        if (imagepath != null) {
+            path = imagepath + path.substring(path.lastIndexOf('/') + 1);
+        }
+        write(HtmlTags.URL, path);
+        if ((image.getAlignment() & Image.RIGHT) > 0) {
+            write(HtmlTags.ALIGN, HtmlTags.ALIGN_RIGHT);
+        } else if ((image.getAlignment() & Image.MIDDLE) > 0) {
+            write(HtmlTags.ALIGN, HtmlTags.ALIGN_MIDDLE);
+        } else {
+            write(HtmlTags.ALIGN, HtmlTags.ALIGN_LEFT);
+        }
+        if (image.getAlt() != null) {
+            write(HtmlTags.ALT, image.getAlt());
+        }
+        write(HtmlTags.PLAINWIDTH, String.valueOf(image.getScaledWidth()));
+        write(HtmlTags.PLAINHEIGHT, String.valueOf(image.getScaledHeight()));
+        writeMarkupAttributes(markup);
+        writeEnd();
+    }
+
+    private void writeStartTag(String tag, Font font, int indent) throws IOException {
+        addTabs(indent);
+        writeStart(tag);
+        writeMarkupAttributes(markup);
+        if (font != null) {
+            write(font, null);
+        }
+        os.write(GT);
+    }
+
 
     /**
      * Writes the HTML representation of a section.
@@ -1036,69 +931,104 @@ public class HtmlWriter extends DocWriter {
         if (font == null || !isOtherFont(font)) {
             return;
         }
+
         write(" ");
         write(HtmlTags.STYLE);
         write("=\"");
+
         if (styleAttributes != null) {
-            String key;
-            for (Enumeration<String> e = styleAttributes.propertyNames(); e.hasMoreElements(); ) {
-                key = (String) e.nextElement();
-                writeCssProperty(key, styleAttributes.getProperty(key));
-            }
+            writeCssProperties(styleAttributes);
         }
-        if (isOtherFont(font)) {
-            writeCssProperty(Markup.CSS_KEY_FONTFAMILY, font.getFamilyname());
 
-            if (font.getSize() != Font.UNDEFINED) {
-                writeCssProperty(Markup.CSS_KEY_FONTSIZE, font.getSize() + "pt");
-            }
-            if (font.getColor() != null) {
-                writeCssProperty(Markup.CSS_KEY_COLOR, HtmlEncoder.encode(font.getColor()));
-            }
+        writeFontProperties(font);
 
-            int fontstyle = font.getStyle();
-            BaseFont bf = font.getBaseFont();
-            if (bf != null) {
-                String ps = bf.getPostscriptFontName().toLowerCase();
-                if (ps.contains("bold")) {
-                    if (fontstyle == Font.UNDEFINED) {
-                        fontstyle = 0;
-                    }
-                    fontstyle |= Font.BOLD;
-                }
-                if (ps.contains("italic") || ps.contains("oblique")) {
-                    if (fontstyle == Font.UNDEFINED) {
-                        fontstyle = 0;
-                    }
-                    fontstyle |= Font.ITALIC;
-                }
-            }
-            if (fontstyle != Font.UNDEFINED && fontstyle != Font.NORMAL) {
-                switch (fontstyle & Font.BOLDITALIC) {
-                    case Font.BOLD:
-                        writeCssProperty(Markup.CSS_KEY_FONTWEIGHT, Markup.CSS_VALUE_BOLD);
-                        break;
-                    case Font.ITALIC:
-                        writeCssProperty(Markup.CSS_KEY_FONTSTYLE, Markup.CSS_VALUE_ITALIC);
-                        break;
-                    case Font.BOLDITALIC:
-                        writeCssProperty(Markup.CSS_KEY_FONTWEIGHT, Markup.CSS_VALUE_BOLD);
-                        writeCssProperty(Markup.CSS_KEY_FONTSTYLE, Markup.CSS_VALUE_ITALIC);
-                        break;
-                }
-
-                // CSS only supports one decoration tag so if both are specified
-                // only one of the two will display
-                if ((fontstyle & Font.UNDERLINE) > 0) {
-                    writeCssProperty(Markup.CSS_KEY_TEXTDECORATION, Markup.CSS_VALUE_UNDERLINE);
-                }
-                if ((fontstyle & Font.STRIKETHRU) > 0) {
-                    writeCssProperty(Markup.CSS_KEY_TEXTDECORATION, Markup.CSS_VALUE_LINETHROUGH);
-                }
-            }
-        }
         write("\"");
     }
+
+    private void writeCssProperties(Properties styleAttributes) throws IOException {
+        if (styleAttributes == null) {
+            return;
+        }
+
+        for (Enumeration<String> e = styleAttributes.propertyNames(); e.hasMoreElements();) {
+            String key = e.nextElement();
+            writeCssProperty(key, styleAttributes.getProperty(key));
+        }
+    }
+
+    private void writeFontProperties(Font font) throws IOException {
+        if (!isOtherFont(font)) {
+            return;
+        }
+
+        writeCssProperty(Markup.CSS_KEY_FONTFAMILY, font.getFamilyname());
+
+        if (font.getSize() != Font.UNDEFINED) {
+            writeCssProperty(Markup.CSS_KEY_FONTSIZE, font.getSize() + "pt");
+        }
+
+        if (font.getColor() != null) {
+            writeCssProperty(Markup.CSS_KEY_COLOR, HtmlEncoder.encode(font.getColor()));
+        }
+
+        writeFontStyle(font);
+    }
+
+    private void writeFontStyle(Font font) throws IOException {
+        BaseFont bf = font.getBaseFont();
+        if (bf == null) {
+            return;
+        }
+
+        int fontstyle = getFontStyleFromBaseFont(bf, font);
+        if (fontstyle == Font.UNDEFINED || fontstyle == Font.NORMAL) {
+            return;
+        }
+
+        writeBoldItalicProperties(fontstyle);
+        writeUnderlineStrikethrough(fontstyle);
+    }
+
+    private int getFontStyleFromBaseFont(BaseFont bf, Font font) {
+        int fontstyle = font.getStyle();
+        String ps = bf.getPostscriptFontName().toLowerCase();
+        if (ps.contains("bold")) {
+            if (fontstyle == Font.UNDEFINED) {
+                fontstyle = 0;
+            }
+            fontstyle |= Font.BOLD;
+        }
+        if (ps.contains("italic") || ps.contains("oblique")) {
+            if (fontstyle == Font.UNDEFINED) {
+                fontstyle = 0;
+            }
+            fontstyle |= Font.ITALIC;
+        }
+        return fontstyle;
+    }
+
+    private void writeBoldItalicProperties(int fontstyle) throws IOException {
+        if ((fontstyle & Font.BOLDITALIC) == Font.BOLD) {
+            writeCssProperty(Markup.CSS_KEY_FONTWEIGHT, Markup.CSS_VALUE_BOLD);
+        }
+        if ((fontstyle & Font.BOLDITALIC) == Font.ITALIC) {
+            writeCssProperty(Markup.CSS_KEY_FONTSTYLE, Markup.CSS_VALUE_ITALIC);
+        }
+        if (fontstyle == Font.BOLDITALIC) {
+            writeCssProperty(Markup.CSS_KEY_FONTWEIGHT, Markup.CSS_VALUE_BOLD);
+            writeCssProperty(Markup.CSS_KEY_FONTSTYLE, Markup.CSS_VALUE_ITALIC);
+        }
+    }
+
+    private void writeUnderlineStrikethrough(int fontstyle) throws IOException {
+        if ((fontstyle & Font.UNDERLINE) > 0) {
+            writeCssProperty(Markup.CSS_KEY_TEXTDECORATION, Markup.CSS_VALUE_UNDERLINE);
+        }
+        if ((fontstyle & Font.STRIKETHRU) > 0) {
+            writeCssProperty(Markup.CSS_KEY_TEXTDECORATION, Markup.CSS_VALUE_LINETHROUGH);
+        }
+    }
+
 
     /**
      * Writes out a CSS property.

@@ -99,59 +99,66 @@ public class ConcatPdf {
 
     public static void concat(List<File> sources, File target) throws IOException {
 
-        PdfReader reader = null;
         try (Document document = new Document();
                 BufferedOutputStream bouts = new BufferedOutputStream(Files.newOutputStream(target.toPath()));
-                PdfCopy writer = new PdfCopy(document, bouts);){
-            for (File source : sources) {
-                if (!source.isFile() || !source.canRead()) {
-                    throw new IOException("cannot read:" + source.getAbsolutePath());
-                }
-            }
-
-            int pageOffset = 0;
-            List<Map<String, Object>> master = new ArrayList<>();
+                PdfCopy writer = new PdfCopy(document, bouts);) {
+            validateSourceFiles(sources);
             writer.setPdfVersion(PdfWriter.VERSION_1_7);
             writer.setFullCompression();
             writer.setCompressionLevel(PdfStream.BEST_COMPRESSION);
             document.open();
-            for (File source : sources) {
-                // we create a reader for a certain document
-                reader = new PdfReader(new BufferedInputStream(Files.newInputStream(source.toPath())));
-                reader.consolidateNamedDestinations();
-                // we retrieve the total number of pages
-                int numberOfPages = reader.getNumberOfPages();
-                List<Map<String, Object>> bookmarks = SimpleBookmark.getBookmarkList(reader);
-                if (bookmarks != null) {
-                    if (pageOffset != 0) {
-                        SimpleBookmark.shiftPageNumbersInRange(bookmarks, pageOffset, null);
-                    }
-                    master.addAll(bookmarks);
-                }
-                pageOffset += numberOfPages;
 
-                // we add content
-                PdfImportedPage page;
-                for (int i = 1; i <= numberOfPages; i++) {
-                    page = writer.getImportedPage(reader, i);
-                    writer.addPage(page);
-                }
-                writer.freeReader(reader);
+            int pageOffset = 0;
+            List<Map<String, Object>> bookmarks = new ArrayList<>();
+
+            for (File source : sources) {
+                processPdfFile(source, pageOffset, writer, bookmarks);
+                pageOffset += getNumberOfPages(source);
             }
-            if (!master.isEmpty()) {
-                writer.setOutlines(master);
+
+            if (!bookmarks.isEmpty()) {
+                writer.setOutlines(bookmarks);
             }
-            // we close the document
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            if (reader != null){
-                try{
-                    reader.close();
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
+        }
+    }
+
+    private static void validateSourceFiles(List<File> sources) throws IOException {
+        for (File source : sources) {
+            if (!source.isFile() || !source.canRead()) {
+                throw new IOException("cannot read:" + source.getAbsolutePath());
             }
         }
     }
+
+    private static int getNumberOfPages(File source) throws IOException {
+        PdfReader reader = new PdfReader(new BufferedInputStream(Files.newInputStream(source.toPath())));
+        int numberOfPages = reader.getNumberOfPages();
+        reader.close();
+        return numberOfPages;
+    }
+
+    private static void processPdfFile(File source, int pageOffset, PdfCopy writer, List<Map<String, Object>> bookmarks) throws IOException {
+        PdfReader reader = new PdfReader(new BufferedInputStream(Files.newInputStream(source.toPath())));
+        reader.consolidateNamedDestinations();
+
+        List<Map<String, Object>> sourceBookmarks = SimpleBookmark.getBookmarkList(reader);
+        if (sourceBookmarks != null) {
+            if (pageOffset != 0) {
+                SimpleBookmark.shiftPageNumbersInRange(sourceBookmarks, pageOffset, null);
+            }
+            bookmarks.addAll(sourceBookmarks);
+        }
+
+        PdfImportedPage page;
+        for (int i = 1; i <= reader.getNumberOfPages(); i++) {
+            page = writer.getImportedPage(reader, i);
+            writer.addPage(page);
+        }
+
+        reader.close();
+        writer.freeReader(reader);
+    }
+
 }

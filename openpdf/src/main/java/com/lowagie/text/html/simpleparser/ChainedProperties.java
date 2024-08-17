@@ -117,43 +117,51 @@ public class ChainedProperties {
     }
 
     public void addToChain(String key, Map<String, String> prop) {
-        // adjust the font size
-        String value = prop.get(ElementTags.SIZE);
-        if (value != null) {
-            if (value.endsWith("pt")) {
-                prop.put(ElementTags.SIZE, value.substring(0,
-                        value.length() - 2));
-            } else {
-                int s = 0;
-                if (value.startsWith("+") || value.startsWith("-")) {
-                    String old = getOrDefault("basefontsize", "12");
-                    float f = Float.parseFloat(old);
-                    int c = (int) f;
-                    for (int k = fontSizes.length - 1; k >= 0; --k) {
-                        if (c >= fontSizes[k]) {
-                            s = k;
-                            break;
-                        }
-                    }
-                    int inc = Integer.parseInt(value.startsWith("+") ? value
-                            .substring(1) : value);
-                    s += inc;
-                } else {
-                    try {
-                        s = Integer.parseInt(value) - 1;
-                    } catch (NumberFormatException nfe) {
-                        s = 0;
-                    }
-                }
-                if (s < 0) {
-                    s = 0;
-                } else if (s >= fontSizes.length) {
-                    s = fontSizes.length - 1;
-                }
-                prop.put(ElementTags.SIZE, Integer.toString(fontSizes[s]));
+        adjustFontSize(prop);
+        chain.add(new Object[]{key, prop});
+    }
+
+    private void adjustFontSize(Map<String, String> prop) {
+        String sizeValue = prop.get(ElementTags.SIZE);
+        if (sizeValue == null) {
+            return;
+        }
+
+        try {
+            int fontSizeIndex = calculateFontSizeIndex(sizeValue);
+            prop.put(ElementTags.SIZE, Integer.toString(fontSizes[fontSizeIndex]));
+        } catch (NumberFormatException e) {
+            // Handle invalid size value
+            // For example: log a warning or set a default size
+        }
+    }
+
+    private int calculateFontSizeIndex(String sizeValue) {
+        if (sizeValue.endsWith("pt")) {
+            sizeValue = sizeValue.substring(0, sizeValue.length() - 2);
+        }
+
+        int baseFontSize = Integer.parseInt(getOrDefault("basefontsize", "12"));
+        int sizeDelta = parseSizeDelta(sizeValue);
+        int index = findFontSizeIndex(baseFontSize + sizeDelta);
+        return Math.max(0, Math.min(index, fontSizes.length - 1));
+    }
+
+    private int parseSizeDelta(String sizeValue) {
+        if (sizeValue.startsWith("+") || sizeValue.startsWith("-")) {
+            return Integer.parseInt(sizeValue.substring(1));
+        } else {
+            return Integer.parseInt(sizeValue) - 1;
+        }
+    }
+
+    private int findFontSizeIndex(int targetSize) {
+        for (int k = fontSizes.length - 1; k >= 0; --k) {
+            if (targetSize >= fontSizes[k]) {
+                return k;
             }
         }
-        chain.add(new Object[]{key, prop});
+        return 0;
     }
 
     public void removeChain(String key) {

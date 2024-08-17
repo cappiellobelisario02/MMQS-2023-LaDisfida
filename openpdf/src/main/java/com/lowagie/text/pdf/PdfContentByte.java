@@ -1453,122 +1453,190 @@ public class PdfContentByte {
      * @throws DocumentException on error
      */
     public void addImage(Image image, TransformationMatrix matrix, boolean inlineImage)
-        throws DocumentException {
+            throws DocumentException {
         try {
-            if (image.getLayer() != null) {
-                beginLayer(image.getLayer());
-            }
-            if (image.isImgTemplate()) {
-                writer.addDirectImageSimple(image);
-                PdfTemplate template = image.getTemplateData();
-                float w = template.getWidth();
-                float h = template.getHeight();
-                addTemplate(template, matrix.getA() / w, matrix.getB() / w, matrix.getC() / h, matrix.getD() / h, matrix.getE(), matrix.getF());
-            } else {
-                content.append("q ");
-                content.append(matrix.getA()).append(' ');
-                content.append(matrix.getB()).append(' ');
-                content.append(matrix.getC()).append(' ');
-                content.append(matrix.getD()).append(' ');
-                content.append(matrix.getE()).append(' ');
-                content.append(matrix.getF()).append(" cm");
-                if (inlineImage) {
-                    content.append("\nBI\n");
-                    PdfImage pimage = new PdfImage(image, "", null);
-                    if (image instanceof ImgJBIG2) {
-                        byte[] globals = ((ImgJBIG2) image).getGlobalBytes();
-                        if (globals != null) {
-                            PdfDictionary decodeparms = new PdfDictionary();
-                            decodeparms.put(PdfName.JBIG2GLOBALS, writer.getReferenceJBIG2Globals(globals));
-                            pimage.put(PdfName.DECODEPARMS, decodeparms);
-                        }
-                    }
-                    for (PdfName key : pimage.getKeys()) {
-                        PdfObject value = pimage.get(key);
-                        String s = abrev.get(key);
-                        if (s == null) {
-                            continue;
-                        }
-                        content.append(s);
-                        boolean check = true;
-                        if (key.equals(PdfName.COLORSPACE) && value.isArray()) {
-                            PdfArray ar = (PdfArray) value;
-                            if (ar.size() == 4
-                                    && PdfName.INDEXED.equals(ar.getAsName(0))
-                                    && ar.getPdfObject(1).isName()
-                                    && ar.getPdfObject(2).isNumber()
-                                    && ar.getPdfObject(3).isString()
-                            ) {
-                                check = false;
-                            }
+            handleLayerBegin(image);
 
-                        }
-                        if (check && key.equals(PdfName.COLORSPACE) && !value.isName()) {
-                            PdfName cs = writer.getColorspaceName();
-                            PageResources prs = getPageResources();
-                            prs.addColor(cs, writer.addToBody(value).getIndirectReference());
-                            value = cs;
-                        }
-                        value.toPdf(null, content);
-                        content.append('\n');
-                    }
-                    content.append("ID\n");
-                    pimage.writeContent(content);
-                    content.append("\nEI\nQ").append_i(separator);
-                } else {
-                    PdfName name;
-                    PageResources prs = getPageResources();
-                    Image maskImage = image.getImageMask();
-                    if (maskImage != null) {
-                        name = writer.addDirectImageSimple(maskImage);
-                        prs.addXObject(name, writer.getImageReference(name));
-                    }
-                    name = writer.addDirectImageSimple(image);
-                    name = prs.addXObject(name, writer.getImageReference(name));
-                    content.append(' ').append(name.getBytes()).append(" Do Q").append_i(separator);
-                }
+            if (image.isImgTemplate()) {
+                handleTemplateImage(image, matrix);
+            } else {
+                handleStandardImage(image, matrix, inlineImage);
             }
-            if (image.hasBorders()) {
-                saveState();
-                float w = image.getWidth();
-                float h = image.getHeight();
-                concatCTM(matrix.getA() / w, matrix.getB() / w, matrix.getC() / h, matrix.getD() / h, matrix.getE(), matrix.getF());
-                rectangle(image);
-                restoreState();
-            }
-            if (image.getLayer() != null) {
-                endLayer();
-            }
-            Annotation annot = image.getAnnotation();
-            if (annot == null) {
-                return;
-            }
-            float[] r = new float[unitRect.length];
-            for (int k = 0; k < unitRect.length; k += 2) {
-                r[k] = matrix.getA() * unitRect[k] + matrix.getC() * unitRect[k + 1] + matrix.getE();
-                r[k + 1] = matrix.getB() * unitRect[k] + matrix.getD() * unitRect[k + 1] + matrix.getF();
-            }
-            float llx = r[0];
-            float lly = r[1];
-            float urx = llx;
-            float ury = lly;
-            for (int k = 2; k < r.length; k += 2) {
-                llx = Math.min(llx, r[k]);
-                lly = Math.min(lly, r[k + 1]);
-                urx = Math.max(urx, r[k]);
-                ury = Math.max(ury, r[k + 1]);
-            }
-            annot = new Annotation(annot);
-            annot.setDimensions(llx, lly, urx, ury);
-            PdfAnnotation an = PdfAnnotationsImp.convertAnnotation(writer, annot, new Rectangle(llx, lly, urx, ury));
-            if (an == null) {
-                return;
-            }
-            addAnnotation(an);
+
+            handleBorders(image, matrix);
+
+            handleLayerEnd(image);
+
+            handleAnnotation(image, matrix);
+
         } catch (Exception ee) {
             throw new DocumentException(ee);
         }
     }
+
+    private void handleLayerBegin(Image image) throws DocumentException {
+        if (image.getLayer() != null) {
+            beginLayer(image.getLayer());
+        }
+    }
+
+    private void handleTemplateImage(Image image, TransformationMatrix matrix) throws DocumentException {
+        writer.addDirectImageSimple(image);
+        PdfTemplate template = image.getTemplateData();
+        float w = template.getWidth();
+        float h = template.getHeight();
+        addTemplate(template, matrix.getA() / w, matrix.getB() / w, matrix.getC() / h, matrix.getD() / h, matrix.getE(), matrix.getF());
+    }
+
+    private void handleStandardImage(Image image, TransformationMatrix matrix, boolean inlineImage) throws IOException, DocumentException {
+        content.append("q ");
+        appendMatrix(matrix);
+
+        if (inlineImage) {
+            handleInlineImage(image);
+        } else {
+            handleXObjectImage(image);
+        }
+    }
+
+    private void appendMatrix(TransformationMatrix matrix) {
+        content.append(matrix.getA()).append(' ');
+        content.append(matrix.getB()).append(' ');
+        content.append(matrix.getC()).append(' ');
+        content.append(matrix.getD()).append(' ');
+        content.append(matrix.getE()).append(' ');
+        content.append(matrix.getF()).append(" cm");
+    }
+
+    private void handleInlineImage(Image image) throws IOException {
+        content.append("\nBI\n");
+        PdfImage pimage = new PdfImage(image, "", null);
+        handleJBIG2Image(image, pimage);
+
+        for (PdfName key : pimage.getKeys()) {
+            handlePdfImageKey(pimage, key);
+        }
+
+        content.append("ID\n");
+        pimage.writeContent(content);
+        content.append("\nEI\nQ").append_i(separator);
+    }
+
+    private void handleJBIG2Image(Image image, PdfImage pimage) {
+        if (image instanceof ImgJBIG2) {
+            byte[] globals = ((ImgJBIG2) image).getGlobalBytes();
+            if (globals != null) {
+                PdfDictionary decodeparms = new PdfDictionary();
+                decodeparms.put(PdfName.JBIG2GLOBALS, writer.getReferenceJBIG2Globals(globals));
+                pimage.put(PdfName.DECODEPARMS, decodeparms);
+            }
+        }
+    }
+
+    private void handlePdfImageKey(PdfImage pimage, PdfName key) throws IOException, DocumentException {
+        PdfObject value = pimage.get(key);
+        String s = abrev.get(key);
+        if (s == null) {
+            return;
+        }
+        content.append(s);
+        if (shouldCheckColorspace(key, value)) {
+            PdfName cs = writer.getColorspaceName();
+            PageResources prs = getPageResources();
+            prs.addColor(cs, writer.addToBody(value).getIndirectReference());
+            value = cs;
+        }
+        value.toPdf(null, content);
+        content.append('\n');
+    }
+
+    private boolean shouldCheckColorspace(PdfName key, PdfObject value) {
+        if (key.equals(PdfName.COLORSPACE)) {
+            if (value.isArray()) {
+                PdfArray ar = (PdfArray) value;
+                return !(ar.size() == 4
+                        && PdfName.INDEXED.equals(ar.getAsName(0))
+                        && ar.getPdfObject(1).isName()
+                        && ar.getPdfObject(2).isNumber()
+                        && ar.getPdfObject(3).isString());
+            }
+            return !value.isName();
+        }
+        return false;
+    }
+
+    private void handleXObjectImage(Image image) throws DocumentException {
+        PageResources prs = getPageResources();
+        handleImageMask(image, prs);
+        PdfName name = writer.addDirectImageSimple(image);
+        name = prs.addXObject(name, writer.getImageReference(name));
+        content.append(' ').append(name.getBytes()).append(" Do Q").append_i(separator);
+    }
+
+    private void handleImageMask(Image image, PageResources prs) throws DocumentException {
+        Image maskImage = image.getImageMask();
+        if (maskImage != null) {
+            PdfName name = writer.addDirectImageSimple(maskImage);
+            prs.addXObject(name, writer.getImageReference(name));
+        }
+    }
+
+    private void handleBorders(Image image, TransformationMatrix matrix) throws DocumentException {
+        if (image.hasBorders()) {
+            saveState();
+            concatCTM(matrix.getA() / image.getWidth(), matrix.getB() / image.getWidth(),
+                    matrix.getC() / image.getHeight(), matrix.getD() / image.getHeight(),
+                    matrix.getE(), matrix.getF());
+            rectangle(image);
+            restoreState();
+        }
+    }
+
+    private void handleLayerEnd(Image image) throws DocumentException {
+        if (image.getLayer() != null) {
+            endLayer();
+        }
+    }
+
+    private void handleAnnotation(Image image, TransformationMatrix matrix) throws DocumentException, IOException {
+        Annotation annot = image.getAnnotation();
+        if (annot == null) {
+            return;
+        }
+
+        float[] r = transformRectangle(matrix);
+        Rectangle annotRect = calculateRectangle(r);
+        annot = new Annotation(annot);
+        annot.setDimensions(annotRect.getLeft(), annotRect.getBottom(), annotRect.getRight(), annotRect.getTop());
+        PdfAnnotation pdfAnnot = PdfAnnotationsImp.convertAnnotation(writer, annot, annotRect);
+        if (pdfAnnot != null) {
+            addAnnotation(pdfAnnot);
+        }
+    }
+
+    private float[] transformRectangle(TransformationMatrix matrix) {
+        float[] r = new float[unitRect.length];
+        for (int k = 0; k < unitRect.length; k += 2) {
+            r[k] = matrix.getA() * unitRect[k] + matrix.getC() * unitRect[k + 1] + matrix.getE();
+            r[k + 1] = matrix.getB() * unitRect[k] + matrix.getD() * unitRect[k + 1] + matrix.getF();
+        }
+        return r;
+    }
+
+    private Rectangle calculateRectangle(float[] r) {
+        float llx = r[0];
+        float lly = r[1];
+        float urx = llx;
+        float ury = lly;
+        for (int k = 2; k < r.length; k += 2) {
+            llx = Math.min(llx, r[k]);
+            lly = Math.min(lly, r[k + 1]);
+            urx = Math.max(urx, r[k]);
+            ury = Math.max(ury, r[k + 1]);
+        }
+        return new Rectangle(llx, lly, urx, ury);
+    }
+
 
     /**
      * Makes this <CODE>PdfContentByte</CODE> empty. Calls <code>reset( true )</code>

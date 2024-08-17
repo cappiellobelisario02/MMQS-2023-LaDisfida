@@ -47,6 +47,7 @@ import com.lowagie.toolbox.arguments.FileArrayArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +86,7 @@ public class ConcatN extends AbstractTool {
      *
      * @param args String[]
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         ConcatN tool = new ConcatN();
         if (args.length < 2) {
             logger.severe(tool.getUsage());
@@ -107,95 +108,112 @@ public class ConcatN extends AbstractTool {
     /**
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
-    public void execute() {
+    public void execute() throws Exception {
+        File[] sourceFiles = validateInputFiles();
+        File destinationFile = getDestinationFile();
+
         PdfReader reader = null;
         Document document = null;
         FileOutputStream fos = null;
         PdfCopy writer = null;
-        String stringToLog;
+        List<Map<String, Object>> bookmarks = new ArrayList<>();
+        int pageOffset = 0;
 
         try {
-            File[] files;
-            if (getValue(SRCFILES) == null) {
-                throw new InstantiationException("You need to choose a list of sourcefiles");
-            }
-
-            files = ((File[]) getValue(SRCFILES));
-
-            if (getValue(DESTFILE) == null) {
-                throw new InstantiationException("You need to choose a destination file");
-            }
-
-            File pdfFile = (File) getValue(DESTFILE);
-            int pageOffset = 0;
-            List<Map<String, Object>> master = new ArrayList<>();
-
-            for (int i = 0; i < files.length; i++) {
-                // Create a reader for a specific document
-                reader = new PdfReader(files[i].getAbsolutePath());
+            for (File sourceFile : sourceFiles) {
+                reader = new PdfReader(sourceFile.getAbsolutePath());
                 reader.consolidateNamedDestinations();
 
-                // Retrieve the total number of pages
-                int n = reader.getNumberOfPages();
-                List<Map<String, Object>> bookmarks = SimpleBookmark.getBookmarkList(reader);
+                int numberOfPages = reader.getNumberOfPages();
+                processBookmarks(bookmarks, pageOffset, reader);
+                pageOffset += numberOfPages;
 
-                if (bookmarks != null) {
-                    if (pageOffset != 0) {
-                        SimpleBookmark.shiftPageNumbersInRange(bookmarks, pageOffset, null);
-                    }
-                    master.addAll(bookmarks);
-                }
+                logPageInfo(sourceFile, numberOfPages);
 
-                pageOffset += n;
-                stringToLog = "There are " + n + " pages in " + files[i];
-                logger.info(stringToLog);
+                writer = initializeDocument(reader, destinationFile);
 
-                if (i == 0) {
-                    // Step 1: Creation of a document object
-                    document = new Document(reader.getPageSizeWithRotation(1));
+                addPages(reader, numberOfPages, writer);
+                logProcessedPages(numberOfPages);
 
-                    // Step 2: Create a writer that listens to the document
-                    fos = new FileOutputStream(pdfFile);
-
-                    writer = new PdfCopy(document, fos);
-
-                    // Step 3: Open the document
-                    document.open();
-                }
-
-                // Step 4: Add content
-                PdfImportedPage page;
-                for (int p = 0; p < n; p++) { // Increment moved here
-                    page = writer.getImportedPage(reader, p + 1); // Use p + 1 as pages are 1-indexed
-                    writer.addPage(page);
-                    stringToLog = "Processed page " + (p + 1);
-                    logger.info(stringToLog); // Adjust log to reflect actual page number
-                }
+                reader.close();  // Close reader after processing each file
             }
 
-            if (!master.isEmpty()) {
-                writer.setOutlines(master);
+            if (!bookmarks.isEmpty()) {
+                writer.setOutlines(bookmarks);
             }
 
-            // Step 5: Close the document
-            document.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            document.close();  // Close document after processing all files
         } finally {
-            // Ensure resources are closed
-            if (reader != null && document != null && fos != null && writer != null) {
-                try {
-                    reader.close();
-                    document.close();
-                    fos.close();
-                    writer.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            closeResources(reader, document, fos, writer);
         }
     }
+
+    private File[] validateInputFiles() throws InstantiationException {
+        File[] files = (File[]) getValue(SRCFILES);
+        if (files == null || files.length == 0) {
+            throw new InstantiationException("You need to choose a list of source files");
+        }
+        return files;
+    }
+
+    private File getDestinationFile() throws InstantiationException {
+        File pdfFile = (File) getValue(DESTFILE);
+        if (pdfFile == null) {
+            throw new InstantiationException("You need to choose a destination file");
+        }
+        return pdfFile;
+    }
+
+    private void processBookmarks(List<Map<String, Object>> bookmarks, int pageOffset, PdfReader reader) {
+        List<Map<String, Object>> sourceBookmarks = SimpleBookmark.getBookmarkList(reader);
+        if (sourceBookmarks != null) {
+            if (pageOffset != 0) {
+                SimpleBookmark.shiftPageNumbersInRange(sourceBookmarks, pageOffset, null);
+            }
+            bookmarks.addAll(sourceBookmarks);
+        }
+    }
+
+    private PdfCopy initializeDocument(PdfReader reader, File destinationFile) throws IOException {
+        Document document = new Document(reader.getPageSizeWithRotation(1));
+        FileOutputStream fos = new FileOutputStream(destinationFile);
+        document.open();
+        return new PdfCopy(document, fos);
+    }
+
+    private void addPages(PdfReader reader, int numberOfPages, PdfCopy writer) throws IOException {
+        PdfImportedPage page;
+        for (int p = 0; p < numberOfPages; p++) {
+            page = writer.getImportedPage(reader, p + 1);
+            writer.addPage(page);
+        }
+    }
+
+    private void logPageInfo(File sourceFile, int numberOfPages) {
+        String message = "There are " + numberOfPages + " pages in " + sourceFile;
+        logger.info(message);
+    }
+
+    private void logProcessedPages(int numberOfPages) {
+        String message = "Processed " + numberOfPages + " pages";
+        logger.info(message);
+    }
+
+    private void closeResources(PdfReader reader, Document document, FileOutputStream fos, PdfCopy writer) throws Exception {
+        if (reader != null) {
+            reader.close();
+        }
+        if (document != null) {
+            document.close();
+        }
+        if (fos != null) {
+            fos.close();
+        }
+        if (writer != null) {
+            writer.close();
+        }
+    }
+
 
 
     /**

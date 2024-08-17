@@ -158,7 +158,7 @@ public class Font implements Comparable<Font> {
     /**
      * the value of the style.
      */
-    private int Style = UNDEFINED;
+    private int style = UNDEFINED;
 
     /**
      * the value of the color.
@@ -442,7 +442,6 @@ public class Font implements Comparable<Font> {
      * @return the familyname
      */
     public String getFamilyname() {
-        String tmp = "unknown";
         switch (getFamily()) {
             case Font.COURIER:
                 return FontFactory.COURIER;
@@ -455,23 +454,24 @@ public class Font implements Comparable<Font> {
             case Font.ZAPFDINGBATS:
                 return FontFactory.ZAPFDINGBATS;
             default:
-                if (baseFont != null) {
-                    String[][] names = baseFont.getFamilyFontName();
-                    for (String[] name : names) {
-                        if ("0".equals(name[2])) {
-                            return name[3];
-                        }
-                        if ("1033".equals(name[2])) {
-                            tmp = name[3];
-                        }
-                        if ("".equals(name[2])) {
-                            tmp = name[3];
-                        }
-                    }
-                }
+                return getFamilynameFromBaseFont();
         }
-        return tmp;
     }
+
+    private String getFamilynameFromBaseFont() {
+        if (baseFont == null) {
+            return "unknown";
+        }
+
+        String[][] names = baseFont.getFamilyFontName();
+        for (String[] name : names) {
+            if ("0".equals(name[2]) || "1033".equals(name[2]) || "".equals(name[2])) {
+                return name[3];
+            }
+        }
+        return "unknown";
+    }
+
 
     /**
      * Gets the size of this font.
@@ -696,7 +696,7 @@ public class Font implements Comparable<Font> {
         if (baseFont != null) {
             return baseFont;
         }
-        int style = this.Style;
+        int style = this.style;
         if (style == UNDEFINED) {
             style = NORMAL;
         }

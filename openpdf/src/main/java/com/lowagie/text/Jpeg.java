@@ -51,10 +51,12 @@ package com.lowagie.text;
 
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.awt.color.ICC_Profile;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * An <CODE>Jpeg</CODE> is the representation of a graphic element (JPEG) that has to be inserted into the document
@@ -219,161 +221,184 @@ public class Jpeg extends Image {
     private void processParameters() throws BadElementException, IOException {
         type = JPEG;
         originalType = ORIGINAL_JPEG;
-        InputStream is = null;
-        try {
-            String errorID;
-            if (rawData == null) {
-                is = url.openStream();
-                errorID = url.toString();
-            } else {
-                is = new java.io.ByteArrayInputStream(rawData);
-                errorID = "Byte array";
+
+        try (InputStream is = createInputStream()) {
+            validateJpegHeader(is);
+            parseMarkers(is);
+        }
+
+        finalizeProcessing();
+    }
+
+    private InputStream createInputStream() throws IOException {
+        if (rawData == null) {
+            return url.openStream();
+        } else {
+            return new ByteArrayInputStream(rawData);
+        }
+    }
+
+    private void validateJpegHeader(InputStream is) throws BadElementException, IOException {
+        if (is.read() != 0xFF || is.read() != 0xD8) {
+            String errorID = (rawData == null) ? url.toString() : "Byte array";
+            throw new BadElementException(MessageLocalization.getComposedMessage("1.is.not.a.valid.jpeg.file", errorID));
+        }
+    }
+
+    private void parseMarkers(InputStream is) throws IOException, BadElementException {
+        boolean firstPass = true;
+        while (true) {
+            int v = is.read();
+            if (v < 0) {
+                throw new IOException(MessageLocalization.getComposedMessage("premature.eof.while.reading.jpg"));
             }
-            if (is.read() != 0xFF || is.read() != 0xD8) {
-                throw new BadElementException(
-                        MessageLocalization.getComposedMessage("1.is.not.a.valid.jpeg.file", errorID));
-            }
-            boolean firstPass = true;
-            int len;
-            while (true) {
-                int v = is.read();
-                if (v < 0) {
-                    throw new IOException(MessageLocalization.getComposedMessage("premature.eof.while.reading.jpg"));
-                }
-                if (v == 0xFF) {
-                    int marker = is.read();
-                    if (firstPass && marker == M_APP0) {
-                        firstPass = false;
-                        len = getShort(is);
-                        if (len < 16) {
-                            Utilities.skip(is, len - 2);
-                            continue;
-                        }
-                        byte[] bcomp = new byte[JFIF_ID.length];
-                        int r = is.read(bcomp);
-                        if (r != bcomp.length) {
-                            throw new BadElementException(
-                                    MessageLocalization.getComposedMessage("1.corrupted.jfif.marker", errorID));
-                        }
-                        boolean found = true;
-                        for (int k = 0; k < bcomp.length; ++k) {
-                            if (bcomp[k] != JFIF_ID[k]) {
-                                found = false;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            Utilities.skip(is, len - 2 - bcomp.length);
-                            continue;
-                        }
-                        Utilities.skip(is, 2);
-                        int units = is.read();
-                        int dx = getShort(is);
-                        int dy = getShort(is);
-                        if (units == 1) {
-                            dpiX = dx;
-                            dpiY = dy;
-                        } else if (units == 2) {
-                            dpiX = (int) (dx * 2.54f + 0.5f);
-                            dpiY = (int) (dy * 2.54f + 0.5f);
-                        }
-                        Utilities.skip(is, len - 2 - bcomp.length - 7);
-                        continue;
-                    }
-                    if (marker == M_APPE) {
-                        len = getShort(is) - 2;
-                        byte[] byteappe = new byte[len];
-                        for (int k = 0; k < len; ++k) {
-                            byteappe[k] = (byte) is.read();
-                        }
-                        if (byteappe.length >= 12) {
-                            String appe = new String(byteappe, 0, 5, StandardCharsets.ISO_8859_1);
-                            if (appe.equals("Adobe")) {
-                                invert = true;
-                            }
-                        }
-                        continue;
-                    }
-                    if (marker == M_APP2) {
-                        len = getShort(is) - 2;
-                        byte[] byteapp2 = new byte[len];
-                        for (int k = 0; k < len; ++k) {
-                            byteapp2[k] = (byte) is.read();
-                        }
-                        if (byteapp2.length >= 14) {
-                            String app2 = new String(byteapp2, 0, 11, StandardCharsets.ISO_8859_1);
-                            if (app2.equals("ICC_PROFILE")) {
-                                int order = byteapp2[12] & 0xff;
-                                int count = byteapp2[13] & 0xff;
-                                // some jpeg producers don't know how to count to 1
-                                if (order < 1) {
-                                    order = 1;
-                                }
-                                if (count < 1) {
-                                    count = 1;
-                                }
-                                if (icc == null) {
-                                    icc = new byte[count][];
-                                }
-                                icc[order - 1] = byteapp2;
-                            }
-                        }
-                        continue;
-                    }
+            if (v == 0xFF) {
+                int marker = is.read();
+                if (firstPass && marker == M_APP0) {
+                    processJFIF(is);
                     firstPass = false;
-                    int markertype = marker(marker);
-                    if (markertype == VALID_MARKER) {
-                        Utilities.skip(is, 2);
-                        if (is.read() != 0x08) {
-                            throw new BadElementException(
-                                    MessageLocalization.getComposedMessage("1.must.have.8.bits.per.component",
-                                            errorID));
-                        }
-                        scaledHeight = getShort(is);
-                        setTop(scaledHeight);
-                        scaledWidth = getShort(is);
-                        setRight(scaledWidth);
-                        colorspace = is.read();
-                        bpc = 8;
-                        break;
-                    } else if (markertype == UNSUPPORTED_MARKER) {
-                        throw new BadElementException(
-                                MessageLocalization.getComposedMessage("1.unsupported.jpeg.marker.2", errorID,
-                                        String.valueOf(marker)));
-                    } else if (markertype != NOPARAM_MARKER) {
-                        Utilities.skip(is, getShort(is) - 2);
-                    }
+                    continue;
                 }
-            }
-        } finally {
-            if (is != null) {
-                is.close();
+                if (marker == M_APPE) {
+                    processAPPE(is);
+                    continue;
+                }
+                if (marker == M_APP2) {
+                    processAPP2(is);
+                    continue;
+                }
+                processOtherMarkers(is, marker);
+                firstPass = false;
             }
         }
+    }
+
+    private void processJFIF(InputStream is) throws IOException {
+        int len = getShort(is);
+        if (len < 16) {
+            Utilities.skip(is, len - 2);
+            return;
+        }
+
+        byte[] bcomp = new byte[JFIF_ID.length];
+        int r = is.read(bcomp);
+        if (r != bcomp.length) {
+            throw new BadElementException(MessageLocalization.getComposedMessage("1.corrupted.jfif.marker", url.toString()));
+        }
+
+        if (!Arrays.equals(bcomp, JFIF_ID)) {
+            Utilities.skip(is, len - 2 - bcomp.length);
+            return;
+        }
+
+        Utilities.skip(is, 2);
+        int units = is.read();
+        int dx = getShort(is);
+        int dy = getShort(is);
+        setDPI(units, dx, dy);
+
+        Utilities.skip(is, len - 2 - bcomp.length - 7);
+    }
+
+    private void setDPI(int units, int dx, int dy) {
+        if (units == 1) {
+            dpiX = dx;
+            dpiY = dy;
+        } else if (units == 2) {
+            dpiX = (int) (dx * 2.54f + 0.5f);
+            dpiY = (int) (dy * 2.54f + 0.5f);
+        }
+    }
+
+    private void processAPPE(InputStream is) throws IOException {
+        int len = getShort(is) - 2;
+        byte[] byteappe = new byte[len];
+        is.read(byteappe);
+
+        if (byteappe.length >= 12) {
+            String appe = new String(byteappe, 0, 5, StandardCharsets.ISO_8859_1);
+            if (appe.equals("Adobe")) {
+                invert = true;
+            }
+        }
+    }
+
+    private void processAPP2(InputStream is) throws IOException {
+        int len = getShort(is) - 2;
+        byte[] byteapp2 = new byte[len];
+        is.read(byteapp2);
+
+        if (byteapp2.length >= 14) {
+            String app2 = new String(byteapp2, 0, 11, StandardCharsets.ISO_8859_1);
+            if (app2.equals("ICC_PROFILE")) {
+                int order = byteapp2[12] & 0xff;
+                int count = byteapp2[13] & 0xff;
+                if (order < 1) order = 1;
+                if (count < 1) count = 1;
+                if (icc == null) {
+                    icc = new byte[count][];
+                }
+                icc[order - 1] = byteapp2;
+            }
+        }
+    }
+
+    private void processOtherMarkers(InputStream is, int marker) throws IOException, BadElementException {
+        int markertype = marker(marker);
+        if (markertype == VALID_MARKER) {
+            processValidMarker(is);
+        } else if (markertype == UNSUPPORTED_MARKER) {
+            throw new BadElementException(MessageLocalization.getComposedMessage("1.unsupported.jpeg.marker.2", url.toString(), String.valueOf(marker)));
+        } else if (markertype != NOPARAM_MARKER) {
+            Utilities.skip(is, getShort(is) - 2);
+        }
+    }
+
+    private void processValidMarker(InputStream is) throws IOException, BadElementException {
+        Utilities.skip(is, 2);
+        if (is.read() != 0x08) {
+            throw new BadElementException(MessageLocalization.getComposedMessage("1.must.have.8.bits.per.component", url.toString()));
+        }
+        scaledHeight = getShort(is);
+        setTop(scaledHeight);
+        scaledWidth = getShort(is);
+        setRight(scaledWidth);
+        colorspace = is.read();
+        bpc = 8;
+    }
+
+    private void finalizeProcessing() throws IOException {
         plainWidth = getWidth();
         plainHeight = getHeight();
         if (icc != null) {
-            int total = 0;
-            for (int k = 0; k < icc.length; ++k) {
-                if (icc[k] == null) {
-                    icc = null;
-                    return;
-                }
-                total += icc[k].length - 14;
-            }
-            byte[] ficc = new byte[total];
-            total = 0;
-            for (byte[] bytes : icc) {
-                System.arraycopy(bytes, 14, ficc, total, bytes.length - 14);
-                total += bytes.length - 14;
-            }
-            try {
-                ICC_Profile icc_prof = ICC_Profile.getInstance(ficc);
-                tagICC(icc_prof);
-            } catch (IllegalArgumentException e) {
-                // ignore ICC profile if it's invalid.
-            }
-            icc = null;
+            processICC();
         }
     }
+
+    private void processICC() {
+        int total = 0;
+        for (byte[] bytes : icc) {
+            if (bytes == null) {
+                icc = null;
+                return;
+            }
+            total += bytes.length - 14;
+        }
+
+        byte[] ficc = new byte[total];
+        total = 0;
+        for (byte[] bytes : icc) {
+            System.arraycopy(bytes, 14, ficc, total, bytes.length - 14);
+            total += bytes.length - 14;
+        }
+
+        try {
+            ICC_Profile icc_prof = ICC_Profile.getInstance(ficc);
+            tagICC(icc_prof);
+        } catch (IllegalArgumentException e) {
+            // ignore ICC profile if it's invalid.
+        }
+        icc = null;
+    }
+
 }

@@ -67,7 +67,6 @@ public class Markup {
     private Markup() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
-
     // iText specific
 
     /**
@@ -489,15 +488,26 @@ public class Markup {
         if (string == null) {
             return 0f;
         }
-        FontSize fs = FontSize.parse(string); // it can be one of the CCS font size names (e.g. 'x-large')
+
+        FontSize fs = FontSize.parse(string);
         if (fs != null) {
-            if (fs.isRelative()) {
-                return fs.getScale() * actualFontSize;
-            } else {
-                return fs.getScale() * DEFAULT_FONT_SIZE;
-            }
+            return calculateFontSizeFromFontSize(fs, actualFontSize);
         }
 
+        float value = extractNumericValue(string);
+        if (value == 0) {
+            return 0f;
+        }
+
+        String unit = extractUnit(string);
+        return convertLengthToPoints(value, unit, actualFontSize);
+    }
+
+    private static float calculateFontSizeFromFontSize(FontSize fs, float actualFontSize) {
+        return fs.isRelative() ? fs.getScale() * actualFontSize : fs.getScale() * DEFAULT_FONT_SIZE;
+    }
+
+    private static float extractNumericValue(String string) {
         int pos = 0;
         int length = string.length();
         boolean ok = true;
@@ -525,42 +535,37 @@ public class Markup {
         if (pos == 0) {
             return 0f;
         }
-        if (pos == length) {
-            return Float.parseFloat(string + "f");
+        return Float.parseFloat(string.substring(0, pos));
+    }
+
+    private static String extractUnit(String string) {
+        int pos = 0;
+        int length = string.length();
+        while (pos < length && Character.isDigit(string.charAt(pos))) {
+            pos++;
         }
-        float f = Float.parseFloat(string.substring(0, pos) + "f");
-        string = string.substring(pos);
-        // inches
-        if (string.startsWith("in")) {
-            return f * 72f;
+        return string.substring(pos);
+    }
+
+    private static float convertLengthToPoints(float value, String unit, float actualFontSize) {
+        switch (unit) {
+            case "in":
+                return value * 72f;
+            case "cm":
+                return (value / 2.54f) * 72f;
+            case "mm":
+                return (value / 25.4f) * 72f;
+            case "pc":
+                return value * 12f;
+            case "em":
+                return value * actualFontSize;
+            case "ex":
+                return value * actualFontSize / 2;
+            case "%":
+                return (value / 100) * actualFontSize;
+            default:
+                return value; // Assume points
         }
-        // centimeters
-        if (string.startsWith("cm")) {
-            return (f / 2.54f) * 72f;
-        }
-        // millimeters
-        if (string.startsWith("mm")) {
-            return (f / 25.4f) * 72f;
-        }
-        // picas
-        if (string.startsWith("pc")) {
-            return f * 12f;
-        }
-        // 1em is equal to the current font size
-        if (string.startsWith("em")) {
-            return f * actualFontSize;
-        }
-        // one ex is the x-height of a font (x-height is usually about half the
-        // font-size)
-        if (string.startsWith("ex")) {
-            return f * actualFontSize / 2;
-        }
-        // percentage of current font size
-        if (string.endsWith("%")) {
-            return (f / 100) * actualFontSize;
-        }
-        // default: we assume the length was measured in points
-        return f;
     }
 
     /**

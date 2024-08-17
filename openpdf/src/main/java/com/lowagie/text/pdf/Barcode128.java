@@ -347,49 +347,47 @@ public class Barcode128 extends Barcode {
     public static String getHumanReadableUCCEAN(String code) {
         StringBuilder buf = new StringBuilder();
         String fnc1 = String.valueOf(FNC1);
-        try {
-            while (true) {
-                if (code.startsWith(fnc1)) {
-                    code = code.substring(1);
-                    continue;
-                }
-                int n = 0;
-                int idlen = 0;
-                for (int k = 2; k < 5; ++k) {
-                    if (code.length() < k) {
-                        break;
-                    }
-                    if ((n = ais.get(Integer.parseInt(code.substring(0, k)))) != 0) {
-                        idlen = k;
-                        break;
-                    }
-                }
-                if (idlen == 0) {
-                    break;
-                }
-                buf.append('(').append(code, 0, idlen).append(')');
-                code = code.substring(idlen);
-                if (n > 0) {
-                    n -= idlen;
-                    if (code.length() <= n) {
-                        break;
-                    }
-                    buf.append(removeFNC1(code.substring(0, n)));
-                    code = code.substring(n);
-                } else {
-                    int idx = code.indexOf(FNC1);
-                    if (idx < 0) {
-                        break;
-                    }
-                    buf.append(code, 0, idx);
-                    code = code.substring(idx + 1);
-                }
+
+        while (!code.isEmpty()) {
+            if (code.startsWith(fnc1)) {
+                code = code.substring(1);
+                continue;
             }
-        } catch (Exception e) {
-            //empty
+
+            int idlen = findIdentifierLength(code);
+            if (idlen == 0) {
+                break;
+            }
+
+            int n = ais.get(Integer.parseInt(code.substring(0, idlen)));
+            buf.append('(').append(code.substring(0, idlen)).append(')');
+            code = code.substring(idlen);
+
+            if (n > 0) {
+                buf.append(removeFNC1(code.substring(0, n)));
+                code = code.substring(n);
+            } else {
+                int idx = code.indexOf(fnc1);
+                buf.append(code.substring(0, idx));
+                code = code.substring(idx + 1);
+            }
         }
+
         buf.append(removeFNC1(code));
         return buf.toString();
+    }
+
+    private static int findIdentifierLength(String code) {
+        for (int k = 2; k <= 5; k++) {
+            if (code.length() < k) {
+                return 0;
+            }
+            int n = ais.get(Integer.parseInt(code.substring(0, k)));
+            if (n != 0) {
+                return k;
+            }
+        }
+        return 0;
     }
 
     /**
@@ -458,127 +456,162 @@ public class Barcode128 extends Barcode {
      * @return the code ready to be fed to getBarsCode128Raw()
      */
     public static String getRawText(String text, boolean ucc) {
-        String out = "";
+        StringBuilder out = new StringBuilder();
         int tLen = text.length();
         if (tLen == 0) {
-            out += START_B;
-            if (ucc) {
-                out += FNC1_INDEX;
-            }
-            return out;
+            appendStartCode(out, ucc, START_B);
+            return out.toString();
         }
-        int c = 0;
-        for (int k = 0; k < tLen; ++k) {
-            c = text.charAt(k);
+
+        validateText(text);
+
+        int index = 0;
+        char currentCode = determineInitialCode(text, ucc, out);
+        index = processInitialCharacter(text, ucc, out, currentCode, index);
+
+        while (index < tLen) {
+            currentCode = processCharacters(text, out, currentCode, index);
+            index = updateIndex(currentCode, text, index);
+        }
+
+        return out.toString();
+    }
+
+    private static void appendStartCode(StringBuilder out, boolean ucc, char startCode) {
+        out.append(startCode);
+        if (ucc) {
+            out.append(FNC1_INDEX);
+        }
+    }
+
+    private static void validateText(String text) {
+        for (int k = 0; k < text.length(); ++k) {
+            int c = text.charAt(k);
             if (c > 127 && c != FNC1) {
-                // Throw the dedicated exception with a message
                 throw new IllegalBarcode128CharacterException(
                         MessageLocalization.getComposedMessage("there.are.illegal.characters.for.barcode.128.in.1", text));
             }
         }
-        c = text.charAt(0);
-        char currentCode = START_B;
-        int index = 0;
-        if (isNextDigits(text, index, 2)) {
-            currentCode = START_C;
-            out += currentCode;
-            if (ucc) {
-                out += FNC1_INDEX;
-            }
+    }
+
+    private static char determineInitialCode(String text, boolean ucc, StringBuilder out) {
+        int c = text.charAt(0);
+        if (isNextDigits(text, 0, 2)) {
+            appendStartCode(out, ucc, START_C);
+            return START_C;
+        } else if (c < ' ') {
+            appendStartCode(out, ucc, START_A);
+            return START_A;
+        } else {
+            appendStartCode(out, ucc, START_B);
+            return START_B;
+        }
+    }
+
+    private static int processInitialCharacter(String text, boolean ucc, StringBuilder out, char currentCode, int index) {
+        int c = text.charAt(0);
+        if (currentCode == START_C) {
             String out2 = getPackedRawDigits(text, index, 2);
             index += out2.charAt(0);
-            out += out2.substring(1);
-        } else if (c < ' ') {
-            currentCode = START_A;
-            out += currentCode;
-            if (ucc) {
-                out += FNC1_INDEX;
-            }
-            out += (char) (c + 64);
-            ++index;
+            out.append(out2.substring(1));
+        } else if (currentCode == START_A) {
+            out.append((char) (c + 64));
+            index++;
         } else {
-            out += currentCode;
-            if (ucc) {
-                out += FNC1_INDEX;
-            }
             if (c == FNC1) {
-                out += FNC1_INDEX;
+                out.append(FNC1_INDEX);
             } else {
-                out += (char) (c - ' ');
+                out.append((char) (c - ' '));
             }
-            ++index;
+            index++;
         }
-        while (index < tLen) {
-            switch (currentCode) {
-                case START_A: {
-                    if (isNextDigits(text, index, 4)) {
-                        currentCode = START_C;
-                        out += CODE_AB_TO_C;
-                        String out2 = getPackedRawDigits(text, index, 4);
-                        index += out2.charAt(0);
-                        out += out2.substring(1);
-                    } else {
-                        c = text.charAt(index++);
-                        if (c == FNC1) {
-                            out += FNC1_INDEX;
-                        } else if (c > '_') {
-                            currentCode = START_B;
-                            out += CODE_AC_TO_B;
-                            out += (char) (c - ' ');
-                        } else if (c < ' ') {
-                            out += (char) (c + 64);
-                        } else {
-                            out += (char) (c - ' ');
-                        }
-                    }
-                }
-                break;
-                case START_B: {
-                    if (isNextDigits(text, index, 4)) {
-                        currentCode = START_C;
-                        out += CODE_AB_TO_C;
-                        String out2 = getPackedRawDigits(text, index, 4);
-                        index += out2.charAt(0);
-                        out += out2.substring(1);
-                    } else {
-                        c = text.charAt(index++);
-                        if (c == FNC1) {
-                            out += FNC1_INDEX;
-                        } else if (c < ' ') {
-                            currentCode = START_A;
-                            out += CODE_BC_TO_A;
-                            out += (char) (c + 64);
-                        } else {
-                            out += (char) (c - ' ');
-                        }
-                    }
-                }
-                break;
-                case START_C: {
-                    if (isNextDigits(text, index, 2)) {
-                        String out2 = getPackedRawDigits(text, index, 2);
-                        index += out2.charAt(0);
-                        out += out2.substring(1);
-                    } else {
-                        c = text.charAt(index++);
-                        if (c == FNC1) {
-                            out += FNC1_INDEX;
-                        } else if (c < ' ') {
-                            currentCode = START_A;
-                            out += CODE_BC_TO_A;
-                            out += (char) (c + 64);
-                        } else {
-                            currentCode = START_B;
-                            out += CODE_AC_TO_B;
-                            out += (char) (c - ' ');
-                        }
-                    }
-                }
-                break;
-            }
-        }
-        return out;
+        return index;
     }
+
+    private static char processCharacters(String text, StringBuilder out, char currentCode, int index) {
+        switch (currentCode) {
+            case START_A:
+                currentCode = processStartA(text, out, index);
+                break;
+            case START_B:
+                currentCode = processStartB(text, out, index);
+                break;
+            case START_C:
+                currentCode = processStartC(text, out, index);
+                break;
+        }
+        return currentCode;
+    }
+
+    private static int updateIndex(char currentCode, String text, int index) {
+        if (currentCode == START_C && isNextDigits(text, index, 2)) {
+            return index + 2;
+        }
+        return index + 1;
+    }
+
+    private static char processStartA(String text, StringBuilder out, int index) {
+        if (isNextDigits(text, index, 4)) {
+            out.append(CODE_AB_TO_C);
+            String out2 = getPackedRawDigits(text, index, 4);
+            out.append(out2.substring(1));
+            return START_C;
+        } else {
+            return processStartABCommon(text, out, index, START_B, CODE_AC_TO_B);
+        }
+    }
+
+    private static char processStartB(String text, StringBuilder out, int index) {
+        if (isNextDigits(text, index, 4)) {
+            out.append(CODE_AB_TO_C);
+            String out2 = getPackedRawDigits(text, index, 4);
+            out.append(out2.substring(1));
+            return START_C;
+        } else {
+            return processStartABCommon(text, out, index, START_A, CODE_BC_TO_A);
+        }
+    }
+
+    private static char processStartC(String text, StringBuilder out, int index) {
+        if (isNextDigits(text, index, 2)) {
+            String out2 = getPackedRawDigits(text, index, 2);
+            out.append(out2.substring(1));
+            return START_C;
+        } else {
+            return processStartCCommon(text, out, index);
+        }
+    }
+
+    private static char processStartABCommon(String text, StringBuilder out, int index, char switchCode, char switchCodeAppend) {
+        int c = text.charAt(index++);
+        if (c == FNC1) {
+            out.append(FNC1_INDEX);
+        } else if (c < ' ') {
+            out.append(switchCodeAppend);
+            out.append((char) (c + 64));
+            return switchCode;
+        } else {
+            out.append((char) (c - ' '));
+        }
+        return switchCode == START_B ? START_A : START_B;
+    }
+
+    private static char processStartCCommon(String text, StringBuilder out, int index) {
+        int c = text.charAt(index++);
+        if (c == FNC1) {
+            out.append(FNC1_INDEX);
+        } else if (c < ' ') {
+            out.append(CODE_BC_TO_A);
+            out.append((char) (c + 64));
+            return START_A;
+        } else {
+            out.append(CODE_AC_TO_B);
+            out.append((char) (c - ' '));
+            return START_B;
+        }
+        return 0;
+    }
+
 
     /**
      * Generates the bars. The input has the actual barcodes, not the human readable text.
@@ -613,44 +646,50 @@ public class Barcode128 extends Barcode {
      * @return the size the barcode occupies.
      */
     public Rectangle getBarcodeSize() {
-        float fontX = 0;
-        float fontY = 0;
-        String fullCode;
-        if (font != null) {
-            if (baseline > 0) {
-                fontY = baseline - font.getFontDescriptor(BaseFont.DESCENT, size);
-            } else {
-                fontY = -baseline + size;
-            }
-            if (codeType == CODE128_RAW) {
-                int idx = code.indexOf('\uffff');
-                if (idx < 0) {
-                    fullCode = "";
-                } else {
-                    fullCode = code.substring(idx + 1);
-                }
-            } else if (codeType == CODE128_UCC) {
-                fullCode = getHumanReadableUCCEAN(code);
-            } else {
-                fullCode = removeFNC1(code);
-            }
-            fontX = font.getWidthPoint(altText != null ? altText : fullCode, size);
-        }
-        if (codeType == CODE128_RAW) {
-            int idx = code.indexOf('\uffff');
-            if (idx >= 0) {
-                fullCode = code.substring(0, idx);
-            } else {
-                fullCode = code;
-            }
-        } else {
-            fullCode = getRawText(code, codeType == CODE128_UCC);
-        }
-        int len = fullCode.length();
-        float fullWidth = (len + 2) * 11 * x + 2 * x;
-        fullWidth = Math.max(fullWidth, fontX);
-        float fullHeight = barHeight + fontY;
+        String fullCode = determineFullCode();
+        float fontX = calculateFontX(fullCode);
+        float fontY = calculateFontY();
+        float fullWidth = calculateFullWidth(fullCode, fontX);
+        float fullHeight = calculateFullHeight(fontY);
         return new Rectangle(fullWidth, fullHeight);
+    }
+
+    private float calculateFontX(String fullCode) {
+        if (font == null) {
+            return 0;
+        }
+        return font.getWidthPoint(altText != null ? altText : fullCode, size);
+    }
+
+    private float calculateFontY() {
+        if (font == null) {
+            return 0;
+        }
+        return baseline > 0 ? baseline - font.getFontDescriptor(BaseFont.DESCENT, size) : -baseline + size;
+    }
+
+    private String determineFullCode() {
+        if (codeType == CODE128_RAW) {
+            return extractRawCode(code);
+        } else if (codeType == CODE128_UCC) {
+            return getHumanReadableUCCEAN(code);
+        } else {
+            return removeFNC1(code);
+        }
+    }
+
+    private String extractRawCode(String code) {
+        int idx = code.indexOf('\uffff');
+        return idx >= 0 ? code.substring(0, idx) : code;
+    }
+
+    private float calculateFullWidth(String fullCode, float fontX) {
+        int len = fullCode.length();
+        return Math.max((len + 2) * 11 * x + 2 * x, fontX);
+    }
+
+    private float calculateFullHeight(float fontY) {
+        return barHeight + fontY;
     }
 
     /**
@@ -692,43 +731,60 @@ public class Barcode128 extends Barcode {
      * @return the dimensions the barcode occupies
      */
     public Rectangle placeBarcode(PdfContentByte cb, Color barColor, Color textColor) {
-        String fullCode;
+        String fullCode = calculateFullCode();
+        float fontX = calculateFontX(fullCode);
+        String bCode = calculateBarcodeCode();
+        float fullWidth = calculateFullWidth(bCode.length());
+        float[] positions = calculateBarAndTextPositions(fontX, fullWidth);
+        float barStartX = positions[0];
+        float textStartX = positions[1];
+        float[] startY = calculateStartY(fontX);
+        float barStartY = startY[0];
+        float textStartY = startY[1];
+
+        drawBars(cb, barColor, bCode, barStartX, barStartY);
+        drawText(cb, textColor, fullCode, textStartX, textStartY);
+
+        return getBarcodeSize();
+    }
+
+    private String calculateFullCode() {
+        switch (codeType) {
+            case CODE128_RAW:
+                return getRawFullCode();
+            case CODE128_UCC:
+                return getHumanReadableUCCEAN(code);
+            default:
+                return removeFNC1(code);
+        }
+    }
+
+    private String getRawFullCode() {
+        int idx = code.indexOf('\uffff');
+        if (idx < 0) {
+            return "";
+        } else {
+            return code.substring(idx + 1);
+        }
+    }
+
+    private String calculateBarcodeCode() {
         if (codeType == CODE128_RAW) {
             int idx = code.indexOf('\uffff');
-            if (idx < 0) {
-                fullCode = "";
-            } else {
-                int updated_idx = idx + 1;
-                fullCode = code.substring(updated_idx);
-            }
-        } else if (codeType == CODE128_UCC) {
-            fullCode = getHumanReadableUCCEAN(code);
+            return (idx >= 0) ? code.substring(0, idx) : code;
         } else {
-            fullCode = removeFNC1(code);
+            return getRawText(code, codeType == CODE128_UCC);
         }
-        float fontX = 0;
-        if (font != null) {
-            fullCode = (altText != null) ? altText : fullCode;
-            fontX = font.getWidthPoint(fullCode, size);
-        }
-        String bCode;
-        if (codeType == CODE128_RAW) {
-            int idx = code.indexOf('\uffff');
-            if (idx >= 0) {
-                bCode = code.substring(0, idx);
-            } else {
-                bCode = code;
-            }
-        } else {
-            bCode = getRawText(code, codeType == CODE128_UCC);
-        }
-        int len = bCode.length();
-        float fullWidth = (len + 2) * 11 * x + 2 * x;
+    }
+
+    private float calculateFullWidth(int len) {
+        return (len + 2) * 11 * x + 2 * x;
+    }
+
+    private float[] calculateBarAndTextPositions(float fontX, float fullWidth) {
         float barStartX = 0;
         float textStartX = 0;
         switch (textAlignment) {
-            case Element.ALIGN_LEFT:
-                break;
             case Element.ALIGN_RIGHT:
                 if (fontX > fullWidth) {
                     barStartX = fontX - fullWidth;
@@ -736,6 +792,7 @@ public class Barcode128 extends Barcode {
                     textStartX = fullWidth - fontX;
                 }
                 break;
+            case Element.ALIGN_CENTER:
             default:
                 if (fontX > fullWidth) {
                     barStartX = (fontX - fullWidth) / 2;
@@ -744,6 +801,10 @@ public class Barcode128 extends Barcode {
                 }
                 break;
         }
+        return new float[]{barStartX, textStartX};
+    }
+
+    private float[] calculateStartY(float fontX) {
         float barStartY = 0;
         float textStartY = 0;
         if (font != null) {
@@ -754,11 +815,15 @@ public class Barcode128 extends Barcode {
                 barStartY = textStartY + baseline;
             }
         }
-        byte[] bars = getBarsCode128Raw(bCode);
-        boolean print = true;
+        return new float[]{barStartY, textStartY};
+    }
+
+    private void drawBars(PdfContentByte cb, Color barColor, String bCode, float barStartX, float barStartY) {
         if (barColor != null) {
             cb.setColorFill(barColor);
         }
+        byte[] bars = getBarsCode128Raw(bCode);
+        boolean print = true;
         for (byte bar : bars) {
             float w = bar * x;
             if (print) {
@@ -768,6 +833,9 @@ public class Barcode128 extends Barcode {
             barStartX += w;
         }
         cb.fill();
+    }
+
+    private void drawText(PdfContentByte cb, Color textColor, String fullCode, float textStartX, float textStartY) {
         if (font != null) {
             if (textColor != null) {
                 cb.setColorFill(textColor);
@@ -778,8 +846,8 @@ public class Barcode128 extends Barcode {
             cb.showText(fullCode);
             cb.endText();
         }
-        return getBarcodeSize();
     }
+
 
     /**
      * Creates a <CODE>java.awt.Image</CODE>. This image only contains the bars without any text.
@@ -839,43 +907,83 @@ public class Barcode128 extends Barcode {
      */
     @Override
     public void setCode(String code) {
-        if (getCodeType() == Barcode128.CODE128_UCC && code.startsWith("(")) {
-            int idx = 0;
-            String ret = "";
-            while (idx >= 0) {
-                int end = code.indexOf(')', idx);
-                if (end < 0) {
-                    throw new IllegalArgumentException(
-                            MessageLocalization.getComposedMessage("badly.formed.ucc.string.1", code));
-                }
-                String sai = code.substring(idx + 1, end);
-                if (sai.length() < 2) {
-                    throw new IllegalArgumentException(MessageLocalization.getComposedMessage("ai.too.short.1", sai));
-                }
-                int ai = Integer.parseInt(sai);
-                int len = ais.get(ai);
-                if (len == 0) {
-                    throw new IllegalArgumentException(MessageLocalization.getComposedMessage("ai.not.found.1", sai));
-                }
-                sai = String.valueOf(ai);
-                if (sai.length() == 1) {
-                    sai = "0" + sai;
-                }
-                idx = code.indexOf('(', end);
-                int next = (idx < 0 ? code.length() : idx);
-                ret += sai + code.substring(end + 1, next);
-                if (len < 0) {
-                    if (idx >= 0) {
-                        ret += FNC1;
-                    }
-                } else if (next - end - 1 + sai.length() != len) {
-                    throw new IllegalArgumentException(
-                            MessageLocalization.getComposedMessage("invalid.ai.length.1", sai));
-                }
-            }
-            super.setCode(ret);
+        if (isUccCodeWithParentheses(code)) {
+            super.setCode(processUccCode(code));
         } else {
             super.setCode(code);
         }
     }
+
+    private boolean isUccCodeWithParentheses(String code) {
+        return getCodeType() == Barcode128.CODE128_UCC && code.startsWith("(");
+    }
+
+    private String processUccCode(String code) {
+        StringBuilder ret = new StringBuilder();
+        int idx = 0;
+
+        while (idx >= 0) {
+            int end = getNextClosingParenthesisIndex(code, idx);
+            String sai = extractAndValidateSai(code, idx, end);
+
+            int ai = Integer.parseInt(sai);
+            int len = getAiLength(ai);
+
+            sai = formatAi(sai);
+            idx = code.indexOf('(', end);
+            int next = (idx < 0 ? code.length() : idx);
+
+            ret.append(sai).append(code.substring(end + 1, next));
+            validateAiLength(len, sai, next, end);
+
+            if (len < 0 && idx >= 0) {
+                ret.append(FNC1);
+            }
+        }
+
+        return ret.toString();
+    }
+
+    private int getNextClosingParenthesisIndex(String code, int idx) {
+        int end = code.indexOf(')', idx);
+        if (end < 0) {
+            throw new IllegalArgumentException(
+                    MessageLocalization.getComposedMessage("badly.formed.ucc.string.1", code)
+            );
+        }
+        return end;
+    }
+
+    private String extractAndValidateSai(String code, int idx, int end) {
+        String sai = code.substring(idx + 1, end);
+        if (sai.length() < 2) {
+            throw new IllegalArgumentException(
+                    MessageLocalization.getComposedMessage("ai.too.short.1", sai)
+            );
+        }
+        return sai;
+    }
+
+    private int getAiLength(int ai) {
+        int len = ais.get(ai);
+        if (len == 0) {
+            throw new IllegalArgumentException(
+                    MessageLocalization.getComposedMessage("ai.not.found.1", String.valueOf(ai))
+            );
+        }
+        return len;
+    }
+
+    private String formatAi(String sai) {
+        return sai.length() == 1 ? "0" + sai : sai;
+    }
+
+    private void validateAiLength(int len, String sai, int next, int end) {
+        if (len >= 0 && next - end - 1 + sai.length() != len) {
+            throw new IllegalArgumentException(
+                    MessageLocalization.getComposedMessage("invalid.ai.length.1", sai)
+            );
+        }
+    }
+
 }

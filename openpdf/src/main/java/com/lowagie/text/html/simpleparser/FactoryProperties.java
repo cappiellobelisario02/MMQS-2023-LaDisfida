@@ -229,68 +229,80 @@ public class FactoryProperties {
         if (style == null) {
             return;
         }
+
         Properties prop = Markup.parseAttributes(style);
         for (Object o : prop.keySet()) {
             String key = (String) o;
+            String value = prop.getProperty(key);
+
             switch (key) {
                 case Markup.CSS_KEY_FONTFAMILY:
-                    h.put("face", prop.getProperty(key));
+                    h.put("face", value);
                     break;
                 case Markup.CSS_KEY_FONTSIZE:
-                    h.put("size", parseLength(prop
-                            .getProperty(key))
-                            + "pt");
+                    h.put("size", parseLength(value) + "pt");
                     break;
-                case Markup.CSS_KEY_FONTSTYLE: {
-                    String ss = prop.getProperty(key).trim().toLowerCase();
-                    if (ss.equals("italic") || ss.equals("oblique")) {
-                        h.put("i", null);
-                    }
+                case Markup.CSS_KEY_FONTSTYLE:
+                    handleFontStyle(h, value);
                     break;
-                }
-                case Markup.CSS_KEY_FONTWEIGHT: {
-                    String ss = prop.getProperty(key).trim().toLowerCase();
-                    if (ss.equals("bold") || ss.equals("700") || ss.equals("800")
-                            || ss.equals("900")) {
-                        h.put("b", null);
-                    }
+                case Markup.CSS_KEY_FONTWEIGHT:
+                    handleFontWeight(h, value);
                     break;
-                }
-                case Markup.CSS_KEY_TEXTDECORATION: {
-                    String ss = prop.getProperty(key).trim().toLowerCase();
-                    if (ss.equals(Markup.CSS_VALUE_UNDERLINE)) {
-                        h.put("u", null);
-                    }
+                case Markup.CSS_KEY_TEXTDECORATION:
+                    handleTextDecoration(h, value);
                     break;
-                }
                 case Markup.CSS_KEY_COLOR:
-                    Color c = Markup.decodeColor(prop.getProperty(key));
-                    if (c != null) {
-                        int hh = c.getRGB();
-                        String hs = Integer.toHexString(hh);
-                        hs = "000000" + hs;
-                        hs = "#" + hs.substring(hs.length() - 6);
-                        h.put("color", hs);
-                    }
+                    handleColor(h, value);
                     break;
-                case Markup.CSS_KEY_LINEHEIGHT: {
-                    String ss = prop.getProperty(key).trim();
-                    float v = parseLength(prop.getProperty(key));
-                    if (ss.endsWith("%")) {
-                        h.put("leading", "0," + (v / 100));
-                    } else if ("normal".equalsIgnoreCase(ss)) {
-                        h.put("leading", "0,1.5");
-                    } else {
-                        h.put("leading", v + ",0");
-                    }
+                case Markup.CSS_KEY_LINEHEIGHT:
+                    handleLineHeight(h, value);
                     break;
-                }
-                case Markup.CSS_KEY_TEXTALIGN: {
-                    String ss = prop.getProperty(key).trim().toLowerCase();
-                    h.put("align", ss);
+                case Markup.CSS_KEY_TEXTALIGN:
+                    h.put("align", value.trim().toLowerCase());
                     break;
-                }
             }
+        }
+    }
+
+    private static void handleFontStyle(Map<String, String> h, String value) {
+        if (value.trim().toLowerCase().equals("italic") || value.trim().toLowerCase().equals("oblique")) {
+            h.put("i", null);
+        }
+    }
+
+    private static void handleFontWeight(Map<String, String> h, String value) {
+        String ss = value.trim().toLowerCase();
+        if (ss.equals("bold") || ss.equals("700") || ss.equals("800") || ss.equals("900")) {
+            h.put("b", null);
+        }
+    }
+
+    private static void handleTextDecoration(Map<String, String> h, String value) {
+        if (value.trim().toLowerCase().equals(Markup.CSS_VALUE_UNDERLINE)) {
+            h.put("u", null);
+        }
+    }
+
+    private static void handleColor(Map<String, String> h, String value) {
+        Color c = Markup.decodeColor(value);
+        if (c != null) {
+            int hh = c.getRGB();
+            String hs = Integer.toHexString(hh);
+            hs = "000000" + hs;
+            hs = "#" + hs.substring(hs.length() - 6);
+            h.put("color", hs);
+        }
+    }
+
+    private static void handleLineHeight(Map<String, String> h, String value) {
+        String ss = value.trim();
+        float v = parseLength(value);
+        if (ss.endsWith("%")) {
+            h.put("leading", "0," + (v / 100));
+        } else if ("normal".equalsIgnoreCase(ss)) {
+            h.put("leading", "0,1.5");
+        } else {
+            h.put("leading", v + ",0");
         }
     }
 
@@ -306,97 +318,64 @@ public class FactoryProperties {
         if (style == null) {
             return;
         }
+
         Properties prop = Markup.parseAttributes(style);
         for (Object o : prop.keySet()) {
             String key = (String) o;
+            String value = prop.getProperty(key);
+
             switch (key) {
                 case Markup.CSS_KEY_FONTFAMILY:
-                    h.put(ElementTags.FACE, prop.getProperty(key));
+                    h.put(ElementTags.FACE, value);
                     break;
-                case Markup.CSS_KEY_FONTSIZE: {
-                    float actualFontSize = parseLength(cprops.getProperty(ElementTags.SIZE), Markup.DEFAULT_FONT_SIZE);
-                    if (actualFontSize <= 0f) {
-                        actualFontSize = Markup.DEFAULT_FONT_SIZE;
-                    }
-                    h.put(ElementTags.SIZE, parseLength(prop
-                            .getProperty(key), actualFontSize)
-                            + "pt");
+                case Markup.CSS_KEY_FONTSIZE:
+                    h.put(ElementTags.SIZE, formatFontSize(value, cprops));
                     break;
-                }
-                case Markup.CSS_KEY_FONTSTYLE: {
-                    String ss = prop.getProperty(key).trim().toLowerCase();
-                    if (ss.equals("italic") || ss.equals("oblique")) {
-                        h.put("i", null);
-                    }
+                case Markup.CSS_KEY_FONTSTYLE:
+                    handleFontStyle(h, value);
                     break;
-                }
-                case Markup.CSS_KEY_FONTWEIGHT: {
-                    String ss = prop.getProperty(key).trim().toLowerCase();
-                    if (ss.equals("bold") || ss.equals("700") || ss.equals("800")
-                            || ss.equals("900")) {
-                        h.put("b", null);
-                    }
+                case Markup.CSS_KEY_FONTWEIGHT:
+                    handleFontWeight(h, value);
                     break;
-                }
-                case Markup.CSS_KEY_TEXTDECORATION: {
-                    String ss = prop.getProperty(key).trim().toLowerCase();
-                    if (ss.equals(Markup.CSS_VALUE_UNDERLINE)) {
-                        h.put("u", null);
-                    }
+                case Markup.CSS_KEY_TEXTDECORATION:
+                    handleTextDecoration(h, value);
                     break;
-                }
-                case Markup.CSS_KEY_BGCOLOR: {
-                    h.put(Markup.CSS_KEY_BGCOLOR, prop.getProperty(key));
+                case Markup.CSS_KEY_BGCOLOR:
+                case Markup.CSS_KEY_BG:
+                    handleBackgroundColor(h, value);
                     break;
-                }
-                case Markup.CSS_KEY_BG: {
-                    for (String attribute : prop.getProperty(key).split(" ")) {
-                        Color c = Markup.decodeColor(attribute.trim());
-                        if (c != null) {
-                            h.put(Markup.CSS_KEY_BGCOLOR, attribute.trim());
-                            break;
-                        }
-                    }
-                    break;
-                }
                 case Markup.CSS_KEY_COLOR:
-                    h.put(Markup.CSS_KEY_COLOR, prop.getProperty(key));
+                    h.put(Markup.CSS_KEY_COLOR, value);
                     break;
-                case Markup.CSS_KEY_LINEHEIGHT: {
-                    String ss = prop.getProperty(key).trim();
-                    float actualFontSize = parseLength(cprops.getProperty(ElementTags.SIZE),
-                            Markup.DEFAULT_FONT_SIZE);
-                    if (actualFontSize <= 0f) {
-                        actualFontSize = Markup.DEFAULT_FONT_SIZE;
-                    }
-                    float v = parseLength(prop.getProperty(key), actualFontSize);
-                    if (ss.endsWith("%")) {
-                        h.put("leading", "0," + (v / 100));
-                        return;
-                    }
-                    if ("normal".equalsIgnoreCase(ss)) {
-                        h.put("leading", "0,1.5");
-                        return;
-                    }
-                    // Covering a case of line-height being a number
-                    if (v != 0 && Character.isDigit(ss.charAt(ss.length() - 1))) {
-                        h.put("leading", "0," + v);
-                    } else {
-                        h.put("leading", v + ",0");
-                    }
+                case Markup.CSS_KEY_LINEHEIGHT:
+                    handleLineHeight(h, value);
                     break;
-                }
-                case Markup.CSS_KEY_TEXTALIGN: {
-                    String ss = prop.getProperty(key).trim().toLowerCase();
-                    h.put("align", ss);
+                case Markup.CSS_KEY_TEXTALIGN:
+                    h.put("align", value.trim().toLowerCase());
                     break;
-                }
-                case Markup.CSS_KEY_PADDINGLEFT: {
-                    String ss = prop.getProperty(key).trim().toLowerCase();
-                    h.put("indent", Float.toString(parseLength(ss)));
+                case Markup.CSS_KEY_PADDINGLEFT:
+                    h.put("indent", Float.toString(parseLength(value)));
                     break;
-                }
             }
+        }
+    }
+
+    private static String formatFontSize(String value, ChainedProperties cprops) {
+        float actualFontSize = parseLength(cprops.getProperty(ElementTags.SIZE), Markup.DEFAULT_FONT_SIZE);
+        if (actualFontSize <= 0f) {
+            actualFontSize = Markup.DEFAULT_FONT_SIZE;
+        }
+        return parseLength(value, actualFontSize) + "pt";
+    }
+
+    private static void handleBackgroundColor(Map<String, String> h, String value) {
+        Color c = Markup.decodeColor(value);
+        if (c != null) {
+            int hh = c.getRGB();
+            String hs = Integer.toHexString(hh);
+            hs = "000000" + hs;
+            hs = "#" + hs.substring(hs.length() - 6);
+            h.put(Markup.CSS_KEY_BGCOLOR, hs);
         }
     }
 
@@ -419,22 +398,36 @@ public class FactoryProperties {
     }
 
     public Font getFont(ChainedProperties props) {
-        String face = props.getProperty(ElementTags.FACE);
-        if (face != null) {
-            StringTokenizer tokenizer = new StringTokenizer(face, ",");
-            while (tokenizer.hasMoreTokens()) {
-                face = tokenizer.nextToken().trim();
-                if (face.startsWith("\"")) {
-                    face = face.substring(1);
-                }
-                if (face.endsWith("\"")) {
-                    face = face.substring(0, face.length() - 1);
-                }
-                if (fontImp.isRegistered(face)) {
-                    break;
-                }
+        String face = extractFace(props.getProperty(ElementTags.FACE));
+        int style = extractStyle(props);
+        float size = extractSize(props);
+        Color color = extractColor(props);
+        String encoding = props.getOrDefault("encoding", BaseFont.WINANSI);
+
+        return fontImp.getFont(face, encoding, true, size, style, color);
+    }
+
+    private String extractFace(String face) {
+        if (face == null) {
+            return null;
+        }
+
+        StringTokenizer tokenizer = new StringTokenizer(face, ",");
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken().trim();
+            token = removeQuotes(token);
+            if (fontImp.isRegistered(token)) {
+                return token;
             }
         }
+        return null;
+    }
+
+    private String removeQuotes(String face) {
+        return face.startsWith("\"") ? face.substring(1) : face;
+    }
+
+    private int extractStyle(ChainedProperties props) {
         int style = 0;
         if (props.hasProperty(HtmlTags.I)) {
             style |= Font.ITALIC;
@@ -448,14 +441,17 @@ public class FactoryProperties {
         if (props.hasProperty(HtmlTags.S)) {
             style |= Font.STRIKETHRU;
         }
+        return style;
+    }
 
-        float size = props.findProperty(ElementTags.SIZE)
+    private float extractSize(ChainedProperties props) {
+        return props.findProperty(ElementTags.SIZE)
                 .flatMap(NumberUtilities::parseFloat)
                 .orElse(12f);
+    }
 
-        Color color = Markup.decodeColor(props.getProperty(Markup.CSS_KEY_COLOR));
-        String encoding = props.getOrDefault("encoding", BaseFont.WINANSI);
-        return fontImp.getFont(face, encoding, true, size, style, color);
+    private Color extractColor(ChainedProperties props) {
+        return Markup.decodeColor(props.getProperty(Markup.CSS_KEY_COLOR));
     }
 
     public FontProvider getFontImp() {
