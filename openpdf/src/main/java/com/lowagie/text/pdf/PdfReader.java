@@ -55,6 +55,7 @@ import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.BadPasswordException;
+import com.lowagie.text.exceptions.IllegalBarcode128CharacterException;
 import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.exceptions.UnsupportedPdfException;
 import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
@@ -67,7 +68,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.CharacterCodingException;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.cert.Certificate;
@@ -166,7 +166,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param filename the file name of the document
      * @throws IOException on error
      */
-    public PdfReader(String filename) throws IOException {
+    public PdfReader(String filename) throws IOException, PDFFilterException {
         this(filename, null);
     }
 
@@ -177,7 +177,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param ownerPassword the password to read the document
      * @throws IOException on error
      */
-    public PdfReader(String filename, byte[] ownerPassword) throws IOException {
+    public PdfReader(String filename, byte[] ownerPassword) throws IOException, PDFFilterException {
         password = ownerPassword;
         tokens = new PRTokeniser(filename);
         readPdf();
@@ -189,7 +189,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param pdfIn the byte array with the document
      * @throws IOException on error
      */
-    public PdfReader(byte[] pdfIn) throws IOException {
+    public PdfReader(byte[] pdfIn) throws IOException, PDFFilterException {
         this(pdfIn, null);
     }
 
@@ -200,7 +200,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param ownerPassword the password to read the document
      * @throws IOException on error
      */
-    public PdfReader(byte[] pdfIn, byte[] ownerPassword) throws IOException {
+    public PdfReader(byte[] pdfIn, byte[] ownerPassword) throws IOException, PDFFilterException {
         password = ownerPassword;
         tokens = new PRTokeniser(pdfIn);
         readPdf();
@@ -216,7 +216,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @throws IOException on error
      */
     public PdfReader(String filename, Certificate certificate,
-            Key certificateKey, String certificateKeyProvider) throws IOException {
+            Key certificateKey, String certificateKeyProvider) throws IOException, PDFFilterException {
         this.certificate = certificate;
         this.certificateKey = certificateKey;
         this.certificateKeyProvider = certificateKeyProvider;
@@ -230,7 +230,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param url the URL of the document
      * @throws IOException on error
      */
-    public PdfReader(URL url) throws IOException {
+    public PdfReader(URL url) throws IOException, PDFFilterException {
         this(url, null);
     }
 
@@ -241,7 +241,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param ownerPassword the password to read the document
      * @throws IOException on error
      */
-    public PdfReader(URL url, byte[] ownerPassword) throws IOException {
+    public PdfReader(URL url, byte[] ownerPassword) throws IOException, PDFFilterException {
         password = ownerPassword;
         tokens = new PRTokeniser(new RandomAccessFileOrArray(url));
         readPdf();
@@ -255,7 +255,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param ownerPassword the password to read the document
      * @throws IOException on error
      */
-    public PdfReader(InputStream is, byte[] ownerPassword) throws IOException {
+    public PdfReader(InputStream is, byte[] ownerPassword) throws IOException, PDFFilterException {
         password = ownerPassword;
         tokens = new PRTokeniser(new RandomAccessFileOrArray(is));
         readPdf();
@@ -267,7 +267,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param is the <CODE>InputStream</CODE> containing the document. The stream is read to the end but is not closed
      * @throws IOException on error
      */
-    public PdfReader(InputStream is) throws IOException {
+    public PdfReader(InputStream is) throws IOException, PDFFilterException {
         this(is, null);
     }
 
@@ -708,7 +708,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return out.toByteArray();
         } catch (Exception e) {
             if (strict) {
-                return new int[];
+                return new byte[]{};
             }
             return out.toByteArray();
         }
@@ -841,7 +841,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return the stream content
      * @throws IOException on error
      */
-    public static byte[] getStreamBytes(PRStream stream, RandomAccessFileOrArray file) throws IOException {
+    public static byte[] getStreamBytes(PRStream stream, RandomAccessFileOrArray file)
+            throws IOException, PDFFilterException {
         PdfObject filter = getPdfObjectRelease(stream.get(PdfName.FILTER));
         byte[] b = getStreamBytesRaw(stream, file);
 
@@ -918,11 +919,13 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return the stream content
      * @throws IOException on error
      */
-    public static byte[] getStreamBytes(PRStream stream) throws IOException {
+    public static byte[] getStreamBytes(PRStream stream) throws IOException, PDFFilterException {
         RandomAccessFileOrArray rf = stream.getReader().getSafeFile();
         try {
             rf.reOpen();
             return getStreamBytes(stream, rf);
+        } catch (PDFFilterException e) {
+            throw new PDFFilterException(e.getMessage());
         } finally {
             try {
                 rf.close();
@@ -1353,7 +1356,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         return map;
     }
 
-    protected void readPdf() throws IOException {
+    protected void readPdf() throws IOException, PDFFilterException {
         try {
             fileLength = tokens.getFile().length();
             pdfVersion = tokens.checkPdfHeader();
@@ -1836,7 +1839,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
     }
 
-    protected PdfObject readSingleObject(int k) throws IOException {
+    protected PdfObject readSingleObject(int k) throws IOException, PDFFilterException {
         strings.clear();
         int k2 = k * 2;
         int pos = xref[k2];
@@ -1888,7 +1891,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     protected PdfObject readOneObjStm(PRStream stream, int idx)
-            throws IOException {
+            throws IOException, PDFFilterException {
         int first = stream.getAsNumber(PdfName.FIRST).intValue();
         byte[] b = getStreamBytes(stream, tokens.getFile());
         PRTokeniser saveTokens = tokens;
@@ -1940,7 +1943,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         return (total * 100.0 / xrefObj.size());
     }
 
-    protected void readDocObj() throws IOException {
+    protected void readDocObj() throws IOException, PDFFilterException {
         List<PdfObject> streams = new ArrayList<>();
         xrefObj = new ArrayList<>(xref.length / 2);
         xrefObj.addAll(Collections.nCopies(xref.length / 2, null));
@@ -2045,7 +2048,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     protected void readObjStm(PRStream stream, IntHashtable map)
-            throws IOException {
+            throws IOException, PDFFilterException {
         int first = stream.getAsNumber(PdfName.FIRST).intValue();
         int n = stream.getAsNumber(PdfName.N).intValue();
         byte[] b = getStreamBytes(stream, tokens.getFile());
@@ -2106,7 +2109,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
     }
 
-    protected void readXref() throws IOException {
+    protected void readXref() throws IOException, PDFFilterException {
         hybridXref = false;
         newXrefType = false;
         tokens.seek(tokens.getStartxref());
@@ -2151,7 +2154,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
     }
 
-    protected PdfDictionary readXrefSection() throws IOException {
+    protected PdfDictionary readXrefSection() throws IOException, PDFFilterException {
         tokens.nextValidToken();
         if (!tokens.getStringValue().equals("xref")) {
             tokens.throwError(MessageLocalization
@@ -2227,12 +2230,14 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             } catch (IOException e) {
                 xref = null;
                 throw e;
+            } catch (PDFFilterException e) {
+                throw new PDFFilterException(e.getMessage());
             }
         }
         return trailer;
     }
 
-    protected boolean readXRefStream(int ptr) throws IOException {
+    protected boolean readXRefStream(int ptr) throws IOException, PDFFilterException {
         tokens.seek(ptr);
         int thisStream;
         if (!tokens.nextToken()) {
@@ -2630,10 +2635,10 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @throws IOException on error
      */
     public byte[] getPageContent(int pageNum, RandomAccessFileOrArray file)
-            throws IOException {
+            throws IOException, PDFFilterException {
         PdfDictionary page = getPageNRelease(pageNum);
         if (page == null) {
-            return new int[];
+            return new byte[]{};
         }
         PdfObject contents = getPdfObjectRelease(page.get(PdfName.CONTENTS));
         if (contents == null) {
@@ -2669,11 +2674,13 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return the content
      * @throws IOException on error
      */
-    public byte[] getPageContent(int pageNum) throws IOException {
+    public byte[] getPageContent(int pageNum) throws IOException, PDFFilterException {
         RandomAccessFileOrArray rf = getSafeFile();
         try {
             rf.reOpen();
             return getPageContent(pageNum, rf);
+        } catch (PDFFilterException e) {
+            throw new PDFFilterException(e.getMessage());
         } finally {
             try {
                 rf.close();
@@ -2837,13 +2844,15 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     public byte[] getMetadata() throws IOException {
         PdfObject obj = getPdfObject(catalog.get(PdfName.METADATA));
         if (!(obj instanceof PRStream)) {
-            return new int[];
+            return new byte[]{};
         }
         RandomAccessFileOrArray rf = getSafeFile();
         byte[] b;
         try {
             rf.reOpen();
             b = getStreamBytes((PRStream) obj, rf);
+        } catch (PDFFilterException e) {
+            throw new IOException(e.getMessage());
         } finally {
             try {
                 rf.close();
@@ -3609,7 +3618,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return the global document JavaScript
      * @throws IOException on error
      */
-    public String getJavaScript(RandomAccessFileOrArray file) throws IOException {
+    public String getJavaScript(RandomAccessFileOrArray file) throws IOException, PDFFilterException {
         PdfDictionary names = (PdfDictionary) getPdfObjectRelease(catalog
                 .get(PdfName.NAMES));
         if (names == null) {
@@ -3662,6 +3671,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         try {
             rf.reOpen();
             return getJavaScript(rf);
+        } catch (PDFFilterException e) {
+            throw new IOException(e.getMessage());
         } finally {
             try {
                 rf.close();
@@ -3901,7 +3912,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     public byte[] computeUserPassword() {
         if (!encrypted || !ownerPasswordUsed) {
-            return new int[];
+            return new byte[]{};
         }
         return decrypt.computeUserPassword(password);
     }
@@ -3913,11 +3924,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      */
     public byte[] getDocumentId() {
         if (trailer == null) {
-            return new int[];
+            return new byte[]{};
         }
         PdfArray documentIDs = trailer.getAsArray(PdfName.ID);
         if (documentIDs == null || documentIDs.size() == 0) {
-            return new int[];
+            return new byte[]{};
         }
         PdfObject o = documentIDs.getPdfObject(0);
         return com.lowagie.text.DocWriter.getISOBytes(o.toString());
@@ -3985,7 +3996,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     refsn.set(k, duplicatePdfObject(refsn.get(k), reader));
                 }
             } else {
-                this.refsp = (IntHashtable) other.refsp.clone();
+                this.refsp = other.refsp;
             }
         }
 
@@ -4373,3 +4384,4 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
 
     }
+}

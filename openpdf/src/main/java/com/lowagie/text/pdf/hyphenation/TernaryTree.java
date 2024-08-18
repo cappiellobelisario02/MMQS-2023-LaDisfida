@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  * @author cav@uniscope.co.jp
  */
 
-public class TernaryTree implements Cloneable, Serializable {
+public class TernaryTree implements Serializable {
 
     static Logger logger = Logger.getLogger(TernaryTree.class.getName());
 
@@ -350,8 +350,6 @@ public class TernaryTree implements Cloneable, Serializable {
         this.length = original.length;
     }
 
-    
-
     /**
      * Recursively insert the median first and then the median of the lower and upper halves, and so on in order to get
      * a balanced tree. The array of keys is assumed to be sorted in ascending order.
@@ -604,7 +602,7 @@ public class TernaryTree implements Cloneable, Serializable {
             return 0;
         }
 
-        private class Item implements Cloneable {
+        private class Item {
 
             char parent;
             char child;

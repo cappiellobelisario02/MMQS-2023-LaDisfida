@@ -266,12 +266,13 @@
  
          threshold = (int) (newCapacity * loadFactor);
          table = newMap;
- 
+
          for (int i = oldCapacity; i-- > 0; ) {
-             for (Entry old = oldMap[i]; old != null; ) {
-                 Entry e = old;
-                 old = old.next;
- 
+             Entry current = oldMap[i];
+             while (current != null) {
+                 Entry e = current;
+                 current = current.next;
+
                  int index = (e.hash & 0x7FFFFFFF) % newCapacity;
                  e.next = newMap[index];
                  newMap[index] = e;

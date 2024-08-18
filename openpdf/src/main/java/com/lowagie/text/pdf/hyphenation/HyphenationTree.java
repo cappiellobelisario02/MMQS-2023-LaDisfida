@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  */
 public class HyphenationTree extends TernaryTree
         implements PatternConsumer {
-    
+
     static Logger logger = Logger.getLogger(HyphenationTree.class.getName());
 
     private static final long serialVersionUID = -7763254239309429432L;
@@ -63,6 +63,11 @@ public class HyphenationTree extends TernaryTree
         classmap = new TernaryTree();
         vspace = new ByteVector();
         vspace.alloc(1);    // this reserves index 0, which we don't use
+    }
+
+    @Override
+    public TernaryTree clone() throws CloneNotSupportedException {
+        return (TernaryTree) super.clone();
     }
 
     /**
