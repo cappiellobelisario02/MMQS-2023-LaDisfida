@@ -562,7 +562,7 @@ public class FontFactoryImp implements FontProvider {
     }
 
     private boolean isTtfOrOtf(String path) {
-        return path.endsWith(".ttf") || path.endsWith(".otf") || path.indexOf(".ttc,") > 0;
+        return path.endsWith(".ttf") || path.endsWith(".otf") || path.indexOf(".ttc,") >= 1;
     }
 
     private boolean isTtc(String path) {

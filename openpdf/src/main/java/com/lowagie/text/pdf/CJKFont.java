@@ -314,6 +314,8 @@ class CJKFont extends BaseFont {
                     }
                     break;
                 }
+                default:
+                    break;
             }
             lastValue = value;
             lastCid = cid;
@@ -332,6 +334,8 @@ class CJKFont extends BaseFont {
                         .append(']');
                 break;
             }
+            default:
+                break;
         }
         return buf.toString();
     }
@@ -399,6 +403,8 @@ class CJKFont extends BaseFont {
                     }
                     break;
                 }
+                default:
+                    break;
             }
             lastValue = value;
             lastCid = cid;
@@ -567,13 +573,13 @@ class CJKFont extends BaseFont {
         PdfIndirectObject obj = null;
         pobj = getFontDescriptor();
 
-        obj = writer.addToBody(pobj);
-        ind_font = obj.getIndirectReference();
+            obj = writer.addToBody(pobj);
+            ind_font = obj.getIndirectReference();
 
         pobj = getCIDFont(ind_font, cjkTag);
 
-        obj = writer.addToBody(pobj);
-        ind_font = obj.getIndirectReference();
+            obj = writer.addToBody(pobj);
+            ind_font = obj.getIndirectReference();
 
         pobj = getFontBaseType(ind_font);
         writer.addToBody(pobj, ref);
@@ -638,6 +644,8 @@ class CJKFont extends BaseFont {
                 return 0;
             case AWT_MAXADVANCE:
                 return fontSize * (getBBox(2) - getBBox(0)) / 1000;
+            default:
+                break;
         }
         return 0;
     }

@@ -818,7 +818,7 @@ public abstract class BaseFont {
             Type1Font type1Font = new Type1Font(name, encoding, embedded, ttfAfm, pfb, forceRead);
             type1Font.fastWinansi = encoding.equals(CP1252);
             return type1Font;
-        } else if (nameBase.toLowerCase().endsWith(".ttf") || nameBase.toLowerCase().endsWith(".otf") || nameBase.toLowerCase().indexOf(".ttc,") > 0) {
+        } else if (nameBase.toLowerCase().endsWith(".ttf") || nameBase.toLowerCase().endsWith(".otf") || nameBase.toLowerCase().indexOf(".ttc,") >= 1) {
             if (encoding.equals(IDENTITY_H) || encoding.equals(IDENTITY_V)) {
                 TrueTypeFontUnicode trueTypeFontUnicode = new TrueTypeFontUnicode(name, encoding, embedded, ttfAfm, forceRead);
                 LayoutProcessor.loadFont(trueTypeFontUnicode, name);
@@ -877,7 +877,7 @@ public abstract class BaseFont {
         BaseFont fontBuilt = null;
         if (nameBase.toLowerCase().endsWith(".ttf")
                 || nameBase.toLowerCase().endsWith(".otf")
-                || nameBase.toLowerCase().indexOf(".ttc,") > 0) {
+                || nameBase.toLowerCase().indexOf(".ttc,") >= 1) {
             fontBuilt = new TrueTypeFont(name, CP1252, false, ttfAfm, true,
                     false);
         } else {
@@ -902,7 +902,7 @@ public abstract class BaseFont {
         BaseFont fontBuilt = null;
         if (nameBase.toLowerCase().endsWith(".ttf")
                 || nameBase.toLowerCase().endsWith(".otf")
-                || nameBase.toLowerCase().indexOf(".ttc,") > 0) {
+                || nameBase.toLowerCase().indexOf(".ttc,") >= 1) {
             fontBuilt = new TrueTypeFont(name, CP1252, false, ttfAfm, true,
                     false);
         } else {
@@ -929,7 +929,7 @@ public abstract class BaseFont {
         BaseFont fontBuilt = null;
         if (nameBase.toLowerCase().endsWith(".ttf")
                 || nameBase.toLowerCase().endsWith(".otf")
-                || nameBase.toLowerCase().indexOf(".ttc,") > 0) {
+                || nameBase.toLowerCase().indexOf(".ttc,") >= 1) {
             fontBuilt = new TrueTypeFont(name, CP1252, false, ttfAfm, true,
                     false);
         } else {

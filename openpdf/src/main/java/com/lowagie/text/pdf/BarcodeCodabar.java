@@ -277,36 +277,19 @@ public class BarcodeCodabar extends Barcode {
         }
         int narrow = bars.length - wide;
         float fullWidth = x * (narrow + wide * n);
-        float barStartX = 0;
-        float textStartX = 0;
-        switch (textAlignment) {
-            case Element.ALIGN_LEFT:
-                break;
-            case Element.ALIGN_RIGHT:
-                if (fontX > fullWidth) {
-                    barStartX = fontX - fullWidth;
-                } else {
-                    textStartX = fullWidth - fontX;
-                }
-                break;
-            default:
-                if (fontX > fullWidth) {
-                    barStartX = (fontX - fullWidth) / 2;
-                } else {
-                    textStartX = (fullWidth - fontX) / 2;
-                }
-                break;
-        }
-        float barStartY = 0;
-        float textStartY = 0;
-        if (font != null) {
-            if (baseline <= 0) {
-                textStartY = barHeight - baseline;
-            } else {
-                textStartY = -font.getFontDescriptor(BaseFont.DESCENT, size);
-                barStartY = textStartY + baseline;
-            }
-        }
+        float barStartX = Barcode39.calculateBarAndTextStartX(textAlignment, fontX, fullWidth)[0];
+        float textStartX = Barcode39.calculateBarAndTextStartX(textAlignment, fontX, fullWidth)[1];
+
+        float barStartY = Barcode39.calculateBarAndTextStartY(font, baseline, barHeight, size)[0];
+        float textStartY = Barcode39.calculateBarAndTextStartY(font, baseline, barHeight, size)[1];
+
+        printBars(cb, barColor, bars, barStartX, barStartY);
+        setTextBars(cb, textColor, fullCode, textStartX, textStartY);
+
+        return getBarcodeSize();
+    }
+
+    private void printBars(PdfContentByte cb, Color barColor, byte[] bars, float barStartX, float barStartY){
         boolean print = true;
         if (barColor != null) {
             cb.setColorFill(barColor);
@@ -320,6 +303,9 @@ public class BarcodeCodabar extends Barcode {
             barStartX += w;
         }
         cb.fill();
+    }
+
+    private void setTextBars(PdfContentByte cb, Color textColor, String fullCode, float textStartX, float textStartY){
         if (font != null) {
             if (textColor != null) {
                 cb.setColorFill(textColor);
@@ -330,7 +316,6 @@ public class BarcodeCodabar extends Barcode {
             cb.showText(fullCode);
             cb.endText();
         }
-        return getBarcodeSize();
     }
 
     /**

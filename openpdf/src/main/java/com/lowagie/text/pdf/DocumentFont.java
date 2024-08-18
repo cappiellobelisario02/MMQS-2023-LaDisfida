@@ -120,6 +120,7 @@ public class DocumentFont extends BaseFont {
         if (PdfName.TYPE1.equals(subType) || PdfName.TRUETYPE.equals(subType)) {
             doType1TT();
         } else {
+            boolean cjkFontFound = false;
             for (int k = 0; k < cjkNames.length; ++k) {
                 if (fontName.startsWith(cjkNames[k])) {
                     fontName = cjkNames[k];
@@ -128,33 +129,39 @@ public class DocumentFont extends BaseFont {
                     } catch (Exception e) {
                         throw new ExceptionConverter(e);
                     }
-                    return;
+                    cjkFontFound = true;
+                    break;
                 }
             }
-            PdfName encName = font.getAsName(PdfName.ENCODING);
-            if (encName != null) {
-                String enc = PdfName.decodeName(encName.toString());
-                for (int k = 0; k < cjkEncs2.length; ++k) {
-                    if (enc.startsWith(cjkEncs2[k])) {
-                        try {
-                            if (k > 3) {
-                                k -= 4;
+            if (!cjkFontFound) {
+                PdfName encName = font.getAsName(PdfName.ENCODING);
+                if (encName != null) {
+                    String enc = PdfName.decodeName(encName.toString());
+                    boolean cjkEncFound = false;
+                    for (int k = 0; k < cjkEncs2.length; ++k) {
+                        if (enc.startsWith(cjkEncs2[k])) {
+                            try {
+                                int adjustedK = (k > 3) ? k - 4 : k;
+                                cjkMirror = BaseFont.createFont(cjkNames2[adjustedK], cjkEncs2[adjustedK], false);
+                            } catch (Exception e) {
+                                throw new ExceptionConverter(e);
                             }
-                            cjkMirror = BaseFont.createFont(cjkNames2[k], cjkEncs2[k], false);
-                        } catch (Exception e) {
-                            throw new ExceptionConverter(e);
+                            cjkEncFound = true;
+                            break;
                         }
-                        return;
                     }
-                }
-                encoding = enc;
-                if (PdfName.TYPE0.equals(subType) && enc.equals("Identity-H")) {
-                    processType0(font);
-                    isType0 = true;
+                    if (!cjkEncFound) {
+                        encoding = enc;
+                        if (PdfName.TYPE0.equals(subType) && enc.equals("Identity-H")) {
+                            processType0(font);
+                            isType0 = true;
+                        }
+                    }
                 }
             }
         }
     }
+
 
     private void processType0(PdfDictionary font) {
         try {
@@ -179,29 +186,47 @@ public class DocumentFont extends BaseFont {
     }
 
     private IntHashtable readWidths(PdfArray ws) {
-        IntHashtable hh = new IntHashtable();
+        IntHashtable hh = new IntHashtable(); // Initialize an IntHashtable to store widths
+
         if (ws == null) {
-            return hh;
+            return hh; // Return empty IntHashtable if ws is null
         }
-        for (int k = 0; k < ws.size(); ++k) {
-            int c1 = ((PdfNumber) PdfReader.getPdfObjectRelease(ws.getPdfObject(k))).intValue();
-            PdfObject obj = PdfReader.getPdfObjectRelease(ws.getPdfObject(++k));
+
+        int size = ws.size(); // Get the size of the PdfArray ws
+        int index = 0; // Initialize an index variable
+
+        while (index < size) {
+            int c1 = ((PdfNumber) PdfReader.getPdfObjectRelease(ws.getPdfObject(index))).intValue(); // Get the first number
+
+            // Move to the next object in the array
+            index++;
+            PdfObject obj = PdfReader.getPdfObjectRelease(ws.getPdfObject(index)); // Get the object at the next index
+
+            // Check if the object is an array
             if (obj.isArray()) {
-                PdfArray a2 = (PdfArray) obj;
-                for (int j = 0; j < a2.size(); ++j) {
-                    int c2 = ((PdfNumber) PdfReader.getPdfObjectRelease(a2.getPdfObject(j))).intValue();
-                    hh.put(c1++, c2);
+                PdfArray a2 = (PdfArray) obj; // Cast the object to PdfArray
+                for (int j = 0; j < a2.size(); j++) {
+                    int c2 = ((PdfNumber) PdfReader.getPdfObjectRelease(a2.getPdfObject(j))).intValue(); // Get the second number
+                    hh.put(c1, c2); // Put the mapping into the IntHashtable
+                    c1++; // Increment c1
                 }
             } else {
-                int c2 = ((PdfNumber) obj).intValue();
-                int w = ((PdfNumber) PdfReader.getPdfObjectRelease(ws.getPdfObject(++k))).intValue();
-                for (; c1 <= c2; ++c1) {
-                    hh.put(c1, w);
+                int c2 = ((PdfNumber) obj).intValue(); // If not an array, get the integer value
+                index++; // Move to the next object in the array
+                int w = ((PdfNumber) PdfReader.getPdfObjectRelease(ws.getPdfObject(index))).intValue(); // Get the width
+
+                for (int i = c1; i <= c2; i++) {
+                    hh.put(i, w); // Put the range mapping into the IntHashtable
                 }
             }
+
+            // Move to the next object in the array
+            index++;
         }
-        return hh;
+
+        return hh; // Return the populated IntHashtable
     }
+
 
     private String decodeString(PdfString ps) {
         if (ps.isHexWriting()) {
@@ -476,6 +501,8 @@ public class DocumentFont extends BaseFont {
                 return 0;
             case AWT_MAXADVANCE:
                 return (urx - llx) * fontSize / 1000;
+            default:
+                break;
         }
         return 0;
     }
@@ -700,13 +727,14 @@ public class DocumentFont extends BaseFont {
         return new int[0];
     }
 
+    @Override
     public int[] getCharBBox(int c) {
         return new int[0];
     }
 
     @Override
     protected int[] getRawCharBBox(int c, String name) {
-        return null;
+        return new int[0];
     }
 
     /**

@@ -71,6 +71,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 /**
  * @author psoares
@@ -260,6 +261,8 @@ public class FactoryProperties {
                 case Markup.CSS_KEY_TEXTALIGN:
                     h.put("align", value.trim().toLowerCase());
                     break;
+                default:
+                    break;
             }
         }
     }
@@ -355,6 +358,8 @@ public class FactoryProperties {
                     break;
                 case Markup.CSS_KEY_PADDINGLEFT:
                     h.put("indent", Float.toString(parseLength(value)));
+                    break;
+                default:
                     break;
             }
         }

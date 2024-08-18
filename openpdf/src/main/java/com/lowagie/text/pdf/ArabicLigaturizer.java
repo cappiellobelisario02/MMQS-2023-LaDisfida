@@ -690,6 +690,8 @@ public class ArabicLigaturizer {
             case DIGITS_EN2AN_INIT_AL:
                 shapeToArabicDigitsWithContext(text, 0, length, digitBase, true);
                 break;
+            default:
+                break;
         }
     }
 

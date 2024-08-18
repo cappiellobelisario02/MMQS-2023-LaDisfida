@@ -147,6 +147,8 @@ class FontDetails {
                 ttu = (TrueTypeFontUnicode) baseFont;
                 symbolic = baseFont.isFontSpecific();
                 break;
+            default:
+                break;
         }
     }
 
@@ -267,6 +269,8 @@ class FontDetails {
                 }
                 break;
             }
+            default:
+                break;
         }
         return b;
     }
@@ -276,25 +280,32 @@ class FontDetails {
         int[] metrics = null;
         int[] glyph = new int[len];
         int i = 0;
-        for (int k = 0; k < len; ++k) {
+        int k = 0;
+
+        while (k < len) {
             int val;
             if (Utilities.isSurrogatePair(text, k)) {
                 val = Utilities.convertToUtf32(text, k);
-                k++;
+                k += 2; // Salta al prossimo carattere, perché è un surrogate pair
             } else {
                 val = text.charAt(k);
+                k++; // Incrementa normalmente per un singolo carattere
             }
+
             metrics = ttu.getMetricsTT(val);
             if (metrics == null) {
                 continue;
             }
+
             int m0 = metrics[0];
             int m1 = metrics[1];
             longTag.computeIfAbsent(m0, key -> new int[]{m0, m1, val});
             glyph[i++] = m0;
         }
+
         return getCJKEncodingBytes(glyph, i);
     }
+
 
     private byte[] getCJKEncodingBytes(int[] glyph, int size) {
         byte[] result = new byte[size * 2];
@@ -408,6 +419,8 @@ class FontDetails {
                     break;
                 case BaseFont.FONT_TYPE_TTUNI:
                     baseFont.writeFont(writer, indirectReference, new Object[]{longTag, subset, getFillerCmap()});
+                    break;
+                default:
                     break;
             }
         } catch (Exception e) {

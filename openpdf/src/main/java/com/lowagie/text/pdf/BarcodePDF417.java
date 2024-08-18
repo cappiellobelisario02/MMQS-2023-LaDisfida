@@ -56,6 +56,7 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.image.MemoryImageSource;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 /**
  * Generates the 2D barcode PDF417. Supports dimensioning auto-sizing, fixed and variable sizes, automatic and manual
@@ -66,6 +67,8 @@ import java.util.ArrayList;
  */
 public class BarcodePDF417 {
 
+    private static final Logger logger = Logger.getLogger(BarcodePDF417.class.getName());
+    private static final String CP_437 = "cp437";
     /**
      * Auto-size is made based on <CODE>aspectRatio</CODE> and <CODE>yHeight</CODE>.
      */
@@ -816,21 +819,21 @@ public class BarcodePDF417 {
         if (errorLevel < 0 || errorLevel > 8) {
             errorLevel = 0;
         }
-        int[] A = ERROR_LEVEL[errorLevel];
-        int Alength = 2 << errorLevel;
-        for (int k = 0; k < Alength; ++k) {
+        int[] a = ERROR_LEVEL[errorLevel];
+        int aLength = 2 << errorLevel;
+        for (int k = 0; k < aLength; ++k) {
             codewords[dest + k] = 0;
         }
-        int lastE = Alength - 1;
+        int lastE = aLength - 1;
         for (int k = 0; k < lenCodewords; ++k) {
             int t1 = codewords[k] + codewords[dest];
             for (int e = 0; e <= lastE; ++e) {
-                int t2 = (t1 * A[lastE - e]) % MOD;
+                int t2 = (t1 * a[lastE - e]) % MOD;
                 int t3 = MOD - t2;
                 codewords[dest + e] = ((e == lastE ? 0 : codewords[dest + e + 1]) + t3) % MOD;
             }
         }
-        for (int k = 0; k < Alength; ++k) {
+        for (int k = 0; k < aLength; ++k) {
             codewords[dest + k] = (MOD - codewords[dest + k]) % MOD;
         }
     }
@@ -936,6 +939,8 @@ public class BarcodePDF417 {
                     mode = ALPHA;
                     --k;
                     break;
+                default:
+                    break;
             }
         }
         if ((ptr & 1) != 0) {
@@ -969,7 +974,8 @@ public class BarcodePDF417 {
     private void basicNumberCompaction(byte[] input, int start, int length) {
         int ret = cwPtr;
         int retLast = length / 3;
-        int ni, k;
+        int ni;
+        int k;
         cwPtr += retLast + 1;
         for (k = 0; k <= retLast; ++k) {
             codewords[ret + k] = 0;
@@ -1018,7 +1024,8 @@ public class BarcodePDF417 {
         int length = 6;
         int ret = cwPtr;
         int retLast = 4;
-        int ni, k;
+        int ni;
+        int k;
         cwPtr += retLast + 1;
         for (k = 0; k <= retLast; ++k) {
             codewords[ret + k] = 0;
@@ -1040,7 +1047,8 @@ public class BarcodePDF417 {
     }
 
     void byteCompaction(int start, int length) {
-        int k, j;
+        int k;
+        int j;
         int size = (length / 6) * 5 + (length % 6);
         if (size + cwPtr > MAX_DATA_CODEWORDS) {
             throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage("the.text.is.too.big"));
@@ -1064,8 +1072,10 @@ public class BarcodePDF417 {
         int startN = 0;
         int nd = 0;
         char c = 0;
-        int k, j;
-        boolean lastTxt, txt;
+        int k;
+        int j;
+        boolean lastTxt;
+        boolean txt;
         Segment v;
         Segment vp;
         Segment vn;
@@ -1136,7 +1146,6 @@ public class BarcodePDF417 {
                 segmentList.remove(k);
                 segmentList.remove(k);
                 k = -1;
-                continue;
             }
         }
         //merge text sections
@@ -1223,6 +1232,8 @@ public class BarcodePDF417 {
                     codewords[cwPtr++] = (getSegmentLength(v) % 6) != 0 ? BYTE_MODE : BYTE_MODE_6;
                     byteCompaction(v.start, getSegmentLength(v));
                     break;
+                default:
+                    break;
             }
         }
 
@@ -1262,12 +1273,12 @@ public class BarcodePDF417 {
             sb.insert(0, "0");
         }
 
-        byte[] bytes = PdfEncodings.convertToBytes(sb.toString(), "cp437");
+        byte[] bytes = PdfEncodings.convertToBytes(sb.toString(), CP_437);
         numberCompaction(bytes, 0, bytes.length);
     }
 
     private void append(String s) {
-        byte[] bytes = PdfEncodings.convertToBytes(s, "cp437");
+        byte[] bytes = PdfEncodings.convertToBytes(s, CP_437);
         textCompaction(bytes, 0, bytes.length);
     }
 
@@ -1288,7 +1299,8 @@ public class BarcodePDF417 {
             StringBuilder sb = new StringBuilder();
             sb.append(v.type);
             sb.append(c);
-            System.out.println(sb.toString());
+            String stringToLog = sb.toString();
+            logger.info(stringToLog);
         }
     }
 
@@ -1307,7 +1319,12 @@ public class BarcodePDF417 {
      * Paints the barcode. If no exception was thrown a valid barcode is available.
      */
     public void paintCode() {
-        int maxErr, lenErr, tot, pad;
+        int maxErr;
+        int lenErr;
+        int tot;
+        int pad;
+
+
         if ((options & PDF417_USE_RAW_CODEWORDS) != 0) {
             if (lenCodewords > MAX_DATA_CODEWORDS || lenCodewords < 1 || lenCodewords != codewords[0]) {
                 throw new IllegalArgumentException(MessageLocalization.getComposedMessage("invalid.codeword.size"));
@@ -1368,7 +1385,8 @@ public class BarcodePDF417 {
                 skipRowColAdjust = true;
             }
         } else if ((options & (PDF417_FIXED_COLUMNS | PDF417_FIXED_ROWS)) == 0) {
-            double c, b;
+            double c;
+            double b;
             fixedColumn = true;
             if (aspectRatio < 0.001) {
                 aspectRatio = 0.001f;
@@ -1473,8 +1491,7 @@ public class BarcodePDF417 {
             ptr += bitColumns * (h - 1);
         }
 
-        java.awt.Image img = canvas.createImage(new MemoryImageSource(bitColumns, codeRows * h, pix, 0, bitColumns));
-        return img;
+        return canvas.createImage(new MemoryImageSource(bitColumns, codeRows * h, pix, 0, bitColumns));
     }
 
     /**

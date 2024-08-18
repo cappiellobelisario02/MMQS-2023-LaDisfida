@@ -433,6 +433,8 @@ public class HtmlWriter extends DocWriter {
             case Element.AUTHOR:
                 write(HtmlTags.NAME, HtmlTags.AUTHOR);
                 break;
+            default:
+                break;
         }
         write(HtmlTags.CONTENT, HtmlEncoder.encode(meta.getContent()));
         writeEnd();

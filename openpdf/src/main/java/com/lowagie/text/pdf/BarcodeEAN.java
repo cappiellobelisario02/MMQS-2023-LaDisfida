@@ -49,33 +49,12 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.InvalidCodeTypeException;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.MemoryImageSource;
 import java.util.Arrays;
-
-/**
- * Generates barcodes in several formats: EAN13, EAN8, UPCA, UPCE, supplemental 2 and 5. The default parameters are:
- * <pre>
- * x = 0.8f;
- * font = BaseFont.createFont("Helvetica", "winansi", false);
- * size = 8;
- * baseline = size;
- * barHeight = size * 3;
- * guardBars = true;
- * codeType = EAN13;
- * code = "";
- * </pre>
- *
- * @author Paulo Soares (psoares@consiste.pt)
- */
-
-public class InvalidCodeTypeException extends RuntimeException {
-    public InvalidCodeTypeException(String message) {
-        super(message);
-    }
-}
 
 
 public class BarcodeEAN extends Barcode {
@@ -584,144 +563,162 @@ public class BarcodeEAN extends Barcode {
      */
     public Rectangle placeBarcode(PdfContentByte cb, Color barColor, Color textColor) {
         Rectangle rect = getBarcodeSize();
-        float barStartX = 0;
-        float barStartY = 0;
-        float textStartY = 0;
-        if (font != null) {
-            if (baseline <= 0) {
-                textStartY = barHeight - baseline;
-            } else {
-                textStartY = -font.getFontDescriptor(BaseFont.DESCENT, size);
-                barStartY = textStartY + baseline;
-            }
-        }
-        switch (codeType) {
-            case EAN13:
-            case UPCA:
-            case UPCE:
-                if (font != null) {
-                    barStartX += font.getWidthPoint(code.charAt(0), size);
-                }
-                break;
-        }
-        byte[] bars = null;
-        int[] guard = GUARD_EMPTY;
-        switch (codeType) {
-            case EAN13:
-                bars = getBarsEAN13(code);
-                guard = GUARD_EAN13;
-                break;
-            case EAN8:
-                bars = getBarsEAN8(code);
-                guard = GUARD_EAN8;
-                break;
-            case UPCA:
-                bars = getBarsEAN13("0" + code);
-                guard = GUARD_UPCA;
-                break;
-            case UPCE:
-                bars = getBarsUPCE(code);
-                guard = GUARD_UPCE;
-                break;
-            case SUPP2:
-                bars = getBarsSupplemental2(code);
-                break;
-            case SUPP5:
-                bars = getBarsSupplemental5(code);
-                break;
-        }
+        float barStartX = calculateBarStartX();
+        float barStartY = calculateBarStartY();
+        float textStartY = calculateTextStartY();
+
+        byte[] bars = getBarsForCodeType(codeType);
+        int[] guard = getGuardForCodeType(codeType);
+
         float keepBarX = barStartX;
-        boolean print = true;
-        float gd = 0;
-        if (font != null && baseline > 0 && guardBars) {
-            gd = baseline / 2;
+        float guardBarOffset = calculateGuardBarOffset();
+
+        drawBars(cb, barColor, bars, guard, barStartX, barStartY, guardBarOffset);
+        drawText(cb, textColor, keepBarX, textStartY);
+
+        return rect;
+    }
+
+    private float calculateBarStartX() {
+        if (font == null) return 0;
+        return (codeType == EAN13 || codeType == UPCA || codeType == UPCE) ? font.getWidthPoint(code.charAt(0), size) : 0;
+    }
+
+    private float calculateBarStartY() {
+        if (font == null || baseline <= 0) return 0;
+        return -font.getFontDescriptor(BaseFont.DESCENT, size) + baseline;
+    }
+
+    private float calculateTextStartY() {
+        if (font == null) return 0;
+        return baseline <= 0 ? barHeight - baseline : -font.getFontDescriptor(BaseFont.DESCENT, size);
+    }
+
+    private byte[] getBarsForCodeType(int codeType) {
+        switch (codeType) {
+            case EAN13: return getBarsEAN13(code);
+            case EAN8: return getBarsEAN8(code);
+            case UPCA: return getBarsEAN13("0" + code);
+            case UPCE: return getBarsUPCE(code);
+            case SUPP2: return getBarsSupplemental2(code);
+            case SUPP5: return getBarsSupplemental5(code);
+            default: return null;
         }
+    }
+
+    private int[] getGuardForCodeType(int codeType) {
+        switch (codeType) {
+            case EAN13: return GUARD_EAN13;
+            case EAN8: return GUARD_EAN8;
+            case UPCA: return GUARD_UPCA;
+            case UPCE: return GUARD_UPCE;
+            default: return GUARD_EMPTY;
+        }
+    }
+
+    private float calculateGuardBarOffset() {
+        return (font != null && baseline > 0 && guardBars) ? baseline / 2 : 0;
+    }
+
+    private void drawBars(PdfContentByte cb, Color barColor, byte[] bars, int[] guard, float barStartX, float barStartY, float guardBarOffset) {
         if (barColor != null) {
             cb.setColorFill(barColor);
         }
         if (bars != null) {
+            boolean print = true;
             for (int k = 0; k < bars.length; ++k) {
                 float w = bars[k] * x;
                 if (print) {
-                    if (Arrays.binarySearch(guard, k) >= 0) {
-                        cb.rectangle(barStartX, barStartY - gd, w - inkSpreading, barHeight + gd);
-                    } else {
-                        cb.rectangle(barStartX, barStartY, w - inkSpreading, barHeight);
-                    }
+                    float rectStartY = Arrays.binarySearch(guard, k) >= 0 ? barStartY - guardBarOffset : barStartY;
+                    float rectHeight = barHeight + (rectStartY == barStartY - guardBarOffset ? guardBarOffset : 0);
+                    cb.rectangle(barStartX, rectStartY, w - inkSpreading, rectHeight);
                 }
                 print = !print;
                 barStartX += w;
             }
         }
         cb.fill();
-        if (font != null) {
-            if (textColor != null) {
-                cb.setColorFill(textColor);
-            }
-            cb.beginText();
-            cb.setFontAndSize(font, size);
-            switch (codeType) {
-                case EAN13:
-                    cb.setTextMatrix(0, textStartY);
-                    cb.showText(code.substring(0, 1));
-                    for (int k = 1; k < 13; ++k) {
-                        String c = code.substring(k, k + 1);
-                        float len = font.getWidthPoint(c, size);
-                        float pX = keepBarX + TEXTPOS_EAN13[k - 1] * x - len / 2;
-                        cb.setTextMatrix(pX, textStartY);
-                        cb.showText(c);
-                    }
-                    break;
-                case EAN8:
-                    for (int k = 0; k < 8; ++k) {
-                        String c = code.substring(k, k + 1);
-                        float len = font.getWidthPoint(c, size);
-                        float pX = TEXTPOS_EAN8[k] * x - len / 2;
-                        cb.setTextMatrix(pX, textStartY);
-                        cb.showText(c);
-                    }
-                    break;
-                case UPCA:
-                    cb.setTextMatrix(0, textStartY);
-                    cb.showText(code.substring(0, 1));
-                    for (int k = 1; k < 11; ++k) {
-                        String c = code.substring(k, k + 1);
-                        float len = font.getWidthPoint(c, size);
-                        float pX = keepBarX + TEXTPOS_EAN13[k] * x - len / 2;
-                        cb.setTextMatrix(pX, textStartY);
-                        cb.showText(c);
-                    }
-                    cb.setTextMatrix(keepBarX + x * (11 + 12 * 7), textStartY);
-                    cb.showText(code.substring(11, 12));
-                    break;
-                case UPCE:
-                    cb.setTextMatrix(0, textStartY);
-                    cb.showText(code.substring(0, 1));
-                    for (int k = 1; k < 7; ++k) {
-                        String c = code.substring(k, k + 1);
-                        float len = font.getWidthPoint(c, size);
-                        float pX = keepBarX + TEXTPOS_EAN13[k - 1] * x - len / 2;
-                        cb.setTextMatrix(pX, textStartY);
-                        cb.showText(c);
-                    }
-                    cb.setTextMatrix(keepBarX + x * (9 + 6 * 7), textStartY);
-                    cb.showText(code.substring(7, 8));
-                    break;
-                case SUPP2:
-                case SUPP5:
-                    for (int k = 0; k < code.length(); ++k) {
-                        String c = code.substring(k, k + 1);
-                        float len = font.getWidthPoint(c, size);
-                        float pX = (7.5f + (9 * k)) * x - len / 2;
-                        cb.setTextMatrix(pX, textStartY);
-                        cb.showText(c);
-                    }
-                    break;
-            }
-            cb.endText();
-        }
-        return rect;
     }
+
+    private void drawText(PdfContentByte cb, Color textColor, float keepBarX, float textStartY) {
+        if (font == null) return;
+
+        if (textColor != null) {
+            cb.setColorFill(textColor);
+        }
+        cb.beginText();
+        cb.setFontAndSize(font, size);
+
+        switch (codeType) {
+            case EAN13:
+                drawEAN13Text(cb, keepBarX, textStartY);
+                break;
+            case EAN8:
+                drawEAN8Text(cb, textStartY);
+                break;
+            case UPCA:
+                drawUPCAText(cb, keepBarX, textStartY);
+                break;
+            case UPCE:
+                drawUPCEText(cb, keepBarX, textStartY);
+                break;
+            case SUPP2:
+            case SUPP5:
+                drawSupplementalText(cb, textStartY);
+                break;
+            default:
+                break;
+        }
+
+        cb.endText();
+    }
+
+    private void drawEAN13Text(PdfContentByte cb, float keepBarX, float textStartY) {
+        cb.setTextMatrix(0, textStartY);
+        cb.showText(code.substring(0, 1));
+        for (int k = 1; k < 13; ++k) {
+            drawSingleCharacter(cb, code.substring(k, k + 1), keepBarX + TEXTPOS_EAN13[k - 1] * x, textStartY);
+        }
+    }
+
+    private void drawEAN8Text(PdfContentByte cb, float textStartY) {
+        for (int k = 0; k < 8; ++k) {
+            drawSingleCharacter(cb, code.substring(k, k + 1), TEXTPOS_EAN8[k] * x, textStartY);
+        }
+    }
+
+    private void drawUPCAText(PdfContentByte cb, float keepBarX, float textStartY) {
+        cb.setTextMatrix(0, textStartY);
+        cb.showText(code.substring(0, 1));
+        for (int k = 1; k < 11; ++k) {
+            drawSingleCharacter(cb, code.substring(k, k + 1), keepBarX + TEXTPOS_EAN13[k] * x, textStartY);
+        }
+        cb.setTextMatrix(keepBarX + x * (11 + 12 * 7), textStartY);
+        cb.showText(code.substring(11, 12));
+    }
+
+    private void drawUPCEText(PdfContentByte cb, float keepBarX, float textStartY) {
+        cb.setTextMatrix(0, textStartY);
+        cb.showText(code.substring(0, 1));
+        for (int k = 1; k < 7; ++k) {
+            drawSingleCharacter(cb, code.substring(k, k + 1), keepBarX + TEXTPOS_EAN13[k - 1] * x, textStartY);
+        }
+        cb.setTextMatrix(keepBarX + x * (9 + 6 * 7), textStartY);
+        cb.showText(code.substring(7, 8));
+    }
+
+    private void drawSupplementalText(PdfContentByte cb, float textStartY) {
+        for (int k = 0; k < code.length(); ++k) {
+            drawSingleCharacter(cb, code.substring(k, k + 1), (7.5f + (9 * k)) * x, textStartY);
+        }
+    }
+
+    private void drawSingleCharacter(PdfContentByte cb, String c, float positionX, float positionY) {
+        float len = font.getWidthPoint(c, size);
+        cb.setTextMatrix(positionX - len / 2, positionY);
+        cb.showText(c);
+    }
+
 
     /**
      * Creates a <CODE>java.awt.Image</CODE>. This image only contains the bars without any text.

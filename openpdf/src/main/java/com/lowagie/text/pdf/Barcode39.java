@@ -307,29 +307,64 @@ public class Barcode39 extends Barcode {
      * @return the dimensions the barcode occupies
      */
     public Rectangle placeBarcode(PdfContentByte cb, Color barColor, Color textColor) {
+        String fullCode = prepareFullCode();
+        float fontX = calculateFontX(fullCode);
+        String bCode = prepareBarcodeText();
+
+        float fullWidth = calculateFullWidth(bCode.length());
+        float barStartX = calculateBarAndTextStartX(fontX, fullWidth)[0];
+        float textStartX = calculateBarAndTextStartX(fontX, fullWidth)[1];
+
+        float barStartY = calculateBarAndTextStartY()[0];
+        float textStartY = calculateBarAndTextStartY()[1];
+
+        drawBars(cb, barColor, bCode, barStartX, barStartY);
+        drawText(cb, textColor, fullCode, textStartX, textStartY);
+
+        return getBarcodeSize();
+    }
+
+    private String prepareFullCode() {
         String fullCode = code;
-        float fontX = 0;
-        String bCode = code;
         if (extended) {
-            bCode = getCode39Ex(code);
+            fullCode = getCode39Ex(code);
         }
         if (font != null) {
             if (generateChecksum && checksumText) {
-                fullCode += getChecksum(bCode);
+                fullCode += getChecksum(fullCode);
             }
             if (startStopText) {
                 fullCode = "*" + fullCode + "*";
             }
             fullCode = (altText != null) ? altText : fullCode;
-            fontX = font.getWidthPoint(fullCode, size);
+        }
+        return fullCode;
+    }
+
+    private String prepareBarcodeText() {
+        String bCode = code;
+        if (extended) {
+            bCode = getCode39Ex(code);
         }
         if (generateChecksum) {
             bCode += getChecksum(bCode);
         }
-        int len = bCode.length() + 2;
-        float fullWidth = len * (6 * x + 3 * x * n) + (len - 1) * x;
+        return bCode;
+    }
+
+    private float calculateFontX(String fullCode) {
+        return (font != null) ? font.getWidthPoint(fullCode, size) : 0;
+    }
+
+    private float calculateFullWidth(int length) {
+        int len = length + 2;
+        return len * (6 * x + 3 * x * n) + (len - 1) * x;
+    }
+
+    private float[] calculateBarAndTextStartX(float fontX, float fullWidth) {
         float barStartX = 0;
         float textStartX = 0;
+
         switch (textAlignment) {
             case Element.ALIGN_LEFT:
                 break;
@@ -348,8 +383,13 @@ public class Barcode39 extends Barcode {
                 }
                 break;
         }
-        float barStartY = 0;
+
+        return new float[]{barStartX, textStartX};
+    }
+
+    private float[] calculateBarAndTextStartY() {
         float textStartY = 0;
+        float barStartY = 0;
         if (font != null) {
             if (baseline <= 0) {
                 textStartY = barHeight - baseline;
@@ -358,6 +398,11 @@ public class Barcode39 extends Barcode {
                 barStartY = textStartY + baseline;
             }
         }
+
+        return new float[]{barStartY, textStartY};
+    }
+
+    private void drawBars(PdfContentByte cb, Color barColor, String bCode, float barStartX, float barStartY) {
         byte[] bars = getBarsCode39(bCode);
         boolean print = true;
         if (barColor != null) {
@@ -372,6 +417,9 @@ public class Barcode39 extends Barcode {
             barStartX += w;
         }
         cb.fill();
+    }
+
+    private void drawText(PdfContentByte cb, Color textColor, String fullCode, float textStartX, float textStartY) {
         if (font != null) {
             if (textColor != null) {
                 cb.setColorFill(textColor);
@@ -382,8 +430,8 @@ public class Barcode39 extends Barcode {
             cb.showText(fullCode);
             cb.endText();
         }
-        return getBarcodeSize();
     }
+
 
     /**
      * Creates a <CODE>java.awt.Image</CODE>. This image only contains the bars without any text.

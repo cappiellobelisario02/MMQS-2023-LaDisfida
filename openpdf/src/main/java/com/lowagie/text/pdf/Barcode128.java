@@ -539,6 +539,8 @@ public class Barcode128 extends Barcode {
             case START_C:
                 currentCode = processStartC(text, out, index);
                 break;
+            default:
+                break;
         }
         return currentCode;
     }

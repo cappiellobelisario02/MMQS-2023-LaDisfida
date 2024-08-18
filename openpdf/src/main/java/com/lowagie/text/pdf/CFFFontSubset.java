@@ -1020,6 +1020,8 @@ public class CFFFontSubset extends CFFFont {
                     NewIndex[Place++] = (byte) ((Num >>> 8) & 0xff); // fallthrough
                 case 1:
                     NewIndex[Place++] = (byte) ((Num) & 0xff);
+                default:
+                    break;
             }
         }
         // Write the new object array one by one

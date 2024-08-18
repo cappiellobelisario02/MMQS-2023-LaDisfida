@@ -144,6 +144,8 @@ public class ByteBuffer extends OutputStream {
             case 1:
                 step = 10;
                 break;
+            default:
+                break;
         }
         for (int i = 1; i < byteCacheSize; i += step) {
             if (byteCache[i] != null) {

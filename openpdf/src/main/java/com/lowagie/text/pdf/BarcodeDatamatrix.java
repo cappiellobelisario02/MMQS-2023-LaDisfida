@@ -244,238 +244,380 @@ public class BarcodeDatamatrix {
         return k - dataOffset;
     }
 
-    private static int X12Encodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset,
-            int dataLength) {
+    private static int X12Encodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset, int dataLength) {
         if (textLength == 0) {
             return 0;
         }
-        int ptrIn = 0;
+
+        byte[] x = preprocessX12(text, textOffset, textLength);
+        int ptrOut = encodeX12Data(text, textOffset, textLength, data, dataOffset, dataLength, x);
+
+        if (ptrOut == -1) {
+            return -1;
+        }
+
+        finalizeEncoding(data, dataOffset, dataLength, x, textLength, ptrOut);
+
+        return ptrOut;
+    }
+
+    private static byte[] preprocessX12(byte[] text, int textOffset, int textLength) {
         byte[] x = new byte[textLength];
         int count = 0;
-        for (; ptrIn < textLength; ++ptrIn) {
+        for (int ptrIn = 0; ptrIn < textLength; ++ptrIn) {
             int i = X12.indexOf((char) text[ptrIn + textOffset]);
             if (i >= 0) {
                 x[ptrIn] = (byte) i;
                 ++count;
             } else {
-                x[ptrIn] = 100;
-                if (count >= 6) {
-                    count -= (count / 3) * 3;
-                }
-                for (int k = 0; k < count; ++k) {
-                    x[ptrIn - k - 1] = 100;
-                }
-                count = 0;
+                count = resetInvalidChars(x, ptrIn, count);
             }
         }
         if (count >= 6) {
             count -= (count / 3) * 3;
         }
         for (int k = 0; k < count; ++k) {
+            x[textLength - k - 1] = 100;
+        }
+        return x;
+    }
+
+    private static int resetInvalidChars(byte[] x, int ptrIn, int count) {
+        x[ptrIn] = 100;
+        if (count >= 6) {
+            count -= (count / 3) * 3;
+        }
+        for (int k = 0; k < count; ++k) {
             x[ptrIn - k - 1] = 100;
         }
-        ptrIn = 0;
-        byte c;
+        return 0;
+    }
+
+    private static int encodeX12Data(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset, int dataLength, byte[] x) {
+        int ptrIn = 0;
         int ptrOut = 0;
-        for (; ptrIn < textLength; ++ptrIn) {
-            c = x[ptrIn];
+
+        while (ptrIn < textLength) {
+            byte c = x[ptrIn];
             if (ptrOut >= dataLength) {
-                break;
+                return -1;
             }
+
             if (c < 40) {
-                if (ptrIn == 0 || x[ptrIn - 1] > 40) {
-                    data[dataOffset + ptrOut++] = (byte) 238;
+                ptrOut = encodeThreeChars(data, dataOffset, dataLength, x, ptrIn, ptrOut);
+                if (ptrOut == -1) {
+                    return -1;
                 }
-                if (ptrOut + 2 > dataLength) {
-                    break;
-                }
-                if (x.length - 1 < ptrIn + 2) {
-                    break;
-                }
-                int n = 1600 * x[ptrIn] + 40 * x[ptrIn + 1] + x[ptrIn + 2] + 1;
-                data[dataOffset + ptrOut++] = (byte) (n / 256);
-                data[dataOffset + ptrOut++] = (byte) n;
                 ptrIn += 2;
             } else {
-                if (ptrIn > 0 && x[ptrIn - 1] < 40) {
-                    data[dataOffset + ptrOut++] = (byte) 254;
+                ptrOut = encodeSingleChar(text, textOffset, data, dataOffset, dataLength, ptrIn, ptrOut);
+                if (ptrOut == -1) {
+                    return -1;
                 }
-                int ci = text[ptrIn + textOffset] & 0xff;
-                if (ci > 127) {
-                    data[dataOffset + ptrOut++] = (byte) 235;
-                    ci -= 128;
-                }
-                if (ptrOut >= dataLength) {
-                    break;
-                }
-                data[dataOffset + ptrOut++] = (byte) (ci + 1);
             }
+
+            ptrIn++;
         }
-        c = x[textLength - 1];
-        if (ptrIn != textLength || (c < 40 && ptrOut >= dataLength)) {
-            return -1;
-        }
-        if (c < 40) {
-            data[dataOffset + ptrOut++] = (byte) (254);
-        }
+
         return ptrOut;
     }
 
-    private static int EdifactEncodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset,
-            int dataLength) {
+    private static int encodeThreeChars(byte[] data, int dataOffset, int dataLength, byte[] x, int ptrIn, int ptrOut) {
+        if (ptrIn == 0 || x[ptrIn - 1] > 40) {
+            data[dataOffset + ptrOut++] = (byte) 238;
+        }
+
+        if (ptrOut + 2 > dataLength || x.length - 1 < ptrIn + 2) {
+            return -1;
+        }
+
+        int n = 1600 * x[ptrIn] + 40 * x[ptrIn + 1] + x[ptrIn + 2] + 1;
+        data[dataOffset + ptrOut++] = (byte) (n / 256);
+        data[dataOffset + ptrOut++] = (byte) n;
+
+        return ptrOut;
+    }
+
+    private static int encodeSingleChar(byte[] text, int textOffset, byte[] data, int dataOffset, int dataLength, int ptrIn, int ptrOut) {
+        int ci = text[ptrIn + textOffset] & 0xff;
+        if (ci > 127) {
+            if (ptrOut >= dataLength) {
+                return -1;
+            }
+            data[dataOffset + ptrOut++] = (byte) 235;
+            ci -= 128;
+        }
+
+        if (ptrOut >= dataLength) {
+            return -1;
+        }
+        data[dataOffset + ptrOut++] = (byte) (ci + 1);
+
+        return ptrOut;
+    }
+
+    private static void finalizeEncoding(byte[] data, int dataOffset, int dataLength, byte[] x, int textLength, int ptrOut) {
+        byte c = x[textLength - 1];
+        if (c < 40 && ptrOut < dataLength) {
+            data[dataOffset + ptrOut++] = (byte) 254;
+        }
+    }
+
+
+    private static int EdifactEncodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset, int dataLength) {
         if (textLength == 0) {
             return 0;
         }
+
         int ptrIn = 0;
         int ptrOut = 0;
         int edi = 0;
         int pedi = 18;
         boolean ascii = true;
-        int c;
-        for (; ptrIn < textLength; ++ptrIn) {
-            c = text[ptrIn + textOffset] & 0xff;
-            if (((c & 0xe0) == 0x40 || (c & 0xe0) == 0x20) && c != '_') {
-                if (ascii) {
-                    if (ptrOut + 1 > dataLength) {
-                        break;
-                    }
-                    data[dataOffset + ptrOut++] = (byte) 240;
-                    ascii = false;
-                }
-                c &= 0x3f;
-                edi |= c << pedi;
-                if (pedi == 0) {
-                    if (ptrOut + 3 > dataLength) {
-                        break;
-                    }
-                    data[dataOffset + ptrOut++] = (byte) (edi >> 16);
-                    data[dataOffset + ptrOut++] = (byte) (edi >> 8);
-                    data[dataOffset + ptrOut++] = (byte) edi;
+
+        while (ptrIn < textLength) {
+            int c = text[ptrIn + textOffset] & 0xff;
+
+            if (isEdifactCharacter(c)) {
+                ptrOut = handleEdifactEncoding(data, dataOffset, dataLength, c, ascii, ptrOut, edi, pedi);
+                ascii = false;
+                pedi = updatePedi(pedi);
+                if (pedi == 18) {
                     edi = 0;
-                    pedi = 18;
-                } else {
-                    pedi -= 6;
                 }
             } else {
-                if (!ascii) {
-                    edi |= ('_' & 0x3f) << pedi;
-                    if (ptrOut + (3 - pedi / 8) > dataLength) {
-                        break;
-                    }
-                    data[dataOffset + ptrOut++] = (byte) (edi >> 16);
-                    if (pedi <= 12) {
-                        data[dataOffset + ptrOut++] = (byte) (edi >> 8);
-                    }
-                    if (pedi <= 6) {
-                        data[dataOffset + ptrOut++] = (byte) edi;
-                    }
-                    ascii = true;
-                    pedi = 18;
-                    edi = 0;
-                }
-                if (c > 127) {
-                    if (ptrOut >= dataLength) {
-                        break;
-                    }
-                    data[dataOffset + ptrOut++] = (byte) 235;
-                    c -= 128;
-                }
-                if (ptrOut >= dataLength) {
-                    break;
-                }
-                data[dataOffset + ptrOut++] = (byte) (c + 1);
+                ptrOut = handleAsciiEncoding(data, dataOffset, dataLength, c, ascii, ptrOut, edi, pedi);
+                ascii = true;
+                pedi = 18;
+                edi = 0;
+            }
+
+            if (ptrOut == -1) {
+                return -1;
+            }
+
+            ptrIn++;
+        }
+
+        return finalizeEncoding(ptrIn, textLength, data, dataOffset, dataLength, ptrOut, ascii, edi, pedi);
+    }
+
+    private static int handleEdifactEncoding(byte[] data, int dataOffset, int dataLength, int c, boolean ascii, int ptrOut, int edi, int pedi) {
+        if (ascii) {
+            if (ptrOut + 1 > dataLength) {
+                return -1;
+            }
+            data[dataOffset + ptrOut++] = (byte) 240;
+        }
+
+        edi = encodeEdifactCharacter(c, edi, pedi);
+        pedi = processEdifactTriplets(data, dataOffset, dataLength, ptrOut, edi, pedi);
+
+        return ptrOut;
+    }
+
+    private static int handleAsciiEncoding(byte[] data, int dataOffset, int dataLength, int c, boolean ascii, int ptrOut, int edi, int pedi) {
+        if (!ascii) {
+            if (!flushEdifact(data, dataOffset, dataLength, ptrOut, edi, pedi)) {
+                return -1;
             }
         }
+
+        return encodeASCIICharacter(data, dataOffset, dataLength, ptrOut, c) ? ptrOut : -1;
+    }
+
+    private static int finalizeEncoding(int ptrIn, int textLength, byte[] data, int dataOffset, int dataLength, int ptrOut, boolean ascii, int edi, int pedi) {
         if (ptrIn != textLength) {
             return -1;
         }
+
         if (!ascii) {
-            edi |= ('_' & 0x3f) << pedi;
-            if (ptrOut + (3 - pedi / 8) > dataLength) {
+            if (!flushEdifact(data, dataOffset, dataLength, ptrOut, edi, pedi)) {
                 return -1;
             }
-            data[dataOffset + ptrOut++] = (byte) (edi >> 16);
-            if (pedi <= 12) {
-                data[dataOffset + ptrOut++] = (byte) (edi >> 8);
-            }
-            if (pedi <= 6) {
-                data[dataOffset + ptrOut++] = (byte) edi;
-            }
         }
+
         return ptrOut;
     }
+
+    private static int updatePedi(int pedi) {
+        return (pedi == 0) ? 18 : pedi - 6;
+    }
+
+
+    private static boolean isEdifactCharacter(int c) {
+        return ((c & 0xe0) == 0x40 || (c & 0xe0) == 0x20) && c != '_';
+    }
+
+    private static boolean switchToEdifact(byte[] data, int dataOffset, int dataLength, int ptrOut) {
+        if (ptrOut + 1 > dataLength) {
+            return false;
+        }
+        data[dataOffset + ptrOut++] = (byte) 240;
+        return true;
+    }
+
+    private static int encodeEdifactCharacter(int c, int edi, int pedi) {
+        c &= 0x3f;
+        edi |= c << pedi;
+        return edi;
+    }
+
+    private static int processEdifactTriplets(byte[] data, int dataOffset, int dataLength, int ptrOut, int edi, int pedi) {
+        if (pedi == 0) {
+            if (ptrOut + 3 > dataLength) {
+                return 18; // Signal to stop processing
+            }
+            data[dataOffset + ptrOut++] = (byte) (edi >> 16);
+            data[dataOffset + ptrOut++] = (byte) (edi >> 8);
+            data[dataOffset + ptrOut++] = (byte) edi;
+            pedi = 18;
+        } else {
+            pedi -= 6;
+        }
+        return pedi;
+    }
+
+    private static boolean flushEdifact(byte[] data, int dataOffset, int dataLength, int ptrOut, int edi, int pedi) {
+        edi |= ('_' & 0x3f) << pedi;
+        if (ptrOut + (3 - pedi / 8) > dataLength) {
+            return false;
+        }
+        data[dataOffset + ptrOut++] = (byte) (edi >> 16);
+        if (pedi <= 12) {
+            data[dataOffset + ptrOut++] = (byte) (edi >> 8);
+        }
+        if (pedi <= 6) {
+            data[dataOffset + ptrOut++] = (byte) edi;
+        }
+        return true;
+    }
+
+    private static boolean encodeASCIICharacter(byte[] data, int dataOffset, int dataLength, int ptrOut, int c) {
+        if (c > 127) {
+            if (ptrOut >= dataLength) {
+                return false;
+            }
+            data[dataOffset + ptrOut++] = (byte) 235;
+            c -= 128;
+        }
+        if (ptrOut >= dataLength) {
+            return false;
+        }
+        data[dataOffset + ptrOut++] = (byte) (c + 1);
+        return true;
+    }
+
 
     private static int C40OrTextEncodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset,
             int dataLength, boolean c40) {
         if (textLength == 0) {
             return 0;
         }
-        int ptrIn = 0;
+
+        int ptrOut = initializeEncodation(data, dataOffset, c40);
+        int[] enc = new int[textLength * 4 + 10];
+        int[] encodeText = encodeText(text, textOffset, textLength, enc, c40);
+
+        int last0 = encodeText[0];
+        int last1 = encodeText[1];
+        int ptrIn = encodeText[2];
+        int encPtr = encodeText[3];
+
+        if ((encPtr % 3) != 0) {
+            ptrIn = last0;
+            encPtr = last1;
+        }
+
+        if (encPtr / 3 * 2 > dataLength - 2) {
+            return -1;
+        }
+
+        ptrOut = encodeToDataArray(enc, encPtr, data, dataOffset, ptrOut);
+        data[ptrOut++] = (byte) 254;
+
+        int asciiResult = asciiEncodation(text, ptrIn, textLength - ptrIn, data, ptrOut, dataLength - ptrOut);
+        if (asciiResult < 0) {
+            return asciiResult;
+        }
+
+        return ptrOut + asciiResult;
+    }
+
+    private static int initializeEncodation(byte[] data, int dataOffset, boolean c40) {
         int ptrOut = 0;
         if (c40) {
             data[dataOffset + ptrOut++] = (byte) 230;
         } else {
             data[dataOffset + ptrOut++] = (byte) 239;
         }
-        String basic;
+        return ptrOut;
+    }
+
+    private static int[] encodeText(byte[] text, int textOffset, int textLength, int[] enc, boolean c40) {
+        String[] charSets = getCharacterSets(c40);
+        String basic = charSets[0];
         String shift2 = "!\"#$%&'()*+,-./:;<=>?@[\\]^_";
-        String shift3;
-        if (c40) {
-            basic = " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            shift3 = "`abcdefghijklmnopqrstuvwxyz{|}~\177";
-        } else {
-            basic = " 0123456789abcdefghijklmnopqrstuvwxyz";
-            shift3 = "`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~\177";
-        }
-        int[] enc = new int[textLength * 4 + 10];
+        String shift3 = charSets[1];
+
+        int ptrIn = 0;
         int encPtr = 0;
         int last0 = 0;
         int last1 = 0;
+
         while (ptrIn < textLength) {
             if ((encPtr % 3) == 0) {
                 last0 = ptrIn;
                 last1 = encPtr;
             }
+
             int c = text[textOffset + ptrIn++] & 0xff;
             if (c > 127) {
                 c -= 128;
                 enc[encPtr++] = 1;
                 enc[encPtr++] = 30;
             }
-            int idx = basic.indexOf((char) c);
-            if (idx >= 0) {
-                enc[encPtr++] = idx + 3;
-            } else if (c < 32) {
-                enc[encPtr++] = 0;
-                enc[encPtr++] = c;
-            } else if ((idx = shift2.indexOf((char) c)) >= 0) {
-                enc[encPtr++] = 1;
-                enc[encPtr++] = idx;
-            } else if ((idx = shift3.indexOf((char) c)) >= 0) {
-                enc[encPtr++] = 2;
-                enc[encPtr++] = idx;
-            }
+
+            encPtr = encodeCharacter(c, enc, encPtr, basic, shift2, shift3);
         }
-        if ((encPtr % 3) != 0) {
-            ptrIn = last0;
-            encPtr = last1;
+
+        return new int[] {last0, last1, ptrIn, encPtr};
+    }
+
+    private static int encodeCharacter(int c, int[] enc, int encPtr, String basic, String shift2, String shift3) {
+        int idx = basic.indexOf((char) c);
+        if (idx >= 0) {
+            enc[encPtr++] = idx + 3;
+        } else if (c < 32) {
+            enc[encPtr++] = 0;
+            enc[encPtr++] = c;
+        } else if ((idx = shift2.indexOf((char) c)) >= 0) {
+            enc[encPtr++] = 1;
+            enc[encPtr++] = idx;
+        } else if ((idx = shift3.indexOf((char) c)) >= 0) {
+            enc[encPtr++] = 2;
+            enc[encPtr++] = idx;
         }
-        if (encPtr / 3 * 2 > dataLength - 2) {
-            return -1;
-        }
-        int i = 0;
-        for (; i < encPtr; i += 3) {
+        return encPtr;
+    }
+
+    private static int encodeToDataArray(int[] enc, int encPtr, byte[] data, int dataOffset, int ptrOut) {
+        for (int i = 0; i < encPtr; i += 3) {
             int a = 1600 * enc[i] + 40 * enc[i + 1] + enc[i + 2] + 1;
             data[dataOffset + ptrOut++] = (byte) (a / 256);
             data[dataOffset + ptrOut++] = (byte) a;
         }
-        data[ptrOut++] = (byte) 254;
-        i = asciiEncodation(text, ptrIn, textLength - ptrIn, data, ptrOut, dataLength - ptrOut);
-        if (i < 0) {
-            return i;
-        }
-        return ptrOut + i;
+        return ptrOut;
     }
+
+    private static String[] getCharacterSets(boolean c40) {
+        if (c40) {
+            return new String[] {" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", "`abcdefghijklmnopqrstuvwxyz{|}~\177"};
+        } else {
+            return new String[] {" 0123456789abcdefghijklmnopqrstuvwxyz", "`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~\177"};
+        }
+    }
+
 
     private static int getEncodation(EncodingParams params) {
         if (params.getDataSize() < 0) {
@@ -680,96 +822,151 @@ public class BarcodeDatamatrix {
         if ((this.options & DM_EXTENSION) == 0) {
             return 0;
         }
+
         int order = 0;
         int ptrIn = 0;
         int ptrOut = 0;
+
         while (ptrIn < textSize) {
             if (order > 20) {
                 return -1;
             }
+
             int c = text[textOffset + ptrIn++] & 0xff;
             ++order;
-            switch (c) {
-                case '.':
-                    extOut = ptrIn;
-                    return ptrOut;
-                case 'e':
-                    if (ptrIn + 6 > textSize) {
-                        return -1;
-                    }
-                    int eci = getNumber(text, textOffset + ptrIn, 6);
-                    if (eci < 0) {
-                        return -1;
-                    }
-                    ptrIn += 6;
-                    data[ptrOut++] = (byte) 241;
-                    if (eci < 127) {
-                        data[ptrOut++] = (byte) (eci + 1);
-                    } else if (eci < 16383) {
-                        data[ptrOut++] = (byte) ((eci - 127) / 254 + 128);
-                        data[ptrOut++] = (byte) (((eci - 127) % 254) + 1);
-                    } else {
-                        data[ptrOut++] = (byte) ((eci - 16383) / 64516 + 192);
-                        data[ptrOut++] = (byte) ((((eci - 16383) / 254) % 254) + 1);
-                        data[ptrOut++] = (byte) (((eci - 16383) % 254) + 1);
-                    }
-                    break;
-                case 's':
-                    if (order != 1) {
-                        return -1;
-                    }
-                    if (ptrIn + 9 > textSize) {
-                        return -1;
-                    }
-                    int fn = getNumber(text, textOffset + ptrIn, 2);
-                    if (fn <= 0 || fn > 16) {
-                        return -1;
-                    }
-                    ptrIn += 2;
-                    int ft = getNumber(text, textOffset + ptrIn, 2);
-                    if (ft <= 1 || ft > 16) {
-                        return -1;
-                    }
-                    ptrIn += 2;
-                    int fi = getNumber(text, textOffset + ptrIn, 5);
-                    if (fi < 0) {
-                        return -1;
-                    }
-                    ptrIn += 5;
-                    data[ptrOut++] = (byte) (233);
-                    data[ptrOut++] = (byte) (((fn - 1) << 4) | (17 - ft));
-                    data[ptrOut++] = (byte) (fi / 254 + 1);
-                    data[ptrOut++] = (byte) ((fi % 254) + 1);
-                    break;
-                case 'p':
-                    if (order != 1) {
-                        return -1;
-                    }
-                    data[ptrOut++] = (byte) (234);
-                    break;
-                case 'm':
-                    if (order != 1) {
-                        return -1;
-                    }
-                    if (ptrIn + 1 > textSize) {
-                        return -1;
-                    }
-                    c = text[textOffset + ptrIn++] & 0xff;
-                    if (c != '5') {
-                        return -1;
-                    }
-                    data[ptrOut++] = (byte) (234);
-                    data[ptrOut++] = (byte) (c == '5' ? 236 : 237);
-                    break;
-                case 'f':
-                    if (order != 1 && (order != 2 || (text[textOffset] != 's' && text[textOffset] != 'm'))) {
-                        return -1;
-                    }
-                    data[ptrOut++] = (byte) (232);
+
+            if (c == '.') {
+                return handleEndOfExtension(ptrIn, ptrOut);
+            }
+
+            Object[] processResult = processCharacter(c, text, textOffset, textSize, data, order, ptrIn, ptrOut);
+            boolean isProcessed = (boolean) processResult[0];
+            ptrIn = (int) processResult[1];
+            ptrOut = (int) processResult[2];
+
+            if (!isProcessed) {
+                return -1;
             }
         }
+
         return -1;
     }
+
+    private int handleEndOfExtension(int ptrIn, int ptrOut) {
+        extOut = ptrIn;
+        return ptrOut;
+    }
+
+    private Object[] processCharacter(int c, byte[] text, int textOffset, int textSize, byte[] data, int order, int ptrIn, int ptrOut) {
+        switch (c) {
+            case 'e':
+                return processECI(text, textOffset, textSize, data, ptrIn, ptrOut);
+            case 's':
+                return processStructuredAppend(text, textOffset, textSize, data, order, ptrIn, ptrOut);
+            case 'p':
+                return processPadCharacter(order, data, ptrIn, ptrOut);
+            case 'm':
+                return processMacro(text, textOffset, textSize, data, order, ptrIn, ptrOut);
+            case 'f':
+                return processFNC1(text, textOffset, data, order, ptrIn, ptrOut);
+            default:
+                return new Object[] {false};
+        }
+    }
+
+    private Object[] processECI(byte[] text, int textOffset, int textSize, byte[] data, int ptrIn, int ptrOut) {
+        if (ptrIn + 6 > textSize) {
+            return new Object[] {false};
+        }
+
+        int eci = getNumber(text, textOffset + ptrIn, 6);
+        if (eci < 0) {
+            return new Object[] {false};
+        }
+
+        ptrIn += 6;
+        data[ptrOut++] = (byte) 241;
+
+        if (eci < 127) {
+            data[ptrOut++] = (byte) (eci + 1);
+        } else if (eci < 16383) {
+            data[ptrOut++] = (byte) ((eci - 127) / 254 + 128);
+            data[ptrOut++] = (byte) (((eci - 127) % 254) + 1);
+        } else {
+            data[ptrOut++] = (byte) ((eci - 16383) / 64516 + 192);
+            data[ptrOut++] = (byte) ((((eci - 16383) / 254) % 254) + 1);
+            data[ptrOut++] = (byte) (((eci - 16383) % 254) + 1);
+        }
+
+        return new Object[] {true, ptrIn, ptrOut};
+    }
+
+    private Object[] processStructuredAppend(byte[] text, int textOffset, int textSize, byte[] data, int order, int ptrIn,
+            int ptrOut) {
+        if (order != 1 || ptrIn + 9 > textSize) {
+            return new Object[] {false};
+        }
+
+        int fn = getNumber(text, textOffset + ptrIn, 2);
+        if (fn <= 0 || fn > 16) {
+            return new Object[] {false};
+        }
+
+        ptrIn += 2;
+        int ft = getNumber(text, textOffset + ptrIn, 2);
+        if (ft <= 1 || ft > 16) {
+            return new Object[] {false};
+        }
+
+        ptrIn += 2;
+        int fi = getNumber(text, textOffset + ptrIn, 5);
+        if (fi < 0) {
+            return new Object[] {false};
+        }
+
+        ptrIn += 5;
+        data[ptrOut++] = (byte) 233;
+        data[ptrOut++] = (byte) (((fn - 1) << 4) | (17 - ft));
+        data[ptrOut++] = (byte) (fi / 254 + 1);
+        data[ptrOut++] = (byte) ((fi % 254) + 1);
+
+        return new Object[] {true, ptrIn, ptrOut};
+    }
+
+    private Object[] processPadCharacter(int order, byte[] data, int ptrIn, int ptrOut) {
+        if (order != 1) {
+            return new Object[] {false};
+        }
+
+        data[ptrOut++] = (byte) 234;
+        return new Object[] {true, ptrIn, ptrOut};
+    }
+
+    private Object[] processMacro(byte[] text, int textOffset, int textSize, byte[] data, int order, int ptrIn, int ptrOut) {
+        if (order != 1 || ptrIn + 1 > textSize) {
+            return new Object[] {false};
+        }
+
+        int c = text[textOffset + ptrIn++] & 0xff;
+        if (c != '5') {
+            return new Object[] {false};
+        }
+
+        data[ptrOut++] = (byte) 234;
+        data[ptrOut++] = (byte) (c == '5' ? 236 : 237);
+
+        return new Object[] {true, ptrIn, ptrOut};
+    }
+
+    private Object[] processFNC1(byte[] text, int textOffset, byte[] data, int order, int ptrIn, int ptrOut) {
+        if (order != 1 && (order != 2 || (text[textOffset] != 's' && text[textOffset] != 'm'))) {
+            return new Object[] {false};
+        }
+
+        data[ptrOut++] = (byte) 232;
+        return new Object[] {true, ptrIn, ptrOut};
+    }
+
 
     /**
      * Creates a barcode. The <CODE>String</CODE> is interpreted with the ISO-8859-1 encoding
@@ -804,60 +1001,85 @@ public class BarcodeDatamatrix {
     public int generate(byte[] text, int textOffset, int textSize) {
         byte[] data = new byte[2500];
         extOut = 0;
+
         int extCount = processExtensions(text, textOffset, textSize, data);
         if (extCount < 0) {
             return DM_ERROR_EXTENSION;
         }
-        int k;
-        int e;
-        DmParams dm;
-        if (dimensions.getHeight() == 0 || dimensions.getWidth() == 0) {
-            DmParams last = dmSizes[dmSizes.length - 1];
-            e = getEncodation(text, textOffset + extOut, textSize - extOut, data, extCount,
-                    last.dataSize - extCount,
-                    this.options, false);
-            if (e < 0) {
-                return DM_ERROR_TEXT_TOO_BIG;
-            }
-            e += extCount;
-            for (k = 0; k < dmSizes.length; ++k) {
-                if (dmSizes[k].dataSize >= e) {
-                    break;
-                }
-            }
-            dm = dmSizes[k];
-            dimensions.setHeight(dm.height);
-            dimensions.setWidth(dm.width);
-        } else {
-            for (k = 0; k < dmSizes.length; ++k) {
-                if (dimensions.getHeight() == dmSizes[k].height && dimensions.getWidth() == dmSizes[k].width) {
-                    break;
-                }
-            }
-            if (k == dmSizes.length) {
-                return DM_ERROR_INVALID_SQUARE;
-            }
-            dm = dmSizes[k];
-            e = getEncodation(text, textOffset + extOut, textSize - extOut, data, extCount, dm.dataSize - extCount,
-                    this.options, true);
-            if (e < 0) {
-                return DM_ERROR_TEXT_TOO_BIG;
-            }
-            e += extCount;
+
+        DmParams dm = determineDimensions(text, textOffset, textSize, data, extCount);
+        if (dm == null) {
+            return DM_ERROR_INVALID_SQUARE;
         }
+
+        EncodingParams params = new EncodingParams(text, textOffset + extOut, textSize - extOut, data,
+                extCount,dm.dataSize - extCount, this.options, dimensions.getHeight() != 0 && dimensions.getWidth() != 0);
+        int e = getEncodation(params);
+        if (e < 0) {
+            return DM_ERROR_TEXT_TOO_BIG;
+        }
+
+        e += extCount;
+
         if ((this.options & DM_TEST) != 0) {
             return DM_NO_ERROR;
         }
-        image = new byte[(((dm.width + 2 * dimensions.getBorder()) + 7) / 8) * (dm.height
-                + 2 * dimensions.getBorder())];
+
+        prepareImage(dm);
+        completeEncoding(data, e, dm);
+
+        return DM_NO_ERROR;
+    }
+
+    private DmParams determineDimensions(byte[] text, int textOffset, int textSize, byte[] data, int extCount) {
+        if (dimensions.getHeight() == 0 || dimensions.getWidth() == 0) {
+            return autoDetermineDimensions(text, textOffset, textSize, data, extCount);
+        } else {
+            return fixedDimensions();
+        }
+    }
+
+    private DmParams autoDetermineDimensions(byte[] text, int textOffset, int textSize, byte[] data, int extCount) {
+        EncodingParams params = new EncodingParams(text, textOffset + extOut, textSize - extOut, data, extCount,
+                dmSizes[dmSizes.length - 1].dataSize - extCount, this.options, false);
+
+        int e = getEncodation(params);
+        if (e < 0) {
+            return null;
+        }
+
+        e += extCount;
+        for (int k = 0; k < dmSizes.length; ++k) {
+            if (dmSizes[k].dataSize >= e) {
+                dimensions.setHeight(dmSizes[k].height);
+                dimensions.setWidth(dmSizes[k].width);
+                return dmSizes[k];
+            }
+        }
+        return null;
+    }
+
+    private DmParams fixedDimensions() {
+        for (int k = 0; k < dmSizes.length; ++k) {
+            if (dimensions.getHeight() == dmSizes[k].height && dimensions.getWidth() == dmSizes[k].width) {
+                return dmSizes[k];
+            }
+        }
+        return null;
+    }
+
+    private void prepareImage(DmParams dm) {
+        image = new byte[(((dm.width + 2 * dimensions.getBorder()) + 7) / 8) * (dm.height + 2 * dimensions.getBorder())];
+    }
+
+    private void completeEncoding(byte[] data, int e, DmParams dm) {
         makePadding(data, e, dm.dataSize - e);
-        place = Placement.doPlacement(dm.height - (dm.height / dm.heightSection * 2),
-                dm.width - (dm.width / dm.widthSection * 2));
+        place = Placement.doPlacement(dm.height - (dm.height / dm.heightSection * 2), dm.width - (dm.width / dm.widthSection * 2));
         int full = dm.dataSize + ((dm.dataSize + 2) / dm.dataBlock) * dm.errorBlock;
         ReedSolomon.generateECC(data, dm.dataSize, dm.dataBlock, dm.errorBlock);
         draw(data, full, dm);
-        return DM_NO_ERROR;
     }
+
 
     /**
      * Gets an <CODE>Image</CODE> with the barcode. A successful call to the method <CODE>generate()</CODE> before
@@ -1159,54 +1381,67 @@ public class BarcodeDatamatrix {
 
         /* "ECC200" fills an nrow x ncol array with appropriate values for ECC200 */
         private void ecc200() {
-            /* First, fill the array[] with invalid entries */
             Arrays.fill(array, (short) 0);
-            /* Starting in the correct location for character #1, bit 8,... */
             int chr = 1;
             int row = 4;
             int col = 0;
-            do {
-                /* repeatedly first check for one of the special corner cases, then... */
-                if ((row == nrow) && (col == 0)) {
-                    corner1(chr++);
-                }
-                if ((row == nrow - 2) && (col == 0) && (ncol % 4 != 0)) {
-                    corner2(chr++);
-                }
-                if ((row == nrow - 2) && (col == 0) && (ncol % 8 == 4)) {
-                    corner3(chr++);
-                }
-                if ((row == nrow + 4) && (col == 2) && (ncol % 8 == 0)) {
-                    corner4(chr++);
-                }
-                /* sweep upward diagonally, inserting successive characters,... */
-                do {
-                    if ((row < nrow) && (col >= 0) && array[row * ncol + col] == 0) {
-                        utah(row, col, chr++);
-                    }
-                    row -= 2;
-                    col += 2;
-                } while ((row >= 0) && (col < ncol));
+
+            while ((row < nrow) || (col < ncol)) {
+                handleCornerCases(chr, row, col);
+                chr = sweepUpwards(chr, row, col);
                 row += 1;
                 col += 3;
-                /* & then sweep downward diagonally, inserting successive characters,... */
-
-                do {
-                    if ((row >= 0) && (col < ncol) && array[row * ncol + col] == 0) {
-                        utah(row, col, chr++);
-                    }
-                    row += 2;
-                    col -= 2;
-                } while ((row < nrow) && (col >= 0));
+                chr = sweepDownwards(chr, row, col);
                 row += 3;
                 col += 1;
-                /* ... until the entire array is scanned */
-            } while ((row < nrow) || (col < ncol));
-            /* Lastly, if the lower righthand corner is untouched, fill in fixed pattern */
+            }
+
+            fillLowerRightCorner();
+        }
+
+        private void handleCornerCases(int chr, int row, int col) {
+            if ((row == nrow) && (col == 0)) {
+                corner1(chr++);
+            }
+            if ((row == nrow - 2) && (col == 0) && (ncol % 4 != 0)) {
+                corner2(chr++);
+            }
+            if ((row == nrow - 2) && (col == 0) && (ncol % 8 == 4)) {
+                corner3(chr++);
+            }
+            if ((row == nrow + 4) && (col == 2) && (ncol % 8 == 0)) {
+                corner4(chr++);
+            }
+        }
+
+        private int sweepUpwards(int chr, int row, int col) {
+            while ((row >= 0) && (col < ncol)) {
+                if ((row < nrow) && (col >= 0) && array[row * ncol + col] == 0) {
+                    utah(row, col, chr++);
+                }
+                row -= 2;
+                col += 2;
+            }
+            return chr;
+        }
+
+        private int sweepDownwards(int chr, int row, int col) {
+            while ((row < nrow) && (col >= 0)) {
+                if ((row >= 0) && (col < ncol) && array[row * ncol + col] == 0) {
+                    utah(row, col, chr++);
+                }
+                row += 2;
+                col -= 2;
+            }
+            return chr;
+        }
+
+        private void fillLowerRightCorner() {
             if (array[nrow * ncol - 1] == 0) {
                 array[nrow * ncol - 1] = array[nrow * ncol - ncol - 2] = 1;
             }
         }
+
     }
 
     static class ReedSolomon {
@@ -1371,6 +1606,8 @@ public class BarcodeDatamatrix {
                     return poly62;
                 case 68:
                     return poly68;
+                default:
+                    break;
             }
             return new int[0];
         }
