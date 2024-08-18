@@ -113,6 +113,8 @@ public class BarcodePDF417 {
      * @see #setMacroSegmentId(int)
      * @see #setMacroSegmentCount(int)
      */
+    private boolean fixedColumn;
+    private boolean skipRowColAdjust;
     public static final int PDF417_USE_MACRO = 256;
     protected static final int START_PATTERN = 0x1fea8;
     protected static final int STOP_PATTERN = 0x3fa29;
@@ -847,113 +849,190 @@ public class BarcodePDF417 {
         int mode = ALPHA;
         int ptr = 0;
         int fullBytes = 0;
-        int v = 0;
-        int k;
-        int size;
+
         length += start;
-        for (k = start; k < length; ++k) {
-            v = getTextTypeAndValue(input, length, k);
-            if ((v & mode) != 0) {
+        int k = start;
+        while (k < length) {
+            int v = getTextTypeAndValue(input, length, k);
+
+            if (isCurrentMode(mode, v)) {
                 dest[ptr++] = v & 0xff;
                 continue;
             }
-            if ((v & ISBYTE) != 0) {
-                if ((ptr & 1) != 0) {
-                    //add a padding word
-                    dest[ptr++] = PAL;
-                    mode = (mode & PUNCTUATION) != 0 ? ALPHA : mode;
-                }
-                dest[ptr++] = BYTESHIFT;
-                dest[ptr++] = v & 0xff;
+
+            if (isByteShift(v)) {
+                ptr = handleByteShift(dest, ptr, v);
                 fullBytes += 2;
                 continue;
             }
+
             switch (mode) {
                 case ALPHA:
-                    if ((v & LOWER) != 0) {
-                        dest[ptr++] = LL;
-                        dest[ptr++] = v & 0xff;
-                        mode = LOWER;
-                    } else if ((v & MIXED) != 0) {
-                        dest[ptr++] = ML;
-                        dest[ptr++] = v & 0xff;
-                        mode = MIXED;
-                    } else if ((getTextTypeAndValue(input, length, k + 1) & getTextTypeAndValue(input, length, k + 2)
-                            & PUNCTUATION) != 0) {
-                        dest[ptr++] = ML;
-                        dest[ptr++] = PL;
-                        dest[ptr++] = v & 0xff;
-                        mode = PUNCTUATION;
-                    } else {
-                        dest[ptr++] = PS;
-                        dest[ptr++] = v & 0xff;
-                    }
+                    ptr = handleAlphaMode(input, length, dest, ptr, k, v);
+                    mode = updateModeAfterAlpha(v, input, length, v);
                     break;
                 case LOWER:
-                    if ((v & ALPHA) != 0) {
-                        if ((getTextTypeAndValue(input, length, k + 1) & getTextTypeAndValue(input, length, k + 2)
-                                & ALPHA) != 0) {
-                            dest[ptr++] = ML;
-                            dest[ptr++] = AL;
-                            mode = ALPHA;
-                        } else {
-                            dest[ptr++] = AS;
-                        }
-                        dest[ptr++] = v & 0xff;
-                    } else if ((v & MIXED) != 0) {
-                        dest[ptr++] = ML;
-                        dest[ptr++] = v & 0xff;
-                        mode = MIXED;
-                    } else if ((getTextTypeAndValue(input, length, k + 1) & getTextTypeAndValue(input, length, k + 2)
-                            & PUNCTUATION) != 0) {
-                        dest[ptr++] = ML;
-                        dest[ptr++] = PL;
-                        dest[ptr++] = v & 0xff;
-                        mode = PUNCTUATION;
-                    } else {
-                        dest[ptr++] = PS;
-                        dest[ptr++] = v & 0xff;
-                    }
+                    ptr = handleLowerMode(input, length, dest, ptr, k, v);
+                    mode = updateModeAfterLower(v, input, length, v);
                     break;
                 case MIXED:
-                    if ((v & LOWER) != 0) {
-                        dest[ptr++] = LL;
-                        dest[ptr++] = v & 0xff;
-                        mode = LOWER;
-                    } else if ((v & ALPHA) != 0) {
-                        dest[ptr++] = AL;
-                        dest[ptr++] = v & 0xff;
-                        mode = ALPHA;
-                    } else if ((getTextTypeAndValue(input, length, k + 1) & getTextTypeAndValue(input, length, k + 2)
-                            & PUNCTUATION) != 0) {
-                        dest[ptr++] = PL;
-                        dest[ptr++] = v & 0xff;
-                        mode = PUNCTUATION;
-                    } else {
-                        dest[ptr++] = PS;
-                        dest[ptr++] = v & 0xff;
-                    }
+                    ptr = handleMixedMode(input, length, dest, ptr, k, v);
+                    mode = updateModeAfterMixed(v, input, length, v);
                     break;
                 case PUNCTUATION:
-                    dest[ptr++] = PAL;
+                    ptr = handlePunctuationMode(dest, ptr);
                     mode = ALPHA;
                     --k;
                     break;
                 default:
                     break;
             }
+            ++k;
         }
+
+        ptr = finalizeTextCompaction(dest, ptr, fullBytes);
+    }
+
+    private boolean isCurrentMode(int mode, int v) {
+        return (v & mode) != 0;
+    }
+
+    private boolean isByteShift(int v) {
+        return (v & ISBYTE) != 0;
+    }
+
+    private int handleByteShift(int[] dest, int ptr, int v) {
+        if ((ptr & 1) != 0) {
+            dest[ptr++] = PAL;
+        }
+        dest[ptr++] = BYTESHIFT;
+        dest[ptr++] = v & 0xff;
+        return ptr;
+    }
+
+    private int handleAlphaMode(byte[] input, int length, int[] dest, int ptr, int k, int v) {
+        if ((v & LOWER) != 0) {
+            dest[ptr++] = LL;
+            dest[ptr++] = v & 0xff;
+        } else if ((v & MIXED) != 0) {
+            dest[ptr++] = ML;
+            dest[ptr++] = v & 0xff;
+        } else if (isPunctuationAhead(input, length, k)) {
+            dest[ptr++] = ML;
+            dest[ptr++] = PL;
+            dest[ptr++] = v & 0xff;
+        } else {
+            dest[ptr++] = PS;
+            dest[ptr++] = v & 0xff;
+        }
+        return ptr;
+    }
+
+    private int handleLowerMode(byte[] input, int length, int[] dest, int ptr, int k, int v) {
+        if ((v & ALPHA) != 0) {
+            if (isAlphaAhead(input, length, k)) {
+                dest[ptr++] = ML;
+                dest[ptr++] = AL;
+            } else {
+                dest[ptr++] = AS;
+            }
+            dest[ptr++] = v & 0xff;
+        } else if ((v & MIXED) != 0) {
+            dest[ptr++] = ML;
+            dest[ptr++] = v & 0xff;
+        } else if (isPunctuationAhead(input, length, k)) {
+            dest[ptr++] = ML;
+            dest[ptr++] = PL;
+            dest[ptr++] = v & 0xff;
+        } else {
+            dest[ptr++] = PS;
+            dest[ptr++] = v & 0xff;
+        }
+        return ptr;
+    }
+
+    private int handleMixedMode(byte[] input, int length, int[] dest, int ptr, int k, int v) {
+        if ((v & LOWER) != 0) {
+            dest[ptr++] = LL;
+            dest[ptr++] = v & 0xff;
+        } else if ((v & ALPHA) != 0) {
+            dest[ptr++] = AL;
+            dest[ptr++] = v & 0xff;
+        } else if (isPunctuationAhead(input, length, k)) {
+            dest[ptr++] = PL;
+            dest[ptr++] = v & 0xff;
+        } else {
+            dest[ptr++] = PS;
+            dest[ptr++] = v & 0xff;
+        }
+        return ptr;
+    }
+
+    private int handlePunctuationMode(int[] dest, int ptr) {
+        dest[ptr++] = PAL;
+        return ptr;
+    }
+
+    private boolean isPunctuationAhead(byte[] input, int length, int k) {
+        return (getTextTypeAndValue(input, length, k + 1) & getTextTypeAndValue(input, length, k + 2) & PUNCTUATION) != 0;
+    }
+
+    private boolean isAlphaAhead(byte[] input, int length, int k) {
+        return (getTextTypeAndValue(input, length, k + 1) & getTextTypeAndValue(input, length, k + 2) & ALPHA) != 0;
+    }
+
+    private int updateModeAfterAlpha(int v, byte[] input, int length, int k) {
+        if ((v & LOWER) != 0) {
+            return LOWER;
+        } else if ((v & MIXED) != 0) {
+            return MIXED;
+        } else if (isPunctuationAhead(input, length, k)) {
+            return PUNCTUATION;
+        } else {
+            return ALPHA;
+        }
+    }
+
+    private int updateModeAfterLower(int v, byte[] input, int length, int k) {
+        if ((v & ALPHA) != 0) {
+            return ALPHA;
+        } else if ((v & MIXED) != 0) {
+            return MIXED;
+        } else if (isPunctuationAhead(input, length, k)) {
+            return PUNCTUATION;
+        } else {
+            return LOWER;
+        }
+    }
+
+    private int updateModeAfterMixed(int v, byte[] input, int length, int k) {
+        if ((v & LOWER) != 0) {
+            return LOWER;
+        } else if ((v & ALPHA) != 0) {
+            return ALPHA;
+        } else if (isPunctuationAhead(input, length, k)) {
+            return PUNCTUATION;
+        } else {
+            return MIXED;
+        }
+    }
+
+    private int finalizeTextCompaction(int[] dest, int ptr, int fullBytes) {
         if ((ptr & 1) != 0) {
             dest[ptr++] = PS;
         }
-        size = (ptr + fullBytes) / 2;
+        int size = (ptr + fullBytes) / 2;
         if (size + cwPtr > MAX_DATA_CODEWORDS) {
             throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage("the.text.is.too.big"));
         }
-        length = ptr;
+        return compactCodewords(dest, ptr);
+    }
+
+    private int compactCodewords(int[] dest, int ptr) {
+        int length = ptr;
         ptr = 0;
         while (ptr < length) {
-            v = dest[ptr++];
+            int v = dest[ptr++];
             if (v >= 30) {
                 codewords[cwPtr++] = v;
                 codewords[cwPtr++] = dest[ptr++];
@@ -961,7 +1040,9 @@ public class BarcodePDF417 {
                 codewords[cwPtr++] = v * 30 + dest[ptr++];
             }
         }
+        return ptr;
     }
+
 
     protected void textCompaction(int start, int length) {
         textCompaction(text, start, length);
@@ -1068,91 +1149,105 @@ public class BarcodePDF417 {
 
     void breakString() {
         int textLength = text.length;
-        int lastP = 0;
-        int startN = 0;
-        int nd = 0;
-        char c = 0;
-        int k;
-        int j;
-        boolean lastTxt;
-        boolean txt;
-        Segment v;
-        Segment vp;
-        Segment vn;
-
         if ((options & PDF417_FORCE_BINARY) != 0) {
             segmentList.add('B', 0, textLength);
             return;
         }
-        for (k = 0; k < textLength; ++k) {
-            c = (char) (text[k] & 0xff);
-            if (c >= '0' && c <= '9') {
+
+        processTextSegments(textLength);
+        optimizeSegments();
+        mergeShortBinarySegments();
+        mergeTextSections();
+        mergeBinarySections();
+    }
+
+    private void processTextSegments(int textLength) {
+        int lastP = 0;
+        int startN = 0;
+        int nd = 0;
+
+        for (int k = 0; k < textLength; ++k) {
+            char c = (char) (text[k] & 0xff);
+            if (isNumeric(c)) {
                 if (nd == 0) {
                     startN = k;
                 }
                 ++nd;
                 continue;
             }
+
             if (nd >= 13) {
-                if (lastP != startN) {
-                    c = (char) (text[lastP] & 0xff);
-                    lastTxt = (c >= ' ' && c < 127) || c == '\r' || c == '\n' || c == '\t';
-                    for (j = lastP; j < startN; ++j) {
-                        c = (char) (text[j] & 0xff);
-                        txt = (c >= ' ' && c < 127) || c == '\r' || c == '\n' || c == '\t';
-                        if (txt != lastTxt) {
-                            segmentList.add(lastTxt ? 'T' : 'B', lastP, j);
-                            lastP = j;
-                            lastTxt = txt;
-                        }
-                    }
-                    segmentList.add(lastTxt ? 'T' : 'B', lastP, startN);
-                }
+                handleTextSegment(lastP, startN, k);
                 segmentList.add('N', startN, k);
                 lastP = k;
             }
             nd = 0;
         }
+
         if (nd < 13) {
             startN = textLength;
         }
-        if (lastP != startN) {
-            c = (char) (text[lastP] & 0xff);
-            lastTxt = (c >= ' ' && c < 127) || c == '\r' || c == '\n' || c == '\t';
-            for (j = lastP; j < startN; ++j) {
-                c = (char) (text[j] & 0xff);
-                txt = (c >= ' ' && c < 127) || c == '\r' || c == '\n' || c == '\t';
-                if (txt != lastTxt) {
-                    segmentList.add(lastTxt ? 'T' : 'B', lastP, j);
-                    lastP = j;
-                    lastTxt = txt;
-                }
-            }
-            segmentList.add(lastTxt ? 'T' : 'B', lastP, startN);
-        }
+
+        handleTextSegment(lastP, startN, textLength);
         if (nd >= 13) {
             segmentList.add('N', startN, textLength);
         }
-        //optimize
-        //merge short binary
-        for (k = 0; k < segmentList.size(); ++k) {
-            v = segmentList.get(k);
-            vp = segmentList.get(k - 1);
-            vn = segmentList.get(k + 1);
-            if (checkSegmentType(v, 'B') && getSegmentLength(v) == 1
-                    && checkSegmentType(vp, 'T') && checkSegmentType(vn, 'T')
-                    && getSegmentLength(vp) + getSegmentLength(vn) >= 3) {
+    }
+
+    private boolean isNumeric(char c) {
+        return c >= '0' && c <= '9';
+    }
+
+    private void handleTextSegment(int lastP, int startN, int end) {
+        if (lastP == startN) return;
+
+        boolean lastTxt = isTextChar((char) (text[lastP] & 0xff));
+        for (int j = lastP; j < startN; ++j) {
+            char c = (char) (text[j] & 0xff);
+            boolean txt = isTextChar(c);
+            if (txt != lastTxt) {
+                segmentList.add(lastTxt ? 'T' : 'B', lastP, j);
+                lastP = j;
+                lastTxt = txt;
+            }
+        }
+        segmentList.add(lastTxt ? 'T' : 'B', lastP, startN);
+    }
+
+    private boolean isTextChar(char c) {
+        return (c >= ' ' && c < 127) || c == '\r' || c == '\n' || c == '\t';
+    }
+
+    private void optimizeSegments() {
+        int k = 0;
+        while (k < segmentList.size()) {
+            Segment v = segmentList.get(k);
+            Segment vp = segmentList.get(k - 1);
+            Segment vn = segmentList.get(k + 1);
+
+            if (shouldMergeBinarySegments(v, vp, vn)) {
                 vp.end = vn.end;
                 segmentList.remove(k);
                 segmentList.remove(k);
                 k = -1;
             }
+            ++k;
         }
-        //merge text sections
-        for (k = 0; k < segmentList.size(); ++k) {
-            v = segmentList.get(k);
-            vp = segmentList.get(k - 1);
-            vn = segmentList.get(k + 1);
+    }
+
+    private boolean shouldMergeBinarySegments(Segment v, Segment vp, Segment vn) {
+        return checkSegmentType(v, 'B') && getSegmentLength(v) == 1
+                && checkSegmentType(vp, 'T') && checkSegmentType(vn, 'T')
+                && getSegmentLength(vp) + getSegmentLength(vn) >= 3;
+    }
+
+    private void mergeShortBinarySegments() {
+        int k = 0;
+        while (k < segmentList.size()) {
+            Segment v = segmentList.get(k);
+            Segment vp = segmentList.get(k - 1);
+            Segment vn = segmentList.get(k + 1);
+
             if (checkSegmentType(v, 'T') && getSegmentLength(v) >= 5) {
                 boolean redo = false;
                 if ((checkSegmentType(vp, 'B') && getSegmentLength(vp) == 1) || checkSegmentType(vp, 'T')) {
@@ -1161,7 +1256,7 @@ public class BarcodePDF417 {
                     segmentList.remove(k - 1);
                     --k;
                 }
-                if ((checkSegmentType(vn, 'B') && getSegmentLength(vn) == 1) || checkSegmentType(vn, 'T')) {
+                else if ((checkSegmentType(vn, 'B') && getSegmentLength(vn) == 1) || checkSegmentType(vn, 'T')) {
                     redo = true;
                     v.end = vn.end;
                     segmentList.remove(k + 1);
@@ -1169,13 +1264,23 @@ public class BarcodePDF417 {
                 if (redo) {
                     k = -1;
                 }
+                checkIfAllNumbers(k);
             }
+            ++k;
         }
-        //merge binary sections
-        for (k = 0; k < segmentList.size(); ++k) {
-            v = segmentList.get(k);
-            vp = segmentList.get(k - 1);
-            vn = segmentList.get(k + 1);
+    }
+
+    private void mergeTextSections() {
+        mergeSections();
+    }
+
+    private void mergeSections() {
+        int k = 0;
+        while (k < segmentList.size()) {
+            Segment v = segmentList.get(k);
+            Segment vp = segmentList.get(k - 1);
+            Segment vn = segmentList.get(k + 1);
+
             if (checkSegmentType(v, 'B')) {
                 boolean redo = false;
                 if ((checkSegmentType(vp, 'T') && getSegmentLength(vp) < 5) || checkSegmentType(vp, 'B')) {
@@ -1184,7 +1289,7 @@ public class BarcodePDF417 {
                     segmentList.remove(k - 1);
                     --k;
                 }
-                if ((checkSegmentType(vn, 'T') && getSegmentLength(vn) < 5) || checkSegmentType(vn, 'B')) {
+                else if ((checkSegmentType(vn, 'T') && getSegmentLength(vn) < 5) || checkSegmentType(vn, 'B')) {
                     redo = true;
                     v.end = vn.end;
                     segmentList.remove(k + 1);
@@ -1192,20 +1297,31 @@ public class BarcodePDF417 {
                 if (redo) {
                     k = -1;
                 }
+                checkIfAllNumbers(k);
             }
+
+            ++k;
         }
-        v = segmentList.get(0);
-        // check if all numbers
+    }
+
+    private void mergeBinarySections() {
+        mergeSections();
+    }
+
+    private void checkIfAllNumbers(int k) {
+        Segment v = segmentList.get(0);
         if (segmentList.size() == 1 && v.type == 'T' && getSegmentLength(v) >= 8) {
-            for (k = v.start; k < v.end; ++k) {
-                c = (char) (text[k] & 0xff);
+            int i = v.start;
+            while (i < v.end) {
+                char c = (char) (text[k] & 0xff);
                 if (c < '0' || c > '9') {
                     break;
                 }
+                ++i;
             }
-            if (k == v.end) {
-                v.type = 'N';
-            }
+        }
+        if (k == v.end) {
+            v.type = 'N';
         }
     }
 
@@ -1319,133 +1435,187 @@ public class BarcodePDF417 {
      * Paints the barcode. If no exception was thrown a valid barcode is available.
      */
     public void paintCode() {
-        int maxErr;
-        int lenErr;
-        int tot;
-        int pad;
 
-
-        if ((options & PDF417_USE_RAW_CODEWORDS) != 0) {
-            if (lenCodewords > MAX_DATA_CODEWORDS || lenCodewords < 1 || lenCodewords != codewords[0]) {
-                throw new IllegalArgumentException(MessageLocalization.getComposedMessage("invalid.codeword.size"));
-            }
+        if (shouldUseRawCodewords()) {
+            validateRawCodewords();
         } else {
-            if (text == null) {
-                throw new NullPointerException(MessageLocalization.getComposedMessage("text.cannot.be.null"));
-            }
-            if (text.length > ABSOLUTE_MAX_TEXT_SIZE) {
-                throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage("the.text.is.too.big"));
-            }
-            segmentList = new SegmentList();
-            breakString();
-            dumpList();
-            assemble();
-            segmentList = null;
-            codewords[0] = lenCodewords = cwPtr;
+            validateText();
+            processSegments();
         }
-        maxErr = maxPossibleErrorLevel(MAX_DATA_CODEWORDS + 2 - lenCodewords);
-        if ((options & PDF417_USE_ERROR_LEVEL) == 0) {
-            if (lenCodewords < 41) {
-                errorLevel = 2;
-            } else if (lenCodewords < 161) {
-                errorLevel = 3;
-            } else if (lenCodewords < 321) {
-                errorLevel = 4;
-            } else {
-                errorLevel = 5;
-            }
-        }
-        if (errorLevel < 0) {
-            errorLevel = 0;
-        } else if (errorLevel > maxErr) {
-            errorLevel = maxErr;
-        }
-        if (codeColumns < 1) {
-            codeColumns = 1;
-        } else if (codeColumns > 30) {
-            codeColumns = 30;
-        }
-        if (codeRows < 3) {
-            codeRows = 3;
-        } else if (codeRows > 90) {
-            codeRows = 90;
-        }
-        lenErr = 2 << errorLevel;
-        boolean fixedColumn = (options & PDF417_FIXED_ROWS) == 0;
-        boolean skipRowColAdjust = false;
-        tot = lenCodewords + lenErr;
-        if ((options & PDF417_FIXED_RECTANGLE) != 0) {
-            tot = codeColumns * codeRows;
-            if (tot > MAX_DATA_CODEWORDS + 2) {
-                tot = getMaxSquare();
-            }
-            if (tot < lenCodewords + lenErr) {
-                tot = lenCodewords + lenErr;
-            } else {
-                skipRowColAdjust = true;
-            }
-        } else if ((options & (PDF417_FIXED_COLUMNS | PDF417_FIXED_ROWS)) == 0) {
-            double c;
-            double b;
-            fixedColumn = true;
-            if (aspectRatio < 0.001) {
-                aspectRatio = 0.001f;
-            } else if (aspectRatio > 1000) {
-                aspectRatio = 1000;
-            }
-            b = 73 * aspectRatio - 4;
-            c = (-b + Math.sqrt(b * b + 4 * 17 * aspectRatio * (lenCodewords + lenErr) * yHeight)) / (2 * 17
-                    * aspectRatio);
-            codeColumns = (int) (c + 0.5);
-            if (codeColumns < 1) {
-                codeColumns = 1;
-            } else if (codeColumns > 30) {
-                codeColumns = 30;
-            }
-        }
-        if (!skipRowColAdjust) {
-            if (fixedColumn) {
-                codeRows = (tot - 1) / codeColumns + 1;
-                if (codeRows < 3) {
-                    codeRows = 3;
-                } else if (codeRows > 90) {
-                    codeRows = 90;
-                    codeColumns = (tot - 1) / 90 + 1;
-                }
-            } else {
-                codeColumns = (tot - 1) / codeRows + 1;
-                if (codeColumns > 30) {
-                    codeColumns = 30;
-                    codeRows = (tot - 1) / 30 + 1;
-                }
-            }
-            tot = codeRows * codeColumns;
-        }
+
+        setErrorLevel();
+        setCodeDimensions();
+
+        int lenErr = calculateErrorLength();
+        fixedColumn = (options & PDF417_FIXED_ROWS) == 0;
+        skipRowColAdjust = false;
+        int tot = calculateTotalCodewords(lenErr);
+        adjustRowColIfNeeded(tot, lenErr);
         if (tot > MAX_DATA_CODEWORDS + 2) {
             tot = getMaxSquare();
         }
-        errorLevel = maxPossibleErrorLevel(tot - lenCodewords);
-        lenErr = 2 << errorLevel;
-        pad = tot - lenErr - lenCodewords;
-        if ((options & PDF417_USE_MACRO) != 0) {
-            // the padding comes before the control block
-            int lenCodewordsAdjusted = lenCodewords = macroIndex;
-            System.arraycopy(codewords, macroIndex, codewords, macroIndex + pad, lenCodewordsAdjusted);
-            cwPtr = lenCodewords + pad;
-            while (pad-- != 0) {
-                codewords[macroIndex++] = TEXT_MODE;
-            }
+        int pad = finalizeTotalCodewords(tot, lenErr);
+
+        addPadding(pad);
+        finalizeCodewords(tot);
+        outPaintCode();
+    }
+
+    private boolean shouldUseRawCodewords() {
+        return (options & PDF417_USE_RAW_CODEWORDS) != 0;
+    }
+
+    private void validateRawCodewords() {
+        if (lenCodewords > MAX_DATA_CODEWORDS || lenCodewords < 1 || lenCodewords != codewords[0]) {
+            throw new IllegalArgumentException(MessageLocalization.getComposedMessage("invalid.codeword.size"));
+        }
+    }
+
+    private void validateText() {
+        if (text == null) {
+            throw new NullPointerException(MessageLocalization.getComposedMessage("text.cannot.be.null"));
+        }
+        if (text.length > ABSOLUTE_MAX_TEXT_SIZE) {
+            throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage("the.text.is.too.big"));
+        }
+    }
+
+    private void processSegments() {
+        segmentList = new SegmentList();
+        breakString();
+        dumpList();
+        assemble();
+        segmentList = null;
+        codewords[0] = lenCodewords = cwPtr;
+    }
+
+    private void setErrorLevel() {
+        int maxErr = maxPossibleErrorLevel(MAX_DATA_CODEWORDS + 2 - lenCodewords);
+
+        if ((options & PDF417_USE_ERROR_LEVEL) == 0) {
+            errorLevel = calculateDefaultErrorLevel(lenCodewords);
+        }
+
+        errorLevel = Math.max(0, Math.min(errorLevel, maxErr));
+    }
+
+    private int calculateDefaultErrorLevel(int lenCodewords) {
+        if (lenCodewords < 41) {
+            return 2;
+        } else if (lenCodewords < 161) {
+            return 3;
+        } else if (lenCodewords < 321) {
+            return 4;
         } else {
-            cwPtr = lenCodewords;
-            while (pad-- != 0) {
-                codewords[cwPtr++] = TEXT_MODE;
+            return 5;
+        }
+    }
+
+    private void setCodeDimensions() {
+        codeColumns = Math.max(1, Math.min(codeColumns, 30));
+        codeRows = Math.max(3, Math.min(codeRows, 90));
+    }
+
+    private int calculateErrorLength() {
+        return 2 << errorLevel;
+    }
+
+    private int calculateTotalCodewords(int lenErr) {
+        if ((options & PDF417_FIXED_RECTANGLE) != 0) {
+            return calculateFixedRectangleTotalCodewords(lenErr);
+        }
+        if ((options & (PDF417_FIXED_COLUMNS | PDF417_FIXED_ROWS)) == 0) {
+            return calculateDynamicTotalCodewords(lenErr);
+        }
+        return lenErr + lenCodewords;
+    }
+
+    private int calculateFixedRectangleTotalCodewords(int lenErr) {
+        int tot = codeColumns * codeRows;
+        if (tot > MAX_DATA_CODEWORDS + 2) {
+            return getMaxSquare();
+        }
+        else if (tot < lenCodewords + lenErr) {
+            return lenCodewords + lenErr;
+        }
+        else {
+            skipRowColAdjust = true;
+        }
+        return tot;
+    }
+
+    private int calculateDynamicTotalCodewords(int lenErr) {
+        fixedColumn = true;
+        double aspectRatioCorrected = Math.max(0.001, Math.min(aspectRatio, 1000));
+        double b = 73 * aspectRatioCorrected - 4;
+        double c = (-b + Math.sqrt(b * b + 4 * 17 * aspectRatioCorrected * (lenCodewords + lenErr) * yHeight))
+                / (2 * 17 * aspectRatioCorrected);
+        codeColumns = Math.max(1, Math.min((int) (c + 0.5), 30));
+        return lenCodewords + lenErr;
+    }
+
+    private void adjustRowColIfNeeded(int tot, int lenErr) {
+        if (!skipRowColAdjust) {
+            if (fixedColumn) {
+                adjustCodeRows(tot);
+            } else {
+                adjustCodeColumns(tot);
             }
         }
+    }
+
+    private void adjustCodeRows(int tot) {
+        codeRows = (tot - 1) / codeColumns + 1;
+        if (codeRows > 90) {
+            codeRows = 90;
+            codeColumns = (tot - 1) / 90 + 1;
+        }
+    }
+
+    private void adjustCodeColumns(int tot) {
+        codeColumns = (tot - 1) / codeRows + 1;
+        if (codeColumns > 30) {
+            codeColumns = 30;
+            codeRows = (tot - 1) / 30 + 1;
+        }
+    }
+
+    private int finalizeTotalCodewords(int tot, int lenErr) {
+        errorLevel = maxPossibleErrorLevel(tot - lenCodewords);
+        lenErr = 2 << errorLevel;
+        return tot - lenErr - lenCodewords;
+    }
+
+    private void addPadding(int pad) {
+        if ((options & PDF417_USE_MACRO) != 0) {
+            addMacroPadding(pad);
+        } else {
+            addStandardPadding(pad);
+        }
+    }
+
+    private void addMacroPadding(int pad) {
+        int lenCodewordsAdjusted = lenCodewords = macroIndex;
+        System.arraycopy(codewords, macroIndex, codewords, macroIndex + pad, lenCodewordsAdjusted);
+        cwPtr = lenCodewords + pad;
+        while (pad-- != 0) {
+            codewords[macroIndex++] = TEXT_MODE;
+        }
+    }
+
+    private void addStandardPadding(int pad) {
+        cwPtr = lenCodewords;
+        while (pad-- != 0) {
+            codewords[cwPtr++] = TEXT_MODE;
+        }
+    }
+
+    private void finalizeCodewords(int tot) {
         codewords[0] = lenCodewords = cwPtr;
         calculateErrorCorrection(lenCodewords);
         lenCodewords = tot;
-        outPaintCode();
     }
+
 
     /**
      * Gets an <CODE>Image</CODE> with the barcode. The image will have to be scaled in the Y direction by
