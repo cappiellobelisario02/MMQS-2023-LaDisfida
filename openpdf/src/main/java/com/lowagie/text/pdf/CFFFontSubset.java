@@ -73,7 +73,7 @@ public class CFFFontSubset extends CFFFont {
     /**
      * The Strings in this array represent Type1/Type2 operator names
      */
-    static final String[] SubrsFunctions = {
+    static final String[] subrsFunctions = {
             "RESERVED_0", "hstem", "RESERVED_2", "vstem", "vmoveto", "rlineto", "hlineto", "vlineto",
             "rrcurveto", "RESERVED_9", "callsubr", "return", "escape", "RESERVED_13",
             "endchar", "RESERVED_15", "RESERVED_16", "RESERVED_17", "hstemhm", "hintmask",
@@ -83,7 +83,7 @@ public class CFFFontSubset extends CFFFont {
     /**
      * The Strings in this array represent Type1/Type2 escape operator names
      */
-    static final String[] SubrsEscapeFuncs = {
+    static final String[] subrsEscapeFuncs = {
             "RESERVED_0", "RESERVED_1", "RESERVED_2", "and", "or", "not", "RESERVED_6",
             "RESERVED_7", "RESERVED_8", "abs", "add", "sub", "div", "RESERVED_13", "neg",
             "eq", "RESERVED_16", "RESERVED_17", "drop", "RESERVED_19", "put", "get", "ifelse",
@@ -100,15 +100,15 @@ public class CFFFontSubset extends CFFFont {
     /**
      * A HashMap containing the glyphs used in the text after being converted to glyph number by the CMap
      */
-    HashMap<Integer, int[]> GlyphsUsed;
+    HashMap<Integer, int[]> glyphsUsed;
     /**
-     * The GlyphsUsed keys as an ArrayList
+     * The glyphsUsed keys as an ArrayList
      */
     ArrayList<Integer> glyphsInList;
     /**
      * A HashMap for keeping the FDArrays being used by the font
      */
-    HashMap<Integer, Object> FDArrayUsed = new HashMap<>();
+    HashMap<Integer, Object> fdArrayUsed = new HashMap<>();
     /**
      * A HashMaps array for keeping the subroutines used in each FontDict
      */
@@ -136,48 +136,48 @@ public class CFFFontSubset extends CFFFont {
     /**
      * An array of the new Indexes for the local Subr. One index for each FontDict
      */
-    byte[][] NewLSubrsIndex;
+    byte[][] newLSubrsIndex;
     /**
      * The new subroutines index for a non-cid font
      */
-    byte[] NewSubrsIndexNonCID;
+    byte[] newSubrsIndexNonCID;
     /**
      * The new global subroutines index of the font
      */
-    byte[] NewGSubrsIndex;
+    byte[] newGSubrsIndex;
     /**
      * The new CharString of the font
      */
-    byte[] NewCharStringsIndex;
+    byte[] newCharStringsIndex;
 
     /**
      * The bias for the global subroutines
      */
-    int GBias = 0;
+    int gbias = 0;
 
     /**
      * The linked list for generating the new font stream
      */
-    LinkedList<Item> OutputList;
+    LinkedList<Item> outputList;
 
     /**
      * Number of arguments to the stem operators in a subroutine calculated recursively
      */
-    int NumOfHints = 0;
+    int numOfHints = 0;
 
 
     /**
      * C'tor for CFFFontSubset
      *
      * @param rf         - The font file
-     * @param GlyphsUsed - a HashMap that contains the glyph used in the subset
+     * @param glyphsUsed - a HashMap that contains the glyph used in the subset
      */
-    public CFFFontSubset(RandomAccessFileOrArray rf, HashMap<Integer, int[]> GlyphsUsed) {
+    public CFFFontSubset(RandomAccessFileOrArray rf, HashMap<Integer, int[]> glyphsUsed) {
         // Use CFFFont c'tor in order to parse the font file.
         super(rf);
-        this.GlyphsUsed = GlyphsUsed;
+        this.glyphsUsed = glyphsUsed;
         //Put the glyphs into a list
-        glyphsInList = new ArrayList<>(GlyphsUsed.keySet());
+        glyphsInList = new ArrayList<>(glyphsUsed.keySet());
 
         for (int i = 0; i < fonts.length; ++i) {
             // Read the number of glyphs in the font
@@ -195,63 +195,63 @@ public class CFFFontSubset extends CFFFont {
             if (fonts[i].fdselectOffset >= 0) {
                 // Process the FDSelect
                 readFDSelect(i);
-                // Build the FDArrayUsed hashmap
-                BuildFDArrayUsed(i);
+                // Build the fdArrayUsed hashmap
+                buildFDArrayUsed(i);
             }
             if (fonts[i].isCID) {
                 // Build the FD Array used Hash Map
-                ReadFDArray(i);
+                readFDArray(i);
             }
             // compute the charset length
-            fonts[i].CharsetLength = CountCharset(fonts[i].charsetOffset, fonts[i].nglyphs);
+            fonts[i].CharsetLength = countCharset(fonts[i].charsetOffset, fonts[i].nglyphs);
         }
     }
 
     /**
      * Calculates the length of the charset according to its format
      *
-     * @param Offset      The Charset Offset
-     * @param NumofGlyphs Number of glyphs in the font
+     * @param offset      The Charset Offset
+     * @param numofGlyphs Number of glyphs in the font
      * @return the length of the Charset
      */
-    int CountCharset(int Offset, int NumofGlyphs) {
+    int countCharset(int offset, int numofGlyphs) {
         int format;
-        int Length = 0;
-        seek(Offset);
+        int length = 0;
+        seek(offset);
         // Read the format
         format = getCard8();
         // Calc according to format
         switch (format) {
             case 0:
-                Length = 1 + 2 * NumofGlyphs;
+                length = 1 + 2 * numofGlyphs;
                 break;
             case 1:
-                Length = 1 + 3 * CountRange(NumofGlyphs, 1);
+                length = 1 + 3 * countRange(numofGlyphs, 1);
                 break;
             case 2:
-                Length = 1 + 4 * CountRange(NumofGlyphs, 2);
+                length = 1 + 4 * countRange(numofGlyphs, 2);
                 break;
             default:
                 break;
         }
-        return Length;
+        return length;
     }
 
     /**
      * Function calculates the number of ranges in the Charset
      *
-     * @param NumofGlyphs The number of glyphs in the font
-     * @param Type        The format of the Charset
+     * @param numofGlyphs The number of glyphs in the font
+     * @param type        The format of the Charset
      * @return The number of ranges in the Charset data structure
      */
-    int CountRange(int NumofGlyphs, int Type) {
+    int countRange(int numofGlyphs, int type) {
         int num = 0;
-        char Sid;
+        char sid;
         int i = 1, nLeft;
-        while (i < NumofGlyphs) {
+        while (i < numofGlyphs) {
             num++;
-            Sid = getCard16();
-            if (Type == 1) {
+            sid = getCard16();
+            if (type == 1) {
                 nLeft = getCard8();
             } else {
                 nLeft = getCard16();
@@ -265,27 +265,27 @@ public class CFFFontSubset extends CFFFont {
     /**
      * Read the FDSelect of the font and compute the array and its length
      *
-     * @param Font The index of the font being processed
+     * @param font The index of the font being processed
      */
-    protected void readFDSelect(int Font) {
+    protected void readFDSelect(int font) {
         // Restore the number of glyphs
-        int NumOfGlyphs = fonts[Font].nglyphs;
-        int[] FDSelect = new int[NumOfGlyphs];
+        int numOfGlyphs = fonts[font].nglyphs;
+        int[] fdSelect = new int[numOfGlyphs];
         // Go to the beginning of the FDSelect
-        seek(fonts[Font].fdselectOffset);
+        seek(fonts[font].fdselectOffset);
         // Read the FDSelect's format
-        fonts[Font].FDSelectFormat = getCard8();
+        fonts[font].FDSelectFormat = getCard8();
 
-        switch (fonts[Font].FDSelectFormat) {
+        switch (fonts[font].FDSelectFormat) {
             // Format==0 means each glyph has an entry that indicated
             // its FD.
             case 0:
-                for (int i = 0; i < NumOfGlyphs; i++) {
-                    FDSelect[i] = getCard8();
+                for (int i = 0; i < numOfGlyphs; i++) {
+                    fdSelect[i] = getCard8();
                 }
                 // The FDSelect's Length is one for each glyph + the format
                 // for later use
-                fonts[Font].FDSelectLength = fonts[Font].nglyphs + 1;
+                fonts[font].FDSelectLength = fonts[font].nglyphs + 1;
                 break;
             case 3:
                 // Format==3 means the ranges version
@@ -302,66 +302,66 @@ public class CFFFontSubset extends CFFFont {
                     // Calc the steps and write to the array
                     int steps = last - first;
                     for (int k = 0; k < steps; k++) {
-                        FDSelect[l] = fd;
+                        fdSelect[l] = fd;
                         l++;
                     }
                     // The last from this iteration is the first of the next
                     first = last;
                 }
                 // Store the length for later use
-                fonts[Font].FDSelectLength = 1 + 2 + nRanges * 3 + 2;
+                fonts[font].FDSelectLength = 1 + 2 + nRanges * 3 + 2;
                 break;
             default:
                 break;
         }
         // Save the FDSelect of the font
-        fonts[Font].FDSelect = FDSelect;
+        fonts[font].FDSelect = fdSelect;
     }
 
     /**
-     * Function reads the FDSelect and builds the FDArrayUsed HashMap According to the glyphs used
+     * Function reads the FDSelect and builds the fdArrayUsed HashMap According to the glyphs used
      *
-     * @param Font the Number of font being processed
+     * @param font the Number of font being processed
      */
-    protected void BuildFDArrayUsed(int Font) {
-        int[] FDSelect = fonts[Font].FDSelect;
+    protected void buildFDArrayUsed(int font) {
+        int[] fdSelect = fonts[font].FDSelect;
         // For each glyph used
         for (Object o : glyphsInList) {
             // Pop the glyphs index
             int glyph = (Integer) o;
             // Pop the glyph's FD
-            int FD = FDSelect[glyph];
-            // Put the FD index into the FDArrayUsed HashMap
-            FDArrayUsed.put(FD, null);
+            int fd = fdSelect[glyph];
+            // Put the FD index into the fdArrayUsed HashMap
+            fdArrayUsed.put(fd, null);
         }
     }
 
     /**
      * Read the FDArray count, offsize and Offset array
      *
-     * @param Font font offset
+     * @param font font offset
      */
-    protected void ReadFDArray(int Font) {
-        seek(fonts[Font].fdarrayOffset);
-        fonts[Font].FDArrayCount = getCard16();
-        fonts[Font].FDArrayOffsize = getCard8();
+    protected void readFDArray(int font) {
+        seek(fonts[font].fdarrayOffset);
+        fonts[font].FDArrayCount = getCard16();
+        fonts[font].FDArrayOffsize = getCard8();
         // Since we will change values inside the FDArray objects
         // We increase its offsize to prevent errors
-        if (fonts[Font].FDArrayOffsize < 4) {
-            fonts[Font].FDArrayOffsize++;
+        if (fonts[font].FDArrayOffsize < 4) {
+            fonts[font].FDArrayOffsize++;
         }
-        fonts[Font].FDArrayOffsets = getIndex(fonts[Font].fdarrayOffset);
+        fonts[font].FDArrayOffsets = getIndex(fonts[font].fdarrayOffset);
     }
 
 
     /**
-     * The Process function extracts one font out of the CFF file and returns a subset version of the original.
+     * The process function extracts one font out of the CFF file and returns a subset version of the original.
      *
      * @param fontName - The name of the font to be taken out of the CFF
      * @return The new font stream
      * @throws IOException on error
      */
-    public byte[] Process(String fontName) throws IOException {
+    public byte[] process(String fontName) throws IOException {
         try {
             // Verify that the file is open
             buf.reOpen();
@@ -378,16 +378,16 @@ public class CFFFontSubset extends CFFFont {
 
             // Calc the bias for the global subrs
             if (gsubrIndexOffset >= 0) {
-                GBias = CalcBias(gsubrIndexOffset, j);
+                gbias = calcBias(gsubrIndexOffset, j);
             }
 
             // Prepare the new CharStrings Index
-            BuildNewCharString(j);
+            buildNewCharString(j);
             // Prepare the new Global and Local Subrs Indices
-            BuildNewLGSubrs(j);
+            buildNewLGSubrs(j);
             // Build the new file
-            byte[] Ret = BuildNewFile(j);
-            return Ret;
+            byte[] ret = buildNewFile(j);
+            return ret;
         } finally {
             try {
                 buf.close();
@@ -400,15 +400,15 @@ public class CFFFontSubset extends CFFFont {
     /**
      * Function calcs bias according to the CharString type and the count of the subrs
      *
-     * @param Offset The offset to the relevant subrs index
-     * @param Font   the font
+     * @param offset The offset to the relevant subrs index
+     * @param font   the font
      * @return The calculated Bias
      */
-    protected int CalcBias(int Offset, int Font) {
-        seek(Offset);
+    protected int calcBias(int offset, int font) {
+        seek(offset);
         int nSubrs = getCard16();
         // If type==1 -> bias=0
-        if (fonts[Font].CharstringType == 1) {
+        if (fonts[font].CharstringType == 1) {
             return 0;
         } else if (nSubrs < 1240) {
             // else calc according to the count
@@ -421,158 +421,158 @@ public class CFFFontSubset extends CFFFont {
     }
 
     /**
-     * Function uses BuildNewIndex to create the new index of the subset charstrings
+     * Function uses buildNewIndex to create the new index of the subset charstrings
      *
-     * @param FontIndex the font
+     * @param fontIndex the font
      * @throws IOException on error
      */
-    protected void BuildNewCharString(int FontIndex) throws IOException {
-        NewCharStringsIndex = BuildNewIndex(fonts[FontIndex].charstringsOffsets, GlyphsUsed, ENDCHAR_OP);
+    protected void buildNewCharString(int fontIndex) throws IOException {
+        newCharStringsIndex = buildNewIndex(fonts[fontIndex].charstringsOffsets, glyphsUsed, ENDCHAR_OP);
     }
 
     /**
      * Function builds the new local and global subsrs indices. IF CID then All of the FD Array lsubrs will be
      * subsetted.
      *
-     * @param Font the font
+     * @param font the font
      * @throws IOException on error
      */
     @SuppressWarnings("unchecked")
-    protected void BuildNewLGSubrs(int Font) throws IOException {
+    protected void buildNewLGSubrs(int font) throws IOException {
         // If the font is CID then the lsubrs are divided into FontDicts.
         // for each FD array the lsubrs will be subsetted.
-        if (fonts[Font].isCID) {
+        if (fonts[font].isCID) {
             // Init the hashmap-array and the arraylist-array to hold the subrs used
             // in each private dict.
             HashMap<Integer, int[]> mapClazz = new HashMap<>();
             hSubrsUsed = (HashMap<Integer, int[]>[]) Array.newInstance(mapClazz.getClass(),
-                    fonts[Font].fdprivateOffsets.length);
+                    fonts[font].fdprivateOffsets.length);
             ArrayList<Integer> listClass = new ArrayList<>();
             lSubrsUsed = (ArrayList<Integer>[]) Array.newInstance(listClass.getClass(),
-                    fonts[Font].fdprivateOffsets.length);
+                    fonts[font].fdprivateOffsets.length);
             // A [][] which will store the byte array for each new FD Array lsubs index
-            NewLSubrsIndex = new byte[fonts[Font].fdprivateOffsets.length][];
+            newLSubrsIndex = new byte[fonts[font].fdprivateOffsets.length][];
             // An array to hold the offset for each Lsubr index
-            fonts[Font].PrivateSubrsOffset = new int[fonts[Font].fdprivateOffsets.length];
+            fonts[font].PrivateSubrsOffset = new int[fonts[font].fdprivateOffsets.length];
             // A [][] which will store the offset array for each lsubr index
-            fonts[Font].PrivateSubrsOffsetsArray = new int[fonts[Font].fdprivateOffsets.length][];
+            fonts[font].PrivateSubrsOffsetsArray = new int[fonts[font].fdprivateOffsets.length][];
 
-            // Put the FDarrayUsed into a list
-            List<Integer> FDInList = new ArrayList<>(FDArrayUsed.keySet());
+            // Put the fdArrayUsed into a list
+            List<Integer> fdInList = new ArrayList<>(fdArrayUsed.keySet());
             // For each FD array which is used subset the lsubr
-            for (int FD : FDInList) {
+            for (int FD : fdInList) {
                 // The FDArray index, Hash Map, Array List to work on
                 hSubrsUsed[FD] = new HashMap<>();
                 lSubrsUsed[FD] = new ArrayList<>();
                 //Reads the private dicts looking for the subr operator and
                 // store both the offset for the index and its offset array
-                BuildFDSubrsOffsets(Font, FD);
+                buildFDSubrsOffsets(font, FD);
                 // Verify that FDPrivate has a LSubrs index
-                if (fonts[Font].PrivateSubrsOffset[FD] >= 0) {
+                if (fonts[font].PrivateSubrsOffset[FD] >= 0) {
                     //Scans the Charstring data storing the used Local and Global subroutines
                     // by the glyphs. Scans the Subrs recursively.
-                    BuildSubrUsed(Font, FD, fonts[Font].PrivateSubrsOffset[FD],
-                            fonts[Font].PrivateSubrsOffsetsArray[FD], hSubrsUsed[FD], lSubrsUsed[FD]);
+                    buildSubrUsed(font, FD, fonts[font].PrivateSubrsOffset[FD],
+                            fonts[font].PrivateSubrsOffsetsArray[FD], hSubrsUsed[FD], lSubrsUsed[FD]);
                     // Builds the New Local Subrs index
-                    NewLSubrsIndex[FD] = BuildNewIndex(fonts[Font].PrivateSubrsOffsetsArray[FD], hSubrsUsed[FD],
+                    newLSubrsIndex[FD] = buildNewIndex(fonts[font].PrivateSubrsOffsetsArray[FD], hSubrsUsed[FD],
                             RETURN_OP);
                 }
             }
-        } else if (fonts[Font].privateSubrs >= 0) {
+        } else if (fonts[font].privateSubrs >= 0) {
             // If the font is not CID && the Private Subr exists then subset:
             
-            fonts[Font].SubrsOffsets = getIndex(fonts[Font].privateSubrs);
+            fonts[font].SubrsOffsets = getIndex(fonts[font].privateSubrs);
             //Scans the Charstring data storing the used Local and Global subroutines
             // by the glyphs. Scans the Subrs recursively.
-            BuildSubrUsed(Font, -1, fonts[Font].privateSubrs, fonts[Font].SubrsOffsets, hSubrsUsedNonCID,
+            buildSubrUsed(font, -1, fonts[font].privateSubrs, fonts[font].SubrsOffsets, hSubrsUsedNonCID,
                     lSubrsUsedNonCID);
         }
         // For all fonts subset the Global Subroutines
         // Scan the Global Subr Hashmap recursively on the Gsubrs
-        BuildGSubrsUsed(Font);
-        if (fonts[Font].privateSubrs >= 0) {
+        buildGSubrsUsed(font);
+        if (fonts[font].privateSubrs >= 0) {
             // Builds the New Local Subrs index
-            NewSubrsIndexNonCID = BuildNewIndex(fonts[Font].SubrsOffsets, hSubrsUsedNonCID, RETURN_OP);
+            newSubrsIndexNonCID = buildNewIndex(fonts[font].SubrsOffsets, hSubrsUsedNonCID, RETURN_OP);
         }
         //Builds the New Global Subrs index
-        NewGSubrsIndex = BuildNewIndex(gsubrOffsets, hGSubrsUsed, RETURN_OP);
+        newGSubrsIndex = buildNewIndex(gsubrOffsets, hGSubrsUsed, RETURN_OP);
     }
 
     /**
      * The function finds for the FD array processed the local subr offset and its offset array.
      *
-     * @param Font the font
-     * @param FD   The FDARRAY processed
+     * @param font the font
+     * @param fd   The FDARRAY processed
      */
-    protected void BuildFDSubrsOffsets(int Font, int FD) {
+    protected void buildFDSubrsOffsets(int font, int fd) {
         // Initiate to -1 to indicate lsubr operator present
-        fonts[Font].PrivateSubrsOffset[FD] = -1;
+        fonts[font].PrivateSubrsOffset[fd] = -1;
         // Goto beginning of objects
-        seek(fonts[Font].fdprivateOffsets[FD]);
+        seek(fonts[font].fdprivateOffsets[fd]);
         // While in the same object:
-        while (getPosition() < fonts[Font].fdprivateOffsets[FD] + fonts[Font].fdprivateLengths[FD]) {
+        while (getPosition() < fonts[font].fdprivateOffsets[fd] + fonts[font].fdprivateLengths[fd]) {
             getDictItem();
             // If the dictItem is the "Subrs" then find and store offset,
             if (Objects.equals(key, "Subrs")) {
-                fonts[Font].PrivateSubrsOffset[FD] = (Integer) args[0] + fonts[Font].fdprivateOffsets[FD];
+                fonts[font].PrivateSubrsOffset[fd] = (Integer) args[0] + fonts[font].fdprivateOffsets[fd];
             }
         }
         //Read the lsubr index if the lsubr was found
-        if (fonts[Font].PrivateSubrsOffset[FD] >= 0) {
-            fonts[Font].PrivateSubrsOffsetsArray[FD] = getIndex(fonts[Font].PrivateSubrsOffset[FD]);
+        if (fonts[font].PrivateSubrsOffset[fd] >= 0) {
+            fonts[font].PrivateSubrsOffsetsArray[fd] = getIndex(fonts[font].PrivateSubrsOffset[fd]);
         }
     }
 
     /**
-     * Function uses ReadAsubr on the glyph used to build the LSubr and Gsubr HashMap. The HashMap (of the lsubr only)
+     * Function uses readASubr on the glyph used to build the LSubr and Gsubr HashMap. The HashMap (of the lsubr only)
      * is then scanned recursively for Lsubr and Gsubrs calls.
      *
-     * @param Font         the font
-     * @param FD           FD array processed. 0 indicates function was called by non CID font
-     * @param SubrOffset   the offset to the subr index to calc the bias
-     * @param SubrsOffsets the offset array of the subr index
+     * @param font         the font
+     * @param fd           FD array processed. 0 indicates function was called by non CID font
+     * @param subrOffset   the offset to the subr index to calc the bias
+     * @param subrsOffsets the offset array of the subr index
      * @param hSubr        HashMap of the subrs used
      * @param lSubr        ArrayList of the subrs used
      */
-    protected void BuildSubrUsed(int Font, int FD, int SubrOffset, int[] SubrsOffsets, Map<Integer, int[]> hSubr,
+    protected void buildSubrUsed(int font, int fd, int subrOffset, int[] subrsOffsets, Map<Integer, int[]> hSubr,
             List<Integer> lSubr) {
 
         // Calc the Bias for the subr index
-        int LBias = CalcBias(SubrOffset, Font);
+        int lBias = calcBias(subrOffset, font);
 
         // For each glyph used find its GID, start & end pos
         for (Object o : glyphsInList) {
             int glyph = (Integer) o;
-            int Start = fonts[Font].charstringsOffsets[glyph];
-            int End = fonts[Font].charstringsOffsets[glyph + 1];
+            int start = fonts[font].charstringsOffsets[glyph];
+            int end = fonts[font].charstringsOffsets[glyph + 1];
 
             // IF CID:
-            if (FD >= 0) {
-                EmptyStack();
-                NumOfHints = 0;
+            if (fd >= 0) {
+                emptyStack();
+                numOfHints = 0;
                 // Using FDSELECT find the FD Array the glyph belongs to.
-                int GlyphFD = fonts[Font].FDSelect[glyph];
+                int glyphFD = fonts[font].FDSelect[glyph];
                 // If the Glyph is part of the FD being processed
-                if (GlyphFD == FD) {
+                if (glyphFD == fd) {
                     // Find the Subrs called by the glyph and insert to hash:
-                    ReadASubr(Start, End, GBias, LBias, hSubr, lSubr, SubrsOffsets);
+                    readASubr(start, end, gbias, lBias, hSubr, lSubr, subrsOffsets);
                 }
             } else {
                 // If the font is not CID
                 //Find the Subrs called by the glyph and insert to hash:
-                ReadASubr(Start, End, GBias, LBias, hSubr, lSubr, SubrsOffsets);
+                readASubr(start, end, gbias, lBias, hSubr, lSubr, subrsOffsets);
             }
         }
         // For all Lsubrs used, check recursively for Lsubr & Gsubr used
         for (int i = 0; i < lSubr.size(); i++) {
             // Pop the subr value from the hash
-            int Subr = lSubr.get(i);
+            int subr = lSubr.get(i);
             // Ensure the Lsubr call is valid
-            if (Subr < SubrsOffsets.length - 1 && Subr >= 0) {
+            if (subr < subrsOffsets.length - 1 && subr >= 0) {
                 // Read and process the subr
-                int Start = SubrsOffsets[Subr];
-                int End = SubrsOffsets[Subr + 1];
-                ReadASubr(Start, End, GBias, LBias, hSubr, lSubr, SubrsOffsets);
+                int start = subrsOffsets[subr];
+                int end = subrsOffsets[subr + 1];
+                readASubr(start, end, gbias, lBias, hSubr, lSubr, subrsOffsets);
             }
         }
     }
@@ -580,46 +580,64 @@ public class CFFFontSubset extends CFFFont {
     /**
      * Function scans the Glsubr used ArrayList to find recursive calls to Gsubrs and adds to Hashmap and ArrayList
      *
-     * @param Font the font
+     * @param font the font
      */
-    protected void BuildGSubrsUsed(int Font) {
-        int LBias = 0;
-        int SizeOfNonCIDSubrsUsed = 0;
-        if (fonts[Font].privateSubrs >= 0) {
-            LBias = CalcBias(fonts[Font].privateSubrs, Font);
-            SizeOfNonCIDSubrsUsed = lSubrsUsedNonCID.size();
+    protected void buildGSubrsUsed(int font) {
+        int lBias = 0;
+        int sizeOfNonCIDSubrsUsed = 0;
+        if (hasPrivateSubrs(font)) {
+            lBias = calculateLBias(font);
+            sizeOfNonCIDSubrsUsed = lSubrsUsedNonCID.size();
         }
 
-        // For each global subr used
-        for (int i = 0; i < lGSubrsUsed.size(); i++) {
-            //Pop the value + check valid
-            int Subr = lGSubrsUsed.get(i);
-            if (Subr < gsubrOffsets.length - 1 && Subr >= 0) {
-                // Read the subr and process
-                int Start = gsubrOffsets[Subr];
-                int End = gsubrOffsets[Subr + 1];
+        for (int Subr : lGSubrsUsed) {
+            if (isValidGlobalSubr(Subr)) {
+                int start = gsubrOffsets[Subr];
+                int end = gsubrOffsets[Subr + 1];
 
-                if (fonts[Font].isCID) {
-                    ReadASubr(Start, End, GBias, 0, hGSubrsUsed, lGSubrsUsed, null);
+                if (fonts[font].isCID) {
+                    processCIDSubr(start, end, gbias, lGSubrsUsed);
                 } else {
-                    ReadASubr(Start, End, GBias, LBias, hSubrsUsedNonCID, lSubrsUsedNonCID, fonts[Font].SubrsOffsets);
-                    if (SizeOfNonCIDSubrsUsed < lSubrsUsedNonCID.size()) {
-                        for (int j = SizeOfNonCIDSubrsUsed; j < lSubrsUsedNonCID.size(); j++) {
-                            //Pop the value + check valid
-                            int LSubr = lSubrsUsedNonCID.get(j);
-                            if (LSubr < fonts[Font].SubrsOffsets.length - 1 && LSubr >= 0) {
-                                // Read the subr and process
-                                int LStart = fonts[Font].SubrsOffsets[LSubr];
-                                int LEnd = fonts[Font].SubrsOffsets[LSubr + 1];
-                                ReadASubr(LStart, LEnd, GBias, LBias, hSubrsUsedNonCID, lSubrsUsedNonCID,
-                                        fonts[Font].SubrsOffsets);
-                            }
-                        }
-                        SizeOfNonCIDSubrsUsed = lSubrsUsedNonCID.size();
-                    }
+                    processNonCIDSubr(start, end, gbias, lBias, lSubrsUsedNonCID, fonts[font].SubrsOffsets);
                 }
             }
         }
+    }
+
+    private boolean hasPrivateSubrs(int font) {
+        return fonts[font].privateSubrs >= 0;
+    }
+
+    private int calculateLBias(int font) {
+        return calcBias(fonts[font].privateSubrs, font);
+    }
+
+    private boolean isValidGlobalSubr(int subr) {
+        return subr < gsubrOffsets.length - 1 && subr >= 0;
+    }
+
+    private void processCIDSubr(int start, int end, int gBias,
+            List<Integer> lGSubrsUsed) {
+        readASubr(start, end, gBias, 0, hGSubrsUsed, lGSubrsUsed, null);
+    }
+
+    private void processNonCIDSubr(int start, int end, int gBias, int lBias, List<Integer> lSubrsUsedNonCID,
+            int[] subrsOffsets) {
+        readASubr(start, end, gBias, lBias, hSubrsUsedNonCID, lSubrsUsedNonCID, subrsOffsets);
+
+        int initialSize = lSubrsUsedNonCID.size();
+        for (int j = initialSize; j < lSubrsUsedNonCID.size(); j++) {
+            int lSubr = lSubrsUsedNonCID.get(j);
+            if (isValidLocalSubr(lSubr, subrsOffsets)) {
+                int lStart = subrsOffsets[lSubr];
+                int lEnd = subrsOffsets[lSubr + 1];
+                readASubr(lStart, lEnd, gbias, lBias, hSubrsUsedNonCID, lSubrsUsedNonCID, subrsOffsets);
+            }
+        }
+    }
+
+    private boolean isValidLocalSubr(int lSubr, int[] subrsOffsets) {
+        return lSubr < subrsOffsets.length - 1 && lSubr >= 0;
     }
 
     /**
@@ -628,106 +646,123 @@ public class CFFFontSubset extends CFFFont {
      *
      * @param begin         the start point of the subr
      * @param end           the end point of the subr
-     * @param GBias         the bias of the Global Subrs
-     * @param LBias         the bias of the Local Subrs
+     * @param gBias         the bias of the Global Subrs
+     * @param lBias         the bias of the Local Subrs
      * @param hSubr         the HashMap for the lSubrs
      * @param lSubr         the ArrayList for the lSubrs
-     * @param LSubrsOffsets The Offsets array of the subroutines
+     * @param lSubrsOffsets The Offsets array of the subroutines
      */
-    protected void ReadASubr(int begin, int end, int GBias, int LBias, Map<Integer, int[]> hSubr, List<Integer> lSubr,
-            int[] LSubrsOffsets) {
-        // Clear the stack for the subrs
-        EmptyStack();
-        NumOfHints = 0;
-        // Goto beginning of the subr
+    protected void readASubr(int begin, int end, int gBias, int lBias, Map<Integer, int[]> hSubr, List<Integer> lSubr,
+            int[] lSubrsOffsets) {
+        emptyStack();
+        numOfHints = 0;
         seek(begin);
+
         while (getPosition() < end) {
-            // Read the next command
-            ReadCommand();
+            readCommand();
             int pos = getPosition();
-            Object TopElement = null;
-            if (arg_count > 0) {
-                TopElement = args[arg_count - 1];
-            }
-            if (TopElement == null) {
-                TopElement = 0;
-            }
-            int NumOfArgs = arg_count;
-            
-            HandelStack();
-            // a call to a Lsubr
-            if (Objects.equals(key, "callsubr")) {
-                // Verify that arguments are passed
-                if (NumOfArgs > 0) {
-                    // Calc the index of the Subrs
-                    int Subr = (Integer) TopElement + LBias;
-                    // If the subr isn't in the HashMap -> Put in
-                    if (!hSubr.containsKey(Subr)) {
-                        hSubr.put(Subr, null);
-                        lSubr.add(Subr);
-                    }
-                    if (LSubrsOffsets != null) {
-                        CalcHints(LSubrsOffsets[Subr], LSubrsOffsets[Subr + 1], LBias, GBias, LSubrsOffsets);
-                    }
-                    seek(pos);
-                }
-            } else if (Objects.equals(key, "callgsubr")) {
-                // a call to a Gsubr
-                // Verify that arguments are passed
-                if (NumOfArgs > 0) {
-                    // Calc the index of the Subrs
-                    int Subr = (Integer) TopElement + GBias;
-                    // If the subr isn't in the HashMap -> Put in
-                    if (!hGSubrsUsed.containsKey(Subr)) {
-                        hGSubrsUsed.put(Subr, null);
-                        lGSubrsUsed.add(Subr);
-                    }
-                    CalcHints(gsubrOffsets[Subr], gsubrOffsets[Subr + 1], LBias, GBias, LSubrsOffsets);
-                    seek(pos);
-                }
-            } else if (Objects.equals(key, "hstem") || Objects.equals(key, "vstem") || Objects.equals(key, "hstemhm")
-                    || Objects.equals(key, "vstemhm")) {
-                // A call to "stem"
-                // Increment the NumOfHints by the number couples of of arguments
-                NumOfHints += NumOfArgs / 2;
-            } else if (Objects.equals(key, "hintmask") || Objects.equals(key, "cntrmask")) {
-                // A call to "mask"
-                // Compute the size of the mask
-                int SizeOfMask = NumOfHints / 8;
-                if (NumOfHints % 8 != 0 || SizeOfMask == 0) {
-                    SizeOfMask++;
-                }
-                // Continue the pointer in SizeOfMask steps
-                for (int i = 0; i < SizeOfMask; i++) {
-                    getCard8();
-                }
+            int topElement = getTopElement();
+            int numOfArgs = arg_count;
+
+            handelStack();
+
+            if (isCallSubr()) {
+                handleCallSubr(topElement, lBias, hSubr, lSubr, lSubrsOffsets, pos, gBias);
+            } else if (isCallGSubr()) {
+                handleCallGSubr(topElement, gBias, lSubrsOffsets, pos, lBias);
+            } else if (isStem()) {
+                handleStem(numOfArgs);
+            } else if (isMask()) {
+                handleMask();
             }
         }
     }
+
+    private int getTopElement() {
+        if (arg_count > 0) {
+            return (Integer) args[arg_count - 1];
+        }
+        return 0;
+    }
+
+    private boolean isCallSubr() {
+        return Objects.equals(key, "callsubr");
+    }
+
+    private boolean isCallGSubr() {
+        return Objects.equals(key, "callgsubr");
+    }
+
+    private boolean isStem() {
+        return Objects.equals(key, "hstem") || Objects.equals(key, "vstem") || Objects.equals(key, "hstemhm") || Objects.equals(key, "vstemhm");
+    }
+
+    private boolean isMask() {
+        return Objects.equals(key, "hintmask") || Objects.equals(key, "cntrmask");
+    }
+
+    private void handleCallSubr(int topElement, int lBias, Map<Integer, int[]> hSubr, List<Integer> lSubr,
+            int[] lSubrsOffsets, int pos, int gBias) {
+        if (arg_count > 0) {
+            int subr = topElement + lBias;
+            if (!hSubr.containsKey(subr)) {
+                hSubr.put(subr, null);
+                lSubr.add(subr);
+            }
+            if (lSubrsOffsets != null) {
+                calcHints(lSubrsOffsets[subr], lSubrsOffsets[subr + 1], lBias, gBias, lSubrsOffsets);
+            }
+            seek(pos);
+        }
+    }
+
+    private void handleCallGSubr(int topElement, int gBias, int[] lSubrsOffsets, int pos, int lBias) {
+        if (arg_count > 0) {
+            int subr = topElement + gBias;
+            if (!hGSubrsUsed.containsKey(subr)) {
+                hGSubrsUsed.put(subr, null);
+                lGSubrsUsed.add(subr);
+            }
+            calcHints(gsubrOffsets[subr], gsubrOffsets[subr + 1], lBias, gBias, lSubrsOffsets);
+            seek(pos);
+        }
+    }
+
+    private void handleStem(int numOfArgs) {
+        numOfHints += numOfArgs / 2;
+    }
+
+    private void handleMask() {
+        int sizeOfMask = (numOfHints + 7) / 8;  // equivalent to Math.ceil(NumOfHints / 8.0)
+        for (int i = 0; i < sizeOfMask; i++) {
+            getCard8();
+        }
+    }
+
 
     /**
      * Function Checks how the current operator effects the run time stack after being run An operator may increase or
      * decrease the stack size
      */
-    protected void HandelStack() {
+    protected void handelStack() {
         // Find out what the operator does to the stack
-        int StackHandel = StackOpp();
-        if (StackHandel < 2) {
+        int stackHandel = stackOpp();
+        if (stackHandel < 2) {
             // The operators that enlarge the stack by one
-            if (StackHandel == 1) {
-                PushStack();
+            if (stackHandel == 1) {
+                pushStack();
             } else {
                 // The operators that pop the stack
                 // Abs value for the for loop
-                StackHandel *= -1;
-                for (int i = 0; i < StackHandel; i++) {
-                    PopStack();
+                stackHandel *= -1;
+                for (int i = 0; i < stackHandel; i++) {
+                    popStack();
                 }
             }
 
         } else {
             // All other flush the stack
-            EmptyStack();
+            emptyStack();
         }
     }
 
@@ -736,7 +771,7 @@ public class CFFFontSubset extends CFFFont {
      *
      * @return The change in the stack. {@literal 2->} flush the stack
      */
-    protected int StackOpp() {
+    protected int stackOpp() {
         if (Objects.equals(key, "ifelse")) {
             return -3;
         }
@@ -765,7 +800,7 @@ public class CFFFontSubset extends CFFFont {
     /**
      * Empty the Type2 Stack
      */
-    protected void EmptyStack() {
+    protected void emptyStack() {
         // Null the arguments
         for (int i = 0; i < arg_count; i++) {
             args[i] = null;
@@ -776,7 +811,7 @@ public class CFFFontSubset extends CFFFont {
     /**
      * Pop one element from the stack
      */
-    protected void PopStack() {
+    protected void popStack() {
         if (arg_count > 0) {
             args[arg_count - 1] = null;
             arg_count--;
@@ -786,75 +821,74 @@ public class CFFFontSubset extends CFFFont {
     /**
      * Add an item to the stack
      */
-    protected void PushStack() {
+    protected void pushStack() {
         arg_count++;
     }
 
     /**
      * The function reads the next command after the file pointer is set
      */
-    protected void ReadCommand() {
+    protected void readCommand() {
         key = null;
-        boolean gotKey = false;
-        // Until a key is found
-        while (!gotKey) {
-            // Read the first Char
+        while (true) {
             char b0 = getCard8();
-            // decode according to the type1/type2 format
-            if (b0 == 28) {
-                
-                int first = getCard8();
-                int second = getCard8();
-                args[arg_count] = first << 8 | second;
-                arg_count++;
-                continue;
-            }
-            if (b0 >= 32 && b0 <= 246) {
-                
-                args[arg_count] = b0 - 139;
-                arg_count++;
-                continue;
-            }
-            if (b0 >= 247 && b0 <= 250) {
-                // The byte read and the next byte constitute a short int
-                int w = getCard8();
-                args[arg_count] = (b0 - 247) * 256 + w + 108;
-                arg_count++;
-                continue;
-            }
-            if (b0 >= 251 && b0 <= 254) {
-                // Same as above except negative
-                int w = getCard8();
-                args[arg_count] = -(b0 - 251) * 256 - w - 108;
-                arg_count++;
-                continue;
-            }
-            if (b0 == 255) {
-                // The next for bytes represent a double.
-                int first = getCard8();
-                int second = getCard8();
-                int third = getCard8();
-                int fourth = getCard8();
-                args[arg_count] = first << 24 | second << 16 | third << 8 | fourth;
-                arg_count++;
-                continue;
-            }
-            if (b0 <= 31) {
-                // An operator was found. Set Key.
-                gotKey = true;
-                // 12 is an escape command therefore the next byte is a part
-                // of this command
-                if (b0 == 12) {
-                    int b1 = getCard8();
-                    if (b1 > SubrsEscapeFuncs.length - 1) {
-                        b1 = SubrsEscapeFuncs.length - 1;
-                    }
-                    key = SubrsEscapeFuncs[b1];
-                } else {
-                    key = SubrsFunctions[b0];
-                }
+            if (isOperator(b0)) {
+                setKey(b0);
+                break;
+            } else {
+                readArgument(b0);
             }
         }
+    }
+
+    private boolean isOperator(char b0) {
+        return b0 <= 31;
+    }
+
+    private void setKey(char b0) {
+        key = b0 == 12 ? getEscapeKey() : subrsFunctions[b0];
+    }
+
+    private String getEscapeKey() {
+        int b1 = getCard8();
+        return b1 > subrsEscapeFuncs.length - 1 ? subrsEscapeFuncs[subrsEscapeFuncs.length - 1] : subrsEscapeFuncs[b1];
+    }
+
+    private void readArgument(char b0) {
+        switch (b0) {
+            case 28:
+                readTwoBytesArgument();
+                break;
+            case 255:
+                readFourBytesArgument();
+                break;
+            default:
+                readSingleByteArgument(b0);
+        }
+    }
+
+    private void readTwoBytesArgument() {
+        int first = getCard8();
+        int second = getCard8();
+        args[arg_count++] = first << 8 | second;
+    }
+
+    private void readFourBytesArgument() {
+        int first = getCard8();
+        int second = getCard8();
+        int third = getCard8();
+        int fourth = getCard8();
+        args[arg_count++] = first << 24 | second << 16 | third << 8 | fourth;
+    }
+
+    private void readSingleByteArgument(char b0) {
+        int value = b0 >= 32 && b0 <= 246 ? b0 - 139 : calculateSignedShort(b0);
+        args[arg_count++] = value;
+    }
+
+    private int calculateSignedShort(char b0) {
+        int w = getCard8();
+        return b0 >= 247 && b0 <= 250 ? (b0 - 247) * 256 + w + 108 : -(b0 - 251) * 256 - w - 108;
     }
 
     /**
@@ -863,84 +897,71 @@ public class CFFFontSubset extends CFFFont {
      *
      * @param begin         the start point of the subr
      * @param end           the end point of the subr
-     * @param LBias         the bias of the Local Subrs
-     * @param GBias         the bias of the Global Subrs
-     * @param LSubrsOffsets The Offsets array of the subroutines
-     * @return The number of hints in the subroutine read.
+     * @param lBias         the bias of the Local Subrs
+     * @param gBias         the bias of the Global Subrs
+     * @param lSubrsOffsets The Offsets array of the subroutines
      */
-    protected int CalcHints(int begin, int end, int LBias, int GBias, int[] LSubrsOffsets) {
-        // Goto beginning of the subr
+    protected void calcHints(int begin, int end, int lBias, int gBias, int[] lSubrsOffsets) {
         seek(begin);
         while (getPosition() < end) {
-            // Read the next command
-            ReadCommand();
+            readCommand();
             int pos = getPosition();
-            Object TopElement = null;
-            if (arg_count > 0) {
-                TopElement = args[arg_count - 1];
-            }
-            int NumOfArgs = arg_count;
-            
-            HandelStack();
-            // a call to a Lsubr
-            if (Objects.equals(key, "callsubr")) {
-                if (NumOfArgs > 0) {
-                    int Subr = (Integer) TopElement + LBias;
-                    CalcHints(LSubrsOffsets[Subr], LSubrsOffsets[Subr + 1], LBias, GBias, LSubrsOffsets);
-                    seek(pos);
-                }
-            } else if (Objects.equals(key, "callgsubr")) {
-                // a call to a Gsubr
-                if (NumOfArgs > 0) {
-                    int Subr = (Integer) TopElement + GBias;
-                    CalcHints(gsubrOffsets[Subr], gsubrOffsets[Subr + 1], LBias, GBias, LSubrsOffsets);
-                    seek(pos);
-                }
-            } else if (Objects.equals(key, "hstem") || Objects.equals(key, "vstem") || Objects.equals(key, "hstemhm")
-                    || Objects.equals(key, "vstemhm")) {
-                // A call to "stem"
-                // Increment the NumOfHints by the number couples of of arguments
-                NumOfHints += NumOfArgs / 2;
-            } else if (Objects.equals(key, "hintmask") || Objects.equals(key, "cntrmask")) {
-                // A call to "mask"
-                // Compute the size of the mask
-                int SizeOfMask = NumOfHints / 8;
-                if (NumOfHints % 8 != 0 || SizeOfMask == 0) {
-                    SizeOfMask++;
-                }
-                // Continue the pointer in SizeOfMask steps
-                for (int i = 0; i < SizeOfMask; i++) {
-                    getCard8();
-                }
+            int numOfArgs = arg_count;
+            Object topElement = getTopElement();
+
+            handelStack();
+
+            if (isCallSubr()) {
+                handleCallSubr(numOfArgs, topElement, lBias, lSubrsOffsets, pos, gBias);
+            } else if (isCallGSubr()) {
+                handleCallGSubr(numOfArgs, topElement, gBias, lSubrsOffsets, pos, lBias);
+            } else if (isStem()) {
+                handleStem(numOfArgs);
+            } else if (isMask()) {
+                handleMask();
             }
         }
-        return NumOfHints;
     }
 
+    private void handleCallSubr(int numOfArgs, Object topElement, int lBias, int[] lSubrsOffsets, int pos, int gBias) {
+        if (numOfArgs > 0) {
+            int subr = (Integer) topElement + lBias;
+            calcHints(lSubrsOffsets[subr], lSubrsOffsets[subr + 1], lBias, gBias, lSubrsOffsets);
+            seek(pos);
+        }
+    }
+
+    private void handleCallGSubr(int numOfArgs, Object topElement, int gBias, int[] lSubrsOffsets, int pos, int lBias) {
+        if (numOfArgs > 0) {
+            int subr = (Integer) topElement + gBias;
+            calcHints(gsubrOffsets[subr], gsubrOffsets[subr + 1], lBias, gBias, lSubrsOffsets);
+            seek(pos);
+        }
+    }
 
     /**
      * Function builds the new offset array, object array and assembles the index. used for creating the glyph and subrs
      * subsetted index
      *
-     * @param Offsets                  the offset array of the original index
-     * @param Used                     the hashmap of the used objects
-     * @param OperatorForUnusedEntries the operator inserted into the data stream for unused entries
+     * @param offsets                  the offset array of the original index
+     * @param used                     the hashmap of the used objects
+     * @param operatorForUnusedEntries the operator inserted into the data stream for unused entries
      * @return the new index subset version
      * @throws IOException on error
      */
-    protected byte[] BuildNewIndex(int[] Offsets, Map<Integer, int[]> Used, byte OperatorForUnusedEntries)
+    protected byte[] buildNewIndex(int[] offsets, Map<Integer, int[]> used, byte operatorForUnusedEntries)
             throws IOException {
         int unusedCount = 0;
-        int Offset = 0;
-        int[] NewOffsets = new int[Offsets.length];
+        int offset = 0;
+        int[] newOffsets = new int[offsets.length];
         // Build the Offsets Array for the Subset
-        for (int i = 0; i < Offsets.length; ++i) {
-            NewOffsets[i] = Offset;
+        for (int i = 0; i < offsets.length; ++i) {
+            newOffsets[i] = offset;
             // If the object in the offset is also present in the used
             // HashMap then increment the offset var by its size
-            if (Used.containsKey(i)) {
-                if (Offsets.length > i + 1) {
-                    Offset += Offsets[i + 1] - Offsets[i];
+            if (used.containsKey(i)) {
+                if (offsets.length > i + 1) {
+                    offset += offsets[i + 1] - offsets[i];
                 }
             } else {
                 // Else the same offset is kept in i+1.
@@ -948,114 +969,114 @@ public class CFFFontSubset extends CFFFont {
             }
         }
         // Offset var determines the size of the object array
-        byte[] NewObjects = new byte[Offset + unusedCount];
+        byte[] newObjects = new byte[offset + unusedCount];
         // Build the new Object array
         int unusedOffset = 0;
-        for (int i = 0; i < Offsets.length - 1; ++i) {
-            int start = NewOffsets[i];
-            int end = NewOffsets[i + 1];
-            NewOffsets[i] = start + unusedOffset;
+        for (int i = 0; i < offsets.length - 1; ++i) {
+            int start = newOffsets[i];
+            int end = newOffsets[i + 1];
+            newOffsets[i] = start + unusedOffset;
             // If start != End then the Object is used
             // So, we will copy the object data from the font file
             if (start != end) {
                 // All offsets are Global Offsets relative to the beginning of the font file.
                 // Jump the file pointer to the start address to read from.
-                buf.seek(Offsets[i]);
+                buf.seek(offsets[i]);
                 // Read from the buffer and write into the array at start.
-                buf.readFully(NewObjects, start + unusedOffset, end - start);
+                buf.readFully(newObjects, start + unusedOffset, end - start);
             } else {
-                NewObjects[start + unusedOffset] = OperatorForUnusedEntries;
+                newObjects[start + unusedOffset] = operatorForUnusedEntries;
                 unusedOffset++;
             }
         }
-        NewOffsets[Offsets.length - 1] += unusedOffset;
-        // Use AssembleIndex to build the index from the offset & object arrays
-        return AssembleIndex(NewOffsets, NewObjects);
+        newOffsets[offsets.length - 1] += unusedOffset;
+        // Use assembleIndex to build the index from the offset & object arrays
+        return assembleIndex(newOffsets, newObjects);
     }
 
     /**
      * Function creates the new index, inserting the count,offsetsize,offset array and object array.
      *
-     * @param NewOffsets the subsetted offset array
-     * @param NewObjects the subsetted object array
+     * @param newOffsets the subsetted offset array
+     * @param newObjects the subsetted object array
      * @return the new index created
      */
-    protected byte[] AssembleIndex(int[] NewOffsets, byte[] NewObjects) {
+    protected byte[] assembleIndex(int[] newOffsets, byte[] newObjects) {
         // Calc the index' count field
-        char Count = (char) (NewOffsets.length - 1);
+        char count = (char) (newOffsets.length - 1);
         // Calc the size of the object array
-        int Size = NewOffsets[NewOffsets.length - 1];
+        int size = newOffsets[newOffsets.length - 1];
         // Calc the Offsize
-        byte Offsize;
-        if (Size <= 0xff) {
-            Offsize = 1;
-        } else if (Size <= 0xffff) {
-            Offsize = 2;
-        } else if (Size <= 0xffffff) {
-            Offsize = 3;
+        byte offsize;
+        if (size <= 0xff) {
+            offsize = 1;
+        } else if (size <= 0xffff) {
+            offsize = 2;
+        } else if (size <= 0xffffff) {
+            offsize = 3;
         } else {
-            Offsize = 4;
+            offsize = 4;
         }
         // The byte array for the new index. The size is calc by
         // Count=2, Offsize=1, OffsetArray = Offsize*(Count+1), The object array
-        byte[] NewIndex = new byte[2 + 1 + Offsize * (Count + 1) + NewObjects.length];
+        byte[] newIndex = new byte[2 + 1 + offsize * (count + 1) + newObjects.length];
         // The counter for writing
-        int Place = 0;
+        int place = 0;
         // Write the count field
-        NewIndex[Place++] = (byte) ((Count >>> 8) & 0xff);
-        NewIndex[Place++] = (byte) ((Count >>> 0) & 0xff);
+        newIndex[place++] = (byte) ((count >>> 8) & 0xff);
+        newIndex[place++] = (byte) ((count >>> 0) & 0xff);
         // Write the offsize field
-        NewIndex[Place++] = Offsize;
+        newIndex[place++] = offsize;
         // Write the offset array according to the offsize
-        for (int newOffset : NewOffsets) {
+        for (int newOffset : newOffsets) {
             // The value to be written
-            int Num = newOffset - NewOffsets[0] + 1;
+            int num = newOffset - newOffsets[0] + 1;
             // Write in bytes according to the offsize
-            switch (Offsize) {
+            switch (offsize) {
                 case 4:
-                    NewIndex[Place++] = (byte) ((Num >>> 24) & 0xff); // fallthrough
+                    newIndex[place++] = (byte) ((num >>> 24) & 0xff); // fallthrough
                 case 3:
-                    NewIndex[Place++] = (byte) ((Num >>> 16) & 0xff); // fallthrough
+                    newIndex[place++] = (byte) ((num >>> 16) & 0xff); // fallthrough
                 case 2:
-                    NewIndex[Place++] = (byte) ((Num >>> 8) & 0xff); // fallthrough
+                    newIndex[place++] = (byte) ((num >>> 8) & 0xff); // fallthrough
                 case 1:
-                    NewIndex[Place++] = (byte) ((Num) & 0xff);
+                    newIndex[place++] = (byte) ((num) & 0xff);
                 default:
                     break;
             }
         }
         // Write the new object array one by one
-        for (byte newObject : NewObjects) {
-            NewIndex[Place++] = newObject;
+        for (byte newObject : newObjects) {
+            newIndex[place++] = newObject;
         }
         // Return the new index
-        return NewIndex;
+        return newIndex;
     }
 
     /**
      * The function builds the new output stream according to the subset process
      *
-     * @param Font the font
+     * @param font the font
      * @return the subsetted font stream
      */
-    protected byte[] BuildNewFile(int Font) {
+    protected byte[] buildNewFile(int font) {
         // Prepare linked list for new font components
-        OutputList = new LinkedList<>();
+        outputList = new LinkedList<>();
 
         // copy the header of the font
-        CopyHeader();
+        copyHeader();
 
         // create a name index
-        BuildIndexHeader(1, 1, 1);
-        OutputList.addLast(new UInt8Item((char) (1 + fonts[Font].name.length())));
-        OutputList.addLast(new StringItem(fonts[Font].name));
+        buildIndexHeader(1, 1, 1);
+        outputList.addLast(new UInt8Item((char) (1 + fonts[font].name.length())));
+        outputList.addLast(new StringItem(fonts[font].name));
 
         // create the topdict Index
-        BuildIndexHeader(1, 2, 1);
+        buildIndexHeader(1, 2, 1);
         OffsetItem topdictIndex1Ref = new IndexOffsetItem(2);
-        OutputList.addLast(topdictIndex1Ref);
+        outputList.addLast(topdictIndex1Ref);
         IndexBaseItem topdictBase = new IndexBaseItem();
-        OutputList.addLast(topdictBase);
+        outputList.addLast(topdictBase);
 
         // Initialize the Dict Items for later use
         OffsetItem charsetRef = new DictOffsetItem();
@@ -1065,25 +1086,11 @@ public class CFFFontSubset extends CFFFont {
         OffsetItem privateRef = new DictOffsetItem();
 
         // If the font is not CID create the following keys
-        if (!fonts[Font].isCID) {
-            // create a ROS key
-            OutputList.addLast(new DictNumberItem(fonts[Font].nstrings));
-            OutputList.addLast(new DictNumberItem(fonts[Font].nstrings + 1));
-            OutputList.addLast(new DictNumberItem(0));
-            OutputList.addLast(new UInt8Item((char) 12));
-            OutputList.addLast(new UInt8Item((char) 30));
-            // create a CIDCount key
-            OutputList.addLast(new DictNumberItem(fonts[Font].nglyphs));
-            OutputList.addLast(new UInt8Item((char) 12));
-            OutputList.addLast(new UInt8Item((char) 34));
-            // Sivan's comments
-            // What about UIDBase (12,35)? Don't know what is it.
-            // I don't think we need FontName; the font I looked at didn't have it.
-        }
+        createKeysIfFontNotCID(font);
         // Go to the TopDict of the font being processed
-        seek(topdictOffsets[Font]);
+        seek(topdictOffsets[font]);
         // Run until the end of the TopDict
-        while (getPosition() < topdictOffsets[Font + 1]) {
+        while (getPosition() < topdictOffsets[font + 1]) {
             int p1 = getPosition();
             getDictItem();
             int p2 = getPosition();
@@ -1097,104 +1104,75 @@ public class CFFFontSubset extends CFFFont {
                     || Objects.equals(key, "CharStrings");
             if (!isEncodingKey) {
                 // copy key "as is" to the output list
-                OutputList.add(new RangeItem(buf, p1, p2 - p1));
+                outputList.add(new RangeItem(buf, p1, p2 - p1));
             }
         }
         // Create the FDArray, FDSelect, Charset and CharStrings Keys
-        CreateKeys(fdarrayRef, fdselectRef, charsetRef, charstringsRef);
+        createKeys(fdarrayRef, fdselectRef, charsetRef, charstringsRef);
 
         // Mark the end of the top dict area
-        OutputList.addLast(new IndexMarkerItem(topdictIndex1Ref, topdictBase));
+        outputList.addLast(new IndexMarkerItem(topdictIndex1Ref, topdictBase));
 
         // Copy the string index
 
-        if (fonts[Font].isCID) {
-            OutputList.addLast(getEntireIndexRange(stringIndexOffset));
+        if (fonts[font].isCID) {
+            outputList.addLast(getEntireIndexRange(stringIndexOffset));
         } else {
             // If the font is not CID we need to append new strings.
             // We need 3 more strings: Registry, Ordering, and a FontName for one FD.
             // The total length is at most "Adobe"+"Identity"+63 = 76
-            CreateNewStringIndex(Font);
+            createNewStringIndex(font);
         }
 
         // copy the new subsetted global subroutine index
-        OutputList.addLast(new RangeItem(new RandomAccessFileOrArray(NewGSubrsIndex), 0, NewGSubrsIndex.length));
+        outputList.addLast(new RangeItem(new RandomAccessFileOrArray(newGSubrsIndex), 0, newGSubrsIndex.length));
 
         // deal with fdarray, fdselect, and the font descriptors
         // If the font is CID:
-        if (fonts[Font].isCID) {
-            // copy the FDArray, FDSelect, charset
-
-            // Copy FDSelect
-            // Mark the beginning
-            OutputList.addLast(new MarkerItem(fdselectRef));
-            // If an FDSelect exists copy it
-            if (fonts[Font].fdselectOffset >= 0) {
-                OutputList.addLast(new RangeItem(buf, fonts[Font].fdselectOffset, fonts[Font].FDSelectLength));
-            } else {
-                // Else create a new one
-                CreateFDSelect(fdselectRef, fonts[Font].nglyphs);
-            }
-
-            // Copy the Charset
-            // Mark the beginning and copy entirely
-            OutputList.addLast(new MarkerItem(charsetRef));
-            OutputList.addLast(new RangeItem(buf, fonts[Font].charsetOffset, fonts[Font].CharsetLength));
-
-            // Copy the FDArray
-            // If an FDArray exists
-            if (fonts[Font].fdarrayOffset >= 0) {
-                // Mark the beginning
-                OutputList.addLast(new MarkerItem(fdarrayRef));
-                // Build a new FDArray with its private dicts and their LSubrs
-                Reconstruct(Font);
-            } else {
-                // Else create a new one
-                CreateFDArray(fdarrayRef, privateRef, Font);
-            }
-
+        if (fonts[font].isCID) {
+            updateOffsetItems(fdselectRef, charsetRef, fdarrayRef, privateRef, font);
         } else {
             // If the font is not CID
             // create FDSelect
-            CreateFDSelect(fdselectRef, fonts[Font].nglyphs);
+            createFDSelect(fdselectRef, fonts[font].nglyphs);
             // recreate a new charset
-            CreateCharset(charsetRef, fonts[Font].nglyphs);
+            createCharset(charsetRef, fonts[font].nglyphs);
             // create a font dict index (fdarray)
-            CreateFDArray(fdarrayRef, privateRef, Font);
+            createFDArray(fdarrayRef, privateRef, font);
         }
 
         // if a private dict exists insert its subsetted version
-        if (fonts[Font].privateOffset >= 0) {
+        if (fonts[font].privateOffset >= 0) {
             // Mark the beginning of the private dict
-            IndexBaseItem PrivateBase = new IndexBaseItem();
-            OutputList.addLast(PrivateBase);
-            OutputList.addLast(new MarkerItem(privateRef));
+            IndexBaseItem privateBase = new IndexBaseItem();
+            outputList.addLast(privateBase);
+            outputList.addLast(new MarkerItem(privateRef));
 
-            OffsetItem Subr = new DictOffsetItem();
+            OffsetItem subr = new DictOffsetItem();
             // Build and copy the new private dict
-            CreateNonCIDPrivate(Font, Subr);
+            createNonCIDPrivate(font, subr);
             // Copy the new LSubrs index
-            CreateNonCIDSubrs(Font, PrivateBase, Subr);
+            createNonCIDSubrs(font, privateBase, subr);
         }
 
         // copy the charstring index
-        OutputList.addLast(new MarkerItem(charstringsRef));
+        outputList.addLast(new MarkerItem(charstringsRef));
 
         // Add the subsetted charstring
-        OutputList.addLast(
-                new RangeItem(new RandomAccessFileOrArray(NewCharStringsIndex), 0, NewCharStringsIndex.length));
+        outputList.addLast(
+                new RangeItem(new RandomAccessFileOrArray(newCharStringsIndex), 0, newCharStringsIndex.length));
 
         // now create the new CFF font
         int[] currentOffset = new int[1];
         currentOffset[0] = 0;
         // Count and save the offset for each item
-        Iterator<Item> listIter = OutputList.iterator();
+        Iterator<Item> listIter = outputList.iterator();
         while (listIter.hasNext()) {
             Item item = (Item) listIter.next();
             item.increment(currentOffset);
         }
         // Compute the Xref for each of the offset items
-        listIter = OutputList.iterator();
+        listIter = outputList.iterator();
         while (listIter.hasNext()) {
             Item item = (Item) listIter.next();
             item.xref();
@@ -1204,7 +1182,7 @@ public class CFFFontSubset extends CFFFont {
         byte[] b = new byte[size];
 
         // Emit all the items into the new byte array
-        listIter = OutputList.iterator();
+        listIter = outputList.iterator();
         while (listIter.hasNext()) {
             Item item = (Item) listIter.next();
             item.emit(b);
@@ -1213,44 +1191,95 @@ public class CFFFontSubset extends CFFFont {
         return b;
     }
 
+    private void createKeysIfFontNotCID(int font){
+        if (!fonts[font].isCID) {
+            // create a ROS key
+            outputList.addLast(new DictNumberItem(fonts[font].nstrings));
+            outputList.addLast(new DictNumberItem(fonts[font].nstrings + 1));
+            outputList.addLast(new DictNumberItem(0));
+            outputList.addLast(new UInt8Item((char) 12));
+            outputList.addLast(new UInt8Item((char) 30));
+            // create a CIDCount key
+            outputList.addLast(new DictNumberItem(fonts[font].nglyphs));
+            outputList.addLast(new UInt8Item((char) 12));
+            outputList.addLast(new UInt8Item((char) 34));
+            // Sivan's comments
+            // What about UIDBase (12,35)? Don't know what is it.
+            // I don't think we need FontName; the font I looked at didn't have it.
+        }
+    }
+
+    private void updateOffsetItems(OffsetItem fdselectRef, OffsetItem charsetRef, OffsetItem fdarrayRef,
+            OffsetItem privateRef, int font){
+        // copy the FDArray, FDSelect, charset
+
+        // Copy FDSelect
+        // Mark the beginning
+        outputList.addLast(new MarkerItem(fdselectRef));
+        // If an FDSelect exists copy it
+        if (fonts[font].fdselectOffset >= 0) {
+            outputList.addLast(new RangeItem(buf, fonts[font].fdselectOffset, fonts[font].FDSelectLength));
+        } else {
+            // Else create a new one
+            createFDSelect(fdselectRef, fonts[font].nglyphs);
+        }
+
+        // Copy the Charset
+        // Mark the beginning and copy entirely
+        outputList.addLast(new MarkerItem(charsetRef));
+        outputList.addLast(new RangeItem(buf, fonts[font].charsetOffset, fonts[font].CharsetLength));
+
+        // Copy the FDArray
+        // If an FDArray exists
+        if (fonts[font].fdarrayOffset >= 0) {
+            // Mark the beginning
+            outputList.addLast(new MarkerItem(fdarrayRef));
+            // Build a new FDArray with its private dicts and their LSubrs
+            reconstruct(font);
+        } else {
+            // Else create a new one
+            createFDArray(fdarrayRef, privateRef, font);
+        }
+    }
+
     /**
      * Function Copies the header from the original fileto the output list
      */
-    protected void CopyHeader() {
+    protected void copyHeader() {
         seek(0);
         int major = getCard8();
         int minor = getCard8();
         int hdrSize = getCard8();
         int offSize = getCard8();
         nextIndexOffset = hdrSize;
-        OutputList.addLast(new RangeItem(buf, 0, hdrSize));
+        outputList.addLast(new RangeItem(buf, 0, hdrSize));
     }
 
     /**
      * Function Build the header of an index
      *
-     * @param Count   the count field of the index
-     * @param Offsize the offsize field of the index
-     * @param First   the first offset of the index
+     * @param count   the count field of the index
+     * @param offsize the offsize field of the index
+     * @param first   the first offset of the index
      */
-    protected void BuildIndexHeader(int Count, int Offsize, int First) {
+    protected void buildIndexHeader(int count, int offsize, int first) {
         // Add the count field
-        OutputList.addLast(new UInt16Item((char) Count)); // count
+        outputList.addLast(new UInt16Item((char) count)); // count
         // Add the offsize field
-        OutputList.addLast(new UInt8Item((char) Offsize)); // offSize
+        outputList.addLast(new UInt8Item((char) offsize)); // offSize
         // Add the first offset according to the offsize
-        switch (Offsize) {
+        switch (offsize) {
             case 1:
-                OutputList.addLast(new UInt8Item((char) First)); // first offset
+                outputList.addLast(new UInt8Item((char) first)); // first offset
                 break;
             case 2:
-                OutputList.addLast(new UInt16Item((char) First)); // first offset
+                outputList.addLast(new UInt16Item((char) first)); // first offset
                 break;
             case 3:
-                OutputList.addLast(new UInt24Item((char) First)); // first offset
+                outputList.addLast(new UInt24Item((char) first)); // first offset
                 break;
             case 4:
-                OutputList.addLast(new UInt32Item((char) First)); // first offset
+                outputList.addLast(new UInt32Item((char) first)); // first offset
                 break;
             default:
                 break;
@@ -1265,31 +1294,31 @@ public class CFFFontSubset extends CFFFont {
      * @param charsetRef     OffsetItem for the CharSet
      * @param charstringsRef OffsetItem for the CharString
      */
-    protected void CreateKeys(OffsetItem fdarrayRef, OffsetItem fdselectRef, OffsetItem charsetRef,
+    protected void createKeys(OffsetItem fdarrayRef, OffsetItem fdselectRef, OffsetItem charsetRef,
             OffsetItem charstringsRef) {
         // create an FDArray key
-        OutputList.addLast(fdarrayRef);
-        OutputList.addLast(new UInt8Item((char) 12));
-        OutputList.addLast(new UInt8Item((char) 36));
+        outputList.addLast(fdarrayRef);
+        outputList.addLast(new UInt8Item((char) 12));
+        outputList.addLast(new UInt8Item((char) 36));
         // create an FDSelect key
-        OutputList.addLast(fdselectRef);
-        OutputList.addLast(new UInt8Item((char) 12));
-        OutputList.addLast(new UInt8Item((char) 37));
+        outputList.addLast(fdselectRef);
+        outputList.addLast(new UInt8Item((char) 12));
+        outputList.addLast(new UInt8Item((char) 37));
         // create an charset key
-        OutputList.addLast(charsetRef);
-        OutputList.addLast(new UInt8Item((char) 15));
+        outputList.addLast(charsetRef);
+        outputList.addLast(new UInt8Item((char) 15));
         // create a CharStrings key
-        OutputList.addLast(charstringsRef);
-        OutputList.addLast(new UInt8Item((char) 17));
+        outputList.addLast(charstringsRef);
+        outputList.addLast(new UInt8Item((char) 17));
     }
 
     /**
      * Function takes the original string item and adds the new strings to accommodate the CID rules
      *
-     * @param Font the font
+     * @param font the font
      */
-    protected void CreateNewStringIndex(int Font) {
-        String fdFontName = fonts[Font].name + "-OneRange";
+    protected void createNewStringIndex(int font) {
+        String fdFontName = fonts[font].name + "-OneRange";
         if (fdFontName.length() > 127) {
             fdFontName = fdFontName.substring(0, 127);
         }
@@ -1310,24 +1339,24 @@ public class CFFFontSubset extends CFFFont {
             stringsIndexOffSize = 4;
         }
 
-        OutputList.addLast(new UInt16Item((char) ((stringOffsets.length - 1) + 3))); // count
-        OutputList.addLast(new UInt8Item((char) stringsIndexOffSize)); // offSize
+        outputList.addLast(new UInt16Item((char) ((stringOffsets.length - 1) + 3))); // count
+        outputList.addLast(new UInt8Item((char) stringsIndexOffSize)); // offSize
         for (int stringOffset : stringOffsets) {
-            OutputList.addLast(new IndexOffsetItem(stringsIndexOffSize,
+            outputList.addLast(new IndexOffsetItem(stringsIndexOffSize,
                     stringOffset - stringsBaseOffset));
         }
         int currentStringsOffset = stringOffsets[stringOffsets.length - 1]
                 - stringsBaseOffset;
         
         currentStringsOffset += "Adobe".length();
-        OutputList.addLast(new IndexOffsetItem(stringsIndexOffSize, currentStringsOffset));
+        outputList.addLast(new IndexOffsetItem(stringsIndexOffSize, currentStringsOffset));
         currentStringsOffset += "Identity".length();
-        OutputList.addLast(new IndexOffsetItem(stringsIndexOffSize, currentStringsOffset));
+        outputList.addLast(new IndexOffsetItem(stringsIndexOffSize, currentStringsOffset));
         currentStringsOffset += fdFontName.length();
-        OutputList.addLast(new IndexOffsetItem(stringsIndexOffSize, currentStringsOffset));
+        outputList.addLast(new IndexOffsetItem(stringsIndexOffSize, currentStringsOffset));
 
-        OutputList.addLast(new RangeItem(buf, stringOffsets[0], origStringsLen));
-        OutputList.addLast(new StringItem(extraStrings));
+        outputList.addLast(new RangeItem(buf, stringOffsets[0], origStringsLen));
+        outputList.addLast(new StringItem(extraStrings));
     }
 
     /**
@@ -1336,15 +1365,15 @@ public class CFFFontSubset extends CFFFont {
      * @param fdselectRef OffsetItem for the FDSelect
      * @param nglyphs     the number of glyphs in the font
      */
-    protected void CreateFDSelect(OffsetItem fdselectRef, int nglyphs) {
-        OutputList.addLast(new MarkerItem(fdselectRef));
-        OutputList.addLast(new UInt8Item((char) 3)); // format identifier
-        OutputList.addLast(new UInt16Item((char) 1)); // nRanges
+    protected void createFDSelect(OffsetItem fdselectRef, int nglyphs) {
+        outputList.addLast(new MarkerItem(fdselectRef));
+        outputList.addLast(new UInt8Item((char) 3)); // format identifier
+        outputList.addLast(new UInt16Item((char) 1)); // nRanges
 
-        OutputList.addLast(new UInt16Item((char) 0)); // Range[0].firstGlyph
-        OutputList.addLast(new UInt8Item((char) 0)); // Range[0].fd
+        outputList.addLast(new UInt16Item((char) 0)); // Range[0].firstGlyph
+        outputList.addLast(new UInt8Item((char) 0)); // Range[0].fd
 
-        OutputList.addLast(new UInt16Item((char) nglyphs)); // sentinel
+        outputList.addLast(new UInt16Item((char) nglyphs)); // sentinel
     }
 
     /**
@@ -1353,11 +1382,11 @@ public class CFFFontSubset extends CFFFont {
      * @param charsetRef OffsetItem for the CharSet
      * @param nglyphs    the number of glyphs in the font
      */
-    protected void CreateCharset(OffsetItem charsetRef, int nglyphs) {
-        OutputList.addLast(new MarkerItem(charsetRef));
-        OutputList.addLast(new UInt8Item((char) 2)); // format identifier
-        OutputList.addLast(new UInt16Item((char) 1)); // first glyph in range (ignore .notdef)
-        OutputList.addLast(new UInt16Item((char) (nglyphs - 1))); // nLeft
+    protected void createCharset(OffsetItem charsetRef, int nglyphs) {
+        outputList.addLast(new MarkerItem(charsetRef));
+        outputList.addLast(new UInt8Item((char) 2)); // format identifier
+        outputList.addLast(new UInt16Item((char) 1)); // first glyph in range (ignore .notdef)
+        outputList.addLast(new UInt16Item((char) (nglyphs - 1))); // nLeft
     }
 
     /**
@@ -1366,138 +1395,158 @@ public class CFFFontSubset extends CFFFont {
      *
      * @param fdarrayRef OffsetItem for the FDArray
      * @param privateRef OffsetItem for the Private Dict
-     * @param Font       the font
+     * @param font       the font
      */
-    protected void CreateFDArray(OffsetItem fdarrayRef, OffsetItem privateRef, int Font) {
-        OutputList.addLast(new MarkerItem(fdarrayRef));
+    protected void createFDArray(OffsetItem fdarrayRef, OffsetItem privateRef, int font) {
+        outputList.addLast(new MarkerItem(fdarrayRef));
         // Build the header (count=offsize=first=1)
-        BuildIndexHeader(1, 1, 1);
+        buildIndexHeader(1, 1, 1);
 
         // Mark
         OffsetItem privateIndex1Ref = new IndexOffsetItem(1);
-        OutputList.addLast(privateIndex1Ref);
+        outputList.addLast(privateIndex1Ref);
         IndexBaseItem privateBase = new IndexBaseItem();
         // Insert the private operands and operator
-        OutputList.addLast(privateBase);
+        outputList.addLast(privateBase);
         // Calc the new size of the private after subsetting
         // Origianl size
-        int NewSize = fonts[Font].privateLength;
+        int newSize = fonts[font].privateLength;
         // Calc the original size of the Subr offset in the private
-        int OrgSubrsOffsetSize = CalcSubrOffsetSize(fonts[Font].privateOffset, fonts[Font].privateLength);
+        int orgSubrsOffsetSize = calcSubrOffsetSize(fonts[font].privateOffset, fonts[font].privateLength);
         // Increase the ptivate's size
-        if (OrgSubrsOffsetSize != 0) {
-            NewSize += 5 - OrgSubrsOffsetSize;
+        if (orgSubrsOffsetSize != 0) {
+            newSize += 5 - orgSubrsOffsetSize;
         }
-        OutputList.addLast(new DictNumberItem(NewSize));
-        OutputList.addLast(privateRef);
-        OutputList.addLast(new UInt8Item((char) 18)); // Private
+        outputList.addLast(new DictNumberItem(newSize));
+        outputList.addLast(privateRef);
+        outputList.addLast(new UInt8Item((char) 18)); // Private
 
-        OutputList.addLast(new IndexMarkerItem(privateIndex1Ref, privateBase));
+        outputList.addLast(new IndexMarkerItem(privateIndex1Ref, privateBase));
     }
 
     /**
      * Function reconstructs the FDArray, PrivateDict and LSubr for CID fonts
      *
-     * @param Font the font
+     * @param font the font
      */
-    void Reconstruct(int Font) {
+    void reconstruct(int font) {
         // Init for later use
-        OffsetItem[] fdPrivate = new DictOffsetItem[fonts[Font].FDArrayOffsets.length - 1];
-        IndexBaseItem[] fdPrivateBase = new IndexBaseItem[fonts[Font].fdprivateOffsets.length];
-        OffsetItem[] fdSubrs = new DictOffsetItem[fonts[Font].fdprivateOffsets.length];
+        OffsetItem[] fdPrivate = new DictOffsetItem[fonts[font].FDArrayOffsets.length - 1];
+        IndexBaseItem[] fdPrivateBase = new IndexBaseItem[fonts[font].fdprivateOffsets.length];
+        OffsetItem[] fdSubrs = new DictOffsetItem[fonts[font].fdprivateOffsets.length];
         // Reconstruct each type
-        ReconstructFDArray(Font, fdPrivate);
-        ReconstructPrivateDict(Font, fdPrivate, fdPrivateBase, fdSubrs);
-        ReconstructPrivateSubrs(Font, fdPrivateBase, fdSubrs);
+        reconstructFDArray(font, fdPrivate);
+        reconstructPrivateDict(font, fdPrivate, fdPrivateBase, fdSubrs);
+        reconstructPrivateSubrs(font, fdPrivateBase, fdSubrs);
     }
 
     /**
      * Function subsets the FDArray and builds the new one with new offsets
      *
-     * @param Font      The font
+     * @param font      The font
      * @param fdPrivate OffsetItem Array (one for each FDArray)
      */
-    void ReconstructFDArray(int Font, OffsetItem[] fdPrivate) {
+    void reconstructFDArray(int font, OffsetItem[] fdPrivate) {
         // Build the header of the index
-        BuildIndexHeader(fonts[Font].FDArrayCount, fonts[Font].FDArrayOffsize, 1);
+        buildIndexHeader(fonts[font].FDArrayCount, fonts[font].FDArrayOffsize, 1);
 
-        // For each offset create an Offset Item
-        OffsetItem[] fdOffsets = new IndexOffsetItem[fonts[Font].FDArrayOffsets.length - 1];
-        for (int i = 0; i < fonts[Font].FDArrayOffsets.length - 1; i++) {
-            fdOffsets[i] = new IndexOffsetItem(fonts[Font].FDArrayOffsize);
-            OutputList.addLast(fdOffsets[i]);
-        }
-
-        // Declare beginning of the object array
         IndexBaseItem fdArrayBase = new IndexBaseItem();
-        OutputList.addLast(fdArrayBase);
+        // Create offset items and declare beginning of the object array
+        createOffsetItemsAndBase(font, fdArrayBase);
 
-        // For each object check if that FD is used.
-        // if is used build a new one by changing the private object
-        // Else do nothing
-        // At the end of each object mark its ending (Even if wasn't written)
-        for (int k = 0; k < fonts[Font].FDArrayOffsets.length - 1; k++) {
-            if (FDArrayUsed.containsKey(k)) {
-                // Goto beginning of objects
-                seek(fonts[Font].FDArrayOffsets[k]);
-                while (getPosition() < fonts[Font].FDArrayOffsets[k + 1]) {
-                    int p1 = getPosition();
-                    getDictItem();
-                    int p2 = getPosition();
-                    // If the dictItem is the "Private" then compute and copy length,
-                    // use marker for offset and write operator number
-                    if (Objects.equals(key, "Private")) {
-                        // Save the original length of the private dict
-                        int NewSize = (Integer) args[0];
-                        // Save the size of the offset to the subrs in that private
-                        int OrgSubrsOffsetSize = CalcSubrOffsetSize(fonts[Font].fdprivateOffsets[k],
-                                fonts[Font].fdprivateLengths[k]);
-                        // Increase the private's length accordingly
-                        if (OrgSubrsOffsetSize != 0) {
-                            NewSize += 5 - OrgSubrsOffsetSize;
-                        }
-                        // Insert the new size, OffsetItem and operator key number
-                        OutputList.addLast(new DictNumberItem(NewSize));
-                        fdPrivate[k] = new DictOffsetItem();
-                        OutputList.addLast(fdPrivate[k]);
-                        OutputList.addLast(new UInt8Item((char) 18)); // Private
-                        // Go back to place
-                        seek(p2);
-                    } else {
-                        // Else copy the entire range
-                        // other than private
-                        OutputList.addLast(new RangeItem(buf, p1, p2 - p1));
-                    }
-                }
-            }
-            // Mark the ending of the object (even if wasn't written)
-            OutputList.addLast(new IndexMarkerItem(fdOffsets[k], fdArrayBase));
+        // Process each object
+        processObjects(font, fdPrivate, fdArrayBase);
+    }
+
+    private void createOffsetItemsAndBase(int font, IndexBaseItem fdArrayBase) {
+        OffsetItem[] fdOffsets = new IndexOffsetItem[fonts[font].FDArrayOffsets.length - 1];
+        for (int i = 0; i < fonts[font].FDArrayOffsets.length - 1; i++) {
+            fdOffsets[i] = new IndexOffsetItem(fonts[font].FDArrayOffsize);
+            outputList.addLast(fdOffsets[i]);
         }
+        outputList.addLast(fdArrayBase);
+
+    }
+
+    private void processObjects(int font, OffsetItem[] fdPrivate, IndexBaseItem fdArrayBase) {
+        for (int k = 0; k < fonts[font].FDArrayOffsets.length - 1; k++) {
+            if (fdArrayUsed.containsKey(k)) {
+                processObject(font, k, fdPrivate);
+            }
+            markObjectEnd(k, fdPrivate, fdArrayBase);
+        }
+    }
+
+    private void processObject(int font, int k, OffsetItem[] fdPrivate) {
+        seek(fonts[font].FDArrayOffsets[k]);
+        while (getPosition() < fonts[font].FDArrayOffsets[k + 1]) {
+            int p1 = getPosition();
+            getDictItem();
+            int p2 = getPosition();
+
+
+            if (isPrivateDict()) {
+                handlePrivateDict(p1, p2, font, k, fdPrivate);
+            } else {
+                copyDictRange(p1, p2);
+            }
+        }
+    }
+
+    private void handlePrivateDict(int p1, int p2, int font, int k, OffsetItem[] fdPrivate) {
+        // Save the original length of the private dict
+        int newSize = (Integer) args[0];
+        // Save the size of the offset to the subrs in that private
+        int orgSubrsOffsetSize = calcSubrOffsetSize(fonts[font].fdprivateOffsets[k], fonts[font].fdprivateLengths[k]);
+        // Increase the private's length accordingly
+        if (orgSubrsOffsetSize != 0) {
+            newSize += 5 - orgSubrsOffsetSize;
+        }
+        // Insert the new size, OffsetItem and operator key number
+        outputList.addLast(new DictNumberItem(newSize));
+        fdPrivate[k] = new DictOffsetItem();
+        outputList.addLast(fdPrivate[k]);
+        outputList.addLast(new UInt8Item((char) 18)); // Private
+
+        // Copy the private dict content, potentially modifying it based on your requirements
+        outputList.addLast(new RangeItem(buf, p1, p2 - p1));
+    }
+
+    private void copyDictRange(int p1, int p2) {
+        outputList.addLast(new RangeItem(buf, p1, p2 - p1));
+    }
+
+    private void markObjectEnd(int k, OffsetItem[] fdOffsets, IndexBaseItem fdArrayBase) {
+        outputList.addLast(new IndexMarkerItem(fdOffsets[k], fdArrayBase));
+    }
+
+    private boolean isPrivateDict() {
+        return Objects.equals(key, "Private");
     }
 
     /**
      * Function Adds the new private dicts (only for the FDs used) to the list
      *
-     * @param Font          the font
+     * @param font          the font
      * @param fdPrivate     OffsetItem array one element for each private
      * @param fdPrivateBase IndexBaseItem array one element for each private
      * @param fdSubrs       OffsetItem array one element for each private
      */
-    void ReconstructPrivateDict(int Font, OffsetItem[] fdPrivate, IndexBaseItem[] fdPrivateBase,
+    void reconstructPrivateDict(int font, OffsetItem[] fdPrivate, IndexBaseItem[] fdPrivateBase,
             OffsetItem[] fdSubrs) {
 
         // For each fdarray private dict check if that FD is used.
         // if is used build a new one by changing the subrs offset
         // Else do nothing
-        for (int i = 0; i < fonts[Font].fdprivateOffsets.length; i++) {
-            if (FDArrayUsed.containsKey(i)) {
+        for (int i = 0; i < fonts[font].fdprivateOffsets.length; i++) {
+            if (fdArrayUsed.containsKey(i)) {
                 // Mark beginning
-                OutputList.addLast(new MarkerItem(fdPrivate[i]));
+                outputList.addLast(new MarkerItem(fdPrivate[i]));
                 fdPrivateBase[i] = new IndexBaseItem();
-                OutputList.addLast(fdPrivateBase[i]);
+                outputList.addLast(fdPrivateBase[i]);
                 // Goto beginning of objects
-                seek(fonts[Font].fdprivateOffsets[i]);
-                while (getPosition() < fonts[Font].fdprivateOffsets[i] + fonts[Font].fdprivateLengths[i]) {
+                seek(fonts[font].fdprivateOffsets[i]);
+                while (getPosition() < fonts[font].fdprivateOffsets[i] + fonts[font].fdprivateLengths[i]) {
                     int p1 = getPosition();
                     getDictItem();
                     int p2 = getPosition();
@@ -1505,11 +1554,11 @@ public class CFFFontSubset extends CFFFont {
                     // use marker for offset and write operator number
                     if (Objects.equals(key, "Subrs")) {
                         fdSubrs[i] = new DictOffsetItem();
-                        OutputList.addLast(fdSubrs[i]);
-                        OutputList.addLast(new UInt8Item((char) 19)); // Subrs
+                        outputList.addLast(fdSubrs[i]);
+                        outputList.addLast(new UInt8Item((char) 19)); // Subrs
                     } else {
                         // Else copy the entire range
-                        OutputList.addLast(new RangeItem(buf, p1, p2 - p1));
+                        outputList.addLast(new RangeItem(buf, p1, p2 - p1));
                     }
                 }
             }
@@ -1519,21 +1568,21 @@ public class CFFFontSubset extends CFFFont {
     /**
      * Function Adds the new LSubrs dicts (only for the FDs used) to the list
      *
-     * @param Font          The index of the font
+     * @param font          The index of the font
      * @param fdPrivateBase The IndexBaseItem array for the linked list
      * @param fdSubrs       OffsetItem array for the linked list
      */
 
-    void ReconstructPrivateSubrs(int Font, IndexBaseItem[] fdPrivateBase,
+    void reconstructPrivateSubrs(int font, IndexBaseItem[] fdPrivateBase,
             OffsetItem[] fdSubrs) {
         // For each private dict
-        for (int i = 0; i < fonts[Font].fdprivateLengths.length; i++) {
+        for (int i = 0; i < fonts[font].fdprivateLengths.length; i++) {
             // If that private dict's Subrs are used insert the new LSubrs
             // computed earlier
-            if (fdSubrs[i] != null && fonts[Font].PrivateSubrsOffset[i] >= 0) {
-                OutputList.addLast(new SubrMarkerItem(fdSubrs[i], fdPrivateBase[i]));
-                OutputList.addLast(
-                        new RangeItem(new RandomAccessFileOrArray(NewLSubrsIndex[i]), 0, NewLSubrsIndex[i].length));
+            if (fdSubrs[i] != null && fonts[font].PrivateSubrsOffset[i] >= 0) {
+                outputList.addLast(new SubrMarkerItem(fdSubrs[i], fdPrivateBase[i]));
+                outputList.addLast(
+                        new RangeItem(new RandomAccessFileOrArray(newLSubrsIndex[i]), 0, newLSubrsIndex[i].length));
             }
         }
     }
@@ -1541,29 +1590,29 @@ public class CFFFontSubset extends CFFFont {
     /**
      * Calculates how many byte it took to write the offset for the subrs in a specific private dict.
      *
-     * @param Offset The Offset for the private dict
-     * @param Size   The size of the private dict
+     * @param offset The Offset for the private dict
+     * @param size   The size of the private dict
      * @return The size of the offset of the subrs in the private dict
      */
-    int CalcSubrOffsetSize(int Offset, int Size) {
+    int calcSubrOffsetSize(int offset, int size) {
         // Set the size to 0
-        int OffsetSize = 0;
+        int offsetSize = 0;
         // Go to the beginning of the private dict
-        seek(Offset);
+        seek(offset);
         // Go until the end of the private dict
-        while (getPosition() < Offset + Size) {
+        while (getPosition() < offset + size) {
             int p1 = getPosition();
             getDictItem();
             int p2 = getPosition();
             // When reached to the subrs offset
             if (Objects.equals(key, "Subrs")) {
                 // The Offsize (minus the subrs key)
-                OffsetSize = p2 - p1 - 1;
+                offsetSize = p2 - p1 - 1;
             }
             // All other keys are ignored
         }
         // return the size
-        return OffsetSize;
+        return offsetSize;
     }
 
     /**
@@ -1596,24 +1645,24 @@ public class CFFFontSubset extends CFFFont {
      * The function creates a private dict for a font that was not CID All the keys are copied as is except for the
      * subrs key
      *
-     * @param Font the font
-     * @param Subr The OffsetItem for the subrs of the private
+     * @param font the font
+     * @param subr The OffsetItem for the subrs of the private
      */
-    void CreateNonCIDPrivate(int Font, OffsetItem Subr) {
+    void createNonCIDPrivate(int font, OffsetItem subr) {
         // Go to the beginning of the private dict and read until the end
-        seek(fonts[Font].privateOffset);
-        while (getPosition() < fonts[Font].privateOffset + fonts[Font].privateLength) {
+        seek(fonts[font].privateOffset);
+        while (getPosition() < fonts[font].privateOffset + fonts[font].privateLength) {
             int p1 = getPosition();
             getDictItem();
             int p2 = getPosition();
             // If the dictItem is the "Subrs" then,
             // use marker for offset and write operator number
             if (Objects.equals(key, "Subrs")) {
-                OutputList.addLast(Subr);
-                OutputList.addLast(new UInt8Item((char) 19)); // Subrs
+                outputList.addLast(subr);
+                outputList.addLast(new UInt8Item((char) 19)); // Subrs
             } else {
                 // Else copy the entire range
-                OutputList.addLast(new RangeItem(buf, p1, p2 - p1));
+                outputList.addLast(new RangeItem(buf, p1, p2 - p1));
             }
         }
     }
@@ -1621,17 +1670,17 @@ public class CFFFontSubset extends CFFFont {
     /**
      * the function marks the beginning of the subrs index and adds the subsetted subrs index to the output list.
      *
-     * @param Font        the font
-     * @param PrivateBase IndexBaseItem for the private that's referencing to the subrs
-     * @param Subrs       OffsetItem for the subrs
+     * @param font        the font
+     * @param privateBase IndexBaseItem for the private that's referencing to the subrs
+     * @param subrs       OffsetItem for the subrs
      */
-    void CreateNonCIDSubrs(int Font, IndexBaseItem PrivateBase, OffsetItem Subrs) {
+    void createNonCIDSubrs(int font, IndexBaseItem privateBase, OffsetItem subrs) {
         // Mark the beginning of the Subrs index
-        OutputList.addLast(new SubrMarkerItem(Subrs, PrivateBase));
+        outputList.addLast(new SubrMarkerItem(subrs, privateBase));
         // Put the subsetted new subrs index
-        if (NewSubrsIndexNonCID != null) {
-            OutputList.addLast(
-                    new RangeItem(new RandomAccessFileOrArray(NewSubrsIndexNonCID), 0, NewSubrsIndexNonCID.length));
+        if (newSubrsIndexNonCID != null) {
+            outputList.addLast(
+                    new RangeItem(new RandomAccessFileOrArray(newSubrsIndexNonCID), 0, newSubrsIndexNonCID.length));
         }
     }
 }

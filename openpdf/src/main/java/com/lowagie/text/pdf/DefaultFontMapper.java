@@ -82,69 +82,55 @@ public class DefaultFontMapper implements FontMapper {
             if (p != null) {
                 return BaseFont.createFont(p.fontName, p.encoding, p.embedded, p.cached, p.ttfAfm, p.pfb);
             }
-            final String fontKey;
-            final String logicalName = font.getName().toLowerCase();
 
-            if (logicalName.equals("dialoginput") || logicalName.contains("mono") || logicalName.startsWith(
-                    "courier")) {
+            String logicalName = font.getName().toLowerCase();
+            String fontKey = getFontKey(logicalName, font.isItalic(), font.isBold());
 
-                if (font.isItalic()) {
-                    if (font.isBold()) {
-                        fontKey = BaseFont.COURIER_BOLDOBLIQUE;
-
-                    } else {
-                        fontKey = BaseFont.COURIER_OBLIQUE;
-                    }
-
-                } else {
-                    if (font.isBold()) {
-                        fontKey = BaseFont.COURIER_BOLD;
-
-                    } else {
-                        fontKey = BaseFont.COURIER;
-                    }
-                }
-
-            } else if (logicalName.equals("serif") || logicalName.equals("timesroman")) {
-
-                if (font.isItalic()) {
-                    if (font.isBold()) {
-                        fontKey = BaseFont.TIMES_BOLDITALIC;
-
-                    } else {
-                        fontKey = BaseFont.TIMES_ITALIC;
-                    }
-
-                } else {
-                    if (font.isBold()) {
-                        fontKey = BaseFont.TIMES_BOLD;
-
-                    } else {
-                        fontKey = BaseFont.TIMES_ROMAN;
-                    }
-                }
-
-            } else {  // default, this catches Dialog and SansSerif
-
-                if (font.isItalic()) {
-                    if (font.isBold()) {
-                        fontKey = BaseFont.HELVETICA_BOLDOBLIQUE;
-
-                    } else {
-                        fontKey = BaseFont.HELVETICA_OBLIQUE;
-                    }
-
-                } else {
-                    if (font.isBold()) {
-                        fontKey = BaseFont.HELVETICA_BOLD;
-                    } else {
-                        fontKey = BaseFont.HELVETICA;
-                    }
-                }
-            }
             return BaseFont.createFont(fontKey, BaseFont.CP1252, false);
         } catch (Exception e) {
             throw new ExceptionConverter(e);
+        }
+    }
+
+    private String getFontKey(String logicalName, boolean isItalic, boolean isBold) {
+        if (isMonospacedFont(logicalName)) {
+            return getCourierFontKey(isItalic, isBold);
+        } else if (isSerifFont(logicalName)) {
+            return getTimesFontKey(isItalic, isBold);
+        } else {
+            return getHelveticaFontKey(isItalic, isBold);
+        }
+    }
+
+    private boolean isMonospacedFont(String logicalName) {
+        return logicalName.equals("dialoginput") || logicalName.contains("mono") || logicalName.startsWith("courier");
+    }
+
+    private boolean isSerifFont(String logicalName) {
+        return logicalName.equals("serif") || logicalName.equals("timesroman");
+    }
+
+    private String getCourierFontKey(boolean isItalic, boolean isBold) {
+        if (isItalic) {
+            return isBold ? BaseFont.COURIER_BOLDOBLIQUE : BaseFont.COURIER_OBLIQUE;
+        } else {
+            return isBold ? BaseFont.COURIER_BOLD : BaseFont.COURIER;
+        }
+    }
+
+    private String getTimesFontKey(boolean isItalic, boolean isBold) {
+        if (isItalic) {
+            return isBold ? BaseFont.TIMES_BOLDITALIC : BaseFont.TIMES_ITALIC;
+        } else {
+            return isBold ? BaseFont.TIMES_BOLD : BaseFont.TIMES_ROMAN;
+        }
+    }
+
+    private String getHelveticaFontKey(boolean isItalic, boolean isBold) {
+        if (isItalic) {
+            return isBold ? BaseFont.HELVETICA_BOLDOBLIQUE : BaseFont.HELVETICA_OBLIQUE;
+        } else {
+            return isBold ? BaseFont.HELVETICA_BOLD : BaseFont.HELVETICA;
         }
     }
 

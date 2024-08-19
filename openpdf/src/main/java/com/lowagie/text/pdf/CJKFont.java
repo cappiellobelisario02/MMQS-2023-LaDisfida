@@ -118,67 +118,99 @@ class CJKFont extends BaseFont {
         loadProperties();
         fontType = FONT_TYPE_CJK;
         String nameBase = getBaseName(fontName);
-        if (!isCJKFont(nameBase, enc)) {
-            throw new DocumentException(MessageLocalization.getComposedMessage(
-                    "font.1.with.2.encoding.is.not.a.cjk.font", fontName, enc));
-        }
+
+        validateCJKFont(nameBase, fontName, enc);
+
         if (nameBase.length() < fontName.length()) {
             style = fontName.substring(nameBase.length());
             fontName = nameBase;
         }
+
         this.fontName = fontName;
         encoding = CJK_ENCODING;
         vertical = enc.endsWith("V");
         CMap = enc;
+
         if (enc.startsWith("Identity-")) {
-            cidDirect = true;
-            String s = cjkFonts.getProperty(fontName);
-            s = s.substring(0, s.indexOf('_'));
-            char[] c = allCMaps.get(s);
-            if (c == null) {
-                c = readCMap(s);
-                if (c == null) {
-                    throw new DocumentException(
-                            MessageLocalization.getComposedMessage(
-                                    "the.cmap.1.does.not.exist.as.a.resource",
-                                    s));
-                }
-                c[CID_NEWLINE] = '\n';
-                allCMaps.put(s, c);
-            }
-            translationMap = c;
+            handleIdentityEncoding(fontName);
         } else {
-            char[] c = allCMaps.get(enc);
-            if (c == null) {
-                String s = cjkEncodings.getProperty(enc);
-                if (s == null) {
-                    throw new DocumentException(
-                            MessageLocalization
-                                    .getComposedMessage(
-                                            "the.resource.cjkencodings.properties.does.not.contain.the.encoding.1",
-                                            enc));
-                }
-                StringTokenizer tk = new StringTokenizer(s);
-                String nt = tk.nextToken();
-                c = allCMaps.get(nt);
-                if (c == null) {
-                    c = readCMap(nt);
-                    allCMaps.put(nt, c);
-                }
-                if (tk.hasMoreTokens()) {
-                    String nt2 = tk.nextToken();
-                    char[] m2 = readCMap(nt2);
-                    for (int k = 0; k < 0x10000; ++k) {
-                        if (m2[k] == 0) {
-                            m2[k] = c[k];
-                        }
-                    }
-                    allCMaps.put(enc, m2);
-                    c = m2;
-                }
-            }
-            translationMap = c;
+            handleNonIdentityEncoding(enc);
         }
+
+        loadFontMetrics(fontName);
+    }
+
+    private void validateCJKFont(String nameBase, String fontName, String enc) throws DocumentException {
+        if (!isCJKFont(nameBase, enc)) {
+            throw new DocumentException(MessageLocalization.getComposedMessage(
+                    "font.1.with.2.encoding.is.not.a.cjk.font", fontName, enc));
+        }
+    }
+
+    private void handleIdentityEncoding(String fontName) throws DocumentException {
+        cidDirect = true;
+        String s = cjkFonts.getProperty(fontName);
+        s = s.substring(0, s.indexOf('_'));
+        char[] c = allCMaps.get(s);
+        if (c == null) {
+            c = readCMapOrThrow(s);
+            c[CID_NEWLINE] = '\n';
+            allCMaps.put(s, c);
+        }
+        translationMap = c;
+    }
+
+    private void handleNonIdentityEncoding(String enc) throws DocumentException {
+        char[] c = allCMaps.get(enc);
+        if (c == null) {
+            String s = cjkEncodings.getProperty(enc);
+            if (s == null) {
+                throw new DocumentException(
+                        MessageLocalization.getComposedMessage(
+                                "the.resource.cjkencodings.properties.does.not.contain.the.encoding.1", enc));
+            }
+            c = loadCMapWithFallback(enc, s);
+        }
+        translationMap = c;
+    }
+
+    private char[] loadCMapWithFallback(String enc, String s) throws DocumentException {
+        StringTokenizer tk = new StringTokenizer(s);
+        String nt = tk.nextToken();
+        char[] c = allCMaps.get(nt);
+        if (c == null) {
+            c = readCMap(nt);
+            allCMaps.put(nt, c);
+        }
+        if (tk.hasMoreTokens()) {
+            String nt2 = tk.nextToken();
+            char[] m2 = readCMap(nt2);
+            mergeCMaps(c, m2);
+            allCMaps.put(enc, m2);
+            c = m2;
+        }
+        return c;
+    }
+
+    private void mergeCMaps(char[] c, char[] m2) {
+        for (int k = 0; k < 0x10000; ++k) {
+            if (m2[k] == 0) {
+                m2[k] = c[k];
+            }
+        }
+    }
+
+    private char[] readCMapOrThrow(String s) throws DocumentException {
+        char[] c = readCMap(s);
+        if (c == null) {
+            throw new DocumentException(
+                    MessageLocalization.getComposedMessage(
+                            "the.cmap.1.does.not.exist.as.a.resource", s));
+        }
+        return c;
+    }
+
+    private void loadFontMetrics(String fontName) throws DocumentException {
         fontDesc = allFonts.get(fontName);
         if (fontDesc == null) {
             fontDesc = readFontProperties(fontName);
@@ -188,6 +220,7 @@ class CJKFont extends BaseFont {
         hMetrics = (IntHashtable) fontDesc.get("W");
         vMetrics = (IntHashtable) fontDesc.get("W2");
     }
+
 
     private static void loadProperties() {
         if (propertiesLoaded) {
@@ -258,6 +291,28 @@ class CJKFont extends BaseFont {
         if (keys.length == 0) {
             return null;
         }
+
+        int[] startValues = findStartValues(keys, h);
+        int start = startValues[0];
+        int lastCid = startValues[1];
+        int lastValue = startValues[2];
+
+        if (lastValue == 0) {
+            return null;
+        }
+
+        StringBuilder buf = new StringBuilder();
+        buf.append('[');
+        buf.append(lastCid);
+
+        processKeys(keys, h, start, lastCid, lastValue, buf);
+
+        finalizeBuffer(buf, lastValue);
+
+        return buf.toString();
+    }
+
+    private static int[] findStartValues(int[] keys, IntHashtable h) {
         int lastCid = 0;
         int lastValue = 0;
         int start;
@@ -269,86 +324,124 @@ class CJKFont extends BaseFont {
                 break;
             }
         }
-        if (lastValue == 0) {
-            return null;
-        }
-        StringBuilder buf = new StringBuilder();
-        buf.append('[');
-        buf.append(lastCid);
+        return new int[] {start, lastCid, lastValue};
+    }
+
+    private static void processKeys(int[] keys, IntHashtable h, int start, int lastCid, int lastValue, StringBuilder buf) {
         int state = FIRST;
+
         for (int k = start; k < keys.length; ++k) {
             int cid = keys[k];
             int value = h.get(cid);
             if (value == 0) {
                 continue;
             }
-            switch (state) {
-                case FIRST: {
-                    if (cid == lastCid + 1 && value == lastValue) {
-                        state = SERIAL;
-                    } else if (cid == lastCid + 1) {
-                        state = BRACKET;
-                        buf.append('[').append(lastValue);
-                    } else {
-                        buf.append('[').append(lastValue).append(']').append(cid);
-                    }
-                    break;
-                }
-                case BRACKET: {
-                    if (cid == lastCid + 1 && value == lastValue) {
-                        state = SERIAL;
-                        buf.append(']').append(lastCid);
-                    } else if (cid == lastCid + 1) {
-                        buf.append(' ').append(lastValue);
-                    } else {
-                        state = FIRST;
-                        buf.append(' ').append(lastValue).append(']').append(cid);
-                    }
-                    break;
-                }
-                case SERIAL: {
-                    if (cid != lastCid + 1 || value != lastValue) {
-                        buf.append(' ').append(lastCid).append(' ')
-                                .append(lastValue).append(' ').append(cid);
-                        state = FIRST;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
+
+            state = updateBufferBasedOnState(buf, state, cid, value, lastCid, lastValue);
+
             lastValue = value;
             lastCid = cid;
         }
+
+        finalizeState(buf, state, lastCid, lastValue);
+    }
+
+    private static int updateBufferBasedOnState(StringBuilder buf, int state, int cid, int value, int lastCid, int lastValue) {
         switch (state) {
-            case FIRST: {
+            case FIRST:
+                return handleFirstState(buf, cid, value, lastCid, lastValue);
+            case BRACKET:
+                return handleBracketState(buf, cid, value, lastCid, lastValue);
+            case SERIAL:
+                return handleSerialState(buf, cid, value, lastCid, lastValue);
+            default:
+                return state;
+        }
+    }
+
+    private static int handleFirstState(StringBuilder buf, int cid, int value, int lastCid, int lastValue) {
+        if (cid == lastCid + 1 && value == lastValue) {
+            return SERIAL;
+        } else if (cid == lastCid + 1) {
+            buf.append('[').append(lastValue);
+            return BRACKET;
+        } else {
+            buf.append('[').append(lastValue).append(']').append(cid);
+            return FIRST;
+        }
+    }
+
+    private static int handleBracketState(StringBuilder buf, int cid, int value, int lastCid, int lastValue) {
+        if (cid == lastCid + 1 && value == lastValue) {
+            buf.append(']').append(lastCid);
+            return SERIAL;
+        } else if (cid == lastCid + 1) {
+            buf.append(' ').append(lastValue);
+            return BRACKET;
+        } else {
+            buf.append(' ').append(lastValue).append(']').append(cid);
+            return FIRST;
+        }
+    }
+
+    private static int handleSerialState(StringBuilder buf, int cid, int value, int lastCid, int lastValue) {
+        if (cid != lastCid + 1 || value != lastValue) {
+            buf.append(' ').append(lastCid).append(' ').append(lastValue).append(' ').append(cid);
+            return FIRST;
+        }
+        return SERIAL;
+    }
+
+    private static void finalizeState(StringBuilder buf, int state, int lastCid, int lastValue) {
+        switch (state) {
+            case FIRST:
                 buf.append('[').append(lastValue).append("]]");
                 break;
-            }
-            case BRACKET: {
+            case BRACKET:
                 buf.append(' ').append(lastValue).append("]]");
                 break;
-            }
-            case SERIAL: {
-                buf.append(' ').append(lastCid).append(' ').append(lastValue)
-                        .append(']');
+            case SERIAL:
+                buf.append(' ').append(lastCid).append(' ').append(lastValue).append(']');
                 break;
-            }
             default:
                 break;
         }
-        return buf.toString();
     }
 
-    static String convertToVCIDMetrics(int[] keys, IntHashtable v,
-            IntHashtable h) {
+    private static void finalizeBuffer(StringBuilder buf, int lastValue) {
+        // Final adjustments to the buffer if necessary (e.g., closing brackets)
+        buf.append(' ').append(lastValue).append(']');
+    }
+
+
+    static String convertToVCIDMetrics(int[] keys, IntHashtable v, IntHashtable h) {
         if (keys.length == 0) {
             return null;
         }
+
+        ConversionContext context = initializeContext(keys, v, h);
+        if (context == null) {
+            return null;
+        }
+
+        StringBuilder buf = new StringBuilder();
+        buf.append('[');
+        buf.append(context.lastCid);
+
+        processKeys(keys, v, h, context, buf);
+
+        appendFinalEntry(buf, context);
+        buf.append(" ]");
+
+        return buf.toString();
+    }
+
+    private static ConversionContext initializeContext(int[] keys, IntHashtable v, IntHashtable h) {
         int lastCid = 0;
         int lastValue = 0;
         int lastHValue = 0;
         int start;
+
         for (start = 0; start < keys.length; ++start) {
             lastCid = keys[start];
             lastValue = v.get(lastCid);
@@ -359,62 +452,87 @@ class CJKFont extends BaseFont {
                 lastHValue = h.get(lastCid);
             }
         }
+
         if (lastValue == 0) {
             return null;
         }
+
         if (lastHValue == 0) {
             lastHValue = 1000;
         }
-        StringBuilder buf = new StringBuilder();
-        buf.append('[');
-        buf.append(lastCid);
+
+        return new ConversionContext(start, lastCid, lastValue, lastHValue);
+    }
+
+    private static void processKeys(int[] keys, IntHashtable v, IntHashtable h, ConversionContext context, StringBuilder buf) {
         int state = FIRST;
-        for (int k = start; k < keys.length; ++k) {
+
+        for (int k = context.start; k < keys.length; ++k) {
             int cid = keys[k];
             int value = v.get(cid);
+
             if (value == 0) {
                 continue;
             }
-            int hValue = h.get(lastCid);
+
+            int hValue = h.get(context.lastCid);
             if (hValue == 0) {
                 hValue = 1000;
             }
-            switch (state) {
-                case FIRST: {
-                    if (cid == lastCid + 1 && value == lastValue
-                            && hValue == lastHValue) {
-                        state = SERIAL;
-                    } else {
-                        buf.append(' ').append(lastCid).append(' ')
-                                .append(-lastValue).append(' ')
-                                .append(lastHValue / 2).append(' ').append(V1Y)
-                                .append(' ').append(cid);
-                    }
-                    break;
-                }
-                case SERIAL: {
-                    if (cid != lastCid + 1 || value != lastValue
-                            || hValue != lastHValue) {
-                        buf.append(' ').append(lastCid).append(' ')
-                                .append(-lastValue).append(' ')
-                                .append(lastHValue / 2).append(' ').append(V1Y)
-                                .append(' ').append(cid);
-                        state = FIRST;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-            lastValue = value;
-            lastCid = cid;
-            lastHValue = hValue;
+
+            state = processKey(buf, context, cid, value, hValue, state);
+
+            context.lastValue = value;
+            context.lastCid = cid;
+            context.lastHValue = hValue;
         }
-        buf.append(' ').append(lastCid).append(' ').append(-lastValue)
-                .append(' ').append(lastHValue / 2).append(' ').append(V1Y)
-                .append(" ]");
-        return buf.toString();
     }
+
+    private static int processKey(StringBuilder buf, ConversionContext context, int cid, int value, int hValue, int state) {
+        switch (state) {
+            case FIRST: {
+                if (cid == context.lastCid + 1 && value == context.lastValue && hValue == context.lastHValue) {
+                    return SERIAL;
+                } else {
+                    appendEntry(buf, context.lastCid, context.lastValue, context.lastHValue, cid);
+                    return FIRST;
+                }
+            }
+            case SERIAL: {
+                if (cid != context.lastCid + 1 || value != context.lastValue || hValue != context.lastHValue) {
+                    appendEntry(buf, context.lastCid, context.lastValue, context.lastHValue, cid);
+                    return FIRST;
+                }
+                break;
+            }
+            default:
+                break;
+        }
+        return state;
+    }
+
+    private static void appendEntry(StringBuilder buf, int lastCid, int lastValue, int lastHValue, int cid) {
+        buf.append(' ').append(lastCid).append(' ').append(-lastValue).append(' ').append(lastHValue / 2).append(' ').append(V1Y).append(' ').append(cid);
+    }
+
+    private static void appendFinalEntry(StringBuilder buf, ConversionContext context) {
+        buf.append(' ').append(context.lastCid).append(' ').append(-context.lastValue).append(' ').append(context.lastHValue / 2).append(' ').append(V1Y);
+    }
+
+    private static class ConversionContext {
+        int start;
+        int lastCid;
+        int lastValue;
+        int lastHValue;
+
+        ConversionContext(int start, int lastCid, int lastValue, int lastHValue) {
+            this.start = start;
+            this.lastCid = lastCid;
+            this.lastValue = lastValue;
+            this.lastHValue = lastHValue;
+        }
+    }
+
 
     static HashMap<Object, Object> readFontProperties(String name) {
         try {

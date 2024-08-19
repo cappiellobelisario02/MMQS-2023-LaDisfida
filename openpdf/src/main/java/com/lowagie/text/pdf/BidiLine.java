@@ -462,32 +462,38 @@ public class BidiLine {
         this.runDirection = runDirection;
         currentChar = 0;
         totalTextLength = 0;
+
+        boolean hasText = findParagraphEnd();
+        if (!hasText) {
+            return false;
+        }
+
+        trimTrailingWhitespace();
+        if (totalTextLength == 0) {
+            return true;
+        }
+
+        if (isBidirectionalText(runDirection)) {
+            handleBidirectionalText();
+        }
+
+        trimTrailingWhitespaceEx();
+        return true;
+    }
+
+    private boolean findParagraphEnd() {
         boolean hasText = false;
-        char c;
-        char uniC;
-        BaseFont bf;
         for (; indexChunk < chunks.size(); ++indexChunk) {
             PdfChunk ck = chunks.get(indexChunk);
-            bf = ck.font().getFont();
+            BaseFont bf = ck.font().getFont();
             String s = ck.toString();
             int len = s.length();
             for (; indexChunkChar < len; ++indexChunkChar) {
-                c = s.charAt(indexChunkChar);
-                uniC = (char) bf.getUnicodeEquivalent(c);
-                if (uniC == '\r' || uniC == '\n') {
-                    // next condition is never true for CID
-                    if (uniC == '\r' && indexChunkChar + 1 < len && s.charAt(indexChunkChar + 1) == '\n') {
-                        ++indexChunkChar;
-                    }
-                    ++indexChunkChar;
-                    if (indexChunkChar >= len) {
-                        indexChunkChar = 0;
-                        ++indexChunk;
-                    }
+                char c = s.charAt(indexChunkChar);
+                char uniC = (char) bf.getUnicodeEquivalent(c);
+                if (isParagraphEnd(uniC, s, len)) {
                     hasText = true;
-                    if (totalTextLength == 0) {
-                        detailChunks[0] = ck;
-                    }
+                    handleParagraphEnd(ck, len);
                     break;
                 }
                 addPiece(c, ck);
@@ -497,35 +503,51 @@ public class BidiLine {
             }
             indexChunkChar = 0;
         }
-        if (totalTextLength == 0) {
-            return hasText;
-        }
+        return hasText;
+    }
 
-        // remove trailing WS
+    private boolean isParagraphEnd(char uniC, String s, int len) {
+        return uniC == '\r' || uniC == '\n' || (uniC == '\r' && indexChunkChar + 1 < len && s.charAt(indexChunkChar + 1) == '\n');
+    }
+
+    private void handleParagraphEnd(PdfChunk ck, int len) {
+        ++indexChunkChar;
+        if (indexChunkChar >= len) {
+            indexChunkChar = 0;
+            ++indexChunk;
+        }
+        if (totalTextLength == 0) {
+            detailChunks[0] = ck;
+        }
+    }
+
+    private void trimTrailingWhitespace() {
         totalTextLength = trimRight(0, totalTextLength - 1) + 1;
-        if (totalTextLength == 0) {
-            return true;
-        }
+    }
 
-        if (runDirection == PdfWriter.RUN_DIRECTION_LTR || runDirection == PdfWriter.RUN_DIRECTION_RTL) {
-            if (orderLevels.length < totalTextLength) {
-                orderLevels = new byte[pieceSize];
-                indexChars = new int[pieceSize];
-            }
-            ArabicLigaturizer.processNumbers(text, 0, totalTextLength, arabicOptions);
-            Bidi bidi = new Bidi(new String(text),
-                    (byte) (runDirection == PdfWriter.RUN_DIRECTION_RTL ? Bidi.DIRECTION_RIGHT_TO_LEFT
-                            : Bidi.DIRECTION_LEFT_TO_RIGHT));
-            for (int k = 0; k < totalTextLength; ++k) {
-                orderLevels[k] = (byte) bidi.getLevelAt(k);
-                indexChars[k] = k;
-            }
-            doArabicShapping();
-            mirrorGlyphs();
-        }
+    private boolean isBidirectionalText(int runDirection) {
+        return runDirection == PdfWriter.RUN_DIRECTION_LTR || runDirection == PdfWriter.RUN_DIRECTION_RTL;
+    }
 
+    private void handleBidirectionalText() {
+        if (orderLevels.length < totalTextLength) {
+            orderLevels = new byte[pieceSize];
+            indexChars = new int[pieceSize];
+        }
+        ArabicLigaturizer.processNumbers(text, 0, totalTextLength, arabicOptions);
+        Bidi bidi = new Bidi(new String(text),
+                (byte) (runDirection == PdfWriter.RUN_DIRECTION_RTL ? Bidi.DIRECTION_RIGHT_TO_LEFT
+                        : Bidi.DIRECTION_LEFT_TO_RIGHT));
+        for (int k = 0; k < totalTextLength; ++k) {
+            orderLevels[k] = (byte) bidi.getLevelAt(k);
+            indexChars[k] = k;
+        }
+        doArabicShapping();
+        mirrorGlyphs();
+    }
+
+    private void trimTrailingWhitespaceEx() {
         totalTextLength = trimRightEx(0, totalTextLength - 1) + 1;
-        return true;
     }
 
     public void addChunk(PdfChunk chunk) {
@@ -617,44 +639,65 @@ public class BidiLine {
     public void doArabicShapping() {
         int src = 0;
         int dest = 0;
-        for (; ; ) {
-            while (src < totalTextLength) {
-                char c = text[src];
-                if (c >= 0x0600 && c <= 0x06ff) {
-                    break;
-                }
-                if (src != dest) {
-                    text[dest] = text[src];
-                    detailChunks[dest] = detailChunks[src];
-                    orderLevels[dest] = orderLevels[src];
-                }
-                ++src;
-                ++dest;
+
+        while (src < totalTextLength) {
+            int startArabicIdx = findNextArabicWordStart(src, dest);
+            if (startArabicIdx >= totalTextLength) {
+                break;
             }
-            if (src >= totalTextLength) {
-                totalTextLength = dest;
-                return;
+
+            int endArabicIdx = findNextNonArabicChar(startArabicIdx + 1);
+            int arabicWordSize = endArabicIdx - startArabicIdx;
+
+            int newSize = shapeArabicWord(startArabicIdx, arabicWordSize, dest);
+            src = endArabicIdx;
+            dest += newSize;
+        }
+
+        totalTextLength = dest;
+    }
+
+    private int findNextArabicWordStart(int start, int dest) {
+        while (start < totalTextLength) {
+            char c = text[start];
+            if (c >= 0x0600 && c <= 0x06ff) {
+                break;
             }
-            int startArabicIdx = src;
-            ++src;
-            while (src < totalTextLength) {
-                char c = text[src];
-                if (c < 0x0600 || c > 0x06ff) {
-                    break;
-                }
-                ++src;
+            copyCharacterAndMetadata(start, dest++);
+            start++;
+        }
+        return start;
+    }
+
+    private int findNextNonArabicChar(int start) {
+        while (start < totalTextLength) {
+            char c = text[start];
+            if (c < 0x0600 || c > 0x06ff) {
+                break;
             }
-            int arabicWordSize = src - startArabicIdx;
-            int size = ArabicLigaturizer.arabic_shape(text, startArabicIdx, arabicWordSize, text, dest, arabicWordSize,
-                    arabicOptions);
-            if (startArabicIdx != dest) {
-                for (int k = 0; k < size; ++k) {
-                    detailChunks[dest] = detailChunks[startArabicIdx];
-                    orderLevels[dest++] = orderLevels[startArabicIdx++];
-                }
-            } else {
-                dest += size;
-            }
+            start++;
+        }
+        return start;
+    }
+
+    private int shapeArabicWord(int startArabicIdx, int arabicWordSize, int dest) {
+        int size = ArabicLigaturizer.arabic_shape(text, startArabicIdx, arabicWordSize, text, dest, arabicWordSize, arabicOptions);
+        if (startArabicIdx != dest) {
+            copyMetadata(startArabicIdx, dest, size);
+        }
+        return size;
+    }
+
+    private void copyCharacterAndMetadata(int src, int dest) {
+        text[dest] = text[src];
+        detailChunks[dest] = detailChunks[src];
+        orderLevels[dest] = orderLevels[src];
+    }
+
+    private void copyMetadata(int src, int dest, int size) {
+        for (int k = 0; k < size; ++k) {
+            detailChunks[dest] = detailChunks[src];
+            orderLevels[dest++] = orderLevels[src++];
         }
     }
 
@@ -662,126 +705,153 @@ public class BidiLine {
         this.arabicOptions = arabicOptions;
         save();
         boolean isRTL = (runDirection == PdfWriter.RUN_DIRECTION_RTL);
-        if (currentChar >= totalTextLength) {
-            boolean hasText = getParagraph(runDirection);
-            if (!hasText) {
-                return null;
-            }
-            if (totalTextLength == 0) {
-                ArrayList<PdfChunk> ar = new ArrayList<>();
-                PdfChunk ck = new PdfChunk("", detailChunks[0]);
-                ar.add(ck);
-                return new PdfLine(0, 0, 0, alignment, true, ar, isRTL);
-            }
+        if (!prepareLine(runDirection)) {
+            return null;
         }
+
         float originalWidth = width;
         int lastSplit = -1;
+
         if (currentChar != 0) {
             currentChar = trimLeftEx(currentChar, totalTextLength - 1);
         }
-        int oldCurrentChar = currentChar;
-        int uniC = 0;
-        PdfChunk ck = null;
-        float charWidth = 0;
+
         PdfChunk lastValidChunk = null;
-        boolean splitChar = false;
-        boolean surrogate = false;
+        float charWidth;
         for (; currentChar < totalTextLength; ++currentChar) {
-            ck = detailChunks[currentChar];
-            surrogate = Utilities.isSurrogatePair(text, currentChar);
-            if (surrogate) {
-                uniC = ck.getUnicodeEquivalent(Utilities.convertToUtf32(text, currentChar));
-            } else {
-                uniC = ck.getUnicodeEquivalent(text[currentChar]);
-            }
+            PdfChunk ck = detailChunks[currentChar];
+            int uniC = getUnicodeCharacter(ck, currentChar);
             if (PdfChunk.noPrint(uniC)) {
                 continue;
             }
-            if (surrogate) {
-                charWidth = ck.getCharWidth(uniC);
-            } else {
-                charWidth = ck.getCharWidth(text[currentChar]);
-            }
-            splitChar = ck.isExtSplitCharacter(oldCurrentChar, currentChar, totalTextLength, text, detailChunks);
-            if (splitChar && Character.isWhitespace((char) uniC)) {
-                lastSplit = currentChar;
-            }
+            charWidth = getCharacterWidth(ck, uniC);
+            lastSplit = updateSplitChar(ck, charWidth, uniC, lastSplit, width);
+
             if (width - charWidth < 0) {
                 break;
             }
-            if (splitChar) {
-                lastSplit = currentChar;
-            }
+
             width -= charWidth;
             lastValidChunk = ck;
-            if (ck.isTab()) {
-                Object[] tab = (Object[]) ck.getAttribute(Chunk.TAB);
-                float tabPosition = (Float) tab[1];
-                boolean newLine = (Boolean) tab[2];
-                if (newLine && tabPosition < originalWidth - width) {
-                    return new PdfLine(0, originalWidth, width, alignment, true,
-                            createArrayOfPdfChunks(oldCurrentChar, currentChar - 1), isRTL);
-                }
-                detailChunks[currentChar].adjustLeft(leftX);
-                width = originalWidth - tabPosition;
+
+            float newWidth = handleTab(ck, leftX, originalWidth, width, alignment, isRTL);
+            if (newWidth == -1) {
+                // La linea è stata creata, quindi restituire l'oggetto PdfLine
+                return createNewLine(originalWidth, width, alignment, isRTL);
             }
-            if (surrogate) {
-                ++currentChar;
+            width = newWidth;
+        }
+
+        return finalizeLine(lastValidChunk, originalWidth, width, alignment, isRTL, lastSplit);
+    }
+
+    private boolean prepareLine(int runDirection) {
+        if (currentChar >= totalTextLength) {
+            boolean hasText = getParagraph(runDirection);
+            if (!hasText || totalTextLength == 0) {
+                ArrayList<PdfChunk> ar = new ArrayList<>();
+                PdfChunk ck = new PdfChunk("", detailChunks[0]);
+                ar.add(ck);
+                return false;
             }
         }
-        if (lastValidChunk == null) {
-            // not even a single char fit; must output the first char
-            ++currentChar;
-            if (surrogate) {
-                ++currentChar;
+        return true;
+    }
+
+    private int getUnicodeCharacter(PdfChunk ck, int currentChar) {
+        boolean surrogate = Utilities.isSurrogatePair(text, currentChar);
+        if (surrogate) {
+            return ck.getUnicodeEquivalent(Utilities.convertToUtf32(text, currentChar));
+        } else {
+            return ck.getUnicodeEquivalent(text[currentChar]);
+        }
+    }
+
+    private float getCharacterWidth(PdfChunk ck, int uniC) {
+        if (Utilities.isSurrogatePair(text, currentChar)) {
+            return ck.getCharWidth(uniC);
+        } else {
+            return ck.getCharWidth(text[currentChar]);
+        }
+    }
+
+    private int updateSplitChar(PdfChunk ck, float charWidth, int uniC, int lastSplit, float width) {
+        boolean splitChar = ck.isExtSplitCharacter(currentChar, currentChar, totalTextLength, text, detailChunks);
+        if (splitChar && Character.isWhitespace((char) uniC)) {
+            return currentChar;
+        }
+        if (splitChar && width - charWidth >= 0) {
+            return currentChar;
+        }
+        return lastSplit;
+    }
+
+    private float handleTab(PdfChunk ck, float leftX, float originalWidth, float width, int alignment, boolean isRTL) {
+        if (ck.isTab()) {
+            Object[] tab = (Object[]) ck.getAttribute(Chunk.TAB);
+            float tabPosition = (Float) tab[1];
+            boolean newLine = (Boolean) tab[2];
+            if (newLine && tabPosition < originalWidth - width) {
+                // Creiamo una nuova linea e ritorniamo l'oggetto `PdfLine`
+                PdfLine newLineResult = createNewLine(originalWidth, width, alignment, isRTL);
+                // Restituiamo un valore speciale per indicare che la linea è stata creata
+                return -1; // Un valore speciale per indicare che la linea è stata creata e non c'è bisogno di continuare
             }
+            detailChunks[currentChar].adjustLeft(leftX);
+            width = originalWidth - tabPosition;
+        }
+        return width;
+    }
+
+    private PdfLine createNewLine(float originalWidth, float width, int alignment, boolean isRTL) {
+        return new PdfLine(0, originalWidth, width, alignment, true,
+                createArrayOfPdfChunks(currentChar - 1, currentChar - 1), isRTL);
+    }
+
+    private PdfLine finalizeLine(PdfChunk lastValidChunk, float originalWidth, float width, int alignment, boolean isRTL, int lastSplit) {
+        if (lastValidChunk == null) {
+            incrementCurrentChar();
             return new PdfLine(0, originalWidth, 0, alignment, false,
                     createArrayOfPdfChunks(currentChar - 1, currentChar - 1), isRTL);
         }
         if (currentChar >= totalTextLength) {
-            // there was more line than text
             return new PdfLine(0, originalWidth, width, alignment, true,
-                    createArrayOfPdfChunks(oldCurrentChar, totalTextLength - 1), isRTL);
+                    createArrayOfPdfChunks(currentChar - 1, totalTextLength - 1), isRTL);
         }
-        int newCurrentChar = trimRightEx(oldCurrentChar, currentChar - 1);
-        if (newCurrentChar < oldCurrentChar) {
-            // only WS
+        return handleLineEnd(originalWidth, width, alignment, isRTL, lastSplit);
+    }
+
+    private void incrementCurrentChar() {
+        ++currentChar;
+        if (Utilities.isSurrogatePair(text, currentChar)) {
+            ++currentChar;
+        }
+    }
+
+    private PdfLine handleLineEnd(float originalWidth, float width, int alignment, boolean isRTL, int lastSplit) {
+        int newCurrentChar = trimRightEx(currentChar, currentChar - 1);
+        if (newCurrentChar < currentChar) {
             return new PdfLine(0, originalWidth, width, alignment, false,
-                    createArrayOfPdfChunks(oldCurrentChar, currentChar - 1), isRTL);
-        }
-        if (newCurrentChar == currentChar - 1) { // middle of word
-            HyphenationEvent he = (HyphenationEvent) lastValidChunk.getAttribute(Chunk.HYPHENATION);
-            if (he != null) {
-                int[] word = getWord(oldCurrentChar, newCurrentChar);
-                if (word != null) {
-                    float testWidth = width + getWidth(word[0], currentChar - 1);
-                    String pre = he.getHyphenatedWordPre(new String(text, word[0], word[1] - word[0]),
-                            lastValidChunk.font().getFont(), lastValidChunk.font().size(), testWidth);
-                    String post = he.getHyphenatedWordPost();
-                    if (pre.length() > 0) {
-                        PdfChunk extra = new PdfChunk(pre, lastValidChunk);
-                        currentChar = word[1] - post.length();
-                        return new PdfLine(0, originalWidth, testWidth - lastValidChunk.font().width(pre), alignment,
-                                false, createArrayOfPdfChunks(oldCurrentChar, word[0] - 1, extra), isRTL);
-                    }
-                }
-            }
+                    createArrayOfPdfChunks(currentChar, currentChar - 1), isRTL);
         }
         if (lastSplit == -1 || lastSplit >= newCurrentChar) {
-            // no split point or split point ahead of end
             return new PdfLine(0, originalWidth, width + getWidth(newCurrentChar + 1, currentChar - 1), alignment,
-                    false, createArrayOfPdfChunks(oldCurrentChar, newCurrentChar), isRTL);
+                    false, createArrayOfPdfChunks(currentChar, newCurrentChar), isRTL);
         }
-        // standard split
+        return createSplitLine(originalWidth, alignment, isRTL, lastSplit);
+    }
+
+    private PdfLine createSplitLine(float originalWidth, int alignment, boolean isRTL, int lastSplit) {
         currentChar = lastSplit + 1;
-        newCurrentChar = trimRightEx(oldCurrentChar, lastSplit);
-        if (newCurrentChar < oldCurrentChar) {
-            // only WS again
+        int newCurrentChar = trimRightEx(currentChar, lastSplit);
+        if (newCurrentChar < currentChar) {
             newCurrentChar = currentChar - 1;
         }
-        return new PdfLine(0, originalWidth, originalWidth - getWidth(oldCurrentChar, newCurrentChar), alignment, false,
-                createArrayOfPdfChunks(oldCurrentChar, newCurrentChar), isRTL);
+        return new PdfLine(0, originalWidth, originalWidth - getWidth(currentChar, newCurrentChar), alignment, false,
+                createArrayOfPdfChunks(currentChar, newCurrentChar), isRTL);
     }
+
+
 
     /**
      * Gets the width of a range of characters.
@@ -818,48 +888,67 @@ public class BidiLine {
 
     public ArrayList<PdfChunk> createArrayOfPdfChunks(int startIdx, int endIdx, PdfChunk extraPdfChunk) {
         boolean bidi = (runDirection == PdfWriter.RUN_DIRECTION_LTR || runDirection == PdfWriter.RUN_DIRECTION_RTL);
+        StringBuilder buf = new StringBuilder();
+        PdfChunk refCk = detailChunks[startIdx];
+        PdfChunk ck = null;
+        char c;
         if (bidi) {
             reorder(startIdx, endIdx);
         }
+
         ArrayList<PdfChunk> ar = new ArrayList<>();
-        PdfChunk refCk = detailChunks[startIdx];
-        PdfChunk ck = null;
-        StringBuilder buf = new StringBuilder();
-        char c;
-        int idx = 0;
-        for (; startIdx <= endIdx; ++startIdx) {
-            idx = bidi ? indexChars[startIdx] : startIdx;
+        for (int i = startIdx; i <= endIdx; i++) {
+            int idx = bidi ? indexChars[i] : i;
             c = text[idx];
             ck = detailChunks[idx];
-            if (PdfChunk.noPrint(ck.getUnicodeEquivalent(c))) {
-                continue;
-            }
-            if (ck.isImage() || ck.isSeparator() || ck.isTab()) {
-                if (buf.length() > 0) {
-                    ar.add(new PdfChunk(buf.toString(), refCk));
-                    buf = new StringBuffer();
-                }
-                ar.add(ck);
-            } else if (ck == refCk) {
-                buf.append(c);
-            } else {
-                if (buf.length() > 0) {
-                    ar.add(new PdfChunk(buf.toString(), refCk));
-                    buf = new StringBuffer();
-                }
-                if (!ck.isImage() && !ck.isSeparator() && !ck.isTab()) {
-                    buf.append(c);
+            if (isPrintableCharacter(ck, c)) {
+                if (isSpecialChunk(ck)) {
+                    buf = handleSpecialChunk(ar, buf, ck, refCk);
+                } else {
+                    buf = handleNormalChunk(ar, buf, ck, refCk, text[idx]);
                 }
                 refCk = ck;
             }
         }
-        if (buf.length() > 0) {
+
+        if (!buf.isEmpty()) {
             ar.add(new PdfChunk(buf.toString(), refCk));
         }
         if (extraPdfChunk != null) {
             ar.add(extraPdfChunk);
         }
         return ar;
+    }
+
+    private boolean isPrintableCharacter(PdfChunk ck, char c) {
+        return !PdfChunk.noPrint(ck.getUnicodeEquivalent(c));
+    }
+
+    private boolean isSpecialChunk(PdfChunk ck) {
+        return ck.isImage() || ck.isSeparator() || ck.isTab();
+    }
+
+    private StringBuilder handleSpecialChunk(ArrayList<PdfChunk> ar, StringBuilder buf, PdfChunk ck, PdfChunk refCk) {
+        if (!buf.isEmpty()) {
+            ar.add(new PdfChunk(buf.toString(), refCk));
+            return new StringBuilder();
+        }
+        ar.add(ck);
+        return buf;
+    }
+
+    private StringBuilder handleNormalChunk(ArrayList<PdfChunk> ar, StringBuilder buf, PdfChunk ck,
+            PdfChunk refCk, char c) {
+        if (ck == refCk) {
+            buf.append(c);
+        } else {
+            if (!buf.isEmpty()) {
+                ar.add(new PdfChunk(buf.toString(), refCk));
+                buf = new StringBuilder();
+            }
+            buf.append(c);
+        }
+        return buf;
     }
 
     public int[] getWord(int startIdx, int idx) {
@@ -933,50 +1022,94 @@ public class BidiLine {
     }
 
     public void reorder(int start, int end) {
-        byte maxLevel = orderLevels[start];
-        byte minLevel = maxLevel;
-        byte onlyOddLevels = maxLevel;
-        byte onlyEvenLevels = maxLevel;
-        for (int k = start + 1; k <= end; ++k) {
-            byte b = orderLevels[k];
-            if (b > maxLevel) {
-                maxLevel = b;
-            } else if (b < minLevel) {
-                minLevel = b;
-            }
-            onlyOddLevels &= b;
-            onlyEvenLevels |= b;
-        }
-        if ((onlyEvenLevels & 1) == 0) {
-            // nothing to do
+        byte maxLevel = findMaxLevel(start, end);
+        byte minLevel = findMinLevel(start, end);
+        byte onlyOddLevels = findOnlyOddLevels(start, end);
+        byte onlyEvenLevels = findOnlyEvenLevels(start, end);
+
+        if (!needsReordering(onlyEvenLevels)) {
             return;
         }
-        if ((onlyOddLevels & 1) == 1) { // single inversion
+
+        if (isSingleInversion(onlyOddLevels)) {
             flip(start, end + 1);
             return;
         }
-        minLevel |= 1;
-        for (; maxLevel >= minLevel; --maxLevel) {
-            int pstart = start;
-            for (; ; ) {
-                for (; pstart <= end; ++pstart) {
-                    if (orderLevels[pstart] >= maxLevel) {
-                        break;
-                    }
-                }
-                if (pstart > end) {
-                    break;
-                }
-                int pend = pstart + 1;
-                for (; pend <= end; ++pend) {
-                    if (orderLevels[pend] < maxLevel) {
-                        break;
-                    }
-                }
-                flip(pstart, pend);
-                pstart = pend + 1;
+
+        for (byte level = maxLevel; level >= minLevel; level--) {
+            processLevel(start, end, level);
+        }
+    }
+
+    private byte findMaxLevel(int start, int end) {
+        byte maxLevel = orderLevels[start];
+        for (int k = start + 1; k <= end; ++k) {
+            maxLevel = (byte) Math.max(maxLevel, orderLevels[k]);
+        }
+        return maxLevel;
+    }
+
+    private byte findMinLevel(int start, int end) {
+        byte minLevel = orderLevels[start];
+        for (int k = start + 1; k <= end; ++k) {
+            minLevel = (byte) Math.min(minLevel, orderLevels[k]);
+        }
+        return minLevel;
+    }
+
+    private byte findOnlyOddLevels(int start, int end) {
+        byte onlyOddLevels = orderLevels[start];
+        for (int k = start + 1; k <= end; ++k) {
+            onlyOddLevels &= orderLevels[k];
+        }
+        return onlyOddLevels;
+    }
+
+    private byte findOnlyEvenLevels(int start, int end) {
+        byte onlyEvenLevels = orderLevels[start];
+        for (int k = start + 1; k <= end; ++k) {
+            onlyEvenLevels |= orderLevels[k];
+        }
+        return onlyEvenLevels;
+    }
+
+    private boolean needsReordering(byte onlyEvenLevels) {
+        return (onlyEvenLevels & 1) != 0;
+    }
+
+    private boolean isSingleInversion(byte onlyOddLevels) {
+        return (onlyOddLevels & 1) == 1;
+    }
+
+    private void processLevel(int start, int end, byte level) {
+        int pstart = start;
+        while (pstart <= end) {
+            pstart = findNextStart(pstart, end, level);
+            if (pstart > end) {
+                break;
+            }
+            int pend = findNextEnd(pstart, end, level);
+            flip(pstart, pend);
+            pstart = pend + 1;
+        }
+    }
+
+    private int findNextStart(int start, int end, byte level) {
+        for (; start <= end; ++start) {
+            if (orderLevels[start] >= level) {
+                break;
             }
         }
+        return start;
+    }
+
+    private int findNextEnd(int start, int end, byte level) {
+        for (; start <= end; ++start) {
+            if (orderLevels[start] < level) {
+                break;
+            }
+        }
+        return start - 1;
     }
 
     public void flip(int start, int end) {

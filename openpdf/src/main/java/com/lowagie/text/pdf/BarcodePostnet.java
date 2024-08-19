@@ -49,7 +49,6 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.Rectangle;
 import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Image;
 import java.awt.image.MemoryImageSource;
 
 /**
@@ -82,6 +81,9 @@ public class BarcodePostnet extends Barcode {
                     {1, 0, 0, 1, 0},
                     {1, 0, 1, 0, 0}
             };
+    
+    int f;
+    int g;
 
     /**
      * Creates new BarcodePostnet
@@ -194,34 +196,43 @@ public class BarcodePostnet extends Barcode {
      * @return the image
      */
     public java.awt.Image createAwtImage(Color foreground, Color background) {
-        int f = foreground.getRGB();
-        int g = background.getRGB();
+        f = foreground.getRGB();
+        g = background.getRGB();
         Canvas canvas = new Canvas();
-        int barWidth = (int) x;
-        if (barWidth <= 0) {
-            barWidth = 1;
-        }
-        int barDistance = (int) n;
-        if (barDistance <= barWidth) {
-            barDistance = barWidth + 1;
-        }
-        int barShort = (int) size;
-        if (barShort <= 0) {
-            barShort = 1;
-        }
-        int barTall = (int) barHeight;
-        if (barTall <= barShort) {
-            barTall = barShort + 1;
-        }
-        int width = ((code.length() + 1) * 5 + 1) * barDistance + barWidth;
+
+        // Calculate bar dimensions
+        int barWidth = Math.max(1, (int) x);
+        int barDistance = Math.max(barWidth + 1, (int) n);
+        int barShort = Math.max(1, (int) size);
+        int barTall = Math.max(barShort + 1, (int) barHeight);
+
+        // Calculate image dimensions
+        int width = calculateImageWidth(barDistance, code, barWidth);
         int[] pix = new int[width * barTall];
+
+        // Create bars
         byte[] bars = getBarsPostnet(code);
-        byte flip = 1;
-        if (codeType == PLANET) {
-            flip = 0;
+        byte flip = (byte) (codeType == PLANET ? 0 : 1);
+        if (flip == 0) {
             bars[0] = 0;
             bars[bars.length - 1] = 0;
         }
+
+        // Populate pixel array
+        createBarPattern(pix, bars, flip, barWidth, barDistance);
+        createVerticalRepetitions(pix, width, barShort, barTall);
+        createBottomBarPattern(pix, bars, barWidth, barDistance, width, barTall, barShort);
+        createBottomVerticalRepetitions(pix, width, barShort, barTall);
+
+        return canvas.createImage(new MemoryImageSource(width, barTall, pix, 0, width));
+    }
+
+    private int calculateImageWidth(int barDistance, String code, int barWidth) {
+        return ((code.length() + 1) * 5 + 1) * barDistance + barWidth;
+    }
+
+    private void createBarPattern(int[] pix, byte[] bars, byte flip, int barWidth, 
+            int barDistance) {
         int idx = 0;
         for (byte bar : bars) {
             boolean dot = (bar == flip);
@@ -230,22 +241,30 @@ public class BarcodePostnet extends Barcode {
             }
             idx += barDistance;
         }
+    }
+
+    private void createVerticalRepetitions(int[] pix, int width, int barShort, int barTall) {
         int limit = width * (barTall - barShort);
         for (int k = width; k < limit; k += width) {
             System.arraycopy(pix, 0, pix, k, width);
         }
-        idx = limit;
+    }
+
+    private void createBottomBarPattern(int[] pix, byte[] bars, int barWidth, int barDistance, int width, 
+            int barTall, int barShort) {
+        int idx = width * (barTall - barShort);
         for (int k = 0; k < bars.length; ++k) {
             for (int j = 0; j < barDistance; ++j) {
                 pix[idx + j] = ((j < barWidth) ? f : g);
             }
             idx += barDistance;
         }
+    }
+
+    private void createBottomVerticalRepetitions(int[] pix, int width, int barShort, int barTall) {
+        int limit = width * (barTall - barShort);
         for (int k = limit + width; k < pix.length; k += width) {
             System.arraycopy(pix, limit, pix, k, width);
         }
-        Image img = canvas.createImage(new MemoryImageSource(width, barTall, pix, 0, width));
-
-        return img;
     }
 }

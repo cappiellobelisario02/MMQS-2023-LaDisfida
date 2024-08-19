@@ -239,7 +239,7 @@ class TrueTypeFont extends BaseFont {
      * -Math.atan2(hhea.caretSlopeRun, hhea.caretSlopeRise) * 180 / Math.PI
      * </PRE>
      */
-    protected double ITALICANGLE;
+    protected double italic_Angle;
     /**
      * <CODE>true</CODE> if all the glyphs have the same width.
      */
@@ -442,13 +442,13 @@ class TrueTypeFont extends BaseFont {
 
         table_location = tables.get("post");
         if (table_location == null) {
-            italicAngle = -Math.atan2(hhea.caretSlopeRun, hhea.caretSlopeRise) * 180 / Math.PI;
+            italic_Angle = -Math.atan2(hhea.caretSlopeRun, hhea.caretSlopeRise) * 180 / Math.PI;
             return;
         }
         rf.seek(table_location[0] + 4);
         short mantissa = rf.readShort();
         int fraction = rf.readUnsignedShort();
-        italicAngle = mantissa + fraction / 16384.0d;
+        italic_Angle = mantissa + fraction / 16384.0d;
         underlinePosition = rf.readShort();
         underlineThickness = rf.readShort();
         isFixedPitch = rf.readInt() != 0;
@@ -1086,7 +1086,7 @@ class TrueTypeFont extends BaseFont {
         } else {
             dic.put(PdfName.FONTNAME, new PdfName(subsetPrefix + fontName + style));
         }
-        dic.put(PdfName.ITALICANGLE, new PdfNumber(italicAngle));
+        dic.put(PdfName.ITALICANGLE, new PdfNumber(italic_Angle));
         dic.put(PdfName.STEMV, new PdfNumber(80));
         if (fontStream != null) {
             if (cff) {
@@ -1370,7 +1370,7 @@ class TrueTypeFont extends BaseFont {
             case DESCENT:
                 return os_2.sTypoDescender * fontSize / head.unitsPerEm;
             case ITALICANGLE:
-                return (float) italicAngle;
+                return (float) italic_Angle;
             case BBOXLLX:
                 return fontSize * head.xMin / head.unitsPerEm;
             case BBOXLLY:

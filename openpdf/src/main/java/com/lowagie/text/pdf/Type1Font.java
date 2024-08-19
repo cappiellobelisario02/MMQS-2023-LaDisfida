@@ -99,7 +99,8 @@ class Type1Font extends BaseFont {
     /**
      * The italic angle of the font, usually 0.0 or negative.
      */
-    private float ITALICANGLE = 0.0f;
+    private float italic_Angle = 0.0f;
+    private float cap_Height = 0.0f;
     /**
      * <CODE>true</CODE> if all the characters have the same
      * width.
@@ -392,7 +393,7 @@ class Type1Font extends BaseFont {
                     Weight = tok.nextToken("\u00ff").substring(1);
                     break;
                 case "ItalicAngle":
-                    ItalicAngle = Float.parseFloat(tok.nextToken());
+                    italic_Angle = Float.parseFloat(tok.nextToken());
                     break;
                 case "IsFixedPitch":
                     IsFixedPitch = tok.nextToken().equals("true");
@@ -416,7 +417,7 @@ class Type1Font extends BaseFont {
                     EncodingScheme = tok.nextToken("\u00ff").substring(1);
                     break;
                 case "CapHeight":
-                    CapHeight = (int) Float.parseFloat(tok.nextToken());
+                    cap_Height = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "XHeight":
                     XHeight = (int) Float.parseFloat(tok.nextToken());
@@ -622,11 +623,11 @@ class Type1Font extends BaseFont {
         }
         PdfDictionary dic = new PdfDictionary(PdfName.FONTDESCRIPTOR);
         dic.put(PdfName.ASCENT, new PdfNumber(Ascender));
-        dic.put(PdfName.CAPHEIGHT, new PdfNumber(CapHeight));
+        dic.put(PdfName.CAPHEIGHT, new PdfNumber(cap_Height));
         dic.put(PdfName.DESCENT, new PdfNumber(Descender));
         dic.put(PdfName.FONTBBOX, new PdfRectangle(llx, lly, urx, ury));
         dic.put(PdfName.FONTNAME, new PdfName(FontName));
-        dic.put(PdfName.ITALICANGLE, new PdfNumber(ItalicAngle));
+        dic.put(PdfName.ITALICANGLE, new PdfNumber(italic_Angle));
         dic.put(PdfName.STEMV, new PdfNumber(StdVW));
         if (fontStream != null) {
             dic.put(PdfName.FONTFILE, fontStream);
@@ -636,7 +637,7 @@ class Type1Font extends BaseFont {
             flags |= 1;
         }
         flags |= fontSpecific ? 4 : 32;
-        if (ItalicAngle < 0) {
+        if (italic_Angle < 0) {
             flags |= 64;
         }
         if (FontName.contains("Caps") || FontName.endsWith("SC")) {
@@ -668,7 +669,7 @@ class Type1Font extends BaseFont {
         boolean stdEncoding = encoding.equals("Cp1252") || encoding.equals("MacRoman");
         if (!fontSpecific || specialMap != null) {
             for (int k = firstChar; k <= lastChar; ++k) {
-                if (!differences[k].equals(notdef)) {
+                if (!differences[k].equals(NOTDEF)) {
                     firstChar = k;
                     break;
                 }
@@ -768,12 +769,12 @@ class Type1Font extends BaseFont {
             case ASCENT:
                 return Ascender * fontSize / 1000;
             case CAPHEIGHT:
-                return CapHeight * fontSize / 1000;
+                return cap_Height * fontSize / 1000;
             case AWT_DESCENT:
             case DESCENT:
                 return Descender * fontSize / 1000;
             case ITALICANGLE:
-                return ItalicAngle;
+                return italic_Angle;
             case BBOXLLX:
                 return llx * fontSize / 1000;
             case BBOXLLY:

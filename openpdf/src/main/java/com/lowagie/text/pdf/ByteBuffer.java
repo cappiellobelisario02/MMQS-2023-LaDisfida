@@ -219,237 +219,235 @@ public class ByteBuffer extends OutputStream {
      */
     public static String formatDouble(double d, ByteBuffer buf) {
         if (HIGH_PRECISION) {
-            DecimalFormat dn = new DecimalFormat("0.######", dfs);
-            String sform = dn.format(d);
-            if (buf == null) {
-                return sform;
-            } else {
-                buf.append(sform);
-                return null;
-            }
+            return handleHighPrecision(d, buf);
         }
-        boolean negative = false;
+
         if (Math.abs(d) < 0.000015) {
-            if (buf != null) {
-                buf.append(ZERO);
-                return null;
-            } else {
-                return "0";
-            }
+            return handleSmallValue(buf);
         }
-        if (d < 0) {
-            negative = true;
+
+        boolean negative = d < 0;
+        if (negative) {
             d = -d;
         }
+
         if (d < 1.0) {
-            d += 0.000005;
-            if (d >= 1) {
-                if (negative) {
-                    if (buf != null) {
-                        buf.append((byte) '-');
-                        buf.append((byte) '1');
-                        return null;
-                    } else {
-                        return "-1";
-                    }
-                } else {
-                    if (buf != null) {
-                        buf.append((byte) '1');
-                        return null;
-                    } else {
-                        return "1";
-                    }
-                }
-            }
-            if (buf != null) {
-                int v = (int) (d * 100000);
-
-                if (negative) {
-                    buf.append((byte) '-');
-                }
-                buf.append((byte) '0');
-                buf.append((byte) '.');
-
-                buf.append((byte) (v / 10000 + ZERO));
-                if (v % 10000 != 0) {
-                    buf.append((byte) ((v / 1000) % 10 + ZERO));
-                    if (v % 1000 != 0) {
-                        buf.append((byte) ((v / 100) % 10 + ZERO));
-                        if (v % 100 != 0) {
-                            buf.append((byte) ((v / 10) % 10 + ZERO));
-                            if (v % 10 != 0) {
-                                buf.append((byte) ((v) % 10 + ZERO));
-                            }
-                        }
-                    }
-                }
-                return null;
-            } else {
-                int x = 100000;
-                int v = (int) (d * x);
-
-                StringBuilder res = new StringBuilder();
-                if (negative) {
-                    res.append('-');
-                }
-                res.append("0.");
-
-                while (v < x / 10) {
-                    res.append('0');
-                    x /= 10;
-                }
-                res.append(v);
-                int cut = res.length() - 1;
-                while (res.charAt(cut) == '0') {
-                    --cut;
-                }
-                res.setLength(cut + 1);
-                return res.toString();
-            }
+            return handleFractionalValue(d, buf, negative);
         } else if (d <= 32767) {
-            d += 0.005;
-            int v = (int) (d * 100);
-
-            if (v < byteCacheSize && byteCache[v] != null) {
-                if (buf != null) {
-                    if (negative) {
-                        buf.append((byte) '-');
-                    }
-                    buf.append(byteCache[v]);
-                    return null;
-                } else {
-                    String tmp = PdfEncodings.convertToString(byteCache[v], null);
-                    if (negative) {
-                        tmp = "-" + tmp;
-                    }
-                    return tmp;
-                }
-            }
-            if (buf != null) {
-                if (v < byteCacheSize) {
-                    //create the cachebyte[]
-                    byte[] cache;
-                    int size = 0;
-                    if (v >= 1000000) {
-                        //the original number is >=10000, we need 5 more bytes
-                        size += 5;
-                    } else if (v >= 100000) {
-                        //the original number is >=1000, we need 4 more bytes
-                        size += 4;
-                    } else if (v >= 10000) {
-                        //the original number is >=100, we need 3 more bytes
-                        size += 3;
-                    } else if (v >= 1000) {
-                        //the original number is >=10, we need 2 more bytes
-                        size += 2;
-                    } else if (v >= 100) {
-                        //the original number is >=1, we need 1 more bytes
-                        size += 1;
-                    }
-
-                    //now we must check if we have a decimal number
-                    if (v % 100 != 0) {
-                        //yes, do not forget the "."
-                        size += 2;
-                    }
-                    if (v % 10 != 0) {
-                        size++;
-                    }
-                    cache = new byte[size];
-                    int add = 0;
-                    if (v >= 1000000) {
-                        cache[add++] = bytes[(v / 1000000)];
-                    }
-                    if (v >= 100000) {
-                        cache[add++] = bytes[(v / 100000) % 10];
-                    }
-                    if (v >= 10000) {
-                        cache[add++] = bytes[(v / 10000) % 10];
-                    }
-                    if (v >= 1000) {
-                        cache[add++] = bytes[(v / 1000) % 10];
-                    }
-                    if (v >= 100) {
-                        cache[add++] = bytes[(v / 100) % 10];
-                    }
-
-                    if (v % 100 != 0) {
-                        cache[add++] = (byte) '.';
-                        cache[add++] = bytes[(v / 10) % 10];
-                        if (v % 10 != 0) {
-                            cache[add++] = bytes[v % 10];
-                        }
-                    }
-                    byteCache[v] = cache;
-                }
-
-                if (negative) {
-                    buf.append((byte) '-');
-                }
-                if (v >= 1000000) {
-                    buf.append(bytes[(v / 1000000)]);
-                }
-                if (v >= 100000) {
-                    buf.append(bytes[(v / 100000) % 10]);
-                }
-                if (v >= 10000) {
-                    buf.append(bytes[(v / 10000) % 10]);
-                }
-                if (v >= 1000) {
-                    buf.append(bytes[(v / 1000) % 10]);
-                }
-                if (v >= 100) {
-                    buf.append(bytes[(v / 100) % 10]);
-                }
-
-                if (v % 100 != 0) {
-                    buf.append((byte) '.');
-                    buf.append(bytes[(v / 10) % 10]);
-                    if (v % 10 != 0) {
-                        buf.append(bytes[v % 10]);
-                    }
-                }
-                return null;
-            } else {
-                StringBuilder res = new StringBuilder();
-                if (negative) {
-                    res.append('-');
-                }
-                if (v >= 1000000) {
-                    res.append(chars[(v / 1000000)]);
-                }
-                if (v >= 100000) {
-                    res.append(chars[(v / 100000) % 10]);
-                }
-                if (v >= 10000) {
-                    res.append(chars[(v / 10000) % 10]);
-                }
-                if (v >= 1000) {
-                    res.append(chars[(v / 1000) % 10]);
-                }
-                if (v >= 100) {
-                    res.append(chars[(v / 100) % 10]);
-                }
-
-                if (v % 100 != 0) {
-                    res.append('.');
-                    res.append(chars[(v / 10) % 10]);
-                    if (v % 10 != 0) {
-                        res.append(chars[v % 10]);
-                    }
-                }
-                return res.toString();
-            }
+            return handleMediumValue(d, buf, negative);
         } else {
-            StringBuilder res = new StringBuilder();
-            if (negative) {
-                res.append('-');
-            }
-            d += 0.5;
-            long v = (long) d;
-            return res.append(v).toString();
+            return handleLargeValue(d, negative);
         }
     }
+
+    private static String handleHighPrecision(double d, ByteBuffer buf) {
+        DecimalFormat dn = new DecimalFormat("0.######", dfs);
+        String sform = dn.format(d);
+        if (buf == null) {
+            return sform;
+        } else {
+            buf.append(sform);
+            return null;
+        }
+    }
+
+    private static String handleSmallValue(ByteBuffer buf) {
+        if (buf != null) {
+            buf.append(ZERO);
+            return null;
+        } else {
+            return "0";
+        }
+    }
+
+    private static String handleFractionalValue(double d, ByteBuffer buf, boolean negative) {
+        d += 0.000005;
+        if (d >= 1.0) {
+            return handleRoundedValue(buf, negative);
+        }
+
+        int v = (int) (d * 100000);
+        return formatFractionalPart(v, buf, negative);
+    }
+
+    private static String handleRoundedValue(ByteBuffer buf, boolean negative) {
+        if (buf != null) {
+            if (negative) {
+                buf.append((byte) '-');
+            }
+            buf.append((byte) '1');
+            return null;
+        } else {
+            return negative ? "-1" : "1";
+        }
+    }
+
+    private static String formatFractionalPart(int v, ByteBuffer buf, boolean negative) {
+        if (buf != null) {
+            appendFractionalPartToBuffer(v, buf, negative);
+            return null;
+        } else {
+            return buildFractionalString(v, negative);
+        }
+    }
+
+    private static void appendFractionalPartToBuffer(int v, ByteBuffer buf, boolean negative) {
+        if (negative) {
+            buf.append((byte) '-');
+        }
+        buf.append((byte) '0');
+        buf.append((byte) '.');
+
+        buf.append((byte) (v / 10000 + ZERO));
+        if (v % 10000 != 0) {
+            buf.append((byte) ((v / 1000) % 10 + ZERO));
+            if (v % 1000 != 0) {
+                buf.append((byte) ((v / 100) % 10 + ZERO));
+                if (v % 100 != 0) {
+                    buf.append((byte) ((v / 10) % 10 + ZERO));
+                    if (v % 10 != 0) {
+                        buf.append((byte) ((v) % 10 + ZERO));
+                    }
+                }
+            }
+        }
+    }
+
+    private static String buildFractionalString(int v, boolean negative) {
+        StringBuilder res = new StringBuilder();
+        if (negative) {
+            res.append('-');
+        }
+        res.append("0.");
+
+        int x = 100000;
+        while (v < x / 10) {
+            res.append('0');
+            x /= 10;
+        }
+        res.append(v);
+        int cut = res.length() - 1;
+        while (res.charAt(cut) == '0') {
+            --cut;
+        }
+        res.setLength(cut + 1);
+        return res.toString();
+    }
+
+    private static String handleMediumValue(double d, ByteBuffer buf, boolean negative) {
+        d += 0.005;
+        int v = (int) (d * 100);
+
+        if (v < byteCacheSize && byteCache[v] != null) {
+            return handleCachedValue(v, buf, negative);
+        }
+
+        return formatMediumValue(v, buf, negative);
+    }
+
+    private static String handleCachedValue(int v, ByteBuffer buf, boolean negative) {
+        if (buf != null) {
+            if (negative) {
+                buf.append((byte) '-');
+            }
+            buf.append(byteCache[v]);
+            return null;
+        } else {
+            String tmp = PdfEncodings.convertToString(byteCache[v], null);
+            if (negative) {
+                tmp = "-" + tmp;
+            }
+            return tmp;
+        }
+    }
+
+    private static String formatMediumValue(int v, ByteBuffer buf, boolean negative) {
+        if (buf != null) {
+            appendMediumValueToBuffer(v, buf, negative);
+            return null;
+        } else {
+            return buildMediumString(v, negative);
+        }
+    }
+
+    private static void appendMediumValueToBuffer(int v, ByteBuffer buf, boolean negative) {
+        if (negative) {
+            buf.append((byte) '-');
+        }
+        appendFormattedValue(v, buf);
+    }
+
+    private static String buildMediumString(int v, boolean negative) {
+        StringBuilder res = new StringBuilder();
+        if (negative) {
+            res.append('-');
+        }
+        appendFormattedValue(v, res);
+        return res.toString();
+    }
+
+    private static void appendFormattedValue(int v, StringBuilder target) {
+        if (v >= 1000000) {
+            target.append(ByteBuffer.chars[(v / 1000000)]);
+        }
+        if (v >= 100000) {
+            target.append(ByteBuffer.chars[(v / 100000) % 10]);
+        }
+        if (v >= 10000) {
+            target.append(ByteBuffer.chars[(v / 10000) % 10]);
+        }
+        if (v >= 1000) {
+            target.append(ByteBuffer.chars[(v / 1000) % 10]);
+        }
+        if (v >= 100) {
+            target.append(ByteBuffer.chars[(v / 100) % 10]);
+        }
+
+        if (v % 100 != 0) {
+            target.append('.');
+            target.append(ByteBuffer.chars[(v / 10) % 10]);
+            if (v % 10 != 0) {
+                target.append(ByteBuffer.chars[v % 10]);
+            }
+        }
+    }
+
+    private static void appendFormattedValue(int v, ByteBuffer target){
+        if (v >= 1000000) {
+            target.append(ByteBuffer.bytes[(v / 1000000)]);
+        }
+        if (v >= 100000) {
+            target.append(ByteBuffer.bytes[(v / 100000) % 10]);
+        }
+        if (v >= 10000) {
+            target.append(ByteBuffer.bytes[(v / 10000) % 10]);
+        }
+        if (v >= 1000) {
+            target.append(ByteBuffer.bytes[(v / 1000) % 10]);
+        }
+        if (v >= 100) {
+            target.append(ByteBuffer.bytes[(v / 100) % 10]);
+        }
+
+        if (v % 100 != 0) {
+            target.append('.');
+            target.append(ByteBuffer.bytes[(v / 10) % 10]);
+            if (v % 10 != 0) {
+                target.append(ByteBuffer.bytes[v % 10]);
+            }
+        }
+    }
+
+    private static String handleLargeValue(double d, boolean negative) {
+        StringBuilder res = new StringBuilder();
+        if (negative) {
+            res.append('-');
+        }
+        d += 0.5;
+        long v = (long) d;
+        return res.append(v).toString();
+    }
+
 
     /**
      * Appends an <CODE>int</CODE>. The size of the array will grow by one.

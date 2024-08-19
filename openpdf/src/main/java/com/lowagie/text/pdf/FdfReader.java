@@ -46,6 +46,7 @@
  */
 package com.lowagie.text.pdf;
 
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -69,7 +70,7 @@ public class FdfReader extends PdfReader {
      * @param filename the file name of the form
      * @throws IOException on error
      */
-    public FdfReader(String filename) throws IOException {
+    public FdfReader(String filename) throws IOException, PDFFilterException {
         super(filename);
     }
 
@@ -79,7 +80,7 @@ public class FdfReader extends PdfReader {
      * @param pdfIn the byte array with the form
      * @throws IOException on error
      */
-    public FdfReader(byte[] pdfIn) throws IOException {
+    public FdfReader(byte[] pdfIn) throws IOException, PDFFilterException {
         super(pdfIn);
     }
 
@@ -89,7 +90,7 @@ public class FdfReader extends PdfReader {
      * @param url the URL of the document
      * @throws IOException on error
      */
-    public FdfReader(URL url) throws IOException {
+    public FdfReader(URL url) throws IOException, PDFFilterException {
         super(url);
     }
 
@@ -99,12 +100,12 @@ public class FdfReader extends PdfReader {
      * @param is the <CODE>InputStream</CODE> containing the document. The stream is read to the end but is not closed
      * @throws IOException on error
      */
-    public FdfReader(InputStream is) throws IOException {
+    public FdfReader(InputStream is) throws IOException, PDFFilterException {
         super(is);
     }
 
     @Override
-    protected void readPdf() throws IOException {
+    protected void readPdf() throws IOException, PDFFilterException {
         fields = new HashMap<>();
         try {
             tokens.checkFdfHeader();
@@ -200,34 +201,52 @@ public class FdfReader extends PdfReader {
         if (v == null) {
             return null;
         }
+        return extractFieldValue(v);
+    }
+
+    private String extractFieldValue(PdfObject v) {
         if (v.isName()) {
             return PdfName.decodeName(v.toString());
         } else if (v.isString()) {
-            PdfString vs = (PdfString) v;
-            if (encoding == null || vs.getEncoding() != null) {
-                return vs.toUnicodeString();
-            }
-            byte[] b = vs.getBytes();
-            if (b.length >= 2 && b[0] == (byte) 254 && b[1] == (byte) 255) {
-                return vs.toUnicodeString();
-            }
-            try {
-                if (encoding.equals(PdfName.SHIFT_JIS)) {
-                    return new String(b, "SJIS");
-                } else if (encoding.equals(PdfName.UHC)) {
-                    return new String(b, "MS949");
-                } else if (encoding.equals(PdfName.GBK)) {
-                    return new String(b, "GBK");
-                } else if (encoding.equals(PdfName.BIGFIVE)) {
-                    return new String(b, "Big5");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return vs.toUnicodeString();
+            return handlePdfString((PdfString) v);
         }
         return null;
     }
+
+    private String handlePdfString(PdfString vs) {
+        if (encoding == null || vs.getEncoding() != null) {
+            return vs.toUnicodeString();
+        }
+
+        byte[] b = vs.getBytes();
+        if (isUnicode(b)) {
+            return vs.toUnicodeString();
+        }
+
+        return decodeWithEncoding(b);
+    }
+
+    private boolean isUnicode(byte[] b) {
+        return b.length >= 2 && b[0] == (byte) 254 && b[1] == (byte) 255;
+    }
+
+    private String decodeWithEncoding(byte[] b) {
+        try {
+            if (encoding.equals(PdfName.SHIFT_JIS)) {
+                return new String(b, "SJIS");
+            } else if (encoding.equals(PdfName.UHC)) {
+                return new String(b, "MS949");
+            } else if (encoding.equals(PdfName.GBK)) {
+                return new String(b, "GBK");
+            } else if (encoding.equals(PdfName.BIGFIVE)) {
+                return new String(b, "Big5");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     /**
      * Gets the PDF file specification contained in the FDF.
