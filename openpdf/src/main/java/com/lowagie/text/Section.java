@@ -84,6 +84,9 @@ import java.util.Iterator;
 
 public class Section extends ArrayList<Element> implements TextElementArray, LargeElement {
     // constant
+
+    private static final String LARGE_ELEMENT_ALREADY_ADDED = "this.largeelement.has.already.been.added.to.the"
+            + ".document";
     /**
      * A possible number style. The default number style: "1.2.3."
      *
@@ -330,7 +333,7 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
     public void add(int index, Element o) {
         if (isAddedCompletely()) {
             throw new IllegalStateException(
-                    MessageLocalization.getComposedMessage("this.largeelement.has.already.been.added.to.the.document"));
+                    MessageLocalization.getComposedMessage(LARGE_ELEMENT_ALREADY_ADDED));
         }
         try {
             Element element = o;
@@ -360,7 +363,7 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
     public boolean add(Element o) {
         if (isAddedCompletely()) {
             throw new IllegalStateException(
-                    MessageLocalization.getComposedMessage("this.largeelement.has.already.been.added.to.the.document"));
+                    MessageLocalization.getComposedMessage(LARGE_ELEMENT_ALREADY_ADDED));
         }
         try {
             Element element = o;
@@ -414,7 +417,7 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
     public Section addSection(float indentation, Paragraph title, int numberDepth) {
         if (isAddedCompletely()) {
             throw new IllegalStateException(
-                    MessageLocalization.getComposedMessage("this.largeelement.has.already.been.added.to.the.document"));
+                    MessageLocalization.getComposedMessage(LARGE_ELEMENT_ALREADY_ADDED));
         }
         Section section = new Section(title, numberDepth);
         section.setIndentation(indentation);

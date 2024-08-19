@@ -116,6 +116,8 @@ public class PdfWriter extends DocWriter implements
         PdfRunDirection,
         PdfAnnotations {
 
+    private final String notOpenDocumentKey = "the.document.is.not.open";
+
     static Logger logger = Logger.getLogger(PdfWriter.class.getName());
 
     /**
@@ -194,19 +196,19 @@ public class PdfWriter extends DocWriter implements
     /**
      * A viewer preference
      */
-    public static final int PageLayoutSinglePage = 1;
+    public static final int PAGE_LAYOUT_SINGLE_PAGE = 1;
     /**
      * A viewer preference
      */
-    public static final int PageLayoutOneColumn = 2;
+    public static final int PAGE_LAYOUT_ONE_COLUMN = 2;
     /**
      * A viewer preference
      */
-    public static final int PageLayoutTwoColumnLeft = 4;
+    public static final int PAGE_LAYOUT_TWO_COLUMN_LEFT = 4;
     /**
      * A viewer preference
      */
-    public static final int PageLayoutTwoColumnRight = 8;
+    public static final int PAGE_LAYOUT_TWO_COLUMN_RIGHT = 8;
 
 //    PDF body
 
@@ -220,47 +222,47 @@ public class PdfWriter extends DocWriter implements
     /**
      * A viewer preference
      */
-    public static final int PageLayoutTwoPageLeft = 16;
+    public static final int PAGE_LAYOUT_TWO_PAGE_LEFT = 16;
     /**
      * A viewer preference
      */
-    public static final int PageLayoutTwoPageRight = 32;
+    public static final int PAGE_LAYOUT_TWO_PAGE_RIGHT = 32;
     /**
      * A viewer preference
      */
-    public static final int PageModeUseNone = 64;
+    public static final int PAGE_MODE_USE_NONE = 64;
     /**
      * A viewer preference
      */
-    public static final int PageModeUseOutlines = 128;
+    public static final int PAGE_MODE_USE_OUTLINES = 128;
     /**
      * A viewer preference
      */
-    public static final int PageModeUseThumbs = 256;
+    public static final int PAGE_MODE_USE_THUMBS = 256;
     /**
      * A viewer preference
      */
-    public static final int PageModeFullScreen = 512;
+    public static final int PAGE_MODE_FULL_SCREEN = 512;
     /**
      * A viewer preference
      */
-    public static final int PageModeUseOC = 1024;
+    public static final int PAGE_MODE_USE_OC = 1024;
     /**
      * A viewer preference
      */
-    public static final int PageModeUseAttachments = 2048;
+    public static final int PAGE_MODE_USE_ATTACHMENTS = 2048;
     /**
      * A viewer preference
      */
-    public static final int HideToolbar = 1 << 12;
+    public static final int HIDE_TOOLBAR = 1 << 12;
     /**
      * A viewer preference
      */
-    public static final int HideMenubar = 1 << 13;
+    public static final int HIDE_MENU_BAR = 1 << 13;
     /**
      * A viewer preference
      */
-    public static final int HideWindowUI = 1 << 14;
+    public static final int HIDE_WINDOW_UI = 1 << 14;
 
 //    PDF Catalog
 
@@ -274,15 +276,15 @@ public class PdfWriter extends DocWriter implements
     /**
      * A viewer preference
      */
-    public static final int FitWindow = 1 << 15;
+    public static final int FIT_WINDOW = 1 << 15;
     /**
      * A viewer preference
      */
-    public static final int CenterWindow = 1 << 16;
+    public static final int CENTER_WINDOW = 1 << 16;
     /**
      * A viewer preference
      */
-    public static final int DisplayDocTitle = 1 << 17;
+    public static final int DISPLAY_DOC_TITLE = 1 << 17;
 
 //    PdfPages
 
@@ -295,31 +297,31 @@ public class PdfWriter extends DocWriter implements
     /**
      * A viewer preference
      */
-    public static final int NonFullScreenPageModeUseNone = 1 << 18;
+    public static final int NON_FULL_SCREEN_PAGE_MODE_USE_NONE = 1 << 18;
     /**
      * A viewer preference
      */
-    public static final int NonFullScreenPageModeUseOutlines = 1 << 19;
+    public static final int NON_FULL_SCREEN_PAGE_MODE_USE_OUTLINES = 1 << 19;
     /**
      * A viewer preference
      */
-    public static final int NonFullScreenPageModeUseThumbs = 1 << 20;
+    public static final int NON_FULL_SCREEN_PAGE_MODE_USE_THUMBS = 1 << 20;
     /**
      * A viewer preference
      */
-    public static final int NonFullScreenPageModeUseOC = 1 << 21;
+    public static final int NON_FULL_SCREEN_PAGE_MODE_USE_OC = 1 << 21;
     /**
      * A viewer preference
      */
-    public static final int DirectionL2R = 1 << 22;
+    public static final int DIRECTION_L2R = 1 << 22;
     /**
      * A viewer preference
      */
-    public static final int DirectionR2L = 1 << 23;
+    public static final int DIRECTION_R2L = 1 << 23;
     /**
      * A viewer preference
      */
-    public static final int PrintScalingNone = 1 << 24;
+    public static final int PRINT_SCALING_NONE = 1 << 24;
     /**
      * action value
      */
@@ -561,7 +563,7 @@ public class PdfWriter extends DocWriter implements
     /**
      * Stores the version information for the header and the catalog.
      */
-    protected PdfVersionImp pdf_version = new PdfVersionImp();
+    protected PdfVersionImp pdfVersion = new PdfVersionImp();
     /**
      * XMP Metadata for the document.
      */
@@ -635,11 +637,11 @@ public class PdfWriter extends DocWriter implements
     /**
      * The OCProperties in a catalog dictionary.
      */
-    protected PdfOCProperties OCProperties;
+    protected PdfOCProperties ocProperties;
     /**
      * The RBGroups array in an OCG dictionary
      */
-    protected PdfArray OCGRadioGroup = new PdfArray();
+    protected PdfArray ocgRadioGroup = new PdfArray();
 
 // [C6] Actions (open and additional)
     /**
@@ -647,7 +649,7 @@ public class PdfWriter extends DocWriter implements
      *
      * @since 2.1.2
      */
-    protected PdfArray OCGLocked = new PdfArray();
+    protected PdfArray ocgLocked = new PdfArray();
     /**
      * A group attributes dictionary specifying the attributes of the page's page group for use in the transparent
      * imaging model
@@ -673,7 +675,7 @@ public class PdfWriter extends DocWriter implements
      *
      * @since 2.1.5
      */
-    protected HashMap<PdfStream, PdfIndirectReference> JBIG2Globals = new HashMap<>();
+    protected HashMap<PdfStream, PdfIndirectReference> jbig2Globals = new HashMap<>();
     /**
      * The <CODE>PdfPageEvent</CODE> for this document.
      */
@@ -845,7 +847,7 @@ public class PdfWriter extends DocWriter implements
 
     public PdfContentByte getDirectContent(){
         if (!open) {
-            throw new DocumentException(MessageLocalization.getComposedMessage("the.document.is.not.open"));
+            throw new DocumentException(MessageLocalization.getComposedMessage(notOpenDocumentKey));
         }
         return directContent;
     }
@@ -859,7 +861,7 @@ public class PdfWriter extends DocWriter implements
 
     public PdfContentByte getDirectContentUnder() {
         if (!open) {
-            throw new DocumentException(MessageLocalization.getComposedMessage("the.document.is.not.open"));
+            throw new DocumentException(MessageLocalization.getComposedMessage(notOpenDocumentKey));
         }
         return directContentUnder;
     }
@@ -1021,7 +1023,7 @@ public class PdfWriter extends DocWriter implements
         // [F13] OCG
         if (!documentOCG.isEmpty()) {
             fillOCProperties(false);
-            catalog.put(PdfName.OCPROPERTIES, OCProperties);
+            catalog.put(PdfName.OCPROPERTIES, ocProperties);
         }
         return catalog;
     }
@@ -1158,7 +1160,7 @@ public class PdfWriter extends DocWriter implements
 
     PdfIndirectReference add(PdfPage page, PdfContents contents) throws PdfException {
         if (!open) {
-            throw new PdfException(MessageLocalization.getComposedMessage("the.document.is.not.open"));
+            throw new PdfException(MessageLocalization.getComposedMessage(notOpenDocumentKey));
         }
         PdfIndirectObject object;
         try {
@@ -1226,7 +1228,7 @@ public class PdfWriter extends DocWriter implements
     public void open() {
         super.open();
         try {
-            pdf_version.writeHeader(os);
+            pdfVersion.writeHeader(os);
             body = new PdfBody(this);
             if (pdfxConformance.isPdfX32002()) {
                 PdfDictionary sec = new PdfDictionary();
@@ -1432,7 +1434,7 @@ public class PdfWriter extends DocWriter implements
      * @see com.lowagie.text.pdf.interfaces.PdfVersion#setAtLeastPdfVersion(char)
      */
     public void setAtLeastPdfVersion(char version) {
-        pdf_version.setAtLeastPdfVersion(version);
+        pdfVersion.setAtLeastPdfVersion(version);
     }
 
     /**
@@ -1440,21 +1442,21 @@ public class PdfWriter extends DocWriter implements
      * @since 2.1.6
      */
     public void addDeveloperExtension(PdfDeveloperExtension de) {
-        pdf_version.addDeveloperExtension(de);
+        pdfVersion.addDeveloperExtension(de);
     }
 
     /**
      * Returns the version information.
      */
     PdfVersionImp getPdfVersion() {
-        return pdf_version;
+        return pdfVersion;
     }
 
     /**
      * @see com.lowagie.text.pdf.interfaces.PdfVersion#setPdfVersion(char)
      */
     public void setPdfVersion(char version) {
-        pdf_version.setPdfVersion(version);
+        pdfVersion.setPdfVersion(version);
     }
 
 //  [F3] adding fonts
@@ -1463,7 +1465,7 @@ public class PdfWriter extends DocWriter implements
      * @see com.lowagie.text.pdf.interfaces.PdfVersion#setPdfVersion(com.lowagie.text.pdf.PdfName)
      */
     public void setPdfVersion(PdfName version) {
-        pdf_version.setPdfVersion(version);
+        pdfVersion.setPdfVersion(version);
     }
 
     /**
@@ -1498,11 +1500,11 @@ public class PdfWriter extends DocWriter implements
      *
      * @param map         a map with strings as keys for the names, and structured strings as values for the
      *                    destinations
-     * @param page_offset number of pages that has to be added to the page numbers in the destinations (useful if you
+     * @param pageOffset number of pages that has to be added to the page numbers in the destinations (useful if you
      *                    use this method in combination with PdfCopy).
      * @since iText 5.0
      */
-    public void addNamedDestinations(Map<String, String> map, int page_offset) {
+    public void addNamedDestinations(Map<String, String> map, int pageOffset) {
         Map.Entry<String, String> entry;
         int page;
         String dest;
@@ -1512,7 +1514,7 @@ public class PdfWriter extends DocWriter implements
             dest = entry.getValue();
             page = Integer.parseInt(dest.substring(0, dest.indexOf(" ")));
             destination = new PdfDestination(dest.substring(dest.indexOf(" ") + 1));
-            addNamedDestination(entry.getKey(), page + page_offset, destination);
+            addNamedDestination(entry.getKey(), page + pageOffset, destination);
         }
     }
 
@@ -2258,7 +2260,7 @@ public class PdfWriter extends DocWriter implements
      */
     public PdfOCProperties getOCProperties() {
         fillOCProperties(true);
-        return OCProperties;
+        return ocProperties;
     }
 
 //  [U6] space char ratio
@@ -2280,7 +2282,7 @@ public class PdfWriter extends DocWriter implements
         if (ar.isEmpty()) {
             return;
         }
-        OCGRadioGroup.add(ar);
+        ocgRadioGroup.add(ar);
     }
 
     /**
@@ -2292,7 +2294,7 @@ public class PdfWriter extends DocWriter implements
      * @since 2.1.2
      */
     public void lockLayer(PdfLayer layer) {
-        OCGLocked.add(layer.getRef());
+        ocgLocked.add(layer.getRef());
     }
 
     private void addASEvent(PdfName event, PdfName category) {
@@ -2307,7 +2309,7 @@ public class PdfWriter extends DocWriter implements
         if (arr.isEmpty()) {
             return;
         }
-        PdfDictionary d = (PdfDictionary) OCProperties.get(PdfName.D);
+        PdfDictionary d = (PdfDictionary) ocProperties.get(PdfName.D);
         PdfArray arras = (PdfArray) d.get(PdfName.AS);
         if (arras == null) {
             arras = new PdfArray();
@@ -2325,22 +2327,22 @@ public class PdfWriter extends DocWriter implements
      * @since 2.1.2
      */
     protected void fillOCProperties(boolean erase) {
-        if (OCProperties == null) {
-            OCProperties = new PdfOCProperties();
+        if (ocProperties == null) {
+            ocProperties = new PdfOCProperties();
         }
         if (erase) {
-            OCProperties.remove(PdfName.OCGS);
-            OCProperties.remove(PdfName.D);
+            ocProperties.remove(PdfName.OCGS);
+            ocProperties.remove(PdfName.D);
         }
-        if (OCProperties.get(PdfName.OCGS) == null) {
+        if (ocProperties.get(PdfName.OCGS) == null) {
             PdfArray gr = new PdfArray();
             for (PdfOCG o : documentOCG) {
                 PdfLayer layer = (PdfLayer) o;
                 gr.add(layer.getRef());
             }
-            OCProperties.put(PdfName.OCGS, gr);
+            ocProperties.put(PdfName.OCGS, gr);
         }
-        if (OCProperties.get(PdfName.D) != null) {
+        if (ocProperties.get(PdfName.D) != null) {
             return;
         }
 
@@ -2354,7 +2356,7 @@ public class PdfWriter extends DocWriter implements
             getOCGOrder(order, layer);
         }
         PdfDictionary d = new PdfDictionary();
-        OCProperties.put(PdfName.D, d);
+        ocProperties.put(PdfName.D, d);
         d.put(PdfName.ORDER, order);
         PdfArray gr = new PdfArray();
         for (PdfOCG o : documentOCG) {
@@ -2366,11 +2368,11 @@ public class PdfWriter extends DocWriter implements
         if (!gr.isEmpty()) {
             d.put(PdfName.OFF, gr);
         }
-        if (OCGRadioGroup != null && !OCGRadioGroup.isEmpty()) {
-            d.put(PdfName.RBGROUPS, OCGRadioGroup);
+        if (ocgRadioGroup != null && !ocgRadioGroup.isEmpty()) {
+            d.put(PdfName.RBGROUPS, ocgRadioGroup);
         }
-        if (OCGLocked != null && !OCGLocked.isEmpty()) {
-            d.put(PdfName.LOCKED, OCGLocked);
+        if (ocgLocked != null && !ocgLocked.isEmpty()) {
+            d.put(PdfName.LOCKED, ocgLocked);
         }
         addASEvent(PdfName.VIEW, PdfName.ZOOM);
         addASEvent(PdfName.VIEW, PdfName.VIEW);
@@ -2856,10 +2858,10 @@ public class PdfWriter extends DocWriter implements
             return null;
         }
         PdfStream stream;
-        for (PdfStream pdfStream : JBIG2Globals.keySet()) {
+        for (PdfStream pdfStream : jbig2Globals.keySet()) {
             stream = pdfStream;
             if (Arrays.equals(content, stream.getBytes())) {
-                return JBIG2Globals.get(stream);
+                return jbig2Globals.get(stream);
             }
         }
         stream = new PdfStream(content);
@@ -2869,7 +2871,7 @@ public class PdfWriter extends DocWriter implements
         } catch (IOException e) {
             return null;
         }
-        JBIG2Globals.put(stream, ref.getIndirectReference());
+        jbig2Globals.put(stream, ref.getIndirectReference());
         return ref.getIndirectReference();
     }
 

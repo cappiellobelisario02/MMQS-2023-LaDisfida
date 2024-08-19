@@ -57,6 +57,11 @@ import java.util.HashMap;
  */
 public class DocumentFont extends BaseFont {
 
+    private static final String UNI_JIS_UCS2_H = "UniJIS-UCS2-H";
+    private static final String UNI_GB_UCS2_H = "UniGB-UCS2-H";
+    private static final String UNI_CNS_UCS2_H = "UniCNS-UCS2-H";
+    private static final String UNI_KS_UCS2_H = "UniKS-UCS2-H";
+
     private static final int[] stdEnc = {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -77,12 +82,12 @@ public class DocumentFont extends BaseFont {
     private static String[] cjkNames = {"HeiseiMin-W3", "HeiseiKakuGo-W5", "STSong-Light", "MHei-Medium",
             "MSung-Light", "HYGoThic-Medium", "HYSMyeongJo-Medium", "MSungStd-Light", "STSongStd-Light",
             "HYSMyeongJoStd-Medium", "KozMinPro-Regular"};
-    private static String[] cjkEncs = {"UniJIS-UCS2-H", "UniJIS-UCS2-H", "UniGB-UCS2-H", "UniCNS-UCS2-H",
-            "UniCNS-UCS2-H", "UniKS-UCS2-H", "UniKS-UCS2-H", "UniCNS-UCS2-H", "UniGB-UCS2-H",
-            "UniKS-UCS2-H", "UniJIS-UCS2-H"};
+    private static String[] cjkEncs = {UNI_JIS_UCS2_H, UNI_JIS_UCS2_H, UNI_GB_UCS2_H, UNI_CNS_UCS2_H,
+            UNI_CNS_UCS2_H, UNI_KS_UCS2_H, UNI_KS_UCS2_H, UNI_CNS_UCS2_H, UNI_GB_UCS2_H,
+            UNI_KS_UCS2_H, UNI_JIS_UCS2_H};
     private static String[] cjkNames2 = {"MSungStd-Light", "STSongStd-Light", "HYSMyeongJoStd-Medium",
             "KozMinPro-Regular"};
-    private static String[] cjkEncs2 = {"UniCNS-UCS2-H", "UniGB-UCS2-H", "UniKS-UCS2-H", "UniJIS-UCS2-H",
+    private static String[] cjkEncs2 = {UNI_CNS_UCS2_H, UNI_GB_UCS2_H, UNI_KS_UCS2_H, UNI_JIS_UCS2_H,
             "UniCNS-UTF16-H", "UniGB-UTF16-H", "UniKS-UTF16-H", "UniJIS-UTF16-H"};
     // code, [glyph, width]
     private HashMap<Integer, int[]> metrics = new HashMap<>();
@@ -91,18 +96,18 @@ public class DocumentFont extends BaseFont {
     private PdfDictionary font;
     private IntHashtable uni2byte = new IntHashtable();
     private IntHashtable diffmap;
-    private float Ascender = 800;
-    private final int capHeight = 700;
-    private float Descender = -200;
-    private final int italicAngle = 0;
+    private float ascender = 800;
+    private static final int CAPHEIGHTCONST = 700;
+    private float descender = -200;
+    private static final int ITALICANGLECONST = 0;
     private float llx = -50;
     private float lly = -200;
     private float urx = 100;
     private float ury = 900;
     private boolean isType0 = false;
     private BaseFont cjkMirror;
-    float cap_Height;
-    float italic_Angle;
+    float capHeightVar;
+    float italicAngleVar;
 
 
     /**
@@ -450,10 +455,10 @@ public class DocumentFont extends BaseFont {
     }
 
     private void setFontMetrics(BaseFont bf) {
-        Ascender = bf.getFontDescriptor(ASCENT, 1000);
-        cap_Height = bf.getFontDescriptor(capHeight, 1000);
-        Descender = bf.getFontDescriptor(DESCENT, 1000);
-        italic_Angle = bf.getFontDescriptor(italicAngle, 1000);
+        ascender = bf.getFontDescriptor(ASCENT, 1000);
+        capHeightVar = bf.getFontDescriptor(CAPHEIGHTCONST, 1000);
+        descender = bf.getFontDescriptor(DESCENT, 1000);
+        italicAngleVar = bf.getFontDescriptor(ITALICANGLECONST, 1000);
         llx = bf.getFontDescriptor(BBOXLLX, 1000);
         lly = bf.getFontDescriptor(BBOXLLY, 1000);
         urx = bf.getFontDescriptor(BBOXURX, 1000);
@@ -467,19 +472,19 @@ public class DocumentFont extends BaseFont {
         }
         PdfNumber v = fontDesc.getAsNumber(PdfName.ASCENT);
         if (v != null) {
-            Ascender = v.floatValue();
+            ascender = v.floatValue();
         }
         v = fontDesc.getAsNumber(PdfName.CAPHEIGHT);
         if (v != null) {
-            cap_Height = v.floatValue();
+            capHeightVar = v.floatValue();
         }
         v = fontDesc.getAsNumber(PdfName.DESCENT);
         if (v != null) {
-            Descender = v.floatValue();
+            descender = v.floatValue();
         }
         v = fontDesc.getAsNumber(PdfName.ITALICANGLE);
         if (v != null) {
-            italic_Angle = v.floatValue();
+            italicAngleVar = v.floatValue();
         }
         PdfArray bbox = fontDesc.getAsArray(PdfName.FONTBBOX);
         if (bbox != null) {
@@ -557,14 +562,14 @@ public class DocumentFont extends BaseFont {
         switch (key) {
             case AWT_ASCENT:
             case ASCENT:
-                return Ascender * fontSize / 1000;
-            case capHeight:
-                return cap_Height * fontSize / 1000;
+                return ascender * fontSize / 1000;
+            case CAPHEIGHTCONST:
+                return capHeightVar * fontSize / 1000;
             case AWT_DESCENT:
             case DESCENT:
-                return Descender * fontSize / 1000;
-            case italicAngle:
-                return italic_Angle;
+                return descender * fontSize / 1000;
+            case ITALICANGLECONST:
+                return italicAngleVar;
             case BBOXLLX:
                 return llx * fontSize / 1000;
             case BBOXLLY:
@@ -874,13 +879,13 @@ public class DocumentFont extends BaseFont {
             builder.append(", ");
         }
         builder.append("Ascender=");
-        builder.append(Ascender);
+        builder.append(ascender);
         builder.append(", CapHeight=");
-        builder.append(cap_Height);
+        builder.append(capHeightVar);
         builder.append(", Descender=");
-        builder.append(Descender);
+        builder.append(descender);
         builder.append(", ItalicAngle=");
-        builder.append(italic_Angle);
+        builder.append(italicAngleVar);
         builder.append(", llx=");
         builder.append(llx);
         builder.append(", lly=");

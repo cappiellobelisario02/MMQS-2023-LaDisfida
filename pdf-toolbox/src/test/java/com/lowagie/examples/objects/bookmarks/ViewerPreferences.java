@@ -55,13 +55,13 @@ public class ViewerPreferences {
             PdfWriter writer5 = PdfWriter.getInstance(document,
                     new FileOutputStream("NoScaling.pdf"));
             // step 3:
-            writer1.setViewerPreferences(PdfWriter.PageLayoutTwoColumnLeft);
-            writer2.setViewerPreferences(PdfWriter.HideMenubar);
-            writer3.setViewerPreferences(PdfWriter.PageLayoutTwoColumnRight
-                    | PdfWriter.PageModeFullScreen
-                    | PdfWriter.NonFullScreenPageModeUseThumbs);
-            writer4.setViewerPreferences(PdfWriter.DisplayDocTitle);
-            writer5.setViewerPreferences(PdfWriter.PrintScalingNone);
+            writer1.setViewerPreferences(PdfWriter.PAGE_LAYOUT_TWO_COLUMN_LEFT);
+            writer2.setViewerPreferences(PdfWriter.HIDE_MENU_BAR);
+            writer3.setViewerPreferences(PdfWriter.PAGE_LAYOUT_TWO_COLUMN_RIGHT
+                    | PdfWriter.PAGE_MODE_FULL_SCREEN
+                    | PdfWriter.NON_FULL_SCREEN_PAGE_MODE_USE_THUMBS);
+            writer4.setViewerPreferences(PdfWriter.DISPLAY_DOC_TITLE);
+            writer5.setViewerPreferences(PdfWriter.PRINT_SCALING_NONE);
             document.addTitle("Julius Caesar");
             document.open();
             // step 4: we grab the ContentByte and do some stuff with it

@@ -70,15 +70,25 @@ import java.util.Objects;
  */
 public class CFFFontSubset extends CFFFont {
 
+    private static final String CALLSUBR = "callsubr";
+    private static final String CALLGSUBR = "callgsubr";
+    private static final String SUBRS = "Subrs";
+    private static final String VSTEM = "vstem";
+    private static final String HSTEM = "hstem";
+    private static final String HSTEMHM = "hstemhm";
+    private static final String HINTMASK = "hintmask";
+    private static final String VSTEMHM = "vstemhm";
+    private static final String CNTRMASK = "cntrmask";
+
     /**
      * The Strings in this array represent Type1/Type2 operator names
      */
     static final String[] subrsFunctions = {
-            "RESERVED_0", "hstem", "RESERVED_2", "vstem", "vmoveto", "rlineto", "hlineto", "vlineto",
-            "rrcurveto", "RESERVED_9", "callsubr", "return", "escape", "RESERVED_13",
-            "endchar", "RESERVED_15", "RESERVED_16", "RESERVED_17", "hstemhm", "hintmask",
-            "cntrmask", "rmoveto", "hmoveto", "vstemhm", "rcurveline", "rlinecurve", "vvcurveto",
-            "hhcurveto", "shortint", "callgsubr", "vhcurveto", "hvcurveto"
+            "RESERVED_0", HSTEM, "RESERVED_2", VSTEM, "vmoveto", "rlineto", "hlineto", "vlineto",
+            "rrcurveto", "RESERVED_9", CALLSUBR, "return", "escape", "RESERVED_13",
+            "endchar", "RESERVED_15", "RESERVED_16", "RESERVED_17", HSTEMHM, HINTMASK,
+            CNTRMASK, "rmoveto", "hmoveto", VSTEMHM, "rcurveline", "rlinecurve", "vvcurveto",
+            "hhcurveto", "shortint", CALLGSUBR, "vhcurveto", "hvcurveto"
     };
     /**
      * The Strings in this array represent Type1/Type2 escape operator names
@@ -246,7 +256,6 @@ public class CFFFontSubset extends CFFFont {
      */
     int countRange(int numofGlyphs, int type) {
         int num = 0;
-        char sid;
         int i = 1, nLeft;
         while (i < numofGlyphs) {
             num++;
@@ -513,7 +522,7 @@ public class CFFFontSubset extends CFFFont {
         while (getPosition() < fonts[font].fdprivateOffsets[fd] + fonts[font].fdprivateLengths[fd]) {
             getDictItem();
             // If the dictItem is the "Subrs" then find and store offset,
-            if (Objects.equals(key, "Subrs")) {
+            if (Objects.equals(key, SUBRS)) {
                 fonts[font].PrivateSubrsOffset[fd] = (Integer) args[0] + fonts[font].fdprivateOffsets[fd];
             }
         }
@@ -686,19 +695,19 @@ public class CFFFontSubset extends CFFFont {
     }
 
     private boolean isCallSubr() {
-        return Objects.equals(key, "callsubr");
+        return Objects.equals(key, CALLSUBR);
     }
 
     private boolean isCallGSubr() {
-        return Objects.equals(key, "callgsubr");
+        return Objects.equals(key, CALLGSUBR);
     }
 
     private boolean isStem() {
-        return Objects.equals(key, "hstem") || Objects.equals(key, "vstem") || Objects.equals(key, "hstemhm") || Objects.equals(key, "vstemhm");
+        return Objects.equals(key, HSTEM) || Objects.equals(key, VSTEM) || Objects.equals(key, HSTEMHM) || Objects.equals(key, VSTEMHM);
     }
 
     private boolean isMask() {
-        return Objects.equals(key, "hintmask") || Objects.equals(key, "cntrmask");
+        return Objects.equals(key, HINTMASK) || Objects.equals(key, CNTRMASK);
     }
 
     private void handleCallSubr(int topElement, int lBias, Map<Integer, int[]> hSubr, List<Integer> lSubr,
@@ -778,7 +787,7 @@ public class CFFFontSubset extends CFFFont {
         if (Objects.equals(key, "roll") || Objects.equals(key, "put")) {
             return -2;
         }
-        if (Objects.equals(key, "callsubr") || Objects.equals(key, "callgsubr") || Objects.equals(key, "add")
+        if (Objects.equals(key, CALLSUBR) || Objects.equals(key, CALLGSUBR) || Objects.equals(key, "add")
                 || Objects.equals(key, "sub") ||
                 Objects.equals(key, "div") || Objects.equals(key, "mul") || Objects.equals(key, "drop")
                 || Objects.equals(key, "and") ||
@@ -1552,7 +1561,7 @@ public class CFFFontSubset extends CFFFont {
                     int p2 = getPosition();
                     // If the dictItem is the "Subrs" then,
                     // use marker for offset and write operator number
-                    if (Objects.equals(key, "Subrs")) {
+                    if (Objects.equals(key, SUBRS)) {
                         fdSubrs[i] = new DictOffsetItem();
                         outputList.addLast(fdSubrs[i]);
                         outputList.addLast(new UInt8Item((char) 19)); // Subrs
@@ -1605,7 +1614,7 @@ public class CFFFontSubset extends CFFFont {
             getDictItem();
             int p2 = getPosition();
             // When reached to the subrs offset
-            if (Objects.equals(key, "Subrs")) {
+            if (Objects.equals(key, SUBRS)) {
                 // The Offsize (minus the subrs key)
                 offsetSize = p2 - p1 - 1;
             }
@@ -1657,7 +1666,7 @@ public class CFFFontSubset extends CFFFont {
             int p2 = getPosition();
             // If the dictItem is the "Subrs" then,
             // use marker for offset and write operator number
-            if (Objects.equals(key, "Subrs")) {
+            if (Objects.equals(key, SUBRS)) {
                 outputList.addLast(subr);
                 outputList.addLast(new UInt8Item((char) 19)); // Subrs
             } else {

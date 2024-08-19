@@ -67,6 +67,8 @@ import java.util.logging.Logger;
  */
 public class BarcodePDF417 {
 
+    private static final String BIG_TEXT_KEY = "the.text.is.too.big";
+
     private static final Logger logger = Logger.getLogger(BarcodePDF417.class.getName());
     private static final String CP_437 = "cp437";
     /**
@@ -1023,7 +1025,7 @@ public class BarcodePDF417 {
         }
         int size = (ptr + fullBytes) / 2;
         if (size + cwPtr > MAX_DATA_CODEWORDS) {
-            throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage("the.text.is.too.big"));
+            throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage(BIG_TEXT_KEY));
         }
         return compactCodewords(dest, ptr);
     }
@@ -1088,7 +1090,7 @@ public class BarcodePDF417 {
             size = full + size / 3 + 1;
         }
         if (size + cwPtr > MAX_DATA_CODEWORDS) {
-            throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage("the.text.is.too.big"));
+            throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage(BIG_TEXT_KEY));
         }
         length += start;
         for (k = start; k < length; k += 44) {
@@ -1132,7 +1134,7 @@ public class BarcodePDF417 {
         int j;
         int size = (length / 6) * 5 + (length % 6);
         if (size + cwPtr > MAX_DATA_CODEWORDS) {
-            throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage("the.text.is.too.big"));
+            throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage(BIG_TEXT_KEY));
         }
         length += start;
         for (k = start; k < length; k += 6) {
@@ -1177,7 +1179,7 @@ public class BarcodePDF417 {
             }
 
             if (nd >= 13) {
-                handleTextSegment(lastP, startN, k);
+                handleTextSegment(lastP, startN);
                 segmentList.add('N', startN, k);
                 lastP = k;
             }
@@ -1188,7 +1190,7 @@ public class BarcodePDF417 {
             startN = textLength;
         }
 
-        handleTextSegment(lastP, startN, textLength);
+        handleTextSegment(lastP, startN);
         if (nd >= 13) {
             segmentList.add('N', startN, textLength);
         }
@@ -1198,7 +1200,7 @@ public class BarcodePDF417 {
         return c >= '0' && c <= '9';
     }
 
-    private void handleTextSegment(int lastP, int startN, int end) {
+    private void handleTextSegment(int lastP, int startN) {
         if (lastP == startN) return;
 
         boolean lastTxt = isTextChar((char) (text[lastP] & 0xff));
@@ -1450,7 +1452,7 @@ public class BarcodePDF417 {
         fixedColumn = (options & PDF417_FIXED_ROWS) == 0;
         skipRowColAdjust = false;
         int tot = calculateTotalCodewords(lenErr);
-        adjustRowColIfNeeded(tot, lenErr);
+        adjustRowColIfNeeded(tot);
         if (tot > MAX_DATA_CODEWORDS + 2) {
             tot = getMaxSquare();
         }
@@ -1476,7 +1478,7 @@ public class BarcodePDF417 {
             throw new NullPointerException(MessageLocalization.getComposedMessage("text.cannot.be.null"));
         }
         if (text.length > ABSOLUTE_MAX_TEXT_SIZE) {
-            throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage("the.text.is.too.big"));
+            throw new IndexOutOfBoundsException(MessageLocalization.getComposedMessage(BIG_TEXT_KEY));
         }
     }
 
@@ -1554,7 +1556,7 @@ public class BarcodePDF417 {
         return lenCodewords + lenErr;
     }
 
-    private void adjustRowColIfNeeded(int tot, int lenErr) {
+    private void adjustRowColIfNeeded(int tot) {
         if (!skipRowColAdjust) {
             if (fixedColumn) {
                 adjustCodeRows(tot);
@@ -1789,7 +1791,7 @@ public class BarcodePDF417 {
      * @param s the text that will form the barcode
      */
     public void setText(String s) {
-        this.text = PdfEncodings.convertToBytes(s, "cp437");
+        this.text = PdfEncodings.convertToBytes(s, CP_437);
     }
 
     /**

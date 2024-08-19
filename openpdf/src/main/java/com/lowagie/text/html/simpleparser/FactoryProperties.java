@@ -71,12 +71,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 /**
  * @author psoares
  */
 public class FactoryProperties {
+
+    private static final String ALIGN_KEY = "align";
+    private static final String LEADING_KEY = "leading";
 
     public static Map<String, String> followTags = new HashMap<>();
 
@@ -119,7 +121,7 @@ public class FactoryProperties {
     }
 
     public static void createParagraph(Paragraph paragraph, ChainedProperties props) {
-        props.findProperty("align")
+        props.findProperty(ALIGN_KEY)
                 .map(String::trim)
                 .ifPresent(align -> {
                     if (align.equalsIgnoreCase("center")) {
@@ -132,7 +134,7 @@ public class FactoryProperties {
                 });
 
         paragraph.setHyphenation(getHyphenation(props));
-        setParagraphLeading(paragraph, props.getProperty("leading"));
+        setParagraphLeading(paragraph, props.getProperty(LEADING_KEY));
 
         props.findProperty("before")
                 .flatMap(NumberUtilities::parseFloat)
@@ -259,7 +261,7 @@ public class FactoryProperties {
                     handleLineHeight(h, value);
                     break;
                 case Markup.CSS_KEY_TEXTALIGN:
-                    h.put("align", value.trim().toLowerCase());
+                    h.put(ALIGN_KEY, value.trim().toLowerCase());
                     break;
                 default:
                     break;
@@ -301,11 +303,11 @@ public class FactoryProperties {
         String ss = value.trim();
         float v = parseLength(value);
         if (ss.endsWith("%")) {
-            h.put("leading", "0," + (v / 100));
+            h.put(LEADING_KEY, "0," + (v / 100));
         } else if ("normal".equalsIgnoreCase(ss)) {
-            h.put("leading", "0,1.5");
+            h.put(LEADING_KEY, "0,1.5");
         } else {
-            h.put("leading", v + ",0");
+            h.put(LEADING_KEY, v + ",0");
         }
     }
 
@@ -354,7 +356,7 @@ public class FactoryProperties {
                     handleLineHeight(h, value);
                     break;
                 case Markup.CSS_KEY_TEXTALIGN:
-                    h.put("align", value.trim().toLowerCase());
+                    h.put(ALIGN_KEY, value.trim().toLowerCase());
                     break;
                 case Markup.CSS_KEY_PADDINGLEFT:
                     h.put("indent", Float.toString(parseLength(value)));

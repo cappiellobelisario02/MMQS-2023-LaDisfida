@@ -89,10 +89,12 @@ import java.util.StringTokenizer;
 
 public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
 
+    private static final String TABLE_KEY = "table";
+
         public static final String TAGS_SUPPORTED_STRING =
             "ol ul li a pre font span br p div body table td th tr i b u sub sup em strong s strike"
                     + " h1 h2 h3 h4 h5 h6 img hr";
-    public static final Map<String, Object> tagsSupported = new HashMap<>();
+    protected static final Map<String, Object> tagsSupported = new HashMap<>();
 
     static {
         StringTokenizer tok = new StringTokenizer(TAGS_SUPPORTED_STRING);
@@ -510,7 +512,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
             case "th":
                 handleTableCellTag(tag, style);
                 break;
-            case "table":
+            case TABLE_KEY:
                 handleTableTag(style);
                 break;
             default:
@@ -576,7 +578,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
     }
 
     private void handleTableTag(Map<String, String> style) {
-        cprops.addToChain("table", style);
+        cprops.addToChain(TABLE_KEY, style);
         IncTable table = new IncTable(style);
         stack.push(table);
         tableState.push(new boolean[]{pendingTR, pendingTD});
@@ -623,7 +625,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
             }
             handleSimpleTags(tag);
 
-            if (tag.equals("table")) {
+            if (tag.equals(TABLE_KEY)) {
                 handleTableTag();
                 return;
             }
@@ -633,7 +635,6 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
             }
             if (tag.equals("td") || tag.equals("th")) {
                 handleTableCellTag(tag);
-                return;
             }
         } catch (Exception e) {
             throw new ExceptionConverter(e);
@@ -644,7 +645,6 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
         String follow = FactoryProperties.followTags.get(tag);
         if (follow != null || tag.equals("font") || tag.equals("span")) {
             cprops.removeChain(follow != null ? follow : tag);
-            return;
         }
     }
 
@@ -767,7 +767,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
         if (pendingTR) {
             endElement("tr");
         }
-        cprops.removeChain("table");
+        cprops.removeChain(TABLE_KEY);
         IncTable table = (IncTable) stack.pop();
         PdfPTable tb = table.buildTable();
         tb.setSplitRows(true);
