@@ -635,6 +635,7 @@ public class DocumentFont extends BaseFont {
      * @param name the new font name
      */
     public void setPostscriptFontName(String name) {
+        throw new UnsupportedOperationException("Setting postscript font name is not supported.");
     }
 
     /**
@@ -667,6 +668,7 @@ public class DocumentFont extends BaseFont {
      * @throws DocumentException error in generating the object
      */
     void writeFont(PdfWriter writer, PdfIndirectReference ref, Object[] params) throws DocumentException {
+        throw new UnsupportedOperationException("Writing font is not supported.");
     }
 
     /**

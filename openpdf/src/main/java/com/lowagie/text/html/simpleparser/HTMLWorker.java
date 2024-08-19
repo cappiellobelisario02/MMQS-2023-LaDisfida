@@ -513,6 +513,8 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
             case "table":
                 handleTableTag(style);
                 break;
+            default:
+                break;
         }
     }
 
@@ -891,9 +893,11 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
     }
 
     public void clearTextWrap() throws DocumentException {
+        throw new UnsupportedOperationException("Clearing not supported yet.");
     }
 
     public void close() {
+        throw new UnsupportedOperationException("Closing failed by unsupported operation");
     }
 
     public boolean newPage() {
@@ -901,21 +905,27 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
     }
 
     public void open() {
+        throw new UnsupportedOperationException("Opening failed by unsupported operation");
     }
 
     public void resetFooter() {
+        throw new UnsupportedOperationException("Reset footer failed by unsupported operation");
     }
 
     public void resetHeader() {
+        throw new UnsupportedOperationException("Reset header failed by unsupported operation");
     }
 
     public void resetPageCount() {
+        throw new UnsupportedOperationException("Reset page count failed by unsupported operation");
     }
 
     public void setFooter(HeaderFooter footer) {
+        throw new UnsupportedOperationException("Setting footer failed by unsupported operation");
     }
 
     public void setHeader(HeaderFooter header) {
+        throw new UnsupportedOperationException("Setting header failed by unsupported operation");
     }
 
     public boolean setMarginMirroring(boolean marginMirroring) {
@@ -936,6 +946,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
     }
 
     public void setPageCount(int pageN) {
+        throw new UnsupportedOperationException("Setting page count failed by unsupported operation");
     }
 
     public boolean setPageSize(Rectangle pageSize) {

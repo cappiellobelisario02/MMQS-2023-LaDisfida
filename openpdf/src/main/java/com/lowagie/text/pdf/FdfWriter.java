@@ -74,6 +74,7 @@ public class FdfWriter {
      * Creates a new FdfWriter.
      */
     public FdfWriter() {
+        // Empty constructor
     }
 
     /**

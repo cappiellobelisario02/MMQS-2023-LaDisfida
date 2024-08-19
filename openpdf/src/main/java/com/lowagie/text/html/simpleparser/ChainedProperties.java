@@ -69,6 +69,7 @@ public class ChainedProperties {
      * Creates a new instance of ChainedProperties
      */
     public ChainedProperties() {
+        // Empty constructor
     }
 
     public String getProperty(String key) {
