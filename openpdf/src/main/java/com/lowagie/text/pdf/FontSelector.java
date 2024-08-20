@@ -113,66 +113,77 @@ public class FontSelector {
      * @return a <CODE>Phrase</CODE> with one or more chunks
      */
     public Phrase process(String text) {
-        int fsize = fonts.size();
         char[] cc = text.toCharArray();
         int len = cc.length;
         StringBuilder sb = new StringBuilder();
-        Font font = null;
-        int lastidx = -1;
         Phrase ret = new Phrase();
-        for (int k = 0; k < len; ++k) {
+        int lastIdx = -1;
+        int k = 0;
+
+        while (k < len) {
             char c = cc[k];
-            if (c == '\n' || c == '\r') {
+            if (isLineBreak(c)) {
                 sb.append(c);
+                k++;
                 continue;
             }
             if (Utilities.isSurrogatePair(cc, k)) {
-                int u = Utilities.convertToUtf32(cc, k);
-                for (int f = 0; f < fsize; ++f) {
-                    font = fonts.get(f);
-                    if (font.getBaseFont().charExists(u)) {
-                        if (lastidx != f) {
-                            if (sb.length() > 0 && lastidx != -1) {
-                                Chunk ck = new Chunk(sb.toString(), fonts.get(lastidx));
-                                ret.add(ck);
-                                sb.setLength(0);
-                            }
-                            lastidx = f;
-                        }
-                        sb.append(c);
-                        if (cc.length > k + 1) {
-                            sb.append(cc[++k]);
-                        }
-                        break;
-                    }
-                }
+                k = processSurrogatePair(cc, k, sb, ret, lastIdx);
             } else {
-                for (int f = 0; f < fsize; ++f) {
-                    font = fonts.get(f);
-                    if (font.getBaseFont().charExists(c)) {
-                        if (lastidx != f) {
-                            if (sb.length() > 0 && lastidx != -1) {
-                                Chunk ck = new Chunk(sb.toString(), fonts.get(lastidx));
-                                ret.add(ck);
-                                sb.setLength(0);
-                            }
-                            lastidx = f;
-                        }
-                        sb.append(c);
-                        break;
-                    }
-                }
+                k = processSingleChar(cc, k, sb, ret, lastIdx);
             }
         }
-        if (sb.length() > 0) {
-            Chunk ck;
-            if (lastidx == -1) {
-                ck = new Chunk(sb.toString());
-            } else {
-                ck = new Chunk(sb.toString(), fonts.get(lastidx));
-            }
-            ret.add(ck);
-        }
+
+        addRemainingChunk(ret, sb, lastIdx);
         return ret;
     }
+
+    private boolean isLineBreak(char c) {
+        return c == '\n' || c == '\r';
+    }
+
+    private int processSurrogatePair(char[] cc, int k, StringBuilder sb, Phrase ret, int lastIdx) {
+        int u = Utilities.convertToUtf32(cc, k);
+        for (int f = 0; f < fonts.size(); ++f) {
+            Font font = fonts.get(f);
+            if (font.getBaseFont().charExists(u)) {
+                lastIdx = handleFontChange(sb, ret, lastIdx, f);
+                sb.append(cc[k]).append(cc[k + 1]);
+                return k + 2; // Salta al carattere successivo poiché è una coppia surrogata
+            }
+        }
+        return k + 2; // Se nessun font contiene il carattere, comunque si avanza di 2
+    }
+
+    private int processSingleChar(char[] cc, int k, StringBuilder sb, Phrase ret, int lastIdx) {
+        char c = cc[k];
+        for (int f = 0; f < fonts.size(); ++f) {
+            Font font = fonts.get(f);
+            if (font.getBaseFont().charExists(c)) {
+                lastIdx = handleFontChange(sb, ret, lastIdx, f);
+                sb.append(c);
+                break;
+            }
+        }
+        return k + 1; // Avanza al prossimo carattere
+    }
+
+    private int handleFontChange(StringBuilder sb, Phrase ret, int lastIdx, int currentIdx) {
+        if (lastIdx != currentIdx) {
+            if (sb.length() > 0 && lastIdx != -1) {
+                ret.add(new Chunk(sb.toString(), fonts.get(lastIdx)));
+                sb.setLength(0);
+            }
+            return currentIdx;
+        }
+        return lastIdx;
+    }
+
+    private void addRemainingChunk(Phrase ret, StringBuilder sb, int lastIdx) {
+        if (sb.length() > 0) {
+            Chunk ck = (lastIdx == -1) ? new Chunk(sb.toString()) : new Chunk(sb.toString(), fonts.get(lastIdx));
+            ret.add(ck);
+        }
+    }
+
 }

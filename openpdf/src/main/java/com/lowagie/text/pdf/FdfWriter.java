@@ -50,6 +50,7 @@ import com.lowagie.text.DocWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +104,6 @@ public class FdfWriter {
                     obj = new HashMap<>();
                     map.put(s, obj);
                     map = (Map<String, Object>) obj;
-                    continue;
                 } else if (obj instanceof Map) {
                     map = (Map<String, Object>) obj;
                 } else {
@@ -125,8 +125,8 @@ public class FdfWriter {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String s = entry.getKey();
             Object obj = entry.getValue();
-            if (obj instanceof HashMap) {
-                iterateFields(values, (HashMap) obj, name + "." + s);
+            if (obj instanceof HashMap hashMap) {
+                iterateFields(values, hashMap, name + "." + s);
             } else {
                 values.put((name + "." + s).substring(1), obj);
             }
@@ -149,6 +149,12 @@ public class FdfWriter {
         }
         List<Map<String, Object>> histMap = new ArrayList<>();
         List<String> histStr = new ArrayList<>();
+
+        return tryRemoveFieldControllingTokens(histMap, map, histStr, tk);
+    }
+
+    private boolean tryRemoveFieldControllingTokens(List<Map<String, Object>> histMap, Map<String, Object> map,
+            List<String> histStr, StringTokenizer tk){
         while (true) {
             String s = tk.nextToken();
             Object obj = map.get(s);
@@ -158,9 +164,7 @@ public class FdfWriter {
             histMap.add(map);
             histStr.add(s);
             if (tk.hasMoreTokens()) {
-                if (obj instanceof Map) {
-                    map = (Map) obj;
-                } else {
+                if (!(obj instanceof Map)) {
                     return false;
                 }
             } else {
@@ -171,15 +175,22 @@ public class FdfWriter {
                 }
             }
         }
+
+        controlMapContainsFields(histMap, histStr);
+
+        return true;
+    }
+
+    private void controlMapContainsFields(List<Map<String, Object>> histMap,
+            List<String> histStr){
         for (int k = histMap.size() - 1; k >= 0; k -= 1) {
-            map = histMap.get(k);
+            Map<String, Object> map = histMap.get(k);
             String s = histStr.get(k);
             map.remove(s);
             if (!map.isEmpty()) {
                 break;
             }
         }
-        return true;
     }
 
     /**
@@ -188,7 +199,7 @@ public class FdfWriter {
      *
      * @return a map with all the fields
      */
-    public HashMap<String, Object> getFields() {
+    public Map<String, Object> getFields() {
         HashMap<String, Object> values = new HashMap<>();
         iterateFields(values, fields, "");
         return values;
@@ -235,11 +246,8 @@ public class FdfWriter {
             AcroFields.Item item = entry.getValue();
             PdfDictionary dic = item.getMerged(0);
             PdfObject v = PdfReader.getPdfObjectRelease(dic.get(PdfName.V));
-            if (v == null) {
-                continue;
-            }
             PdfObject ft = PdfReader.getPdfObjectRelease(dic.get(PdfName.FT));
-            if (ft == null || PdfName.SIG.equals(ft)) {
+            if (v == null || ft == null || PdfName.SIG.equals(ft)) {
                 continue;
             }
             setField(fn, v);
@@ -259,29 +267,43 @@ public class FdfWriter {
         if (!tk.hasMoreTokens()) {
             return null;
         }
-        while (true) {
+        return processTokens(tk, map);
+    }
+
+    private String processTokens(StringTokenizer tk, Map<String, Object> map) {
+        while (tk.hasMoreTokens()) {
             String s = tk.nextToken();
             Object obj = map.get(s);
             if (obj == null) {
                 return null;
             }
             if (tk.hasMoreTokens()) {
-                if (obj instanceof Map) {
-                    map = (Map) obj;
-                } else {
+                map = getNextMap(obj);
+                if (map == null) {
                     return null;
                 }
             } else {
-                if (obj instanceof Map) {
-                    return null;
-                } else {
-                    if (((PdfObject) obj).isString()) {
-                        return ((PdfString) obj).toUnicodeString();
-                    } else {
-                        return PdfName.decodeName(obj.toString());
-                    }
-                }
+                return processFinalToken(obj);
             }
+        }
+        return null; // fallback, even if we should never reach this point
+    }
+
+    private Map<String, Object> getNextMap(Object obj) {
+        if (obj instanceof Map) {
+            return (Map<String, Object>) obj;
+        } else {
+            return Collections.emptyMap();
+        }
+    }
+
+    private String processFinalToken(Object obj) {
+        if (obj instanceof Map) {
+            return null;
+        } else if (((PdfObject) obj).isString()) {
+            return ((PdfString) obj).toUnicodeString();
+        } else {
+            return PdfName.decodeName(obj.toString());
         }
     }
 
@@ -381,10 +403,10 @@ public class FdfWriter {
                 Object v = entry.getValue();
                 PdfDictionary dic = new PdfDictionary();
                 dic.put(PdfName.T, new PdfString(key, PdfObject.TEXT_UNICODE));
-                if (v instanceof HashMap) {
-                    dic.put(PdfName.KIDS, calculate((HashMap) v));
-                } else if (v instanceof PdfAction) {    // (plaflamme)
-                    dic.put(PdfName.A, (PdfAction) v);
+                if (v instanceof HashMap hMap) {
+                    dic.put(PdfName.KIDS, calculate(hMap));
+                } else if (v instanceof PdfAction pdfAction) {    // (plaflamme)
+                    dic.put(PdfName.A, pdfAction);
                 } else {
                     dic.put(PdfName.V, (PdfObject) v);
                 }
