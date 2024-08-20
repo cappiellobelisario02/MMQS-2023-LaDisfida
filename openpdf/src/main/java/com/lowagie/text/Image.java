@@ -1777,7 +1777,7 @@ public abstract class Image extends Rectangle {
     /**
      * Sets the X/Y pixel dimensionless aspect ratio.
      *
-     * @param XYRatio the X/Y pixel dimensionless aspect ratio
+     * @param xyRatio the X/Y pixel dimensionless aspect ratio
      */
     public void setXYRatio(float xyRatio) {
         this.xyRatio = xyRatio;
@@ -1875,11 +1875,9 @@ public abstract class Image extends Rectangle {
         } else {
             newValue = value;
             PdfName first = value.getAsName(0);
+            PdfArray second = value.getAsArray(1);
             if (PdfName.INDEXED.equals(first) && (value.size() >= 2 && second != null)) {
-
-                    PdfArray second = value.getAsArray(1);
-                    value.set(1, simplifyColorspace(second));
-
+                value.set(1, simplifyColorspace(second));
             }
         }
         additional.put(PdfName.COLORSPACE, newValue);
