@@ -57,6 +57,7 @@ import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -71,6 +72,7 @@ import com.lowagie.text.exceptions.InvalidColorValueException;
 import com.lowagie.text.exceptions.NoReaderException;
 import com.lowagie.text.exceptions.ReadOnlyAcroFieldsException;
 import com.lowagie.text.exceptions.ReadOnlyException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.w3c.dom.Node;
 
 
@@ -183,8 +185,8 @@ public class AcroFields {
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
-        if (writer instanceof PdfStamperImp) {
-            append = ((PdfStamperImp) writer).isAppend();
+        if (writer instanceof PdfStamperImp stamperImp) {
+            append = stamperImp.isAppend();
         }
         fill();
     }
@@ -208,7 +210,7 @@ public class AcroFields {
                             }
                             break;
                         case "g":
-                            if (stack.size() >= 1) {
+                            if (!stack.isEmpty()) {
                                 float gray = Float.parseFloat(stack.get(stack.size() - 1));
                                 if (gray != 0) {
                                     ret[DA_COLOR] = new GrayColor(gray);
@@ -232,6 +234,8 @@ public class AcroFields {
                                 ret[DA_COLOR] = new CMYKColor(cyan, magenta, yellow, black);
                             }
                             break;
+                        default:
+                            break;
                     }
                     stack.clear();
                 } else {
@@ -247,7 +251,7 @@ public class AcroFields {
     private static PRTokeniser createPRTokeniser(byte[] da) {
         PRTokeniser tk = null;
         try {
-            tk = new PRTokeniser(PdfEncodings.convertToBytes(da, null));
+            tk = new PRTokeniser(PdfEncodings.convertToBytes(Arrays.toString(da), null));
         } catch (Exception e) {
             logger.info("PRTokeniser error: " + e.getMessage());
         } finally {
@@ -296,7 +300,7 @@ public class AcroFields {
                     return new CMYKColor(c.floatValue(), m.floatValue(), y.floatValue(), k.floatValue());
                 }
             } else {
-                throw new RuntimeException(
+                throw new ColorParseException(
                         "Error extracting color: " + pdfColor + " since the color array is too long: "
                                 + pdfColor.length());
             }
@@ -325,7 +329,7 @@ public class AcroFields {
         for (int k = 1; k <= reader.getNumberOfPages(); ++k) {
             PdfDictionary page = reader.getPageNRelease(k);
             Object o = PdfReader.getPdfObjectRelease(page.get(PdfName.ANNOTS), page);
-            PdfArray annots = (o instanceof PdfArray) ? (PdfArray) o : null;
+            PdfArray annots = (o instanceof PdfArray array) ? array : null;
             if (annots == null) {
                 continue;
             }
@@ -342,7 +346,7 @@ public class AcroFields {
                 PdfDictionary widget = annot;
                 PdfDictionary dic = new PdfDictionary();
                 dic.putAll(annot);
-                String name = "";
+                StringBuilder name = new StringBuilder();
                 PdfDictionary value = null;
                 PdfObject lastV = null;
                 int lastIDRNumber = -1;
@@ -356,7 +360,7 @@ public class AcroFields {
                     dic.mergeDifferent(annot);
                     PdfString t = annot.getAsString(PdfName.T);
                     if (t != null) {
-                        name = t.toUnicodeString() + "." + name;
+                        name.insert(0, t.toUnicodeString() + ".");
                     }
                     if (lastV == null && annot.get(PdfName.V) != null) {
                         lastV = PdfReader.getPdfObjectRelease(annot.get(PdfName.V));
@@ -381,16 +385,16 @@ public class AcroFields {
                     }
                 }
                 if (name.length() > 0) {
-                    name = name.substring(0, name.length() - 1);
+                    name = new StringBuilder(name.substring(0, name.length() - 1));
                 }
-                Item item = fields.get(name);
+                Item item = fields.get(name.toString());
                 if (item == null) {
                     if (parentRef == null) {
                         //when there is no /Parent ref the item reference will be used
                         parentRef = indirectObject;
                     }
                     item = new Item(parentRef);
-                    fields.put(name, item);
+                    fields.put(name.toString(), item);
                 }
                 if (value == null) {
                     item.addValue(widget);
@@ -502,11 +506,11 @@ public class AcroFields {
      * @return String[] of appearance names or null if the field can not be found
      */
     public String[] getAppearanceNames(String fieldName, int idx) {
-        Item fd = (Item) this.fields.get(fieldName);
+        Item fd = this.fields.get(fieldName);
         if (fd == null) {
             return new String[0];
         }
-        ArrayList<String> names = new ArrayList<String>();
+        ArrayList<String> names = new ArrayList<>();
 
         PdfDictionary dic = fd.getWidget(idx);
         dic = dic.getAsDict(PdfName.AP);
@@ -514,16 +518,15 @@ public class AcroFields {
             dic = dic.getAsDict(PdfName.N);
             if (dic != null) {
 
-                Iterator<String> it = dic.getKeys().iterator();
-                while (it.hasNext()) {
-                    String name = PdfName.decodeName(((PdfName) it.next()).toString());
+                for (PdfName pdfName : dic.getKeys()) {
+                    String name = PdfName.decodeName(pdfName.toString());
                     if (!names.contains(name)) {
                         names.add(name);
                     }
                 }
             }
         }
-        return names.toArray(new String[names.size()]);
+        return names.toArray(new String[0]);
     }
 
     private String[] getListOption(String fieldName, int idx) {
@@ -783,13 +786,15 @@ public class AcroFields {
                                             porf = BaseFont.createFont("font.ttf", BaseFont.IDENTITY_H, true, false, PdfReader.getStreamBytes(prs), null);
                                         } catch(IOException ignored){
                                             ignored.printStackTrace();
+                                        } catch (PDFFilterException e) {
+                                            throw new IllegalArgumentException(e);
                                         }
                                         extensionFonts.put(porkey, porf);
                                     }
                                 }
                             }
-                            if (tx instanceof TextField) {
-                                ((TextField) tx).setExtensionFont(porf);
+                            if (tx instanceof TextField textField) {
+                                textField.setExtensionFont(porf);
                             }
                         } else {
                             BaseFont bf = localFonts.get(dab[DA_FONT]);
@@ -1061,13 +1066,15 @@ public class AcroFields {
             }
             return "";
         }
-        if (v instanceof PRStream) {
+        if (v instanceof PRStream stream) {
             byte[] valBytes;
             try {
-                valBytes = PdfReader.getStreamBytes((PRStream) v);
+                valBytes = PdfReader.getStreamBytes(stream);
                 return new String(valBytes);
             } catch (IOException e) {
                 throw new ExceptionConverter(e);
+            } catch (PDFFilterException e) {
+                throw new IllegalArgumentException(e.getMessage());
             }
         }
 
@@ -1084,8 +1091,8 @@ public class AcroFields {
             String value = "";
             if (v instanceof PdfName) {
                 value = PdfName.decodeName(v.toString());
-            } else if (v instanceof PdfString) {
-                value = ((PdfString) v).toUnicodeString();
+            } else if (v instanceof PdfString string) {
+                value = string.toUnicodeString();
             }
             PdfArray opts = item.getValue(0).getAsArray(PdfName.OPT);
             if (opts != null) {
@@ -1101,13 +1108,13 @@ public class AcroFields {
             }
             return value;
         }
-        if (v instanceof PdfString) {
+        if (v instanceof PdfString string) {
             lastWasString = true;
-            return ((PdfString) v).toUnicodeString();
+            return string.toUnicodeString();
         } else if (v instanceof PdfName) {
             return PdfName.decodeName(v.toString());
-        } else if (v instanceof PdfArray) {
-            return ((PdfArray) v).toString();
+        } else if (v instanceof PdfArray array) {
+            return array.toString();
         } else {
             return "";
         }
@@ -1132,9 +1139,6 @@ public class AcroFields {
         if (item == null) {
             return ret;
         }
-        //if (!PdfName.CH.equals(type)) {
-        //    return ret;
-        //}
         PdfArray values = item.getMerged(0).getAsArray(PdfName.I);
         if (values == null) {
             return ret;
@@ -1354,7 +1358,7 @@ public class AcroFields {
             throw new NoReaderException("No reader has been supplied to this AcroFields instance!");
         }
         try {
-            Item item = (Item) this.fields.get(field);
+            Item item = this.fields.get(field);
             if (item == null) {
                 return false;
             }
@@ -1455,7 +1459,7 @@ public class AcroFields {
                         }
                         return fonts;
                     }
-                    throw new RuntimeException("Unknown property: " + name);
+                    throw new IllegalArgumentException("Unknown property: " + name);
                 }
                 return null;
             } else if ("bgcolor".equalsIgnoreCase(name) || "bordercolor".equalsIgnoreCase(name)) {
@@ -1472,7 +1476,7 @@ public class AcroFields {
                     return parseColor(color);
                 }
             } else {
-                throw new RuntimeException("Unknown property: " + name);
+                throw new IllegalArgumentException("Unknown property: " + name);
             }
         } catch (Exception e) {
             throw new ExceptionConverter(e);
@@ -1918,8 +1922,8 @@ public class AcroFields {
         if (appDic == null) {
             return false;
         }
-        PdfDictionary NDic = appDic.getAsDict(PdfName.N);
-        return (NDic != null && NDic.get(check) != null);
+        PdfDictionary nDic = appDic.getAsDict(PdfName.N);
+        return (nDic != null && nDic.get(check) != null);
     }
 
     /**
@@ -2014,6 +2018,8 @@ public class AcroFields {
                                     r.getTop(),
                                     pageSize.getRight() - r.getRight());
                             break;
+                        default:
+                            break;
                     }
                     r.normalize();
                 }
@@ -2038,7 +2044,8 @@ public class AcroFields {
             return array.size();
         }
         PdfIndirectReference ref = (PdfIndirectReference) refo;
-        for (int j = 0; j < array.size(); ++j) {
+        int j = 0;
+        while (j < array.size()) {
             PdfObject obj = array.getPdfObject(j);
             if (!obj.isIndirect()) {
                 continue;
@@ -2046,6 +2053,7 @@ public class AcroFields {
             if (((PdfIndirectReference) obj).getNumber() == ref.getNumber()) {
                 array.remove(j--);
             }
+            ++j;
         }
         return array.size();
     }
@@ -2094,7 +2102,8 @@ public class AcroFields {
         if (arrayf == null) {
             return false;
         }
-        for (int k = 0; k < item.size(); ++k) {
+        int k = 0;
+        while (k < item.size()) {
             int pageV = item.getPage(k);
             if (page != -1 && page != pageV) {
                 continue;
@@ -2130,6 +2139,7 @@ public class AcroFields {
                 item.remove(k);
                 --k;
             }
+            ++k;
         }
         if (page == -1 || item.size() == 0) {
             fields.remove(name);
@@ -2243,7 +2253,7 @@ public class AcroFields {
      *
      * @return {@code HashMap<String, SignatureType>} a list of signature names with its types.
      */
-    public HashMap<String, SignatureType> getSignatureTypes() {
+    public Map<String, SignatureType> getSignatureTypes() {
         if (this.sigTypes != null) {
             return this.sigTypes;
         }
@@ -2492,7 +2502,8 @@ public class AcroFields {
         try {
             rf.reOpen();
             byte[] buf = new byte[8192];
-            for (int k = 0; k < b.size(); ++k) {
+            int k = 0;
+            while (k < b.size()) {
                 int start = b.getAsNumber(k).intValue();
                 int length = b.getAsNumber(++k).intValue();
                 rf.seek(start);
@@ -2504,6 +2515,7 @@ public class AcroFields {
                     length -= rd;
                     pkcs7.update(buf, 0, rd);
                 }
+                ++k;
             }
         } catch (Exception e) {
             throw new ExceptionConverter(e);
@@ -2754,10 +2766,8 @@ public class AcroFields {
                         newButton.setScaleIcon(scale);
                     }
                     sw = ifit.getAsName(PdfName.S);
-                    if (sw != null) {
-                        if (sw.equals(PdfName.A)) {
-                            newButton.setProportionalIcon(false);
-                        }
+                    if (sw != null && sw.equals(PdfName.A)) {
+                        newButton.setProportionalIcon(false);
                     }
                     PdfArray aj = ifit.getAsArray(PdfName.A);
                     if (aj != null && aj.size() == 2) {

@@ -58,6 +58,7 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.InvalidRunDirectionException;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;

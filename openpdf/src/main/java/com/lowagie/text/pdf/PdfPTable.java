@@ -58,6 +58,7 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.IllegalNumberException;
+import com.lowagie.text.exceptions.InvalidRunDirectionException;
 import com.lowagie.text.pdf.events.PdfPTableEventForwarder;
 import java.util.ArrayList;
 import java.util.Comparator;

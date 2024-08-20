@@ -76,7 +76,6 @@ import com.lowagie.text.SimpleTable;
 import com.lowagie.text.Table;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.ActionException;
-import com.lowagie.text.pdf.TextDrawingConfig.PdfAcroForm;
 import com.lowagie.text.pdf.collection.PdfCollection;
 import com.lowagie.text.pdf.draw.DrawInterface;
 import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
@@ -490,10 +489,10 @@ public class PdfDocument extends Document {
                     Annotation annot = (Annotation) element;
                     Rectangle rect = new Rectangle(0, 0);
                     if (line != null) {
-                        rect = new Rectangle(annot.llx(indentRight() - line.widthLeft()),
-                                annot.ury(indentTop() - currentHeight - 20),
-                                annot.urx(indentRight() - line.widthLeft() + 20),
-                                annot.lly(indentTop() - currentHeight));
+                        rect = new Rectangle(annot.LLX(indentRight() - line.widthLeft()),
+                                annot.URY(indentTop() - currentHeight - 20),
+                                annot.URX(indentRight() - line.widthLeft() + 20),
+                                annot.LLY(indentTop() - currentHeight));
                     }
                     PdfAnnotation an = PdfAnnotationsImp.convertAnnotation(writer, annot, rect);
                     annotationsImp.addPlainAnnotation(an);
@@ -852,7 +851,7 @@ public class PdfDocument extends Document {
             }
             super.close();
 
-            writer.addLocalDestinations(localDestinations);
+            writer.addLocalDestinations((TreeMap<String, Object>) localDestinations);
             calculateOutlineCount();
             writeOutlines();
         } catch (Exception e) {
@@ -2694,7 +2693,7 @@ public class PdfDocument extends Document {
         // drawing the table
         java.util.List<PdfCell> headerCells = table.getHeaderCells();
         java.util.List<PdfCell> cells = table.getCells();
-        java.util.List<java.util.List<PdfCell>> rows = extractRows(cells, ctx);
+        java.util.List<java.util.List<PdfCell>> rows = extractRows(cells);
         boolean isContinue = false;
         while (!cells.isEmpty()) {
             ctx.lostTableBottom = 0;
@@ -2743,12 +2742,12 @@ public class PdfDocument extends Document {
             tablerec.setBorderColor(table.getBorderColor());
             tablerec.setBackgroundColor(table.getBackgroundColor());
             PdfContentByte under = writer.getDirectContentUnder();
-            under.rectangle(tablerec.rectangle(top(), indentBottom()));
+            under.rectangle(tablerec.RECTANGLE(top(), indentBottom()));
             under.add(ctx.cellGraphics);
             // bugfix by Gerald Fehringer: now again add the border for the table
             // since it might have been covered by cell backgrounds
             tablerec.setBackgroundColor(null);
-            tablerec = tablerec.rectangle(top(), indentBottom());
+            tablerec = tablerec.RECTANGLE(top(), indentBottom());
             tablerec.setBorder(table.getBorder());
             under.rectangle(tablerec);
             // end bugfix
@@ -2811,7 +2810,7 @@ public class PdfDocument extends Document {
                         cell.setBottom(indentTop() - oldTop + cell.getBottom(0));
                         ctx.pagetop = cell.getBottom();
                         // we paint the borders of the cell
-                        ctx.cellGraphics.rectangle(cell.rectangle(indentTop(), indentBottom()));
+                        ctx.cellGraphics.rectangle(cell.RECTANGLE(indentTop(), indentBottom()));
                         // we write the text of the cell
                         java.util.List<Image> images = cell.getImages(indentTop(), indentBottom());
                         for (Object image1 : images) {
@@ -2910,7 +2909,7 @@ public class PdfDocument extends Document {
         iterator = row.iterator();
         while (iterator.hasNext()) {
             PdfCell cell = iterator.next();
-            Rectangle cellRect = cell.rectangle(ctx.pagetop, indentBottom());
+            Rectangle cellRect = cell.RECTANGLE(ctx.pagetop, indentBottom());
             if (useTop) {
                 ctx.maxCellBottom = Math.max(ctx.maxCellBottom, cellRect.getTop());
             } else {
@@ -3045,12 +3044,12 @@ public class PdfDocument extends Document {
                     ctx.cellRendered(cell, getPageNumber());
                 }
                 float indentBottom = Math.max(cell.getBottom(), indentBottom());
-                Rectangle tableRect = ctx.table.rectangle(ctx.pagetop, indentBottom());
+                Rectangle tableRect = ctx.table.RECTANGLE(ctx.pagetop, indentBottom());
                 indentBottom = Math.max(tableRect.getBottom(), indentBottom);
 
                 // we paint the borders of the cells
-                Rectangle cellRect = cell.rectangle(tableRect.getTop(), indentBottom);
-                cellRect.setBottom(cellRect.bottom());
+                Rectangle cellRect = cell.RECTANGLE(tableRect.getTop(), indentBottom);
+                cellRect.setBottom(cellRect.getBottom());
                 if (cellRect.getHeight() > 0) {
                     ctx.lostTableBottom = indentBottom;
                     ctx.cellGraphics.rectangle(cellRect);

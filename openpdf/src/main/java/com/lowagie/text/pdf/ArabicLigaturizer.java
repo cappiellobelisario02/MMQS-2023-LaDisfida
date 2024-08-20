@@ -46,6 +46,8 @@
  */
 package com.lowagie.text.pdf;
 
+import java.util.logging.Logger;
+
 /**
  * Shape arabic characters. This code was inspired by an LGPL'ed C library: Pango ( see http://www.pango.com/ ). Note
  * that the code of this is the original work of Paulo Soares. Hence it is perfectly justifiable to distribute it under
@@ -54,6 +56,8 @@ package com.lowagie.text.pdf;
  * @author Paulo Soares (psoares@consiste.pt)
  */
 public class ArabicLigaturizer {
+
+    static Logger logger = Logger.getLogger(ArabicLigaturizer.class.getName());
 
     private ArabicLigaturizer(){}
 
@@ -104,8 +108,6 @@ public class ArabicLigaturizer {
     private static final char ALEFHAMZABELOW = 0x0625;
     private static final char ALEFMADDA = 0x0622;
     private static final char LAM = 0x0644;
-    private static final char HAMZA = 0x0621;
-    private static final char TATWEEL = 0x0640;
     private static final char ZWJ = 0x200D;
     private static final char HAMZAABOVE = 0x0654;
     private static final char HAMZABELOW = 0x0655;
@@ -202,10 +204,6 @@ public class ArabicLigaturizer {
             {0x06D2, 0xFBAE, 0xFBAF}, /* YEH BARREE */
             {0x06D3, 0xFBB0, 0xFBB1} /* YEH BARREE WITH HAMZA ABOVE */
     };
-    /**
-     * Not a valid option value.
-     */
-    private static final int DIGITS_RESERVED = 0xa0;
 
     static boolean isVowel(char s) {
         return ((s >= 0x064B) && (s <= 0x0655)) || (s == 0x0670);
@@ -213,7 +211,9 @@ public class ArabicLigaturizer {
 
     static char charshape(char s, int which)
         /* which 0=isolated 1=final 2=initial 3=medial */ {
-        int l, r, m;
+        int l;
+        int m;
+        int r;
         if ((s >= 0x0621) && (s <= 0x06D3)) {
             l = 0;
             r = chartable.length - 1;
@@ -234,7 +234,9 @@ public class ArabicLigaturizer {
     }
 
     static int shapecount(char s) {
-        int l, r, m;
+        int l;
+        int m;
+        int r;
         if ((s >= 0x0621) && (s <= 0x06D3) && !isVowel(s)) {
             l = 0;
             r = chartable.length - 1;
@@ -334,9 +336,7 @@ public class ArabicLigaturizer {
             case WAW:
                 oldchar.basechar = WAWHAMZA;
                 break;
-            case YEH:
-            case ALEFMAKSURA:
-            case FARSIYEH:
+            case YEH, ALEFMAKSURA, FARSIYEH:
                 oldchar.basechar = YEHHAMZA;
                 break;
             default:
@@ -346,13 +346,11 @@ public class ArabicLigaturizer {
     }
 
     private static void handleMadda(CharStruct oldchar) {
-        switch (oldchar.basechar) {
-            case ALEF:
-                oldchar.basechar = ALEFMADDA;
-                break;
-            default:
-                // Handle unexpected case, e.g., throw an exception or log a warning
-                break;
+        if (oldchar.basechar == ALEF) {
+            oldchar.basechar = ALEFMADDA;
+        }
+        else {
+            logger.info("Error handleMode! oldchar not ALEF.");
         }
     }
 
@@ -419,7 +417,8 @@ public class ArabicLigaturizer {
     // return len
     static void doublelig(StringBuilder string, int level) {
         int len = string.length();
-        int j = 0, si = 1;
+        int j = 0;
+        int si = 1;
 
         while (si < len) {
             char lapresult = 0;
@@ -591,7 +590,7 @@ public class ArabicLigaturizer {
     }
 
 
-    static boolean connects_to_left(CharStruct a) {
+    static boolean connectsToLeft(CharStruct a) {
         return a.numshapes > 2;
     }
 
@@ -621,7 +620,7 @@ public class ArabicLigaturizer {
                 } else {
                     which = 2;        /* medial or initial */
                 }
-                if (connects_to_left(oldchar)) {
+                if (connectsToLeft(oldchar)) {
                     which++;
                 }
 
@@ -642,7 +641,7 @@ public class ArabicLigaturizer {
         }
 
         /* Handle last char */
-        if (connects_to_left(oldchar)) {
+        if (connectsToLeft(oldchar)) {
             which = 1;
         } else {
             which = 0;
@@ -655,7 +654,7 @@ public class ArabicLigaturizer {
         copycstostring(string, curchar, level);
     }
 
-    static int arabic_shape(char[] src, int srcoffset, int srclength, char[] dest, int destoffset,
+    static int arabicShape(char[] src, int srcoffset, int srclength, char[] dest, int destoffset,
             int level) {
         char[] str = new char[srclength];
         if (srclength + srcoffset - destoffset >= 0) {
@@ -680,8 +679,7 @@ public class ArabicLigaturizer {
         int digitDelta = getDigitDelta(options, digitBase);
 
         switch (options & DIGITS_MASK) {
-            case DIGITS_EN2AN:
-            case DIGITS_AN2EN:
+            case DIGITS_EN2AN, DIGITS_AN2EN:
                 convertDigits(options, text, offset, length, digitBase, digitDelta);
                 break;
             case DIGITS_EN2AN_INIT_LR:
@@ -757,8 +755,7 @@ public class ArabicLigaturizer {
         for (int i = start; i < limit; ++i) {
             char ch = dest[i];
             switch (Character.getDirectionality(ch)) {
-                case Character.DIRECTIONALITY_LEFT_TO_RIGHT:
-                case Character.DIRECTIONALITY_RIGHT_TO_LEFT:
+                case Character.DIRECTIONALITY_LEFT_TO_RIGHT, Character.DIRECTIONALITY_RIGHT_TO_LEFT:
                     lastStrongWasAL = false;
                     break;
                 case Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC:

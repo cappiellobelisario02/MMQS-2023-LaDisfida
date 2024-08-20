@@ -236,4 +236,56 @@ public class ListItem {
             }
         }
     }
+
+    public int getAlignment(){
+        return paragraph.getAlignment();
+    }
+
+    public float getIndentationLeft(){
+        return paragraph.getIndentationLeft();
+    }
+
+    public float getIndentationRight(){
+        return paragraph.getIndentationRight();
+    }
+
+    public float getLeading(){
+        return paragraph.getLeading();
+    }
+
+    public int getRunDirection(){
+        return paragraph.getRunDirection();
+    }
+
+    public float getMultipliedLeading(){
+        return paragraph.getMultipliedLeading();
+    }
+
+    public float getExtraParagraphSpace(){
+        return paragraph.getExtraParagraphSpace();
+    }
+
+    public float getFirstLineIndent(){
+        return paragraph.getFirstLineIndent();
+    }
+
+    public float getSpacingBefore(){
+        return paragraph.getSpacingBefore();
+    }
+
+    public Font getFont(){
+        return paragraph.getFont();
+    }
+
+    public boolean getKeepTogether(){
+        return paragraph.getKeepTogether();
+    }
+
+    public float getSpacingAfter(){
+        return paragraph.getSpacingAfter();
+    }
+
+    public float getTotalLeading(){
+        return paragraph.getTotalLeading();
+    }
 }

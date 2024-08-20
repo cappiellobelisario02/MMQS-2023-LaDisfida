@@ -59,13 +59,13 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.SimpleTable;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.InvalidRunDirectionException;
 import com.lowagie.text.pdf.draw.DrawInterface;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * Formats text in a columnwise form. The text is bound on the left and on the right by a sequence of lines. This allows
@@ -89,104 +89,20 @@ import java.util.Stack;
  * @author Paulo Soares (psoares@consiste.pt)
  */
 
-// File: InvalidRunDirectionException.java
-public class InvalidRunDirectionException extends RuntimeException {
-    // Constructor that accepts a message
-    public InvalidRunDirectionException(String message) {
-        super(message);
-    }
-
-    // Constructor that accepts a message and a cause
-    public InvalidRunDirectionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-public class TextAlignmentSettings {
-    public static final int ALIGN_LEFT = 0;
-    public static final int ALIGN_CENTER = 1;
-    public static final int ALIGN_RIGHT = 2;
-
-    private int alignment;
-    private float x;
-    private float y;
-    private float rotation;
-    private int runDirection;
-    private int arabicOptions;
-
-    public TextAlignmentSettings(int alignment, float x, float y, float rotation, int runDirection, int arabicOptions) {
-        this.alignment = alignment;
-        this.x = x;
-        this.y = y;
-        this.rotation = rotation;
-        this.runDirection = runDirection;
-        this.arabicOptions = arabicOptions;
-    }
-
-    // Getters and setters
-    public int getAlignment() {
-        return alignment;
-    }
-
-    public void setAlignment(int alignment) {
-        this.alignment = alignment;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public void setX(float x) {
-        this.x = x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public void setY(float y) {
-        this.y = y;
-    }
-
-    public float getRotation() {
-        return rotation;
-    }
-
-    public void setRotation(float rotation) {
-        this.rotation = rotation;
-    }
-
-    public int getRunDirection() {
-        return runDirection;
-    }
-
-    public void setRunDirection(int runDirection) {
-        this.runDirection = runDirection;
-    }
-
-    public int getArabicOptions() {
-        return arabicOptions;
-    }
-
-    public void setArabicOptions(int arabicOptions) {
-        this.arabicOptions = arabicOptions;
-    }
-}
-
-
 public class ColumnText {
 
     /**
      * Eliminate the arabic vowels
      */
-    public static final int AR_NOVOWEL = ArabicLigaturizer.ar_novowel;
+    public static final int AR_NOVOWEL = ArabicLigaturizer.AR_NOVOWEL;
     /**
      * Compose the tashkeel in the ligatures.
      */
-    public static final int AR_COMPOSEDTASHKEEL = ArabicLigaturizer.ar_composedtashkeel;
+    public static final int AR_COMPOSEDTASHKEEL = ArabicLigaturizer.AR_COMPOSEDTASHKEEL;
     /**
      * Do some extra double ligatures.
      */
-    public static final int AR_LIG = ArabicLigaturizer.ar_lig;
+    public static final int AR_LIG = ArabicLigaturizer.AR_LIG;
     /**
      * Digit shaping option: Replace European digits (U+0030...U+0039) by Arabic-Indic digits.
      */
@@ -433,13 +349,8 @@ public class ColumnText {
      * Shows a line of text. Only the first line is written.
      *
      * @param canvas        where the text is to be written to
-     * @param alignment     the alignment. It is not influenced by the run direction
      * @param phrase        the <CODE>Phrase</CODE> with the text
-     * @param x             the x reference position
-     * @param y             the y reference position
-     * @param rotation      the rotation to be applied in degrees counterclockwise
-     * @param runDirection  the run direction
-     * @param arabicOptions the options for the arabic shaping
+     * @param settings      the text alignment settings
      */
     public static void showTextAligned(PdfContentByte canvas, Phrase phrase, TextAlignmentSettings settings) {
         int alignment = settings.getAlignment();
@@ -517,7 +428,9 @@ public class ColumnText {
      */
     public static void showTextAligned(PdfContentByte canvas, int alignment, Phrase phrase, float x, float y,
             float rotation) {
-        showTextAligned(canvas, alignment, phrase, x, y, rotation, PdfWriter.RUN_DIRECTION_NO_BIDI, 0);
+        TextAlignmentSettings settings = new TextAlignmentSettings(alignment, x, y, rotation,
+                PdfWriter.RUN_DIRECTION_NO_BIDI, 0);
+        showTextAligned(canvas, phrase, settings);
     }
 
     /**
@@ -800,11 +713,11 @@ public class ColumnText {
     protected float[] findLimitsOneLine() {
         float x1 = findLimitsPoint(leftWall);
         if (lineStatus == LINE_STATUS_OFFLIMITS || lineStatus == LINE_STATUS_NOLINE) {
-            return new int[0];
+            return new float[0];
         }
         float x2 = findLimitsPoint(rightWall);
         if (lineStatus == LINE_STATUS_NOLINE) {
-            return new int[0];
+            return new float[0];
         }
         return new float[]{x1, x2};
     }
@@ -819,12 +732,12 @@ public class ColumnText {
         boolean repeat = false;
         for (; ; ) {
             if (repeat && currentLeading == 0) {
-                return new int[0];
+                return new float[0];
             }
             repeat = true;
             float[] x1 = findLimitsOneLine();
             if (lineStatus == LINE_STATUS_OFFLIMITS) {
-                return new int[0];
+                return new float[0];
             }
             yLine -= currentLeading;
             if (lineStatus == LINE_STATUS_NOLINE) {
@@ -832,7 +745,7 @@ public class ColumnText {
             }
             float[] x2 = findLimitsOneLine();
             if (lineStatus == LINE_STATUS_OFFLIMITS) {
-                return new int[0];
+                return new float[0];
             }
             if (lineStatus == LINE_STATUS_NOLINE) {
                 yLine -= currentLeading;
@@ -1318,418 +1231,365 @@ public class ColumnText {
         linesWritten = 0;
         descender = 0;
         boolean firstPass = adjustFirstLine;
-
         boolean continueLoop = true;
+
         while (continueLoop) {
             if (compositeElements.isEmpty()) {
                 return NO_MORE_TEXT;
             }
+
             Element element = compositeElements.getFirst();
-            if (element.type() == Element.PARAGRAPH) {
-                Paragraph para = (Paragraph) element;
-                int status = 0;
-                for (int keep = 0; keep < 2; ++keep) {
-                    float lastY = yLine;
-                    boolean createHere = false;
-                    if (compositeColumn == null) {
-                        compositeColumn = new ColumnText(canvas);
-                        compositeColumn.setUseAscender(firstPass && useAscender);
-                        compositeColumn.setAlignment(para.getAlignment());
-                        compositeColumn.setIndent(para.getIndentationLeft() + para.getFirstLineIndent());
-                        compositeColumn.setExtraParagraphSpace(para.getExtraParagraphSpace());
-                        compositeColumn.setFollowingIndent(para.getIndentationLeft());
-                        compositeColumn.setRightIndent(para.getIndentationRight());
-                        compositeColumn.setLeading(para.getLeading(), para.getMultipliedLeading());
-                        compositeColumn.setRunDirection(
-                                para.getRunDirection() == PdfWriter.RUN_DIRECTION_DEFAULT ? runDirection
-                                        : para.getRunDirection());
-                        compositeColumn.setArabicOptions(arabicOptions);
-                        compositeColumn.setSpaceCharRatio(spaceCharRatio);
-                        compositeColumn.addText(para);
-                        if (!firstPass) {
-                            yLine -= para.getSpacingBefore();
-                        }
-                        createHere = true;
+            switch (element.type()) {
+                case Element.PARAGRAPH:
+                    return handleParagraph((Paragraph) element, firstPass, simulate);
+
+                case Element.LIST:
+                    return handleList((com.lowagie.text.List) element, firstPass, simulate);
+
+                case Element.PTABLE:
+                    return handleTable((PdfPTable) element, firstPass, simulate);
+
+                case Element.YMARK:
+                    if (!simulate) {
+                        ((DrawInterface) element).draw(canvas, leftX, minY, rightX, maxY, yLine);
                     }
-                    compositeColumn.leftX = leftX;
-                    compositeColumn.rightX = rightX;
-                    compositeColumn.yLine = yLine;
-                    compositeColumn.rectangularWidth = rectangularWidth;
-                    compositeColumn.rectangularMode = rectangularMode;
-                    compositeColumn.minY = minY;
-                    compositeColumn.maxY = maxY;
-                    boolean keepCandidate = (para.getKeepTogether() && createHere && !firstPass);
-                    status = compositeColumn.go(simulate || (keepCandidate && keep == 0));
-                    updateFilledWidth(compositeColumn.filledWidth);
-                    if ((status & NO_MORE_TEXT) == 0 && keepCandidate) {
-                        compositeColumn = null;
-                        yLine = lastY;
-                        return NO_MORE_COLUMN;
-                    }
-                    if (simulate || !keepCandidate) {
-                        break;
-                    }
-                    if (keep == 0) {
-                        compositeColumn = null;
-                        yLine = lastY;
-                    }
-                }
-                firstPass = false;
-                if (compositeColumn != null) {
-                    yLine = compositeColumn.yLine;
-                    linesWritten += compositeColumn.linesWritten;
-                    descender = compositeColumn.descender;
-                }
-                if ((status & NO_MORE_TEXT) != 0) {
-                    compositeColumn = null;
                     compositeElements.removeFirst();
-                    yLine -= para.getSpacingAfter();
-                }
-                if ((status & NO_MORE_COLUMN) != 0) {
-                    return NO_MORE_COLUMN;
-                }
-            } else if (element.type() == Element.LIST) {
-                com.lowagie.text.List list = (com.lowagie.text.List) element;
-                java.util.List<Element> items = list.getItems();
-                ListItem item = null;
-                float listIndentation = list.getIndentationLeft();
-                int count = 0;
-                Deque<Object[]> stack = new ArrayDeque<>();
-                public void pushToStack(Object[] item) {
-                    stack.addFirst(item);  // equivalent to Stack.push(item)
-                }
+                    break;
 
-                public Object[] popFromStack() {
-                    return stack.removeFirst();  // equivalent to Stack.pop()
-                }
+                default:
+                    compositeElements.removeFirst();
+                    break;
+            }
+            firstPass = false;
+        }
+        return 0;
+    }
 
-                public Object[] peekAtStack() {
-                    return stack.peekFirst();  // equivalent to Stack.peek()
-                }
+    private int handleList(com.lowagie.text.List list, boolean simulate, boolean firstPass) throws DocumentException {
+        ListItem item = findListItem(list);
+        if (item == null) {
+            listIdx = 0;
+            compositeElements.removeFirst();
+            return NO_MORE_TEXT;
+        }
 
-                public boolean isStackEmpty() {
-                    return stack.isEmpty();  // equivalent to Stack.isEmpty()
+        int status = 0;
+        for (int keep = 0; keep < 2; ++keep) {
+            float lastY = yLine;
+            if (initializeCompositeColumn(item, list, firstPass)) {
+                if (!firstPass) {
+                    yLine -= item.getSpacingBefore();
                 }
+            }
 
-                public static void main(String[] args) {
-                    SomeClass example = new SomeClass();
-                    example.pushToStack(new Object[] {"first item"});
-                    System.out.println(example.peekAtStack()[0]);  // Output: first item
-                    System.out.println(example.popFromStack()[0]);  // Output: first item
-                    System.out.println(example.isStackEmpty());  // Output: true
-                }
-                for (int k = 0; k < items.size(); ++k) {
-                    Object obj = items.get(k);
-                    if (obj instanceof ListItem) {
-                        if (count == listIdx) {
-                            item = (ListItem) obj;
-                            break;
-                        } else {
-                            ++count;
-                        }
-                    } else if (obj instanceof com.lowagie.text.List) {
-                        stack.push(new Object[]{list, k, listIndentation});
-                        list = (com.lowagie.text.List) obj;
-                        items = list.getItems();
-                        listIndentation += list.getIndentationLeft();
-                        k = -1;
-                        continue;
-                    }
-                    if (k == items.size() - 1 && !stack.isEmpty()) {
+            status = processCompositeColumn(item, list, simulate, keep, lastY);
+            if (shouldBreakSimulation(simulate, status, keep)) break;
+        }
 
-                        Object[] objs = stack.pop();
-                        list = (com.lowagie.text.List) objs[0];
-                        items = list.getItems();
-                        k = (Integer) objs[1];
-                        listIndentation = (Float) objs[2];
+        finalizeListProcessing(status, item);
+        return determineFinalStatus(status);
+    }
 
-                    }
+    private ListItem findListItem(com.lowagie.text.List list) {
+        java.util.List<Element> items = list.getItems();
+        float listIndentation = list.getIndentationLeft();
+        int count = 0;
+        Deque<Object[]> stack = new ArrayDeque<>();
+
+        for (int k = 0; k < items.size(); ++k) {
+            Object obj = items.get(k);
+            if (obj instanceof ListItem) {
+                if (count == listIdx) {
+                    return (ListItem) obj;
                 }
-                int status = 0;
-                for (int keep = 0; keep < 2; ++keep) {
-                    float lastY = yLine;
-                    boolean createHere = false;
-                    if (compositeColumn == null) {
-                        if (item == null) {
-                            listIdx = 0;
-                            compositeElements.removeFirst();
-                            continue main_loop;
-                        }
-                        compositeColumn = new ColumnText(canvas);
-                        compositeColumn.setUseAscender(firstPass && useAscender);
-                        compositeColumn.setAlignment(item.getAlignment());
-                        compositeColumn.setIndent(
-                                item.getIndentationLeft() + listIndentation + item.getFirstLineIndent());
-                        compositeColumn.setExtraParagraphSpace(item.getExtraParagraphSpace());
-                        compositeColumn.setFollowingIndent(compositeColumn.getIndent());
-                        compositeColumn.setRightIndent(item.getIndentationRight() + list.getIndentationRight());
-                        compositeColumn.setLeading(item.getLeading(), item.getMultipliedLeading());
-                        compositeColumn.setRunDirection(
-                                item.getRunDirection() == PdfWriter.RUN_DIRECTION_DEFAULT ? runDirection
-                                        : item.getRunDirection());
-                        compositeColumn.setArabicOptions(arabicOptions);
-                        compositeColumn.setSpaceCharRatio(spaceCharRatio);
-                        compositeColumn.addText(item);
-                        if (!firstPass) {
-                            yLine -= item.getSpacingBefore();
-                        }
-                        createHere = true;
-                    }
-                    compositeColumn.leftX = leftX;
-                    compositeColumn.rightX = rightX;
-                    compositeColumn.yLine = yLine;
-                    compositeColumn.rectangularWidth = rectangularWidth;
-                    compositeColumn.rectangularMode = rectangularMode;
-                    compositeColumn.minY = minY;
-                    compositeColumn.maxY = maxY;
-                    boolean keepCandidate = (item != null && item.getKeepTogether() && createHere && !firstPass);
-                    status = compositeColumn.go(simulate || (keepCandidate && keep == 0));
-                    updateFilledWidth(compositeColumn.filledWidth);
-                    if ((status & NO_MORE_TEXT) == 0 && keepCandidate) {
-                        compositeColumn = null;
-                        yLine = lastY;
-                        return NO_MORE_COLUMN;
-                    }
-                    if (simulate || !keepCandidate) {
-                        break;
-                    }
-                    if (keep == 0) {
-                        compositeColumn = null;
-                        yLine = lastY;
-                    }
+                ++count;
+            } else if (obj instanceof com.lowagie.text.List) {
+                stack.push(new Object[]{list, k, listIndentation});
+                list = (com.lowagie.text.List) obj;
+                items = list.getItems();
+                listIndentation += list.getIndentationLeft();
+                k = -1;
+            }
+            if (k == items.size() - 1 && !stack.isEmpty()) {
+                Object[] objs = stack.pop();
+                list = (com.lowagie.text.List) objs[0];
+                items = list.getItems();
+                k = (Integer) objs[1];
+                listIndentation = (Float) objs[2];
+            }
+        }
+        return null;
+    }
+
+    private boolean initializeCompositeColumn(ListItem item, com.lowagie.text.List list, boolean firstPass) {
+        if (compositeColumn == null) {
+            compositeColumn = new ColumnText(canvas);
+            compositeColumn.setUseAscender(firstPass && useAscender);
+            compositeColumn.setAlignment(item.getAlignment());
+            compositeColumn.setIndent(item.getIndentationLeft() + list.getIndentationLeft() + item.getFirstLineIndent());
+            compositeColumn.setExtraParagraphSpace(item.getExtraParagraphSpace());
+            compositeColumn.setFollowingIndent(compositeColumn.getIndent());
+            compositeColumn.setRightIndent(item.getIndentationRight() + list.getIndentationRight());
+            compositeColumn.setLeading(item.getLeading(), item.getMultipliedLeading());
+            compositeColumn.setRunDirection(item.getRunDirection() == PdfWriter.RUN_DIRECTION_DEFAULT ? runDirection : item.getRunDirection());
+            compositeColumn.setArabicOptions(arabicOptions);
+            compositeColumn.setSpaceCharRatio(spaceCharRatio);
+            compositeColumn.addText(item.getListSymbol());
+            return true;
+        }
+        return false;
+    }
+
+    private int processCompositeColumn(ListItem item, com.lowagie.text.List list, boolean simulate, int keep, float lastY) throws DocumentException {
+        compositeColumn.leftX = leftX;
+        compositeColumn.rightX = rightX;
+        compositeColumn.yLine = yLine;
+        compositeColumn.rectangularWidth = rectangularWidth;
+        compositeColumn.rectangularMode = rectangularMode;
+        compositeColumn.minY = minY;
+        compositeColumn.maxY = maxY;
+
+        boolean keepCandidate = (item != null && item.getKeepTogether() && !simulate);
+        int status = compositeColumn.go(simulate || (keepCandidate && keep == 0));
+        updateFilledWidth(compositeColumn.filledWidth);
+
+        if ((status & NO_MORE_TEXT) == 0 && keepCandidate) {
+            compositeColumn = null;
+            yLine = lastY;
+            return NO_MORE_COLUMN;
+        }
+        if (keep == 0 && !simulate) {
+            compositeColumn = null;
+            yLine = lastY;
+        }
+
+        return status;
+    }
+
+    private boolean shouldBreakSimulation(boolean simulate, int status, int keep) {
+        return simulate || (keep == 0 && (status & NO_MORE_TEXT) == 0);
+    }
+
+    private void finalizeListProcessing(int status, ListItem item) {
+        yLine = compositeColumn.yLine;
+        linesWritten += compositeColumn.linesWritten;
+        descender = compositeColumn.descender;
+
+        if (!Float.isNaN(compositeColumn.firstLineY) && !compositeColumn.firstLineYDone) {
+            drawListSymbol(item);
+            compositeColumn.firstLineYDone = true;
+        }
+
+        if ((status & NO_MORE_TEXT) != 0) {
+            compositeColumn = null;
+            ++listIdx;
+            if (item != null) {
+                yLine -= item.getSpacingAfter();
+            }
+        }
+    }
+
+    private void drawListSymbol(ListItem item) {
+        if (item != null) {
+            int elementRunDirection = (item.getRunDirection() == PdfWriter.RUN_DIRECTION_NO_BIDI || item.getRunDirection() == PdfWriter.RUN_DIRECTION_DEFAULT)
+                    ? PdfWriter.RUN_DIRECTION_NO_BIDI : item.getRunDirection();
+            TextAlignmentSettings settings = new TextAlignmentSettings(Element.ALIGN_LEFT,
+                    compositeColumn.leftX + item.getIndentationLeft(), compositeColumn.firstLineY,
+                    0, elementRunDirection, 0);
+            showTextAligned(canvas, new Phrase(item.getListSymbol()), settings);
+        }
+    }
+
+    private int determineFinalStatus(int status) {
+        if ((status & NO_MORE_COLUMN) != 0) {
+            return NO_MORE_COLUMN;
+        }
+        return 0;
+    }
+
+
+    private int handleTable(PdfPTable table, boolean simulate, boolean firstPass) throws DocumentException {
+        if (yLine < minY || yLine > maxY) {
+            return NO_MORE_COLUMN;
+        }
+
+        if (table.size() <= table.getHeaderRows()) {
+            compositeElements.removeFirst();
+            return NO_MORE_TEXT;
+        }
+
+        float yTemp = yLine;
+        if (!firstPass && listIdx == 0) {
+            yTemp -= table.spacingBefore();
+        }
+
+        if (yTemp < minY || yTemp > maxY) {
+            return NO_MORE_COLUMN;
+        }
+
+        PdfPTable localTable = table;
+        if (compositeColumn == null) {
+            compositeColumn = new ColumnText(canvas);
+        }
+        compositeColumn.leftX = leftX;
+        compositeColumn.rightX = rightX;
+        compositeColumn.yLine = yTemp;
+        compositeColumn.rectangularWidth = rectangularWidth;
+        compositeColumn.rectangularMode = rectangularMode;
+        compositeColumn.minY = minY;
+        compositeColumn.maxY = maxY;
+        compositeColumn.runDirection = runDirection;
+        compositeColumn.adjustFirstLine = adjustFirstLine;
+        compositeColumn.setUseAscender(firstPass && useAscender);
+        compositeColumn.addElement(localTable);
+
+        int status = compositeColumn.go(simulate);
+        updateFilledWidth(compositeColumn.filledWidth);
+
+        yLine = compositeColumn.yLine;
+        linesWritten += compositeColumn.linesWritten;
+        descender = compositeColumn.descender;
+
+        if ((status & NO_MORE_TEXT) != 0) {
+            compositeColumn = null;
+            compositeElements.removeFirst();
+            yLine -= table.spacingAfter();
+        }
+
+        if ((status & NO_MORE_COLUMN) != 0) {
+            return NO_MORE_COLUMN;
+        }
+
+        return 0;
+    }
+
+    private int handleParagraph(Paragraph para, boolean firstPass, boolean simulate) throws DocumentException {
+        int status = 0;
+        for (int keep = 0; keep < 2; ++keep) {
+            float lastY = yLine;
+            boolean createHere = false;
+
+            if (compositeColumn == null) {
+                compositeColumn = createCompositeColumnForParagraph(para, firstPass);
+                if (!firstPass) {
+                    yLine -= para.getSpacingBefore();
                 }
-                firstPass = false;
+                createHere = true;
+            }
+
+            status = processColumn(para.getKeepTogether() && createHere && !firstPass, simulate, keep, lastY);
+            if (statusNeedsBreaking(status, simulate, keep)) break;
+        }
+
+        updateLineAndStatusForParagraph(status, para);
+        return checkStatusAndRemoveElement(status, Element.PARAGRAPH);
+    }
+
+    private ColumnText createCompositeColumnForParagraph(Paragraph para, boolean firstPass) {
+        ColumnText column = new ColumnText(canvas);
+        column.setUseAscender(firstPass && useAscender);
+        column.setAlignment(para.getAlignment());
+        column.setIndent(para.getIndentationLeft() + para.getFirstLineIndent());
+        column.setExtraParagraphSpace(para.getExtraParagraphSpace());
+        column.setFollowingIndent(para.getIndentationLeft());
+        column.setRightIndent(para.getIndentationRight());
+        column.setLeading(para.getLeading(), para.getMultipliedLeading());
+        column.setRunDirection(para.getRunDirection() == PdfWriter.RUN_DIRECTION_DEFAULT ? runDirection : para.getRunDirection());
+        column.setArabicOptions(arabicOptions);
+        column.setSpaceCharRatio(spaceCharRatio);
+        column.addText(para);
+        return column;
+    }
+
+    private int processColumn(boolean keepCandidate, boolean simulate, int keep, float lastY) throws DocumentException {
+        compositeColumn.leftX = leftX;
+        compositeColumn.rightX = rightX;
+        compositeColumn.yLine = yLine;
+        compositeColumn.rectangularWidth = rectangularWidth;
+        compositeColumn.rectangularMode = rectangularMode;
+        compositeColumn.minY = minY;
+        compositeColumn.maxY = maxY;
+
+        int status = compositeColumn.go(simulate || (keepCandidate && keep == 0));
+        updateFilledWidth(compositeColumn.filledWidth);
+
+        if ((status & NO_MORE_TEXT) == 0 && keepCandidate) {
+            compositeColumn = null;
+            yLine = lastY;
+            return NO_MORE_COLUMN;
+        }
+
+        if (simulate || !keepCandidate) {
+            return status;
+        }
+
+        if (keep == 0) {
+            compositeColumn = null;
+            yLine = lastY;
+        }
+
+        return status;
+    }
+
+    private boolean statusNeedsBreaking(int status, boolean simulate, int keep) {
+        return simulate || !((status & NO_MORE_TEXT) != 0) || keep == 0;
+    }
+
+    private void updateLineAndStatusForParagraph(int status, Paragraph para) {
+        if (compositeColumn != null) {
+            yLine = compositeColumn.yLine;
+            linesWritten += compositeColumn.linesWritten;
+            descender = compositeColumn.descender;
+        }
+
+        if ((status & NO_MORE_TEXT) != 0) {
+            compositeColumn = null;
+            compositeElements.removeFirst();
+            yLine -= para.getSpacingAfter();
+        }
+    }
+
+    private int checkStatusAndRemoveElement(int status, int elementType) {
+        if ((status & NO_MORE_COLUMN) != 0) {
+            return NO_MORE_COLUMN;
+        }
+
+        if (elementType == Element.LIST || elementType == Element.PARAGRAPH) {
+            if (compositeColumn != null) {
                 yLine = compositeColumn.yLine;
                 linesWritten += compositeColumn.linesWritten;
                 descender = compositeColumn.descender;
-                if (!Float.isNaN(compositeColumn.firstLineY) && !compositeColumn.firstLineYDone) {
-                    if (!simulate && item != null) {
-                        int elementRunDirection;
-                        if (item.getRunDirection() == PdfWriter.RUN_DIRECTION_NO_BIDI
-                                || item.getRunDirection() == PdfWriter.RUN_DIRECTION_DEFAULT) {
-                            elementRunDirection = PdfWriter.RUN_DIRECTION_NO_BIDI;
-                        } else {
-                            elementRunDirection = item.getRunDirection();
-                        }
-                        showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(item.getListSymbol()),
-                                compositeColumn.leftX + listIndentation, compositeColumn.firstLineY, 0,
-                                elementRunDirection, 0);
-                    }
-                    compositeColumn.firstLineYDone = true;
-                }
-                if ((status & NO_MORE_TEXT) != 0) {
-                    compositeColumn = null;
-                    ++listIdx;
-                    if (item != null) {
-                        yLine -= item.getSpacingAfter();
-                    }
-                }
-                if ((status & NO_MORE_COLUMN) != 0) {
-                    return NO_MORE_COLUMN;
-                }
-            } else if (element.type() == Element.PTABLE) {
-                // don't write anything in the current column if there's no more space available
-                if (yLine < minY || yLine > maxY) {
-                    return NO_MORE_COLUMN;
-                }
-
-                // get the PdfPTable element
-                PdfPTable table = (PdfPTable) element;
-                // we ignore tables without a body
-                if (table.size() <= table.getHeaderRows()) {
-                    compositeElements.removeFirst();
-                    continue;
-                }
-
-                // offsets
-                float yTemp = yLine;
-                if (!firstPass && listIdx == 0) {
-                    yTemp -= table.spacingBefore();
-                }
-                float yLineWrite = yTemp;
-
-                // don't write anything in the current column if there's no more space available
-                if (yTemp < minY || yTemp > maxY) {
-                    return NO_MORE_COLUMN;
-                }
-
-                // coordinates
-                currentLeading = 0;
-                float x1 = leftX;
-                float tableWidth;
-                if (table.isLockedWidth()) {
-                    tableWidth = table.getTotalWidth();
-                    table.calculateHeights(true);
-                    updateFilledWidth(tableWidth);
-                } else {
-                    tableWidth = rectangularWidth * table.getWidthPercentage() / 100f;
-                    table.setTotalWidth(tableWidth);
-                }
-
-                // how many header rows are real header rows; how many are footer rows?
-                int headerRows = table.getHeaderRows();
-                int footerRows = table.getFooterRows();
-                if (footerRows > headerRows) {
-                    footerRows = headerRows;
-                }
-                int realHeaderRows = headerRows - footerRows;
-                float headerHeight = table.getHeaderHeight();
-                float footerHeight = table.getFooterHeight();
-
-                // make sure the header and footer fit on the page
-                boolean skipHeader = (!firstPass && table.isSkipFirstHeader() && listIdx <= headerRows);
-                if (!skipHeader) {
-                    yTemp -= headerHeight;
-                    if (yTemp < minY || yTemp > maxY) {
-                        if (firstPass) {
-                            compositeElements.removeFirst();
-                            continue;
-                        }
-                        return NO_MORE_COLUMN;
-                    }
-                }
-
-                // how many real rows (not header or footer rows) fit on a page?
-                int k;
-                if (listIdx < headerRows) {
-                    listIdx = headerRows;
-                }
-                if (!table.isComplete()) {
-                    yTemp -= footerHeight;
-                }
-                for (k = listIdx; k < table.size(); ++k) {
-                    float rowHeight = table.getRowHeight(k);
-                    if (yTemp - rowHeight < minY) {
-                        break;
-                    }
-                    yTemp -= rowHeight;
-                }
-                if (!table.isComplete()) {
-                    yTemp += footerHeight;
-                }
-
-                if (k < table.size()) {
-                    if (table.isSplitRows() && (!table.isSplitLate() || (k == listIdx && firstPass))) {
-                        if (!splittedRow) {
-                            splittedRow = true;
-                            table = new PdfPTable(table);
-                            compositeElements.set(0, table);
-                            List<PdfPRow> rows = table.getRows();
-                            for (int i = headerRows; i < listIdx; ++i) {
-                                rows.set(i, null);
-                            }
-                        }
-                        float h = yTemp - minY;
-                        PdfPRow newRow = table.getRow(k).splitRow(table, k, h);
-                        if (newRow == null) {
-                            if (k == listIdx) {
-                                return NO_MORE_COLUMN;
-                            }
-                        } else {
-                            yTemp = minY;
-                            table.getRows().add(++k, newRow);
-                        }
-                    } else if (!table.isSplitRows() && k == listIdx && firstPass) {
-                        return NO_MORE_COLUMN;
-                    } else if (k == listIdx && !firstPass && (!table.isSplitRows() || table.isSplitLate()) && (
-                            table.getFooterRows() == 0 || table.isComplete())) {
-                        return NO_MORE_COLUMN;
-                    }
-                }
-                // or k is the number of rows in the table (for loop was done).
-                firstPass = false;
-                // we draw the table (for real now)
-                if (!simulate) {
-                    // set the alignment
-                    switch (table.getHorizontalAlignment()) {
-                        case Element.ALIGN_LEFT:
-                            break;
-                        case Element.ALIGN_RIGHT:
-                            x1 += rectangularWidth - tableWidth;
-                            break;
-                        default:
-                            x1 += (rectangularWidth - tableWidth) / 2f;
-                    }
-                    // copy the rows that fit on the page in a new table nt
-                    PdfPTable nt = PdfPTable.shallowCopy(table);
-                    List<PdfPRow> sub = nt.getRows();
-
-                    // first we add the real header rows (if necessary)
-                    if (!skipHeader && realHeaderRows > 0) {
-                        sub.addAll(table.getRows(0, realHeaderRows));
-                    } else {
-                        nt.setHeaderRows(footerRows);
-                    }
-                    // then we add the real content
-                    sub.addAll(table.getRows(listIdx, k));
-
-                    // otherwise no footers will be added (because iText thinks the table continues on the same page)
-                    boolean showFooter = !table.isSkipLastFooter();
-                    boolean newPageFollows = false;
-                    if (k < table.size()) {
-                        nt.setComplete(true);
-                        showFooter = true;
-                        newPageFollows = true;
-                    }
-                    // we add the footer rows if necessary (not for incomplete tables)
-                    for (int j = 0; j < footerRows && nt.isComplete() && showFooter; ++j) {
-                        sub.add(table.getRow(j + realHeaderRows));
-                    }
-
-                    // we need a correction if the last row needs to be extended
-                    float rowHeight = 0;
-                    int index = sub.size() - 1;
-                    if (showFooter) {
-                        index -= footerRows;
-                    }
-                    PdfPRow last = sub.get(index);
-                    if (table.isExtendLastRow(newPageFollows)) {
-                        rowHeight = last.getMaxHeights();
-                        last.setMaxHeights(yTemp - minY + rowHeight);
-                        yTemp = minY;
-                    }
-
-                    // now we render the rows of the new table
-                    if (canvases != null) {
-                        nt.writeSelectedRows(0, -1, x1, yLineWrite, canvases);
-                    } else {
-                        nt.writeSelectedRows(0, -1, x1, yLineWrite, canvas);
-                    }
-                    if (table.isExtendLastRow(newPageFollows)) {
-                        last.setMaxHeights(rowHeight);
-                    }
-                } else if (table.isExtendLastRow() && minY > PdfPRow.BOTTOM_LIMIT) {
-                    yTemp = minY;
-                }
-                yLine = yTemp;
-                if (!(skipHeader || table.isComplete())) {
-                    yLine += footerHeight;
-                }
-                if (k >= table.size()) {
-                    yLine -= table.spacingAfter();
-                    compositeElements.removeFirst();
-                    splittedRow = false;
-                    listIdx = 0;
-                } else {
-                    if (splittedRow) {
-                        List<PdfPRow> rows = table.getRows();
-                        for (int i = listIdx; i < k; ++i) {
-                            rows.set(i, null);
-                        }
-                    }
-                    listIdx = k;
-                    return NO_MORE_COLUMN;
-                }
-            } else if (element.type() == Element.YMARK) {
-                if (!simulate) {
-                    DrawInterface zh = (DrawInterface) element;
-                    zh.draw(canvas, leftX, minY, rightX, maxY, yLine);
-                }
-                compositeElements.removeFirst();
-            } else {
-                compositeElements.removeFirst();
             }
         }
+
+        return 0;
+    }
+
+    public void pushToStack(Object[] item, Deque<Object[]> stack) {
+        stack.addFirst(item);  // equivalent to Stack.push(item)
+    }
+
+    public Object[] popFromStack(Deque<Object[]> stack) {
+        return stack.removeFirst();  // equivalent to Stack.pop()
+    }
+
+    public Object[] peekAtStack(Deque<Object[]> stack) {
+        return stack.peekFirst();  // equivalent to Stack.peek()
+    }
+
+    public boolean isStackEmpty(Deque<Object[]> stack) {
+        return stack.isEmpty();  // equivalent to Stack.isEmpty()
+    }
+
+    public static void main(String[] args) {
+        PdfWriter writer = new PdfWriter();
+        PdfContentByte canvas = new PdfContentByte(writer);
+        ColumnText example = new ColumnText(canvas);
+        ArrayDeque<Object[]> stack = new ArrayDeque<>();
+        example.pushToStack(new Object[] {"first item"}, stack);
+        System.out.println(example.peekAtStack(stack)[0]);  // Output: first item
+        System.out.println(example.popFromStack(stack)[0]);  // Output: first item
+        System.out.println(example.isStackEmpty(stack));  // Output: true
     }
 
     /**

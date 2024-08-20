@@ -681,7 +681,8 @@ public class BidiLine {
     }
 
     private int shapeArabicWord(int startArabicIdx, int arabicWordSize, int dest) {
-        int size = ArabicLigaturizer.arabic_shape(text, startArabicIdx, arabicWordSize, text, dest, arabicWordSize, arabicOptions);
+        int size = ArabicLigaturizer.arabicShape(text, startArabicIdx, arabicWordSize, text, arabicWordSize,
+                arabicOptions);
         if (startArabicIdx != dest) {
             copyMetadata(startArabicIdx, dest, size);
         }
@@ -882,11 +883,11 @@ public class BidiLine {
         return width;
     }
 
-    public ArrayList<PdfChunk> createArrayOfPdfChunks(int startIdx, int endIdx) {
+    public List<PdfChunk> createArrayOfPdfChunks(int startIdx, int endIdx) {
         return createArrayOfPdfChunks(startIdx, endIdx, null);
     }
 
-    public ArrayList<PdfChunk> createArrayOfPdfChunks(int startIdx, int endIdx, PdfChunk extraPdfChunk) {
+    public List<PdfChunk> createArrayOfPdfChunks(int startIdx, int endIdx, PdfChunk extraPdfChunk) {
         boolean bidi = (runDirection == PdfWriter.RUN_DIRECTION_LTR || runDirection == PdfWriter.RUN_DIRECTION_RTL);
         StringBuilder buf = new StringBuilder();
         PdfChunk refCk = detailChunks[startIdx];
