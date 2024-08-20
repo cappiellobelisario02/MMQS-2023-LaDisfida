@@ -386,7 +386,7 @@ public class CFFFontSubset extends CFFFont {
                 }
             }
             if (j == fonts.length) {
-                return new int[0];
+                return new byte[0];
             }
 
             // Calc the bias for the global subrs
