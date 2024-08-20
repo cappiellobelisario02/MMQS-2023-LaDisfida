@@ -1076,7 +1076,7 @@ public class BarcodeDatamatrix {
         place = Placement.doPlacement(dm.height - (dm.height / dm.heightSection * 2), dm.width - (dm.width / dm.widthSection * 2));
         int full = dm.dataSize + ((dm.dataSize + 2) / dm.dataBlock) * dm.errorBlock;
         ReedSolomon.generateECC(data, dm.dataSize, dm.dataBlock, dm.errorBlock);
-        draw(data, full, dm);
+        draw(data, dm);
     }
 
 
