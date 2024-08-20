@@ -53,8 +53,8 @@ package com.lowagie.text;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * A <CODE>Section</CODE> is a part of a <CODE>Document</CODE> containing other <CODE>Section</CODE>s,
@@ -162,7 +162,7 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
     /**
      * This is the complete list of sectionnumbers of this section and the parents of this section.
      */
-    protected java.util.List<Integer> numbers = null;
+    protected transient java.util.List<Integer> numbers = null;
 
     /**
      * Indicates if the Section will be complete once added to the document.
@@ -371,11 +371,10 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
                 Section section = (Section) o;
                 section.setNumbers(++subsections, numbers);
                 return super.add(section);
-            } else if (o instanceof MarkedSection && ((MarkedObject) o).element.type() == Element.SECTION) {
-                MarkedSection mo = (MarkedSection) o;
-                Section section = (Section) mo.element;
-                section.setNumbers(++subsections, numbers);
-                return super.add(mo);
+            } else if (o instanceof MarkedSection section && (section.element.type() == Element.SECTION)) {
+                Section newSection = (Section) section.element;
+                newSection.setNumbers(++subsections, numbers);
+                return super.add(section);
             } else if (element.isNestable()) {
                 return super.add(o);
             } else {
@@ -698,8 +697,8 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
         Object s;
         for (Object o : this) {
             s = o;
-            if (s instanceof Section) {
-                ((Section) s).setChapterNumber(number);
+            if (s instanceof Section section) {
+                section.setChapterNumber(number);
             }
         }
     }
@@ -773,13 +772,12 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
         Element element;
         for (Iterator<Element> i = iterator(); i.hasNext(); ) {
             element = i.next();
-            if (element instanceof Section) {
-                Section s = (Section) element;
-                if (!s.isComplete() && size() == 1) {
-                    s.flushContent();
+            if (element instanceof Section section) {
+                 if (!section.isComplete() && size() == 1) {
+                    section.flushContent();
                     return;
                 } else {
-                    s.setAddedCompletely(true);
+                    section.setAddedCompletely(true);
                 }
             }
             i.remove();
@@ -810,5 +808,31 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
      */
     public void newPage() {
         this.add(Chunk.NEXTPAGE);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        if (!super.equals(o))
+            return false;
+        Section elements = (Section) o;
+        return numberDepth == elements.numberDepth && numberStyle == elements.numberStyle
+                && Float.compare(indentationLeft, elements.indentationLeft) == 0
+                && Float.compare(indentationRight, elements.indentationRight) == 0
+                && Float.compare(indentation, elements.indentation) == 0 && bookmarkOpen == elements.bookmarkOpen
+                && triggerNewPage == elements.triggerNewPage && subsections == elements.subsections
+                && complete == elements.complete && addedCompletely == elements.addedCompletely
+                && notAddedYet == elements.notAddedYet && Objects.equals(title, elements.title) && Objects.equals(
+                bookmarkTitle, elements.bookmarkTitle) && Objects.equals(numbers, elements.numbers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), title, bookmarkTitle, numberDepth, numberStyle, indentationLeft,
+                indentationRight, indentation, bookmarkOpen, triggerNewPage, subsections, numbers, complete,
+                addedCompletely, notAddedYet);
     }
 }

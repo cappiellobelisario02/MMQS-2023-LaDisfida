@@ -57,6 +57,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * This Class subsets a CFF Type Font. The subset is preformed for CID fonts and NON CID fonts. The Charstring is
@@ -69,6 +70,8 @@ import java.util.Objects;
  * @author Oren Manor (manorore@post.tau.ac.il) and Ygal Blum (blumygal@post.tau.ac.il)
  */
 public class CFFFontSubset extends CFFFont {
+
+    private static final Logger logger = Logger.getLogger(CFFFontSubset.class.getName());
 
     private static final String CALLSUBR = "callsubr";
     private static final String CALLGSUBR = "callgsubr";
@@ -182,10 +185,10 @@ public class CFFFontSubset extends CFFFont {
      * @param rf         - The font file
      * @param glyphsUsed - a HashMap that contains the glyph used in the subset
      */
-    public CFFFontSubset(RandomAccessFileOrArray rf, HashMap<Integer, int[]> glyphsUsed) {
+    public CFFFontSubset(RandomAccessFileOrArray rf, Map<Integer, int[]> glyphsUsed) {
         // Use CFFFont c'tor in order to parse the font file.
         super(rf);
-        this.glyphsUsed = glyphsUsed;
+        this.glyphsUsed = (HashMap<Integer, int[]>) glyphsUsed;
         //Put the glyphs into a list
         glyphsInList = new ArrayList<>(glyphsUsed.keySet());
 
@@ -256,7 +259,8 @@ public class CFFFontSubset extends CFFFont {
      */
     int countRange(int numofGlyphs, int type) {
         int num = 0;
-        int i = 1, nLeft;
+        int i = 1;
+        int nLeft;
         while (i < numofGlyphs) {
             num++;
             sid = getCard16();
@@ -335,9 +339,9 @@ public class CFFFontSubset extends CFFFont {
     protected void buildFDArrayUsed(int font) {
         int[] fdSelect = fonts[font].FDSelect;
         // For each glyph used
-        for (Object o : glyphsInList) {
+        for (Integer o : glyphsInList) {
             // Pop the glyphs index
-            int glyph = (Integer) o;
+            int glyph = o;
             // Pop the glyph's FD
             int fd = fdSelect[glyph];
             // Put the FD index into the fdArrayUsed HashMap
@@ -395,8 +399,7 @@ public class CFFFontSubset extends CFFFont {
             // Prepare the new Global and Local Subrs Indices
             buildNewLGSubrs(j);
             // Build the new file
-            byte[] ret = buildNewFile(j);
-            return ret;
+            return buildNewFile(j);
         } finally {
             try {
                 buf.close();
@@ -453,11 +456,11 @@ public class CFFFontSubset extends CFFFont {
         if (fonts[font].isCID) {
             // Init the hashmap-array and the arraylist-array to hold the subrs used
             // in each private dict.
-            HashMap<Integer, int[]> mapClazz = new HashMap<>();
-            hSubrsUsed = (HashMap<Integer, int[]>[]) Array.newInstance(mapClazz.getClass(),
+            Class<HashMap<Integer, int[]>> mapClazz = (Class<HashMap<Integer, int[]>>)(Class<?>) HashMap.class;
+            hSubrsUsed = (HashMap<Integer, int[]>[]) Array.newInstance(mapClazz,
                     fonts[font].fdprivateOffsets.length);
-            ArrayList<Integer> listClass = new ArrayList<>();
-            lSubrsUsed = (ArrayList<Integer>[]) Array.newInstance(listClass.getClass(),
+            Class<ArrayList<Integer>> listClass = (Class<ArrayList<Integer>>)(Class<?>) ArrayList.class;
+            lSubrsUsed = (ArrayList<Integer>[]) Array.newInstance(listClass,
                     fonts[font].fdprivateOffsets.length);
             // A [][] which will store the byte array for each new FD Array lsubs index
             newLSubrsIndex = new byte[fonts[font].fdprivateOffsets.length][];
@@ -550,8 +553,8 @@ public class CFFFontSubset extends CFFFont {
         int lBias = calcBias(subrOffset, font);
 
         // For each glyph used find its GID, start & end pos
-        for (Object o : glyphsInList) {
-            int glyph = (Integer) o;
+        for (Integer o : glyphsInList) {
+            int glyph = o;
             int start = fonts[font].charstringsOffsets[glyph];
             int end = fonts[font].charstringsOffsets[glyph + 1];
 
@@ -998,7 +1001,12 @@ public class CFFFontSubset extends CFFFont {
                 unusedOffset++;
             }
         }
-        newOffsets[offsets.length - 1] += unusedOffset;
+        if(offsets.length > 0) {
+            newOffsets[offsets.length - 1] += unusedOffset;
+        } else {
+            logger.info("Empty Array!!");
+        }
+
         // Use assembleIndex to build the index from the offset & object arrays
         return assembleIndex(newOffsets, newObjects);
     }
@@ -1044,12 +1052,16 @@ public class CFFFontSubset extends CFFFont {
             switch (offsize) {
                 case 4:
                     newIndex[place++] = (byte) ((num >>> 24) & 0xff); // fallthrough
+                    break;
                 case 3:
                     newIndex[place++] = (byte) ((num >>> 16) & 0xff); // fallthrough
+                    break;
                 case 2:
                     newIndex[place++] = (byte) ((num >>> 8) & 0xff); // fallthrough
+                    break;
                 case 1:
                     newIndex[place++] = (byte) ((num) & 0xff);
+                    break;
                 default:
                     break;
             }
@@ -1177,13 +1189,13 @@ public class CFFFontSubset extends CFFFont {
         // Count and save the offset for each item
         Iterator<Item> listIter = outputList.iterator();
         while (listIter.hasNext()) {
-            Item item = (Item) listIter.next();
+            Item item = listIter.next();
             item.increment(currentOffset);
         }
         // Compute the Xref for each of the offset items
         listIter = outputList.iterator();
         while (listIter.hasNext()) {
-            Item item = (Item) listIter.next();
+            Item item = listIter.next();
             item.xref();
         }
 
@@ -1193,7 +1205,7 @@ public class CFFFontSubset extends CFFFont {
         // Emit all the items into the new byte array
         listIter = outputList.iterator();
         while (listIter.hasNext()) {
-            Item item = (Item) listIter.next();
+            Item item = listIter.next();
             item.emit(b);
         }
         // Return the new stream

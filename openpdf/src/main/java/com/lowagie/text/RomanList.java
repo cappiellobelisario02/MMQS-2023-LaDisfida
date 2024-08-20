@@ -82,7 +82,7 @@ public class RomanList extends List {
      */
     public RomanList(boolean lowercase, int symbolIndent) {
         super(true, symbolIndent);
-        this.lowercase = lowercase;
+        List.lowercase = lowercase;
     }
 
     // overridden methods
@@ -95,21 +95,21 @@ public class RomanList extends List {
      */
     @Override
     public boolean add(Element o) {
-        if (o instanceof ListItem) {
-            ListItem item = (ListItem) o;
+        if (o instanceof ListItem listItem) {
+            ListItem item = listItem;
             Chunk chunk;
             chunk = new Chunk(preSymbol, symbol.getFont());
-            chunk.append(RomanNumberFactory.getString(first + list.size(), lowercase));
+            chunk.append(RomanNumberFactory.getString(first + listOfListItems.size(), lowercase));
             chunk.append(postSymbol);
             item.setListSymbol(chunk);
             item.setIndentationLeft(symbolIndent, autoindent);
             item.setIndentationRight(0);
-            list.add(item);
-        } else if (o instanceof List) {
-            List nested = (List) o;
+            listOfListItems.add(item);
+        } else if (o instanceof List list) {
+            List nested = list;
             nested.setIndentationLeft(nested.getIndentationLeft() + symbolIndent);
             first--;
-            return list.add(nested);
+            return listOfListItems.add(nested);
         }
         return false;
     }

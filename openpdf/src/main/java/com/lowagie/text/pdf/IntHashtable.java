@@ -52,12 +52,12 @@
      /***
       * The hash table data.
       */
-     private transient Entry[] table;
+     private Entry[] table;
  
      /***
       * The total number of entries in the hash table.
       */
-     private transient int count;
+     private int count;
  
      /***
       * The table is rehashed when its size exceeds this threshold.  (The
@@ -365,7 +365,7 @@
          count = 0;
      }
  
-     public Iterator<?> getEntryIterator() {
+     public Iterator<Object> getEntryIterator() {
          return new IntHashtableIterator(table);
      }
  

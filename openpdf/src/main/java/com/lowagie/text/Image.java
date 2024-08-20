@@ -210,7 +210,7 @@ public abstract class Image extends Rectangle {
     public static final int ORIGINAL_JBIG2 = 9;
 
     // member variables
-    public static final int[] PNGID = {137, 80, 78, 71, 13, 10, 26, 10};
+    protected static final int[] PNGID = {137, 80, 78, 71, 13, 10, 26, 10};
     /**
      * a static that is used for attributing a unique id to each image.
      */
@@ -383,7 +383,7 @@ public abstract class Image extends Rectangle {
     /**
      * Holds value of property XYRatio.
      */
-    private float XYRatio = 0;
+    private float xyRatio = 0;
     /**
      * a dictionary with additional information
      */
@@ -447,7 +447,7 @@ public abstract class Image extends Rectangle {
         this.deflated = image.deflated;
         this.dpiX = image.dpiX;
         this.dpiY = image.dpiY;
-        this.XYRatio = image.XYRatio;
+        this.xyRatio = image.xyRatio;
 
         this.colorspace = image.colorspace;
         this.invert = image.invert;
@@ -674,8 +674,7 @@ public abstract class Image extends Rectangle {
      * @since 2.1.5
      */
     public static Image getInstance(int width, int height, byte[] data, byte[] globals) {
-        Image img = new ImgJBIG2(width, height, data, globals);
-        return img;
+        return new ImgJBIG2(width, height, data, globals);
     }
 
     /**
@@ -746,8 +745,8 @@ public abstract class Image extends Rectangle {
         }
         if (components == 1 && bpc == 1) {
             byte[] g4 = CCITTG4Encoder.compress(data, width, height);
-            return Image.getInstance(width, height, false, Image.CCITTG4,
-                    Image.CCITT_BLACKIS1, g4, transparency);
+            return Image.getInstance(width, height, false, Element.CCITTG4,
+                    Element.CCITT_BLACKIS1, g4, transparency);
         }
         Image img = new ImgRaw(width, height, components, bpc, data);
         img.transparency = transparency;
@@ -797,8 +796,8 @@ public abstract class Image extends Rectangle {
     }
 
     private static BufferedImage convertToBufferedImage(java.awt.Image image) {
-        if (image instanceof BufferedImage) {
-            return (BufferedImage) image;
+        if (image instanceof BufferedImage bufferedImage) {
+            return bufferedImage;
         }
         return null;
     }
@@ -815,7 +814,7 @@ public abstract class Image extends Rectangle {
         return (int[]) pg.getPixels();
     }
 
-    private static Image createBlackAndWhiteImage(int[] pixels, int width, int height, java.awt.Color color) throws BadElementException, IOException {
+    private static Image createBlackAndWhiteImage(int[] pixels, int width, int height, java.awt.Color color) throws BadElementException {
         int byteWidth = calculateByteWidth(width);
         byte[] pixelsByte = new byte[byteWidth * height];
 
@@ -854,7 +853,16 @@ public abstract class Image extends Rectangle {
     }
 
     private static int determineTransColor(java.awt.Color color) {
-        return color != null ? (color.getRed() + color.getGreen() + color.getBlue() < 384) ? 0 : 1 : 1;
+        if(color != null){
+            if(color.getRed() + color.getGreen() + color.getBlue() < 384){
+                return 0;
+            }
+            else{
+                return 1;
+            }
+        }
+
+        return 1;
     }
 
     private static int extractAlpha(int pixel) {
@@ -895,7 +903,7 @@ public abstract class Image extends Rectangle {
     }
 
 
-    private static Image createColorImage(int[] pixels, int width, int height, java.awt.Color color) throws BadElementException, IOException {
+    private static Image createColorImage(int[] pixels, int width, int height, java.awt.Color color) throws BadElementException {
         byte[] pixelsByte = new byte[width * height * 3];
         byte[] smask = null;
 
@@ -1059,7 +1067,7 @@ public abstract class Image extends Rectangle {
      *
      * @return a new serial id
      */
-    static protected synchronized Long getSerialId() {
+    protected static synchronized Long getSerialId() {
         ++serialId;
         return serialId;
     }
@@ -1512,9 +1520,9 @@ public abstract class Image extends Rectangle {
      * @param initialRotation New value of property initialRotation.
      */
     public void setInitialRotation(float initialRotation) {
-        float old_rot = rotationRadians - this.initialRotation;
+        float oldRot = rotationRadians - this.initialRotation;
         this.initialRotation = initialRotation;
-        setRotation(old_rot);
+        setRotation(oldRot);
     }
 
     /**
@@ -1763,7 +1771,7 @@ public abstract class Image extends Rectangle {
      * @return the X/Y pixel dimensionless aspect ratio
      */
     public float getXYRatio() {
-        return this.XYRatio;
+        return this.xyRatio;
     }
 
     /**
@@ -1771,8 +1779,8 @@ public abstract class Image extends Rectangle {
      *
      * @param XYRatio the X/Y pixel dimensionless aspect ratio
      */
-    public void setXYRatio(float XYRatio) {
-        this.XYRatio = XYRatio;
+    public void setXYRatio(float xyRatio) {
+        this.xyRatio = xyRatio;
     }
 
     /**

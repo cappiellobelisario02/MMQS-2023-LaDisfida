@@ -49,6 +49,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.BadElementException;
+import com.lowagie.text.Element;
 import com.lowagie.text.Image;
 import com.lowagie.text.pdf.codec.CCITTG4Encoder;
 import java.awt.Canvas;
@@ -244,7 +245,8 @@ public class BarcodeDatamatrix {
         return k - dataOffset;
     }
 
-    private static int X12Encodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset, int dataLength) {
+    private static int x12Encodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset,
+            int dataLength) {
         if (textLength == 0) {
             return 0;
         }
@@ -364,7 +366,8 @@ public class BarcodeDatamatrix {
     }
 
 
-    private static int EdifactEncodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset, int dataLength) {
+    private static int edifactEncodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset,
+            int dataLength) {
         if (textLength == 0) {
             return 0;
         }
@@ -417,10 +420,8 @@ public class BarcodeDatamatrix {
     }
 
     private static int handleAsciiEncoding(byte[] data, int dataOffset, int dataLength, int c, boolean ascii, int ptrOut, int edi, int pedi) {
-        if (!ascii) {
-            if (!flushEdifact(data, dataOffset, dataLength, ptrOut, edi, pedi)) {
-                return -1;
-            }
+        if (!ascii && !flushEdifact(data, dataOffset, dataLength, ptrOut, edi, pedi)) {
+            return -1;
         }
 
         return encodeASCIICharacter(data, dataOffset, dataLength, ptrOut, c) ? ptrOut : -1;
@@ -431,10 +432,8 @@ public class BarcodeDatamatrix {
             return -1;
         }
 
-        if (!ascii) {
-            if (!flushEdifact(data, dataOffset, dataLength, ptrOut, edi, pedi)) {
-                return -1;
-            }
+        if (!ascii && !flushEdifact(data, dataOffset, dataLength, ptrOut, edi, pedi)) {
+            return -1;
         }
 
         return ptrOut;
@@ -509,7 +508,7 @@ public class BarcodeDatamatrix {
     }
 
 
-    private static int C40OrTextEncodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset,
+    private static int c40OrTextEncodation(byte[] text, int textOffset, int textLength, byte[] data, int dataOffset,
             int dataLength, boolean c40) {
         if (textLength == 0) {
             return 0;
@@ -636,15 +635,15 @@ public class BarcodeDatamatrix {
         int[] e1 = new int[6];
         e1[0] = asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                 params.getData(), params.getDataOffset(), params.getDataSize());
-        e1[1] = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+        e1[1] = c40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                 params.getData(), params.getDataOffset(), params.getDataSize(), false);
-        e1[2] = C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+        e1[2] = c40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                 params.getData(), params.getDataOffset(), params.getDataSize(), true);
         e1[3] = b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                 params.getData(), params.getDataOffset(), params.getDataSize());
-        e1[4] = X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+        e1[4] = x12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                 params.getData(), params.getDataOffset(), params.getDataSize());
-        e1[5] = EdifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+        e1[5] = edifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                 params.getData(), params.getDataOffset(), params.getDataSize());
 
         return findBestEncodation(params, e1);
@@ -682,15 +681,15 @@ public class BarcodeDatamatrix {
         switch (minEnc) {
             case 0: return asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                     params.getData(), params.getDataOffset(), params.getDataSize());
-            case 1: return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+            case 1: return c40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                     params.getData(), params.getDataOffset(), params.getDataSize(), false);
-            case 2: return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+            case 2: return c40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                     params.getData(), params.getDataOffset(), params.getDataSize(), true);
             case 3: return b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                     params.getData(), params.getDataOffset(), params.getDataSize());
-            case 4: return X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+            case 4: return x12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                     params.getData(), params.getDataOffset(), params.getDataSize());
-            case 5: return EdifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+            case 5: return edifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                     params.getData(), params.getDataOffset(), params.getDataSize());
             default: return -1;
         }
@@ -702,19 +701,19 @@ public class BarcodeDatamatrix {
                 return asciiEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                         params.getData(), params.getDataOffset(), params.getDataSize());
             case DM_C40:
-                return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                return c40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                         params.getData(), params.getDataOffset(), params.getDataSize(), true);
             case DM_TEXT:
-                return C40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                return c40OrTextEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                         params.getData(), params.getDataOffset(), params.getDataSize(), false);
             case DM_B256:
                 return b256Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                         params.getData(), params.getDataOffset(), params.getDataSize());
             case DM_X21:
-                return X12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                return x12Encodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                         params.getData(), params.getDataOffset(), params.getDataSize());
             case DM_EDIFACT:
-                return EdifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
+                return edifactEncodation(params.getText(), params.getTextOffset(), params.getTextSize(),
                         params.getData(), params.getDataOffset(), params.getDataSize());
             case DM_RAW:
                 return handleRawOption(params);
@@ -1095,7 +1094,7 @@ public class BarcodeDatamatrix {
         int width = dimensions.getWidth() + 2 * dimensions.getBorder();
         int height = dimensions.getHeight() + 2 * dimensions.getBorder();
         byte[] g4 = CCITTG4Encoder.compress(image, width, height);
-        return Image.getInstance(width, height, false, Image.CCITTG4, 0, g4, null);
+        return Image.getInstance(width, height, false, Element.CCITTG4, 0, g4, null);
     }
 
     /**

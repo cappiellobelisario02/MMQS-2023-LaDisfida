@@ -430,20 +430,20 @@ public class Barcode128 extends Barcode {
      * @return the packed digits, two digits per character
      */
     static String getPackedRawDigits(String text, int textIndex, int numDigits) {
-        String out = "";
+        StringBuilder out = new StringBuilder();
         int start = textIndex;
         while (numDigits > 0) {
             if (text.charAt(textIndex) == FNC1) {
-                out += FNC1_INDEX;
+                out.append(FNC1_INDEX);
                 ++textIndex;
                 continue;
             }
             numDigits -= 2;
             int c1 = text.charAt(textIndex++) - '0';
             int c2 = text.charAt(textIndex++) - '0';
-            out += (char) (c1 * 10 + c2);
+            out.append((char) (c1 * 10 + c2));
         }
-        return (char) (textIndex - start) + out;
+        return (char) (textIndex - start) + out.toString();
     }
 
     /**
@@ -467,7 +467,7 @@ public class Barcode128 extends Barcode {
 
         int index = 0;
         char currentCode = determineInitialCode(text, ucc, out);
-        index = processInitialCharacter(text, ucc, out, currentCode, index);
+        index = processInitialCharacter(text, out, currentCode, index);
 
         while (index < tLen) {
             currentCode = processCharacters(text, out, currentCode, index);
@@ -508,7 +508,7 @@ public class Barcode128 extends Barcode {
         }
     }
 
-    private static int processInitialCharacter(String text, boolean ucc, StringBuilder out, char currentCode, int index) {
+    private static int processInitialCharacter(String text, StringBuilder out, char currentCode, int index) {
         int c = text.charAt(0);
         if (currentCode == START_C) {
             String out2 = getPackedRawDigits(text, index, 2);
@@ -740,7 +740,7 @@ public class Barcode128 extends Barcode {
         float[] positions = calculateBarAndTextPositions(fontX, fullWidth);
         float barStartX = positions[0];
         float textStartX = positions[1];
-        float[] startY = calculateStartY(fontX);
+        float[] startY = calculateStartY();
         float barStartY = startY[0];
         float textStartY = startY[1];
 
@@ -806,7 +806,7 @@ public class Barcode128 extends Barcode {
         return new float[]{barStartX, textStartX};
     }
 
-    private float[] calculateStartY(float fontX) {
+    private float[] calculateStartY() {
         float barStartY = 0;
         float textStartY = 0;
         if (font != null) {
@@ -894,9 +894,8 @@ public class Barcode128 extends Barcode {
         for (int k = fullWidth; k < pix.length; k += fullWidth) {
             System.arraycopy(pix, 0, pix, k, fullWidth);
         }
-        Image img = canvas.createImage(new MemoryImageSource(fullWidth, height, pix, 0, fullWidth));
 
-        return img;
+        return canvas.createImage(new MemoryImageSource(fullWidth, height, pix, 0, fullWidth));
     }
 
     /**
@@ -917,7 +916,7 @@ public class Barcode128 extends Barcode {
     }
 
     private boolean isUccCodeWithParentheses(String code) {
-        return getCodeType() == Barcode128.CODE128_UCC && code.startsWith("(");
+        return getCodeType() == Barcode.CODE128_UCC && code.startsWith("(");
     }
 
     private String processUccCode(String code) {

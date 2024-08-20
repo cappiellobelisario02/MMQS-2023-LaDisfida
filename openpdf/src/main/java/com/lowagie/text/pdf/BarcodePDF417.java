@@ -49,6 +49,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.BadElementException;
+import com.lowagie.text.Element;
 import com.lowagie.text.Image;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.pdf.codec.CCITTG4Encoder;
@@ -1456,7 +1457,7 @@ public class BarcodePDF417 {
         if (tot > MAX_DATA_CODEWORDS + 2) {
             tot = getMaxSquare();
         }
-        int pad = finalizeTotalCodewords(tot, lenErr);
+        int pad = finalizeTotalCodewords(tot);
 
         addPadding(pad);
         finalizeCodewords(tot);
@@ -1582,9 +1583,9 @@ public class BarcodePDF417 {
         }
     }
 
-    private int finalizeTotalCodewords(int tot, int lenErr) {
+    private int finalizeTotalCodewords(int tot) {
         errorLevel = maxPossibleErrorLevel(tot - lenCodewords);
-        lenErr = 2 << errorLevel;
+        int lenErr = 2 << errorLevel;
         return tot - lenErr - lenCodewords;
     }
 
@@ -1629,8 +1630,8 @@ public class BarcodePDF417 {
     public Image getImage() throws BadElementException {
         paintCode();
         byte[] g4 = CCITTG4Encoder.compress(outBits, bitColumns, codeRows);
-        return Image.getInstance(bitColumns, codeRows, false, Image.CCITTG4,
-                (options & PDF417_INVERT_BITMAP) == 0 ? 0 : Image.CCITT_BLACKIS1, g4, null);
+        return Image.getInstance(bitColumns, codeRows, false, Element.CCITTG4,
+                (options & PDF417_INVERT_BITMAP) == 0 ? 0 : Element.CCITT_BLACKIS1, g4, null);
     }
 
     /**
@@ -1850,9 +1851,9 @@ public class BarcodePDF417 {
 
     protected static class Segment {
 
-        public char type;
-        public int start;
-        public int end;
+        private char type;
+        private int start;
+        private int end;
 
         public Segment(char type, int start, int end) {
             this.type = type;

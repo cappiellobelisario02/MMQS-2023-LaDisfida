@@ -55,9 +55,14 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.MemoryImageSource;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 
 public class BarcodeEAN extends Barcode {
+
+    static Logger logger = Logger.getLogger(BarcodeEAN.class.getName());
+
+    private static final String MSG_EMPTY_ARR = "Empty array!!";
 
     /**
      * The bar positions that are guard bars.
@@ -237,7 +242,7 @@ public class BarcodeEAN extends Barcode {
      * @param text the code to convert. It must have 12 numeric characters
      * @return the 8 converted digits or <CODE>null</CODE> if the code could not be converted
      */
-    static public String convertUPCAtoUPCE(String text) {
+    public static String convertUPCAtoUPCE(String text) {
         if (text.length() != 12 || !(text.startsWith("0") || text.startsWith("1"))) {
             return null;
         }
@@ -260,20 +265,25 @@ public class BarcodeEAN extends Barcode {
     /**
      * Creates the bars for the barcode EAN13 and UPCA.
      *
-     * @param _code the text with 13 digits
+     * @param sCode the text with 13 digits
      * @return the barcode
      */
-    public static byte[] getBarsEAN13(String _code) {
-        int[] code = new int[_code.length()];
+    public static byte[] getBarsEAN13(String sCode) {
+        byte[] sequence = new byte[0];
+        int[] code = new int[sCode.length()];
         for (int k = 0; k < code.length; ++k) {
-            code[k] = _code.charAt(k) - '0';
+            code[k] = sCode.charAt(k) - '0';
         }
         byte[] bars = new byte[TOTALBARS_EAN13];
         int pb = 0;
         bars[pb++] = 1;
         bars[pb++] = 1;
         bars[pb++] = 1;
-        byte[] sequence = PARITY13[code[0]];
+        if(code.length > 0){
+            sequence = PARITY13[code[0]];
+        } else {
+            logger.info(MSG_EMPTY_ARR);
+        }
         for (int k = 0; k < sequence.length; ++k) {
             int c = code[k + 1];
             byte[] stripes = BARS[c];
@@ -311,13 +321,13 @@ public class BarcodeEAN extends Barcode {
     /**
      * Creates the bars for the barcode EAN8.
      *
-     * @param _code the text with 8 digits
+     * @param sCode the text with 8 digits
      * @return the barcode
      */
-    public static byte[] getBarsEAN8(String _code) {
-        int[] code = new int[_code.length()];
+    public static byte[] getBarsEAN8(String sCode) {
+        int[] code = new int[sCode.length()];
         for (int k = 0; k < code.length; ++k) {
-            code[k] = _code.charAt(k) - '0';
+            code[k] = sCode.charAt(k) - '0';
         }
         byte[] bars = new byte[TOTALBARS_EAN8];
         int pb = 0;
@@ -354,21 +364,33 @@ public class BarcodeEAN extends Barcode {
     /**
      * Creates the bars for the barcode UPCE.
      *
-     * @param _code the text with 8 digits
+     * @param sCode the text with 8 digits
      * @return the barcode
      */
-    public static byte[] getBarsUPCE(String _code) {
-        int[] code = new int[_code.length()];
+    public static byte[] getBarsUPCE(String sCode) {
+        boolean flip = false;
+        byte[] sequence = new byte[]{};
+        int[] code = new int[sCode.length()];
         for (int k = 0; k < code.length; ++k) {
-            code[k] = _code.charAt(k) - '0';
+            code[k] = sCode.charAt(k) - '0';
         }
         byte[] bars = new byte[TOTALBARS_UPCE];
-        boolean flip = (code[0] != 0);
+        if(code.length > 0){
+            flip = (code[0] != 0);
+        } else {
+            logger.info(MSG_EMPTY_ARR);
+        }
+
         int pb = 0;
         bars[pb++] = 1;
         bars[pb++] = 1;
         bars[pb++] = 1;
-        byte[] sequence = PARITYE[code[code.length - 1]];
+        if(code.length > 0){
+            sequence = PARITYE[code[code.length - 1]];
+        } else {
+            logger.info(MSG_EMPTY_ARR);
+        }
+
         for (int k = 1; k < code.length - 1; ++k) {
             int c = code[k];
             byte[] stripes = BARS[c];
@@ -396,13 +418,13 @@ public class BarcodeEAN extends Barcode {
     /**
      * Creates the bars for the barcode supplemental 2.
      *
-     * @param _code the text with 2 digits
+     * @param sCode the text with 2 digits
      * @return the barcode
      */
-    public static byte[] getBarsSupplemental2(String _code) {
+    public static byte[] getBarsSupplemental2(String sCode) {
         int[] code = new int[2];
         for (int k = 0; k < code.length; ++k) {
-            code[k] = _code.charAt(k) - '0';
+            code[k] = sCode.charAt(k) - '0';
         }
         byte[] bars = new byte[TOTALBARS_SUPP2];
         int pb = 0;
@@ -436,13 +458,13 @@ public class BarcodeEAN extends Barcode {
     /**
      * Creates the bars for the barcode supplemental 5.
      *
-     * @param _code the text with 5 digits
+     * @param sCode the text with 5 digits
      * @return the barcode
      */
-    public static byte[] getBarsSupplemental5(String _code) {
+    public static byte[] getBarsSupplemental5(String sCode) {
         int[] code = new int[5];
         for (int k = 0; k < code.length; ++k) {
-            code[k] = _code.charAt(k) - '0';
+            code[k] = sCode.charAt(k) - '0';
         }
         byte[] bars = new byte[TOTALBARS_SUPP5];
         int pb = 0;
@@ -595,15 +617,15 @@ public class BarcodeEAN extends Barcode {
     }
 
     private byte[] getBarsForCodeType(int codeType) {
-        switch (codeType) {
-            case EAN13: return getBarsEAN13(code);
-            case EAN8: return getBarsEAN8(code);
-            case UPCA: return getBarsEAN13("0" + code);
-            case UPCE: return getBarsUPCE(code);
-            case SUPP2: return getBarsSupplemental2(code);
-            case SUPP5: return getBarsSupplemental5(code);
-            default: return null;
-        }
+        return switch (codeType) {
+            case EAN13 -> getBarsEAN13(code);
+            case EAN8 -> getBarsEAN8(code);
+            case UPCA -> getBarsEAN13("0" + code);
+            case UPCE -> getBarsUPCE(code);
+            case SUPP2 -> getBarsSupplemental2(code);
+            case SUPP5 -> getBarsSupplemental5(code);
+            default -> new byte[0];
+        };
     }
 
     private int[] getGuardForCodeType(int codeType) {
@@ -662,8 +684,7 @@ public class BarcodeEAN extends Barcode {
             case UPCE:
                 drawUPCEText(cb, keepBarX, textStartY);
                 break;
-            case SUPP2:
-            case SUPP5:
+            case SUPP2, SUPP5:
                 drawSupplementalText(cb, textStartY);
                 break;
             default:
@@ -727,7 +748,7 @@ public class BarcodeEAN extends Barcode {
      * @param background the color of the background
      * @return the image
      */
-    public java.awt.Image createAwtImage(Color foreground, Color background) {
+    public Image createAwtImage(Color foreground, Color background) {
         int f = foreground.getRGB();
         int g = background.getRGB();
         Canvas canvas = new Canvas();
@@ -780,8 +801,7 @@ public class BarcodeEAN extends Barcode {
         for (int k = width; k < pix.length; k += width) {
             System.arraycopy(pix, 0, pix, k, width);
         }
-        Image img = canvas.createImage(new MemoryImageSource(width, height, pix, 0, width));
 
-        return img;
+        return canvas.createImage(new MemoryImageSource(width, height, pix, 0, width));
     }
 }
