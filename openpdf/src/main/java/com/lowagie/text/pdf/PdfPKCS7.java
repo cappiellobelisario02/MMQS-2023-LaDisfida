@@ -1189,7 +1189,7 @@ public class PdfPKCS7 {
      * Sets the digest/signature to an external calculated value.
      *
      * @param digest                    the digest. This is the actual signature
-     * @param RSAdata                   the extra data that goes into the data tag in PKCS#7
+     * @param rsaDataByte                   the extra data that goes into the data tag in PKCS#7
      * @param digestEncryptionAlgorithm the encryption algorithm. It may must be <CODE>null</CODE> if the
      *                                  <CODE>digest</CODE> is also <CODE>null</CODE>. If the
      *                                  <CODE>digest</CODE> is not <CODE>null</CODE> then it may be "RSA"
@@ -1254,7 +1254,7 @@ public class PdfPKCS7 {
                 if (rsaData != null) {
                     rsaData = externalRSAdata;
                 }
-            } else if (externalRSAdata != null && RSAdata != null) {
+            } else if (externalRSAdata != null && rsaData != null) {
                 rsaData = externalRSAdata;
                 sig.update(rsaData);
                 digest = sig.sign();
