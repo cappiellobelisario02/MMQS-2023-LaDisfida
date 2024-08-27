@@ -235,14 +235,14 @@ public class RadioCheckField extends BaseField {
      */
     public static PdfAppearance getAppearanceRadioCircle(boolean on, PdfWriter writer,
             RadioCheckFieldAppearanceSettings settings, BorderSettings borderSettings) {
-        
+
         Rectangle box = settings.getRCFBox();
         int rotation = settings.getRCFRotation();
         Color backgroundColor = settings.getRCFBackgroundColor();
         Color textColor = settings.getRCFTextColor();
         float borderWidth = borderSettings.getBorderWidth();
         Color borderColor = borderSettings.getBorderColor();
-        
+
         PdfAppearance app = PdfAppearance.createAppearance(writer, box.getWidth(), box.getHeight());
         switch (rotation) {
             case 90:
@@ -297,14 +297,14 @@ public class RadioCheckField extends BaseField {
      */
     public static PdfAppearance getAppearanceRadioCross(boolean on, PdfWriter writer,
             RadioCheckFieldAppearanceSettings settings, BorderSettings borderSettings) {
-        
+
         Rectangle box = settings.getRCFBox();
         int rotation = settings.getRCFRotation();
         Color backgroundColor = settings.getRCFBackgroundColor();
         Color textColor = settings.getRCFTextColor();
         float borderWidth = borderSettings.getBorderWidth();
         Color borderColor = borderSettings.getBorderColor();
-        
+
         PdfAppearance app = PdfAppearance.createAppearance(writer, box.getWidth(), box.getHeight());
         switch (rotation) {
             case 90:
@@ -316,6 +316,8 @@ public class RadioCheckField extends BaseField {
             case 270:
                 app.setMatrix(0, -1, 1, 0, 0, box.getWidth());
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + rotation);
         }
 
         //"q"

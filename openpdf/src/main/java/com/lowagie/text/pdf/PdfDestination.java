@@ -145,9 +145,6 @@ public class PdfDestination extends PdfArray {
     public PdfDestination(int type, float parameter) {
         super(new PdfNumber(parameter));
         switch (type) {
-            default:
-                addFirst(PdfName.FITH);
-                break;
             case FITV:
                 addFirst(PdfName.FITV);
                 break;
@@ -156,6 +153,10 @@ public class PdfDestination extends PdfArray {
                 break;
             case FITBV:
                 addFirst(PdfName.FITBV);
+                break;
+            default:
+                addFirst(PdfName.FITH);
+                break;
         }
     }
 

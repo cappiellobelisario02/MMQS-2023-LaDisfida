@@ -72,7 +72,7 @@ public class FileList
     private final JScrollPane jScrollPane1 = new JScrollPane();
     private final FileTableModel model = new FileTableModel();
     private final JTable jTable1 = new JTable(model);
-    private final RowSorter<TableModel> sorter = new TableRowSorter<>(model);
+    private final transient RowSorter<TableModel> sorter = new TableRowSorter<>(model);
     private final BorderLayout borderLayout3 = new BorderLayout();
     //private final DropTarget dt = new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, this, true, null
     private final JPanel jPanel3 = new JPanel();
@@ -226,23 +226,12 @@ public class FileList
          */
         RowContainer(File file) {
             this.file = file;
-            PdfReader reader = null;
-
-            try {
-                reader = new PdfReader(file.getAbsolutePath());
+            try (PdfReader reader = new PdfReader((file.getAbsolutePath()))) {
                 this.pages = reader.getNumberOfPages();  // Safe to access reader here
             } catch (IOException e) {
                 // Handle the exception or log an error message
                 e.printStackTrace();  // You can replace this with a logger if needed
                 this.pages = 0;  // Set pages to 0 or an appropriate default value
-            } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
             }
         }
 
@@ -283,28 +272,21 @@ public class FileList
         }
 
         public Object getValueAt(int row, int col) {
-            switch (col) {
-                case 0:
-                    return filevector.get(row).getFile().getName();
-                case 1:
-                    return filevector.get(row).getPages();
-                case 2:
-                    return filevector.get(row).getFile().getParent();
-            }
-            return null;
+            return switch (col) {
+                case 0 -> filevector.get(row).getFile().getName();
+                case 1 -> filevector.get(row).getPages();
+                case 2 -> filevector.get(row).getFile().getParent();
+                default -> null;
+            };
         }
 
         @Override
         public Class<?> getColumnClass(int col) {
-            switch (col) {
-                case 0:
-                    return String.class;
-                case 1:
-                    return Integer.class;
-                case 2:
-                    return String.class;
-            }
-            return null;
+            return switch (col) {
+                case 0, 2 -> String.class;
+                case 1 -> Integer.class;
+                default -> null;
+            };
         }
 
         public void removeRow(int row) {

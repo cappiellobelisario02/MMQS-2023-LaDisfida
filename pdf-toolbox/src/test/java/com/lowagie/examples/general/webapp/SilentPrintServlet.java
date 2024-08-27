@@ -72,6 +72,7 @@ public class SilentPrintServlet extends HttpServlet {
             action = Integer.parseInt(requ.getParameter("action"));
             sub = Integer.parseInt(requ.getParameter("sub"));
         } catch (Exception ignored) {
+            //empty on purpose
         }
 
         switch (action) {
@@ -103,6 +104,8 @@ public class SilentPrintServlet extends HttpServlet {
                 out.flush();
                 break;
             }
+            default:
+                throw new IllegalArgumentException("Unknown action: " + action);
         }
     }
 

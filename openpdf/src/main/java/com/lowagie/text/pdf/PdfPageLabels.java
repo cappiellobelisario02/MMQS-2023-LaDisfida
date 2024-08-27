@@ -139,9 +139,6 @@ public class PdfPageLabels {
                 }
             }
             switch (type) {
-                default:
-                    labelstrings[i] = prefix + pagecount;
-                    break;
                 case 'R':
                     labelstrings[i] = prefix + RomanNumberFactory.getUpperCaseString(pagecount);
                     break;
@@ -153,6 +150,9 @@ public class PdfPageLabels {
                     break;
                 case 'a':
                     labelstrings[i] = prefix + RomanAlphabetFactory.getLowerCaseString(pagecount);
+                    break;
+                default:
+                    labelstrings[i] = prefix + pagecount;
                     break;
             }
             pagecount++;

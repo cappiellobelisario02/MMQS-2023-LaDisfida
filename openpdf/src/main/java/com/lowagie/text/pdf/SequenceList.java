@@ -64,14 +64,14 @@ public class SequenceList {
     protected static final int COMMA = 1;
     protected static final int MINUS = 2;
     protected static final int NOT = 3;
-    protected static final int text = 4;
-    protected static final int number = 5;
+    protected static final int TEXT_CONST = 4;
+    protected static final int NUMBER_CONST = 5;
     protected static final int END = 6;
     protected static final char EOT = '\uffff';
 
     private static final int FIRST = 0;
     private static final int DIGIT = 1;
-    private static final int other = 2;
+    private static final int OTHER_CONST = 2;
     private static final int DIGIT2 = 3;
     private static final String NOT_OTHER = "-,!0123456789";
 
@@ -125,7 +125,7 @@ public class SequenceList {
                     parse.high = t;
                 }
                 for (ListIterator<Integer> it = list.listIterator(); it.hasNext(); ) {
-                    int n = (Integer) it.next();
+                    int n = it.next();
                     if (parse.even && (n & 1) == 1) {
                         continue;
                     }
@@ -196,10 +196,10 @@ public class SequenceList {
                 if (state == DIGIT) {
                     other = buf.toString();
                     number = Integer.parseInt(other);
-                    return NUMBER;
-                } else if (state == OTHER) {
+                    return NUMBER_CONST;
+                } else if (state == OTHER_CONST) {
                     other = buf.toString().toLowerCase();
-                    return TEXT;
+                    return TEXT_CONST;
                 }
                 return END;
             }
@@ -212,12 +212,14 @@ public class SequenceList {
                             return MINUS;
                         case ',':
                             return COMMA;
+                        default:
+                            break;
                     }
                     buf.append(c);
                     if (c >= '0' && c <= '9') {
                         state = DIGIT;
                     } else {
-                        state = OTHER;
+                        state = OTHER_CONST;
                     }
                     break;
                 case DIGIT:
@@ -227,18 +229,20 @@ public class SequenceList {
                         putBack();
                         other = buf.toString();
                         number = Integer.parseInt(other);
-                        return NUMBER;
+                        return NUMBER_CONST;
                     }
                     break;
-                case OTHER:
+                case OTHER_CONST:
                     if (NOT_OTHER.indexOf(c) < 0) {
                         buf.append(c);
                     } else {
                         putBack();
                         other = buf.toString().toLowerCase();
-                        return TEXT;
+                        return TEXT_CONST;
                     }
                     break;
+                default:
+                    throw new IllegalArgumentException("Illegal character: " + c);
             }
         }
     }
@@ -257,7 +261,7 @@ public class SequenceList {
         low = -1;
         high = -1;
         odd = even = inverse = false;
-        int state = OTHER;
+        int state = OTHER_CONST;
         while (true) {
             int type = getType();
             if (type == END || type == COMMA) {
@@ -267,7 +271,7 @@ public class SequenceList {
                 return (type == END);
             }
             switch (state) {
-                case OTHER:
+                case OTHER_CONST:
                     switch (type) {
                         case NOT:
                             inverse = true;
@@ -276,7 +280,7 @@ public class SequenceList {
                             state = DIGIT2;
                             break;
                         default:
-                            if (type == NUMBER) {
+                            if (type == NUMBER_CONST) {
                                 low = number;
                                 state = DIGIT;
                             } else {
@@ -289,7 +293,7 @@ public class SequenceList {
                     switch (type) {
                         case NOT:
                             inverse = true;
-                            state = OTHER;
+                            state = OTHER_CONST;
                             high = low;
                             break;
                         case MINUS:
@@ -297,7 +301,7 @@ public class SequenceList {
                             break;
                         default:
                             high = low;
-                            state = OTHER;
+                            state = OTHER_CONST;
                             otherProc();
                             break;
                     }
@@ -306,20 +310,22 @@ public class SequenceList {
                     switch (type) {
                         case NOT:
                             inverse = true;
-                            state = OTHER;
+                            state = OTHER_CONST;
                             break;
                         case MINUS:
                             break;
-                        case NUMBER:
+                        case NUMBER_CONST:
                             high = number;
-                            state = OTHER;
+                            state = OTHER_CONST;
                             break;
                         default:
-                            state = OTHER;
+                            state = OTHER_CONST;
                             otherProc();
                             break;
                     }
                     break;
+                default:
+                    throw new IllegalArgumentException("Illegal state: " + state);
             }
         }
     }

@@ -891,17 +891,16 @@ public class PdfEncryption {
             byte[] e = cipher.update(k1, 0, k1.length);
             lastEByte = e[e.length - 1] & 0xFF;
 
-            switch (new BigInteger(1, Arrays.copyOf(e, 16)).remainder(BigInteger.valueOf(3)).intValue()) {
-                case 0:
-                    k = sha256.digest(e);
-                    break;
-                case 1:
-                    k = sha384.digest(e);
-                    break;
-                case 2:
-                    k = sha512.digest(e);
-                    break;
-            }
+            int remainder = new BigInteger(1, Arrays.copyOf(e, 16)).remainder(BigInteger.valueOf(3)).intValue();
+
+            k = switch (remainder) {
+                case 0 -> sha256.digest(e);
+                case 1 -> sha384.digest(e);
+                case 2 -> sha512.digest(e);
+                default ->
+                    // Handle unexpected cases (though technically, this should not be reached)
+                        throw new IllegalStateException("Unexpected value: " + remainder);
+            };
         }
 
         return Arrays.copyOf(k, 32);

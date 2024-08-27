@@ -78,6 +78,8 @@ public class TablePdfPTable {
                     case 2:
                         row.setBackgroundColor(Color.blue);
                         break;
+                    default:
+                        row.setBackgroundColor(Color.yellow);
                 }
                 if (i % 2 == 1) {
                     row.setBorderWidth(3f);

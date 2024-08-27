@@ -394,9 +394,9 @@ public class PushbuttonField extends BaseField {
         Rectangle iconBox = null;
         while (true) {
             switch (nlayout) {
-                case LAYOUT_LABEL_ONLY:
-                case LAYOUT_LABEL_OVER_ICON:
-                    if (text != null && text.length() > 0 && wt > 0 && ht > 0) {
+                case LAYOUT_LABEL_ONLY,
+                     LAYOUT_LABEL_OVER_ICON:
+                    if (text != null && !text.isEmpty() && wt > 0 && ht > 0) {
                         fsize = calculateFontSize(wt, ht);
                         textX = (box.getWidth() - ufont.getWidthPoint(text, fsize)) / 2;
                         textY = (box.getHeight() - ufont.getFontDescriptor(BaseFont.ASCENT, fsize)) / 2;
@@ -409,7 +409,7 @@ public class PushbuttonField extends BaseField {
                     }
                     break;
                 case LAYOUT_ICON_TOP_LABEL_BOTTOM:
-                    if (text == null || text.length() == 0 || wt <= 0 || ht <= 0) {
+                    if (text == null || text.isEmpty() || wt <= 0 || ht <= 0) {
                         nlayout = LAYOUT_ICON_ONLY;
                         continue;
                     }
@@ -425,7 +425,7 @@ public class PushbuttonField extends BaseField {
                             box.getTop() - adj);
                     break;
                 case LAYOUT_LABEL_TOP_ICON_BOTTOM:
-                    if (text == null || text.length() == 0 || wt <= 0 || ht <= 0) {
+                    if (text == null || text.isEmpty() || wt <= 0 || ht <= 0) {
                         nlayout = LAYOUT_ICON_ONLY;
                         continue;
                     }
@@ -444,7 +444,7 @@ public class PushbuttonField extends BaseField {
                             textY + ufont.getFontDescriptor(BaseFont.DESCENT, fsize));
                     break;
                 case LAYOUT_LABEL_LEFT_ICON_RIGHT:
-                    if (text == null || text.length() == 0 || wt <= 0 || ht <= 0) {
+                    if (text == null || text.isEmpty() || wt <= 0 || ht <= 0) {
                         nlayout = LAYOUT_ICON_ONLY;
                         continue;
                     }
@@ -465,7 +465,7 @@ public class PushbuttonField extends BaseField {
                             box.getRight() - adj, box.getTop() - adj);
                     break;
                 case LAYOUT_ICON_LEFT_LABEL_RIGHT:
-                    if (text == null || text.length() == 0 || wt <= 0 || ht <= 0) {
+                    if (text == null || text.isEmpty() || wt <= 0 || ht <= 0) {
                         nlayout = LAYOUT_ICON_ONLY;
                         continue;
                     }
@@ -484,6 +484,8 @@ public class PushbuttonField extends BaseField {
                     textY = (box.getHeight() - ufont.getFontDescriptor(BaseFont.ASCENT, fsize)) / 2;
                     iconBox = new Rectangle(box.getLeft() + adj, box.getBottom() + adj, textX - 1, box.getTop() - adj);
                     break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + nlayout);
             }
             break;
         }

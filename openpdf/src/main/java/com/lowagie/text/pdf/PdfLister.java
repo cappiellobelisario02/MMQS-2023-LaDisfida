@@ -62,7 +62,7 @@ import java.util.logging.Logger;
  */
 
 public class PdfLister {
-    
+
     static Logger logger = Logger.getLogger(PdfLister.class.getName());
 
     /**
@@ -182,6 +182,8 @@ public class PdfLister {
                     out.println("-----------");
                 }
                 break;
+            default:
+                out.println(obj.toString());
         }
     }
 }

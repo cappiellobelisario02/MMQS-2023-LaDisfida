@@ -190,7 +190,7 @@ public class PdfLine {
             }
             width -= chunk.width();
             addToLine(chunk);
-        } else if (line.size() < 1) {
+        } else if (line.isEmpty()) {
             // if the length == 0 and there were no other chunks added to the line yet,
             // we risk to end up in an endless loop trying endlessly to add the same chunk
             chunk = overflow;
@@ -277,6 +277,8 @@ public class PdfLine {
                     return left + width;
                 case Element.ALIGN_CENTER:
                     return left + (width / 2f);
+                default:
+                    return left;
             }
         }
         return left;
@@ -397,10 +399,10 @@ public class PdfLine {
      * @return the length in UTF32 characters
      * @since 2.1.2
      */
-    public int GetLineLengthUtf32() {
+    public int getLineLengthUtf32() {
         int total = 0;
-        for (Object o : line) {
-            total += ((PdfChunk) o).lengthUtf32();
+        for (PdfChunk o : line) {
+            total += o.lengthUtf32();
         }
         return total;
     }
@@ -460,18 +462,18 @@ public class PdfLine {
      * @since 2.1.5
      */
     float[] getMaxSize() {
-        float normal_leading = 0;
-        float image_leading = -10000;
+        float normalLeading = 0;
+        float imageLeading = -10000;
         PdfChunk chunk;
-        for (Object o : line) {
-            chunk = (PdfChunk) o;
+        for (PdfChunk o : line) {
+            chunk = o;
             if (!chunk.isImage()) {
-                normal_leading = Math.max(chunk.font().size(), normal_leading);
+                normalLeading = Math.max(chunk.font().size(), normalLeading);
             } else {
-                image_leading = Math.max(chunk.getImage().getScaledHeight() + chunk.getImageOffsetY(), image_leading);
+                imageLeading = Math.max(chunk.getImage().getScaledHeight() + chunk.getImageOffsetY(), imageLeading);
             }
         }
-        return new float[]{normal_leading, image_leading};
+        return new float[]{normalLeading, imageLeading};
     }
 
     boolean isRTL() {
@@ -487,8 +489,8 @@ public class PdfLine {
     int getSeparatorCount() {
         int s = 0;
         PdfChunk ck;
-        for (Object o : line) {
-            ck = (PdfChunk) o;
+        for (PdfChunk o : line) {
+            ck = o;
             if (ck.isTab()) {
                 return 0;
             }
@@ -508,8 +510,8 @@ public class PdfLine {
      */
     public float getWidthCorrected(float charSpacing, float wordSpacing) {
         float total = 0;
-        for (Object o : line) {
-            PdfChunk ck = (PdfChunk) o;
+        for (PdfChunk o : line) {
+            PdfChunk ck = o;
             total += ck.getWidthCorrected(charSpacing, wordSpacing);
         }
         return total;
@@ -522,8 +524,8 @@ public class PdfLine {
      */
     public float getAscender() {
         float ascender = 0;
-        for (Object o : line) {
-            PdfChunk ck = (PdfChunk) o;
+        for (PdfChunk o : line) {
+            PdfChunk ck = o;
             if (ck.isImage()) {
                 ascender = Math.max(ascender, ck.getImage().getScaledHeight() + ck.getImageOffsetY());
             } else {
@@ -541,8 +543,8 @@ public class PdfLine {
      */
     public float getDescender() {
         float descender = 0;
-        for (Object o : line) {
-            PdfChunk ck = (PdfChunk) o;
+        for (PdfChunk o : line) {
+            PdfChunk ck = o;
             if (ck.isImage()) {
                 descender = Math.min(descender, ck.getImageOffsetY());
             } else {

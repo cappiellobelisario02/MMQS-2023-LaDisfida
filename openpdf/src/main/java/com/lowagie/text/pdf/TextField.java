@@ -200,8 +200,7 @@ public class TextField extends BaseField {
         if (text.indexOf('\n') >= 0 || text.indexOf('\r') >= 0) {
             char[] p = text.toCharArray();
             StringBuilder sb = new StringBuilder(p.length);
-            int k = 0;
-            while (k < p.length) {
+            for (int k = 0; k < p.length; ++k) {
                 char c = p[k];
                 if (c == '\n') {
                     sb.append(' ');
@@ -213,7 +212,6 @@ public class TextField extends BaseField {
                 } else {
                     sb.append(c);
                 }
-                k++;
             }
             return sb.toString();
         }
@@ -481,8 +479,8 @@ public class TextField extends BaseField {
 
         // background boxes for selected value[s]
         app.setColorFill(new Color(10, 36, 106));
-        for (Object choiceSelection : choiceSelections) {
-            int curChoice = (Integer) choiceSelection;
+        for (Integer choiceSelection : choiceSelections) {
+            int curChoice = choiceSelection;
             // only draw selections within our display range... not strictly necessary with
             // that clipping rect from above, but it certainly doesn't hurt either
             if (curChoice >= first && curChoice <= last) {
@@ -529,6 +527,9 @@ public class TextField extends BaseField {
                 break;
             case Element.ALIGN_RIGHT:
                 field.setQuadding(PdfFormField.Q_RIGHT);
+                break;
+            default:
+                field.setQuadding(PdfFormField.Q_LEFT);
                 break;
         }
         if (rotation != 0) {
@@ -623,7 +624,7 @@ public class TextField extends BaseField {
     }
 
     private int getTopChoice() {
-        if (choiceSelections == null || choiceSelections.size() == 0) {
+        if (choiceSelections == null || choiceSelections.isEmpty()) {
             return 0;
         }
 
@@ -644,94 +645,142 @@ public class TextField extends BaseField {
 
     protected PdfFormField getChoiceField(boolean isList) throws IOException, DocumentException {
         options &= (~MULTILINE) & (~COMB);
-        String[] uchoices = choices;
-        if (uchoices == null) {
-            uchoices = new String[0];
-        }
 
+        String[] uchoices = getChoices();
         int topChoice = getTopChoice();
+        initializeText(uchoices, topChoice);
 
+        PdfFormField field = createField(isList, uchoices, topChoice);
+        field.setWidget(box, PdfAnnotation.HIGHLIGHT_INVERT);
+
+        applyRotation(field);
+        applyFieldName(field, uchoices, topChoice);
+        applyFieldOptions(field);
+        setFieldAppearance(field, isList);
+
+        return field;
+    }
+
+    private String[] getChoicesField() {
+        return choices != null ? choices : new String[0];
+    }
+
+    private void initializeText(String[] uchoices, int topChoice) {
         if (text == null) {
-            text = ""; //fixed by Kazuya Ujihara (ujihara.jp)
+            text = ""; // fixed by Kazuya Ujihara (ujihara.jp)
         }
-
         if (topChoice >= 0) {
             text = uchoices[topChoice];
         }
+    }
 
-        PdfFormField field = null;
-        String[][] mix = null;
-
+    private PdfFormField createField(boolean isList, String[] uchoices, int topChoice) throws DocumentException {
         if (choiceExports == null) {
-            if (isList) {
-                field = PdfFormField.createList(writer, uchoices, topChoice);
-            } else {
-                field = PdfFormField.createCombo(writer, (options & EDIT) != 0, uchoices, topChoice);
-            }
+            return createSimpleField(isList, uchoices, topChoice);
         } else {
-            mix = new String[uchoices.length][2];
-            for (int k = 0; k < mix.length; ++k) {
-                mix[k][0] = mix[k][1] = uchoices[k];
-            }
-            int top = Math.min(uchoices.length, choiceExports.length);
-            for (int k = 0; k < top; ++k) {
-                if (choiceExports[k] != null) {
-                    mix[k][0] = choiceExports[k];
-                }
-            }
-            if (isList) {
-                field = PdfFormField.createList(writer, mix, topChoice);
-            } else {
-                field = PdfFormField.createCombo(writer, (options & EDIT) != 0, mix, topChoice);
+            String[][] mix = createExportMix(uchoices);
+            return createExportField(isList, mix, topChoice);
+        }
+    }
+
+    private PdfFormField createSimpleField(boolean isList, String[] uchoices, int topChoice) throws DocumentException {
+        if (isList) {
+            return PdfFormField.createList(writer, uchoices, topChoice);
+        } else {
+            return PdfFormField.createCombo(writer, (options & EDIT) != 0, uchoices, topChoice);
+        }
+    }
+
+    private String[][] createExportMix(String[] uchoices) {
+        String[][] mix = new String[uchoices.length][2];
+        for (int k = 0; k < mix.length; ++k) {
+            mix[k][0] = mix[k][1] = uchoices[k];
+        }
+        for (int k = 0; k < Math.min(uchoices.length, choiceExports.length); ++k) {
+            if (choiceExports[k] != null) {
+                mix[k][0] = choiceExports[k];
             }
         }
-        field.setWidget(box, PdfAnnotation.HIGHLIGHT_INVERT);
+        return mix;
+    }
+
+    private PdfFormField createExportField(boolean isList, String[][] mix, int topChoice) throws DocumentException {
+        if (isList) {
+            return PdfFormField.createList(writer, mix, topChoice);
+        } else {
+            return PdfFormField.createCombo(writer, (options & EDIT) != 0, mix, topChoice);
+        }
+    }
+
+    private void applyRotation(PdfFormField field) {
         if (rotation != 0) {
             field.setMKRotation(rotation);
         }
+    }
+
+    private void applyFieldName(PdfFormField field, String[] uchoices, int topChoice) throws DocumentException {
         if (fieldName != null) {
             field.setFieldName(fieldName);
             if (uchoices.length > 0) {
-                if (mix != null) {
-                    if (choiceSelections.size() < 2) {
-                        field.setValueAsString(mix[topChoice][0]);
-                        field.setDefaultValueAsString(mix[topChoice][0]);
-                    } else {
-                        writeMultipleValues(field, mix);
-                    }
-                } else {
-                    if (choiceSelections.size() < 2) {
-                        field.setValueAsString(text);
-                        field.setDefaultValueAsString(text);
-                    } else {
-                        writeMultipleValues(field, null);
-                    }
-                }
-            }
-            if ((options & READ_ONLY) != 0) {
-                field.setFieldFlags(PdfFormField.FF_READ_ONLY);
-            }
-            if ((options & REQUIRED) != 0) {
-                field.setFieldFlags(PdfFormField.FF_REQUIRED);
-            }
-            if ((options & DO_NOT_SPELL_CHECK) != 0) {
-                field.setFieldFlags(PdfFormField.FF_DONOTSPELLCHECK);
-            }
-            if ((options & MULTISELECT) != 0) {
-                field.setFieldFlags(PdfFormField.FF_MULTISELECT);
+                applyFieldValue(field, uchoices, topChoice);
             }
         }
-        field.setBorderStyle(new PdfBorderDictionary(borderWidth, borderStyle, new PdfDashPattern(3)));
-        PdfAppearance tp;
-        if (isList) {
-            tp = getListAppearance();
-            if (topFirst > 0) {
-                field.put(PdfName.TI, new PdfNumber(topFirst));
-            }
+    }
+
+    private void applyFieldValue(PdfFormField field, String[] uchoices, int topChoice) throws DocumentException {
+        if (choiceExports != null) {
+            applyChoiceExportsValue(field, uchoices, topChoice);
         } else {
-            tp = getAppearance();
+            applySimpleValue(field);
+        }
+    }
+
+    private void applyChoiceExportsValue(PdfFormField field, String[] uchoices, int topChoice) throws DocumentException {
+        String[][] mix = createExportMix(uchoices);
+        if (choiceSelections.size() < 2) {
+            field.setValueAsString(mix[topChoice][0]);
+            field.setDefaultValueAsString(mix[topChoice][0]);
+        } else {
+            writeMultipleValues(field, mix);
+        }
+    }
+
+    private void applySimpleValue(PdfFormField field) throws DocumentException {
+        if (choiceSelections.size() < 2) {
+            field.setValueAsString(text);
+            field.setDefaultValueAsString(text);
+        } else {
+            writeMultipleValues(field, null);
+        }
+    }
+
+    private void applyFieldOptions(PdfFormField field) {
+        if ((options & READ_ONLY) != 0) {
+            field.setFieldFlags(PdfFormField.FF_READ_ONLY);
+        }
+        if ((options & REQUIRED) != 0) {
+            field.setFieldFlags(PdfFormField.FF_REQUIRED);
+        }
+        if ((options & DO_NOT_SPELL_CHECK) != 0) {
+            field.setFieldFlags(PdfFormField.FF_DONOTSPELLCHECK);
+        }
+        if ((options & MULTISELECT) != 0) {
+            field.setFieldFlags(PdfFormField.FF_MULTISELECT);
+        }
+    }
+
+    private void setFieldAppearance(PdfFormField field, boolean isList) throws IOException, DocumentException {
+        PdfAppearance tp = isList ? getListAppearance() : getAppearance();
+        if (isList && topFirst > 0) {
+            field.put(PdfName.TI, new PdfNumber(topFirst));
         }
         field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, tp);
+        setDefaultAppearanceString(field, tp);
+        setFieldColors(field);
+        setFieldVisibility(field);
+    }
+
+    private void setDefaultAppearanceString(PdfFormField field, PdfAppearance tp) throws IOException, DocumentException {
         PdfAppearance da = (PdfAppearance) tp.getDuplicate();
         da.setFontAndSize(getRealFont(), fontSize);
         if (textColor == null) {
@@ -740,12 +789,18 @@ public class TextField extends BaseField {
             da.setColorFill(textColor);
         }
         field.setDefaultAppearanceString(da);
+    }
+
+    private void setFieldColors(PdfFormField field) {
         if (borderColor != null) {
             field.setMKBorderColor(borderColor);
         }
         if (backgroundColor != null) {
             field.setMKBackgroundColor(backgroundColor);
         }
+    }
+
+    private void setFieldVisibility(PdfFormField field) {
         switch (visibility) {
             case HIDDEN:
                 field.setFlags(PdfAnnotation.FLAGS_PRINT | PdfAnnotation.FLAGS_HIDDEN);
@@ -759,14 +814,13 @@ public class TextField extends BaseField {
                 field.setFlags(PdfAnnotation.FLAGS_PRINT);
                 break;
         }
-        return field;
     }
 
     private void writeMultipleValues(PdfFormField field, String[][] mix) {
         PdfArray indexes = new PdfArray();
         PdfArray values = new PdfArray();
-        for (Object choiceSelection : choiceSelections) {
-            int idx = (Integer) choiceSelection;
+        for (Integer choiceSelection : choiceSelections) {
+            int idx = choiceSelection;
             indexes.add(new PdfNumber(idx));
 
             if (mix != null) {

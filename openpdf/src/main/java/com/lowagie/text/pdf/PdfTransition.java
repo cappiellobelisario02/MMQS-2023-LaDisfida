@@ -246,6 +246,8 @@ public class PdfTransition {
                 trans.put(PdfName.D, new PdfNumber(duration));
                 trans.put(PdfName.DI, new PdfNumber(315));
                 break;
+            default:
+                throw new IllegalArgumentException("Unknown transition type: " + type);
         }
         return trans;
     }
