@@ -730,6 +730,8 @@ public class PdfCopy extends PdfWriter {
                     out.append(page.getRight());
                     out.append(PdfContents.ROTATEFINAL);
                     break;
+                default:
+                    throw new IllegalArgumentException("Unexpected rotation: " + rotation);
             }
         }
 
@@ -817,6 +819,8 @@ public class PdfCopy extends PdfWriter {
                                                 rect.top(),
                                                 pageSize.getRight() - rect.right()));
                                         break;
+                                    default:
+                                        throw new IllegalArgumentException("Invalid rotation: " + rotation);
                                 }
                             }
                         }

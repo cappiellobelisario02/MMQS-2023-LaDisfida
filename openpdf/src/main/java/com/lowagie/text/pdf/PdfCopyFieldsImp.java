@@ -70,7 +70,7 @@ class PdfCopyFieldsImp extends PdfWriter {
     protected static final Map<PdfName, Integer> widgetKeys = new HashMap<>();
     protected static final Map<PdfName, Integer> fieldKeys = new HashMap<>();
     private static final PdfName iTextTag = new PdfName("_iTextTag_");
-    private static final Integer zero = 0;
+    private static final Integer ZERO = 0;
 
     static {
         Integer one = 1;
@@ -243,8 +243,8 @@ class PdfCopyFieldsImp extends PdfWriter {
             return;
         }
         switch (obj.type()) {
-            case PdfObject.DICTIONARY:
-            case PdfObject.STREAM: {
+            case PdfObject.DICTIONARY,
+                 PdfObject.STREAM: {
                 PdfDictionary dic = (PdfDictionary) obj;
                 for (PdfName key : dic.getKeys()) {
                     if (restricted && (key.equals(PdfName.PARENT) || key.equals(PdfName.KIDS))) {
@@ -254,7 +254,6 @@ class PdfCopyFieldsImp extends PdfWriter {
                     if (ob != null && ob.isIndirect()) {
                         PRIndirectReference ind = (PRIndirectReference) ob;
                         if (!setVisited(ind) && !isPage(ind)) {
-                            PdfIndirectReference ref = getNewReference(ind);
                             propagate(PdfReader.getPdfObjectRelease(ind), restricted);
                         }
                     } else {
@@ -264,13 +263,11 @@ class PdfCopyFieldsImp extends PdfWriter {
                 break;
             }
             case PdfObject.ARRAY: {
-                PdfArray arr = new PdfArray();
                 for (PdfObject ob : ((PdfArray) obj).getElements()) {
                     if (ob != null && ob.isIndirect()) {
                         PRIndirectReference ind = (PRIndirectReference) ob;
                         if (!isVisited(ind) && !isPage(ind)
                                 && ((PRIndirectReference) ob).getReader().getPdfObject(ind.getNumber()) != null) {
-                            PdfIndirectReference ref = getNewReference(ind);
                             propagate(PdfReader.getPdfObjectRelease(ind), restricted);
                         }
                     } else {
@@ -281,7 +278,11 @@ class PdfCopyFieldsImp extends PdfWriter {
             }
             case PdfObject.INDIRECT: {
                 throw new IllegalReferencePointerException(
-                    MessageLocalization.getComposedMessage("reference.pointing.to.reference"));
+                        MessageLocalization.getComposedMessage("reference.pointing.to.reference"));
+            }
+            default: {
+                // Handle unexpected or unknown PdfObject types
+                throw new IllegalArgumentException("Unexpected PdfObject type: " + obj.getType());
             }
         }
     }
@@ -293,7 +294,7 @@ class PdfCopyFieldsImp extends PdfWriter {
             t = new ArrayList<>();
             int size = annots.size() - 1;
             for (int k = 0; k < size; ++k) {
-                t.add(zero);
+                t.add(ZERO);
             }
             t.add(v);
             tabOrder.put(annots, t);

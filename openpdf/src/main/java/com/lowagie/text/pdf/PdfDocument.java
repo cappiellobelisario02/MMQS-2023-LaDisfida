@@ -82,6 +82,7 @@ import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
 import com.lowagie.text.pdf.internal.PdfViewerPreferencesImp;
 import java.awt.Color;
 import java.io.IOException;
+import java.rmi.UnexpectedException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -405,6 +406,7 @@ public class PdfDocument extends Document {
      * @return <CODE>true</CODE> if the element was added, <CODE>false</CODE> if not.
      * @throws DocumentException when a document isn't open yet, or has been closed
      */
+    @Override
     public boolean add(Element element) throws DocumentException {
         if (writer != null && writer.isPaused()) {
             return false;
@@ -746,11 +748,11 @@ public class PdfDocument extends Document {
                     }
                     break;
                 }
-                case Element.JPEG:
-                case Element.JPEG2000:
-                case Element.JBIG2:
-                case Element.IMGRAW:
-                case Element.IMGTEMPLATE: {
+                case Element.JPEG,
+                     Element.JPEG2000,
+                     Element.JBIG2,
+                     Element.IMGRAW,
+                     Element.IMGTEMPLATE: {
                     //carriageReturn(); suggestion by Marc Campforts
                     if (isDoFooter) {
                         addDelay((Image) element);
@@ -1623,7 +1625,8 @@ public class PdfDocument extends Document {
                     float[] params = (float[]) chunk.getAttribute(Chunk.SKEW);
                     Float hs = (Float) chunk.getAttribute(Chunk.HSCALE);
                     if (params != null || hs != null) {
-                        float b = 0, c = 0;
+                        float b = 0;
+                        float c = 0;
                         if (params != null) {
                             b = params[0];
                             c = params[1];
@@ -1869,7 +1872,7 @@ public class PdfDocument extends Document {
         PdfCatalog catalog = new PdfCatalog(pages, writer);
 
         // [C1] outlines
-        if (rootOutline.getKids().size() > 0) {
+        if (rootOutline.getKids().isEmpty()) {
             catalog.put(PdfName.PAGEMODE, PdfName.USEOUTLINES);
             catalog.put(PdfName.OUTLINES, rootOutline.indirectReference());
         }
@@ -1940,7 +1943,7 @@ public class PdfDocument extends Document {
      * Updates the count in the outlines.
      */
     void calculateOutlineCount() {
-        if (rootOutline.getKids().size() == 0) {
+        if (rootOutline.getKids().isEmpty()) {
             return;
         }
         traverseOutlineCount(rootOutline);
@@ -1977,7 +1980,7 @@ public class PdfDocument extends Document {
      * Writes the outline tree to the body of the PDF document.
      */
     void writeOutlines() throws IOException {
-        if (rootOutline.getKids().size() == 0) {
+        if (rootOutline.getKids().isEmpty()) {
             return;
         }
         outlineTree(rootOutline);
@@ -2430,7 +2433,7 @@ public class PdfDocument extends Document {
             imageWait = null;
         }
         boolean textwrap = (image.getAlignment() & Image.TEXTWRAP) == Image.TEXTWRAP
-                && !((image.getAlignment() & Image.MIDDLE) == Image.MIDDLE);
+                && ((image.getAlignment() & Image.MIDDLE) != Image.MIDDLE);
         boolean underlying = (image.getAlignment() & Image.UNDERLYING) == Image.UNDERLYING;
         float diff = leading / 2;
         if (textwrap) {
@@ -2487,14 +2490,14 @@ public class PdfDocument extends Document {
         }
         for (Element element : footer.getSpecialContent()) {
             switch (element.type()) {
-                case Element.JPEG:
-                case Element.JPEG2000:
-                case Element.JBIG2:
-                case Element.IMGRAW:
-                case Element.IMGTEMPLATE: {
+                case Element.JPEG,
+                     Element.JPEG2000,
+                     Element.JBIG2,
+                     Element.IMGRAW,
+                     Element.IMGTEMPLATE: {
                     Image image = (Image) element;
                     boolean textwrap = (image.getAlignment() & Image.TEXTWRAP) == Image.TEXTWRAP
-                            && !((image.getAlignment() & Image.MIDDLE) == Image.MIDDLE);
+                            && ((image.getAlignment() & Image.MIDDLE) != Image.MIDDLE);
                     float diff = leading / 2;
                     if (textwrap) {
                         diff += leading;
@@ -2536,6 +2539,8 @@ public class PdfDocument extends Document {
                     ct.go();
 
                     break;
+                default:
+                    throw new IllegalArgumentException("Unexpected type: " + element.type());
             }
         }
         footer.setPadding(0);
@@ -2558,7 +2563,7 @@ public class PdfDocument extends Document {
 
         // add indentation for text
         boolean textwrap = (image.getAlignment() & Image.TEXTWRAP) == Image.TEXTWRAP
-                && !((image.getAlignment() & Image.MIDDLE) == Image.MIDDLE);
+                && ((image.getAlignment() & Image.MIDDLE) != Image.MIDDLE);
         boolean underlying = (image.getAlignment() & Image.UNDERLYING) == Image.UNDERLYING;
         float diff = leading / 2;
         if (textwrap) {
@@ -2813,9 +2818,7 @@ public class PdfDocument extends Document {
                         ctx.cellGraphics.rectangle(cell.RECTANGLE(indentTop(), indentBottom()));
                         // we write the text of the cell
                         java.util.List<Image> images = cell.getImages(indentTop(), indentBottom());
-                        for (Object image1 : images) {
-                            cellsShown = true;
-                            Image image = (Image) image1;
+                        for (Image image : images) {
                             graphics.addImage(image);
                         }
                         lines = cell.getLines(indentTop(), indentBottom());
@@ -3010,7 +3013,7 @@ public class PdfDocument extends Document {
         if (hasToFit) {
             iterator = cells.iterator();
             while (iterator.hasNext()) {
-                cell = (PdfCell) iterator.next();
+                cell = iterator.next();
                 if (!cell.isHeader() && cell.getBottom() < indentBottom()) {
                     return;
                 }
@@ -3019,7 +3022,7 @@ public class PdfDocument extends Document {
         iterator = cells.iterator();
 
         while (iterator.hasNext()) {
-            cell = (PdfCell) iterator.next();
+            cell = iterator.next();
             if (!ctx.isCellRenderedOnPage(cell, getPageNumber())) {
 
                 float correction = 0;
