@@ -92,7 +92,7 @@ public class PdfShading {
                 "a.tiling.or.shading.pattern.cannot.be.used.as.a.color.space.in.a.shading.pattern"));
     }
 
-    public static void checkCompatibleColors(Color c1, Color c2) {
+    public static void checkCompatibleColors(SpotColor c1, SpotColor c2) {
         int type1 = ExtendedColor.getType(c1);
         int type2 = ExtendedColor.getType(c2);
         if (type1 != type2) {
@@ -100,7 +100,7 @@ public class PdfShading {
                     MessageLocalization.getComposedMessage("both.colors.must.be.of.the.same.type"));
         }
         if (type1 == ExtendedColor.TYPE_SEPARATION
-                && ((SpotColor) c1).getPdfSpotColor() != ((SpotColor) c2).getPdfSpotColor()) {
+                && c1.getPdfSpotColor() != c2.getPdfSpotColor()) {
             throw new IllegalArgumentException(
                     MessageLocalization.getComposedMessage("the.spot.color.must.be.the.same.only.the.tint.can.vary"));
         }
@@ -113,21 +113,41 @@ public class PdfShading {
         int type = ExtendedColor.getType(color);
         switch (type) {
             case ExtendedColor.TYPE_GRAY: {
-                return new float[]{((GrayColor) color).getGray()};
+                if (color instanceof GrayColor) {
+                    GrayColor grayColor = (GrayColor) color;
+                    return new float[]{grayColor.getGray()};
+                } else {
+                    throwColorSpaceError();
+                    return new float[0];
+                }
             }
             case ExtendedColor.TYPE_CMYK: {
-                CMYKColor cmyk = (CMYKColor) color;
-                return new float[]{cmyk.getCyan(), cmyk.getMagenta(), cmyk.getYellow(), cmyk.getBlack()};
+                if (color instanceof CMYKColor) {
+                    CMYKColor cmykColor = (CMYKColor) color;
+                    return new float[]{cmykColor.getCyan(), cmykColor.getMagenta(), cmykColor.getYellow(), cmykColor.getBlack()};
+                } else {
+                    throwColorSpaceError();
+                    return new float[0];
+                }
             }
             case ExtendedColor.TYPE_SEPARATION: {
-                return new float[]{((SpotColor) color).getTint()};
+                if (color instanceof SpotColor) {
+                    SpotColor spotColor = (SpotColor) color;
+                    return new float[]{spotColor.getTint()};
+                } else {
+                    throwColorSpaceError();
+                    return new float[0];
+                }
             }
             case ExtendedColor.TYPE_RGB: {
+                // Assuming `color` is a standard `java.awt.Color`
                 return new float[]{color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f};
             }
+            default: {
+                throwColorSpaceError();
+                return new float[0];
+            }
         }
-        throwColorSpaceError();
-        return new int[];
     }
 
     public static PdfShading type1(PdfWriter writer, Color colorSpace, float[] domain, float[] tMatrix,
@@ -208,31 +228,39 @@ public class PdfShading {
         cspace = color;
         int type = ExtendedColor.getType(color);
         PdfObject colorSpace = null;
+
         switch (type) {
-            case ExtendedColor.TYPE_GRAY: {
+            case ExtendedColor.TYPE_GRAY:
                 colorSpace = PdfName.DEVICEGRAY;
                 break;
-            }
-            case ExtendedColor.TYPE_CMYK: {
+
+            case ExtendedColor.TYPE_CMYK:
                 colorSpace = PdfName.DEVICECMYK;
                 break;
-            }
-            case ExtendedColor.TYPE_SEPARATION: {
-                SpotColor spot = (SpotColor) color;
-                colorDetails = writer.addSimple(spot.getPdfSpotColor());
-                colorSpace = colorDetails.getIndirectReference();
+
+            case ExtendedColor.TYPE_SEPARATION:
+                if (color instanceof SpotColor) {
+                    SpotColor spot = (SpotColor) color;
+                    colorDetails = writer.addSimple(spot.getPdfSpotColor());
+                    colorSpace = colorDetails.getIndirectReference();
+                } else {
+                    throw new IllegalArgumentException("Color type is not a SpotColor for separation.");
+                }
                 break;
-            }
-            case ExtendedColor.TYPE_PATTERN:
-            case ExtendedColor.TYPE_SHADING:
+
+            case ExtendedColor.TYPE_PATTERN,
+                 ExtendedColor.TYPE_SHADING:
                 throwColorSpaceError();
                 break;
+
             default:
                 colorSpace = PdfName.DEVICERGB;
                 break;
         }
+
         shading.put(PdfName.COLORSPACE, colorSpace);
     }
+
 
     PdfName getShadingName() {
         return shadingName;
