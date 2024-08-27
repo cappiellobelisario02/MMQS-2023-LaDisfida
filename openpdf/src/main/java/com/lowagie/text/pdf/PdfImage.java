@@ -49,6 +49,7 @@
 
 package com.lowagie.text.pdf;
 
+import com.lowagie.text.Element;
 import com.lowagie.text.Image;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.ByteArrayOutputStream;
@@ -115,11 +116,13 @@ public class PdfImage extends PdfStream {
                 int colorspace = image.getColorspace();
                 int[] transparency = image.getTransparency();
                 if (transparency != null && !image.isMask() && maskRef == null) {
-                    String s = "[";
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("[");
                     for (int i : transparency) {
-                        s += i + " ";
+                        sb.append(i).append(" ");
                     }
-                    s += "]";
+                    sb.append("]");
+                    String s = sb.toString();
                     put(PdfName.MASK, new PdfLiteral(s));
                 }
                 bytes = image.getRawData();
@@ -131,21 +134,21 @@ public class PdfImage extends PdfStream {
                     }
                     put(PdfName.BITSPERCOMPONENT, new PdfNumber(1));
                     put(PdfName.FILTER, PdfName.CCITTFAXDECODE);
-                    int k = bpc - Image.CCITTG3_1D;
+                    int k = bpc - Element.CCITTG3_1D;
                     PdfDictionary decodeparms = new PdfDictionary();
                     if (k != 0) {
                         decodeparms.put(PdfName.K, new PdfNumber(k));
                     }
-                    if ((colorspace & Image.CCITT_BLACKIS1) != 0) {
+                    if ((colorspace & Element.CCITT_BLACKIS1) != 0) {
                         decodeparms.put(PdfName.BLACKIS1, PdfBoolean.PDFTRUE);
                     }
-                    if ((colorspace & Image.CCITT_ENCODEDBYTEALIGN) != 0) {
+                    if ((colorspace & Element.CCITT_ENCODEDBYTEALIGN) != 0) {
                         decodeparms.put(PdfName.ENCODEDBYTEALIGN, PdfBoolean.PDFTRUE);
                     }
-                    if ((colorspace & Image.CCITT_ENDOFLINE) != 0) {
+                    if ((colorspace & Element.CCITT_ENDOFLINE) != 0) {
                         decodeparms.put(PdfName.ENDOFLINE, PdfBoolean.PDFTRUE);
                     }
-                    if ((colorspace & Image.CCITT_ENDOFBLOCK) != 0) {
+                    if ((colorspace & Element.CCITT_ENDOFBLOCK) != 0) {
                         decodeparms.put(PdfName.ENDOFBLOCK, PdfBoolean.PDFFALSE);
                     }
                     decodeparms.put(PdfName.COLUMNS, new PdfNumber(image.getWidth()));
@@ -198,7 +201,7 @@ public class PdfImage extends PdfStream {
                 errorID = "Byte array";
             }
             switch (image.type()) {
-                case Image.JPEG:
+                case Element.JPEG:
                     put(PdfName.FILTER, PdfName.DCTDECODE);
                     switch (image.getColorspace()) {
                         case 1:
@@ -222,7 +225,7 @@ public class PdfImage extends PdfStream {
                     streamBytes = new ByteArrayOutputStream();
                     transferBytes(is, streamBytes, -1);
                     break;
-                case Image.JPEG2000:
+                case Element.JPEG2000:
                     put(PdfName.FILTER, PdfName.JPXDECODE);
                     if (image.getColorspace() > 0) {
                         switch (image.getColorspace()) {
@@ -245,7 +248,7 @@ public class PdfImage extends PdfStream {
                     streamBytes = new ByteArrayOutputStream();
                     transferBytes(is, streamBytes, -1);
                     break;
-                case Image.JBIG2:
+                case Element.JBIG2:
                     put(PdfName.FILTER, PdfName.JBIG2DECODE);
                     put(PdfName.COLORSPACE, PdfName.DEVICEGRAY);
                     put(PdfName.BITSPERCOMPONENT, new PdfNumber(1));
