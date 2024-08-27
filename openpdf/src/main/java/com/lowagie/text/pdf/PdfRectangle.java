@@ -218,6 +218,7 @@ public class PdfRectangle extends PdfArray {
      */
     @Override
     public void addFirst(PdfObject object) {
+        //empty on purpose (for now)
     }
 
     /**

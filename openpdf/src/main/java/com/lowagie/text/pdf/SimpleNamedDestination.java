@@ -298,6 +298,7 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
     }
 
     public void endDocument() {
+        //empty on purpose (for now)
     }
 
     public void endElement(String tag) {
@@ -322,6 +323,7 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
     }
 
     public void startDocument() {
+        //empty on purpose (for now)
     }
 
     public void startElement(String tag, Map<String, String> h) {

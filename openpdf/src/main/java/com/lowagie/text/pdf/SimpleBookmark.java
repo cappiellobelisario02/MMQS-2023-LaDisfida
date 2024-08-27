@@ -67,6 +67,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -620,17 +621,16 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
             out.write(dep.toString());
             out.write("<Title ");
             List<?> kids = null;
-            for (Object o : map.entrySet()) {
-                Map.Entry<?,?> entry = (Map.Entry<?,?>) o;
-                String key = (String) entry.getKey();
+            for (Entry<?,?> o : map.entrySet()) {
+                String key = (String) o.getKey();
                 if (key.equals(TITLE)) {
-                    title = (String) entry.getValue();
+                    title = (String) o.getValue();
                 } else if (key.equals("Kids")) {
-                    kids = (List) entry.getValue();
+                    kids = (List) o.getValue();
                 } else {
                     out.write(key);
                     out.write("=\"");
-                    String value = (String) entry.getValue();
+                    String value = (String) o.getValue();
                     if (key.equals(NAMED) || key.equals(NAMED_N)) {
                         value = SimpleNamedDestination.escapeBinaryString(value);
                     }

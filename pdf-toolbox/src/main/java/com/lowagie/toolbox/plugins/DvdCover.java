@@ -64,6 +64,11 @@ import javax.swing.JOptionPane;
  */
 public class DvdCover extends AbstractTool {
 
+    public static final String BACKGROUNDCOLOR = "backgroundcolor";
+    public static final String FRONT = "front";
+    public static final String DESTFILE = "destfile";
+    public static final String TITLE = "title";
+
     static {
         addVersion("$Id: DvdCover.java 3271 2008-04-18 20:39:42Z xlv $");
     }
@@ -75,12 +80,12 @@ public class DvdCover extends AbstractTool {
      */
     public DvdCover() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW | MENU_EXECUTE_PRINT;
-        arguments.add(new FileArgument(this, "destfile", "The file to which the PDF has to be written", true,
+        arguments.add(new FileArgument(this, DESTFILE, "The file to which the PDF has to be written", true,
                 new PdfFilter()));
-        arguments.add(new StringArgument(this, "title", "The title of the DVD"));
-        arguments.add(new ColorArgument(this, "backgroundcolor",
+        arguments.add(new StringArgument(this, TITLE, "The title of the DVD"));
+        arguments.add(new ColorArgument(this, BACKGROUNDCOLOR,
                 "The backgroundcolor of the DVD Cover (for instance 0xFFFFFF)"));
-        arguments.add(new ImageArgument(this, "front", "The front image of the DVD Cover"));
+        arguments.add(new ImageArgument(this, FRONT, "The front image of the DVD Cover"));
         arguments.add(new ImageArgument(this, "back", "The back image of the DVD Cover"));
         arguments.add(new ImageArgument(this, "side", "The side image of the DVD Cover"));
     }
@@ -114,35 +119,34 @@ public class DvdCover extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        Document document = null;
-        try {
+        Rectangle pageSize = new Rectangle(780, 525);
+        try(Document document = new Document(pageSize);
+                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream((File) getValue(DESTFILE)))){
             // step 1: creation of a document-object
-            Rectangle pageSize = new Rectangle(780, 525);
-            if (getValue("backgroundcolor") != null) {
-                pageSize.setBackgroundColor((Color) getValue("backgroundcolor"));
+
+            if (getValue(BACKGROUNDCOLOR) != null) {
+                pageSize.setBackgroundColor((Color) getValue(BACKGROUNDCOLOR));
             }
-            /*Document document*/ document = new Document(pageSize);
+
             // step 2:
             // we create a writer that listens to the document
             // and directs a PDF-stream to a file
-            if (getValue("destfile") == null) {
+            if (getValue(DESTFILE) == null) {
                 throw new DocumentException("You must provide a destination file!");
             }
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream((File) getValue("destfile")));
-
             // step 3: we open the document
             document.open();
 
             // step 4:
             PdfContentByte cb = writer.getDirectContent();
-            if (getValue("title") != null) {
+            if (getValue(TITLE) != null) {
                 cb.setFontAndSize(BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, false), 24);
                 cb.beginText();
-                if (getValue("front") == null) {
-                    cb.showTextAligned(Element.ALIGN_CENTER, (String) getValue("title"), 595f, 262f, 0f);
+                if (getValue(FRONT) == null) {
+                    cb.showTextAligned(Element.ALIGN_CENTER, (String) getValue(TITLE), 595f, 262f, 0f);
                 }
                 if (getValue("side") == null) {
-                    cb.showTextAligned(Element.ALIGN_CENTER, (String) getValue("title"), 385f, 262f, 270f);
+                    cb.showTextAligned(Element.ALIGN_CENTER, (String) getValue(TITLE), 385f, 262f, 270f);
                 }
                 cb.endText();
             }
@@ -151,8 +155,8 @@ public class DvdCover extends AbstractTool {
             cb.moveTo(410, 525);
             cb.lineTo(410, 0);
             cb.stroke();
-            if (getValue("front") != null) {
-                Image front = (Image) getValue("front");
+            if (getValue(FRONT) != null) {
+                Image front = (Image) getValue(FRONT);
                 front.scaleToFit(370, 525);
                 front.setAbsolutePosition(410f + (370f - front.getScaledWidth()) / 2f,
                         (525f - front.getScaledHeight()) / 2f);
@@ -173,21 +177,12 @@ public class DvdCover extends AbstractTool {
             }
 
             // step 5: we close the document
-            document.close();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
             logger.info(e.getMessage());
-        } finally{
-            if (document != null) {
-                try {
-                    document.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
@@ -198,7 +193,6 @@ public class DvdCover extends AbstractTool {
     public void valueHasChanged(AbstractArgument arg) {
         if (internalFrame == null) {
             // if the internal frame is null, the tool was called from the command line
-            return;
         }
         // represent the changes of the argument in the internal frame
     }
@@ -209,6 +203,6 @@ public class DvdCover extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 }

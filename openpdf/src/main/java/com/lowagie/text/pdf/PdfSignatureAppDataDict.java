@@ -10,6 +10,7 @@ import java.util.ArrayList;
 public class PdfSignatureAppDataDict extends PdfDictionary {
 
     public PdfSignatureAppDataDict() {
+        //empty on purpose (for now)
     }
 
     /**
