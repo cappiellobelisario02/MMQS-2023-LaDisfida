@@ -71,6 +71,7 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param document the document
      */
     public void onOpenDocument(PdfWriter writer, Document document) {
+        //empty on purpose (for now)
     }
 
     /**
@@ -83,6 +84,7 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param document the document
      */
     public void onStartPage(PdfWriter writer, Document document) {
+        //empty on purpose (for now)
     }
 
     /**
@@ -92,6 +94,7 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param document the document
      */
     public void onEndPage(PdfWriter writer, Document document) {
+        //empty on purpose (for now)
     }
 
     /**
@@ -103,6 +106,7 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param document the document
      */
     public void onCloseDocument(PdfWriter writer, Document document) {
+        //empty on purpose (for now)
     }
 
     /**
@@ -116,6 +120,7 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param paragraphPosition the position the paragraph will be written to
      */
     public void onParagraph(PdfWriter writer, Document document, float paragraphPosition) {
+        //empty on purpose (for now)
     }
 
     /**
@@ -128,6 +133,7 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param paragraphPosition the position of the end of the paragraph
      */
     public void onParagraphEnd(PdfWriter writer, Document document, float paragraphPosition) {
+        //empty on purpose (for now)
     }
 
     /**
@@ -142,6 +148,7 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param title             the title of the Chapter
      */
     public void onChapter(PdfWriter writer, Document document, float paragraphPosition, Paragraph title) {
+        //empty on purpose (for now)
     }
 
     /**
@@ -154,6 +161,7 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param position the position of the end of the chapter.
      */
     public void onChapterEnd(PdfWriter writer, Document document, float position) {
+        //empty on purpose (for now)
     }
 
     /**
@@ -169,6 +177,7 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param title             the title of the section
      */
     public void onSection(PdfWriter writer, Document document, float paragraphPosition, int depth, Paragraph title) {
+        //empty on purpose (for now)
     }
 
     /**
@@ -181,6 +190,7 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param position the position of the end of the section
      */
     public void onSectionEnd(PdfWriter writer, Document document, float position) {
+        //empty on purpose (for now)
     }
 
     /**
@@ -194,5 +204,6 @@ public class PdfPageEventHelper implements PdfPageEvent {
      * @param text     the text of the tag
      */
     public void onGenericTag(PdfWriter writer, Document document, Rectangle rect, String text) {
+        //empty on purpose (for now)
     }
 }
