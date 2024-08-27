@@ -61,7 +61,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 // File: FontCreationException.java
-public class FontCreationException extends RuntimeException {
+class FontCreationException extends RuntimeException {
     // Constructor that accepts a message
     public FontCreationException(String message) {
         super(message);
@@ -294,51 +294,53 @@ public class LayoutProcessor {
             return;
         }
 
-        java.awt.Font awtFont;
-        InputStream inputStream = null;
-        try {
-            awtFont = awtFontMap.get(baseFont);
-            if (awtFont == null) {
-                // getting the inputStream is adapted from com.lowagie.text.pdf.RandomAccessFileOrArray
-                File file = new File(filename);
-                if (!file.exists() && FontFactory.isRegistered(filename)) {
-                    filename = (String) FontFactory.getFontImp().getFontPath(filename);
-                    file = new File(filename);
-                }
-                if (file.canRead()) {
-                    inputStream = Files.newInputStream(file.toPath());
-                } else if (filename.startsWith("file:/") || filename.startsWith("http://")
-                        || filename.startsWith("https://") || filename.startsWith("jar:")
-                        || filename.startsWith("wsjar:")) {
-                    inputStream = new URL(filename).openStream();
-                } else if ("-".equals(filename)) {
-                    inputStream = System.in;
-                } else {
-                    inputStream = BaseFont.getResourceStream(filename);
-                }
-                if (inputStream == null) {
-                    throw new IOException(
-                            MessageLocalization.getComposedMessage("1.not.found.as.file.or.resource", filename));
-                }
-                awtFont = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, inputStream);
+        java.awt.Font awtFont = awtFontMap.get(baseFont);
+        if (awtFont == null) {
+            try (InputStream inputStream = getInputStreamForFont(filename)) {
+                awtFont = createFontFromStream(inputStream);
                 if (awtFont != null) {
                     if (!globalTextAttributes.isEmpty()) {
                         awtFont = awtFont.deriveFont(LayoutProcessor.globalTextAttributes);
                     }
                     awtFontMap.put(baseFont, awtFont);
                 }
-            }
-        } catch (Exception e) {
-            throw new FontCreationException(String.format("Font creation failed for %s.", filename), e);
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (Exception e) {
-                    // ignore
-                }
+            } catch (Exception e) {
+                throw new FontCreationException(String.format("Font creation failed for %s.", filename), e);
             }
         }
+    }
+
+    private static InputStream getInputStreamForFont(String filename) throws IOException {
+        File file = new File(filename);
+        if (!file.exists() && FontFactory.isRegistered(filename)) {
+            filename = (String) FontFactory.getFontImp().getFontPath(filename);
+            file = new File(filename);
+        }
+
+        if (file.canRead()) {
+            return Files.newInputStream(file.toPath());
+        } else if (isUrl(filename)) {
+            return new URL(filename).openStream();
+        } else if ("-".equals(filename)) {
+            return System.in;
+        } else {
+            InputStream inputStream = BaseFont.getResourceStream(filename);
+            if (inputStream == null) {
+                throw new IOException(
+                        MessageLocalization.getComposedMessage("1.not.found.as.file.or.resource", filename));
+            }
+            return inputStream;
+        }
+    }
+
+    private static boolean isUrl(String filename) {
+        return filename.startsWith("file:/") || filename.startsWith("http://")
+                || filename.startsWith("https://") || filename.startsWith("jar:")
+                || filename.startsWith("wsjar:");
+    }
+
+    private static java.awt.Font createFontFromStream(InputStream inputStream) throws Exception {
+        return java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, inputStream);
     }
 
     /**
@@ -424,7 +426,9 @@ public class LayoutProcessor {
         cb.state.fontDetails.addMissingCmapEntries(text, glyphVector, baseFont);
     }
 
-
+    /**
+     * @deprecated
+     */
     @Deprecated(forRemoval = true)
     private static Point2D showText1(PdfContentByte cb, BaseFont baseFont, float fontSize, String text) {
         GlyphVector glyphVector = computeGlyphVector(baseFont, fontSize, text);

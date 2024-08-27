@@ -51,7 +51,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 // File: UnsupportedLZWFlavorException.java
-public class UnsupportedLZWFlavorException extends RuntimeException {
+class UnsupportedLZWFlavorException extends RuntimeException {
     // Constructor that accepts a message
     public UnsupportedLZWFlavorException(String message) {
         super(message);
@@ -72,8 +72,10 @@ public class LZWDecoder {
     byte[][] stringTable;
     byte[] data = null;
     OutputStream uncompData;
-    int tableIndex, bitsToGet = 9;
-    int bytePointer, bitPointer;
+    int tableIndex;
+    int bitsToGet = 9;
+    int bytePointer;
+    int bitPointer;
     int nextData = 0;
     int nextBits = 0;
 
@@ -85,6 +87,7 @@ public class LZWDecoder {
     };
 
     public LZWDecoder() {
+        //empty on purpose
     }
 
     /**
@@ -111,7 +114,8 @@ public class LZWDecoder {
         nextData = 0;
         nextBits = 0;
 
-        int code, oldCode = 0;
+        int code;
+        int oldCode = 0;
         byte[] string;
 
         while ((code = getNextCode()) != 257) {

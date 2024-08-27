@@ -154,6 +154,8 @@ public class OcspClientBouncyCastle implements OcspClient {
      */
     private Proxy proxy;
 
+    private static final Random rand = new Random();
+
     /**
      * Creates an instance of an OcspClient that will be using BouncyCastle.
      *
@@ -203,16 +205,15 @@ public class OcspClientBouncyCastle implements OcspClient {
         gen.addRequest(id);
 
         // create details for nonce extension
-        // Vector values = new Vector();
-        // oids.add(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+        // Vector values = new Vector
+        // oids.add(OCSPObjectIdentifiers.id_pkix_ocsp_nonce
         // values.add(new X509Extension(false, new DEROctetString(new
-        // DEROctetString(PdfEncryption.createDocumentId()).getEncoded())));
-        // gen.setRequestExtensions(new X509Extensions(oids, values));
+        // DEROctetString(PdfEncryption.createDocumentId()).getEncoded(
+        // gen.setRequestExtensions(new X509Extensions(oids, values
 
         // Add nonce extension
         ExtensionsGenerator extGen = new ExtensionsGenerator();
         byte[] nonce = new byte[16];
-        Random rand = new Random();
         rand.nextBytes(nonce);
 
         extGen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false,
@@ -281,7 +282,7 @@ public class OcspClientBouncyCastle implements OcspClient {
         } catch (Exception ex) {
             throw new ExceptionConverter(ex);
         }
-        return new int[0];
+        return new byte[0];
     }
 
     /**

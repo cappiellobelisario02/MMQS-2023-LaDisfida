@@ -1857,8 +1857,8 @@ public class AcroFields {
                     merged.put(PdfName.AS, vt);
                     widget.put(PdfName.AS, vt);
                 } else {
-                    merged.put(PdfName.AS, PdfName.Off);
-                    widget.put(PdfName.AS, PdfName.Off);
+                    merged.put(PdfName.AS, PdfName.offLowCase);
+                    widget.put(PdfName.AS, PdfName.offLowCase);
                 }
             }
             return true;

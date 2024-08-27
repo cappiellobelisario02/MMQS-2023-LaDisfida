@@ -618,42 +618,52 @@ public class PdfAction extends PdfDictionary {
         PdfAction action = new PdfAction();
         action.put(PdfName.S, PdfName.SETOCGSTATE);
         PdfArray a = new PdfArray();
+
         for (Object o : state) {
-            if (o == null) {
-                continue;
-            }
-            if (o instanceof PdfIndirectReference) {
-                a.add((PdfIndirectReference) o);
-            } else if (o instanceof PdfLayer) {
-                a.add(((PdfLayer) o).getRef());
-            } else if (o instanceof PdfName) {
-                a.add((PdfName) o);
-            } else if (o instanceof String) {
-                PdfName name = null;
-                String s = (String) o;
-                if (s.equalsIgnoreCase("on")) {
-                    name = PdfName.ON;
-                } else if (s.equalsIgnoreCase("off")) {
-                    name = PdfName.OFF;
-                } else if (s.equalsIgnoreCase("toggle")) {
-                    name = PdfName.TOGGLE;
-                } else {
-                    throw new IllegalArgumentException(MessageLocalization.getComposedMessage(
-                            "a.string.1.was.passed.in.state.only.on.off.and.toggle.are.allowed", s));
-                }
-                a.add(name);
-            } else {
-                throw new IllegalArgumentException(
-                        MessageLocalization.getComposedMessage("invalid.type.was.passed.in.state.1",
-                                o.getClass().getName()));
-            }
+            addObjectToPdfArray(a, o);
         }
+
         action.put(PdfName.STATE, a);
+
         if (!preserveRB) {
             action.put(PdfName.PRESERVERB, PdfBoolean.PDFFALSE);
         }
+
         return action;
     }
+
+    private static void addObjectToPdfArray(PdfArray a, Object o) {
+        if (o == null) {
+            return;
+        }
+        if (o instanceof PdfIndirectReference) {
+            a.add((PdfIndirectReference) o);
+        } else if (o instanceof PdfLayer) {
+            a.add(((PdfLayer) o).getRef());
+        } else if (o instanceof PdfName) {
+            a.add((PdfName) o);
+        } else if (o instanceof String) {
+            a.add(getPdfNameForString((String) o));
+        } else {
+            throw new IllegalArgumentException(
+                    MessageLocalization.getComposedMessage("invalid.type.was.passed.in.state.1", o.getClass().getName()));
+        }
+    }
+
+    private static PdfName getPdfNameForString(String s) {
+        switch (s.toLowerCase()) {
+            case "on":
+                return PdfName.ON;
+            case "off":
+                return PdfName.OFF;
+            case "toggle":
+                return PdfName.TOGGLE;
+            default:
+                throw new IllegalArgumentException(MessageLocalization.getComposedMessage(
+                        "a.string.1.was.passed.in.state.only.on.off.and.toggle.are.allowed", s));
+        }
+    }
+
 
     /**
      * Add a chained action.

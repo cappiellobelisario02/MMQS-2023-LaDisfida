@@ -459,18 +459,12 @@ public class PdfAnnotation extends PdfDictionary {
     public static PdfAnnotation createMarkup(PdfWriter writer, Rectangle rect, String contents, int type,
             float[] quadPoints) {
         PdfAnnotation annot = new PdfAnnotation(writer, rect);
-        PdfName name = PdfName.HIGHLIGHT;
-        switch (type) {
-            case MARKUP_UNDERLINE:
-                name = PdfName.UNDERLINE;
-                break;
-            case MARKUP_STRIKEOUT:
-                name = PdfName.STRIKEOUT;
-                break;
-            case MARKUP_SQUIGGLY:
-                name = PdfName.SQUIGGLY;
-                break;
-        }
+        PdfName name = switch (type) {
+            case MARKUP_UNDERLINE -> PdfName.UNDERLINE;
+            case MARKUP_STRIKEOUT -> PdfName.STRIKEOUT;
+            case MARKUP_SQUIGGLY -> PdfName.SQUIGGLY;
+            default -> throw new IllegalArgumentException("Unknown type: " + type);
+        };
         annot.put(PdfName.SUBTYPE, name);
         annot.put(PdfName.CONTENTS, new PdfString(contents, PdfObject.TEXT_UNICODE));
         PdfArray array = new PdfArray();
@@ -578,7 +572,7 @@ public class PdfAnnotation extends PdfDictionary {
         return annot;
     }
 
-    public static PdfArray getMKColor(Color color) {
+    public static PdfArray getMKColor(Color color) throws AnnotationException {
         PdfArray array = new PdfArray();
         int type = ExtendedColor.getType(color);
         switch (type) {
@@ -594,9 +588,9 @@ public class PdfAnnotation extends PdfDictionary {
                 array.add(new PdfNumber(cmyk.getBlack()));
                 break;
             }
-            case ExtendedColor.TYPE_SEPARATION:
-            case ExtendedColor.TYPE_PATTERN:
-            case ExtendedColor.TYPE_SHADING:
+            case ExtendedColor.TYPE_SEPARATION,
+                 ExtendedColor.TYPE_PATTERN,
+                 ExtendedColor.TYPE_SHADING:
                 throw new AnnotationException(
                         MessageLocalization.getComposedMessage(
                                 "separations.patterns.and.shadings.are.not.allowed.in.mk.dictionary"));
@@ -845,7 +839,7 @@ public class PdfAnnotation extends PdfDictionary {
         getMK().put(PdfName.R, new PdfNumber(rotation));
     }
 
-    public void setMKBorderColor(Color color) {
+    public void setMKBorderColor(Color color) throws AnnotationException {
         if (color == null) {
             getMK().remove(PdfName.BC);
         } else {
@@ -853,7 +847,7 @@ public class PdfAnnotation extends PdfDictionary {
         }
     }
 
-    public void setMKBackgroundColor(Color color) {
+    public void setMKBackgroundColor(Color color) throws AnnotationException {
         if (color == null) {
             getMK().remove(PdfName.BG);
         } else {
@@ -983,7 +977,10 @@ public class PdfAnnotation extends PdfDictionary {
      */
     public static class PdfImportedLink {
 
-        float llx, lly, urx, ury;
+        float llx;
+        float lly;
+        float urx;
+        float ury;
         HashMap<PdfName, PdfObject> parameters = new HashMap<>();
         PdfArray destination;
         int newPage = 0;

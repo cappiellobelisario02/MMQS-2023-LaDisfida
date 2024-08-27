@@ -1915,11 +1915,11 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
     /**
      * A name
      */
-    public static final PdfName off = new PdfName("Off");
+    public static final PdfName offLowCase = new PdfName("Off");
     /**
      * A name
      */
-    public static final PdfName Off = new PdfName("OFF");
+    public static final PdfName OFF = new PdfName("OFF");
     /**
      * A name
      */

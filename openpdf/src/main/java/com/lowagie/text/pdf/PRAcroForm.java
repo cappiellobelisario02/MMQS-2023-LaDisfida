@@ -53,7 +53,6 @@ package com.lowagie.text.pdf;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -140,49 +139,60 @@ public class PRAcroForm extends PdfDictionary {
             PRIndirectReference ref = (PRIndirectReference) pdfObject;
             PdfDictionary dict = (PdfDictionary) PdfReader.getPdfObjectRelease(ref);
 
-            // if we are not a field dictionary, pass our parent's values
-            PRIndirectReference myFieldDict = fieldDict;
-            String myTitle = title;
-            PdfString tField = (PdfString) dict.get(PdfName.T);
-            boolean isFieldDict = tField != null;
-
-            if (isFieldDict) {
-                myFieldDict = ref;
-                if (title == null) {
-                    myTitle = tField.toString();
-                } else {
-                    myTitle = title + '.' + tField.toString();
-                }
-            }
-
-            PdfArray kids = (PdfArray) dict.get(PdfName.KIDS);
-            if (kids != null) {
-                pushAttrib(dict);
-                List<PdfObject> elements = kids.getElements();
-                Iterator<PdfObject> kidIter = elements.iterator();
-                while (kidIter.hasNext()) {
-                    PdfIndirectReference kidRef = (PdfIndirectReference) kidIter.next();
-                    if (ref.getNumber() == kidRef.getNumber()) {
-                        kidIter.remove();
-                    }
-                }
-                iterateFields(new PdfArray(elements), myFieldDict, myTitle);
-                stack.remove(stack.size() - 1);   // pop
-            } else {          // leaf node
-                if (myFieldDict != null) {
-                    PdfDictionary mergedDict = stack.get(stack.size() - 1);
-                    if (isFieldDict) {
-                        mergedDict = mergeAttrib(mergedDict, dict);
-                    }
-
-                    mergedDict.put(PdfName.T, new PdfString(myTitle));
-                    FieldInformation fi = new FieldInformation(myTitle, mergedDict, myFieldDict);
-                    fields.add(fi);
-                    fieldByName.put(myTitle, fi);
-                }
-            }
+            processField(ref, dict, fieldDict, title);
         }
     }
+
+    private void processField(PRIndirectReference ref, PdfDictionary dict, PRIndirectReference fieldDict, String title) {
+        PRIndirectReference myFieldDict = updateFieldDict(dict, fieldDict);
+        String myTitle = updateTitle(dict, title);
+
+        PdfArray kids = (PdfArray) dict.get(PdfName.KIDS);
+        if (kids != null) {
+            processKids(kids, ref, myFieldDict, myTitle, dict);
+        } else {
+            processLeafNode(myFieldDict, myTitle, dict);
+        }
+    }
+
+    private PRIndirectReference updateFieldDict(PdfDictionary dict, PRIndirectReference fieldDict) {
+        PdfString tField = (PdfString) dict.get(PdfName.T);
+        return (tField != null) ? (PRIndirectReference) dict.getAsIndirectObject(PdfName.PARENT) : fieldDict;
+    }
+
+    private String updateTitle(PdfDictionary dict, String title) {
+        PdfString tField = (PdfString) dict.get(PdfName.T);
+        if (tField == null) {
+            return title;
+        } else if (title == null) {
+            return tField.toString();
+        } else {
+            return title + '.' + tField.toString();
+        }
+    }
+
+    private void processKids(PdfArray kids, PRIndirectReference ref, PRIndirectReference myFieldDict, String myTitle, PdfDictionary dict) {
+        pushAttrib(dict);
+        List<PdfObject> elements = kids.getElements();
+        elements.removeIf(kid -> ref.getNumber() == ((PdfIndirectReference) kid).getNumber());
+        iterateFields(new PdfArray(elements), myFieldDict, myTitle);
+        stack.remove(stack.size() - 1); // pop
+    }
+
+    private void processLeafNode(PRIndirectReference myFieldDict, String myTitle, PdfDictionary dict) {
+        if (myFieldDict != null) {
+            PdfDictionary mergedDict = stack.get(stack.size() - 1);
+            if (dict.get(PdfName.T) != null) {
+                mergedDict = mergeAttrib(mergedDict, dict);
+            }
+
+            mergedDict.put(PdfName.T, new PdfString(myTitle));
+            FieldInformation fi = new FieldInformation(myTitle, mergedDict, myFieldDict);
+            fields.add(fi);
+            fieldByName.put(myTitle, fi);
+        }
+    }
+
 
     /**
      * merge field attributes from two dictionaries

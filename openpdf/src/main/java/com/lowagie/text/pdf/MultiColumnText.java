@@ -61,7 +61,7 @@ import java.util.List;
 
 
 // File: InvalidTopPositionException.java
-public class InvalidTopPositionException extends RuntimeException {
+class InvalidTopPositionException extends RuntimeException {
     // Constructor that accepts a message
     public InvalidTopPositionException(String message) {
         super(message);
@@ -294,58 +294,37 @@ public class MultiColumnText implements Element {
     public float write(PdfContentByte canvas, PdfDocument document, float documentY) throws DocumentException {
         this.document = document;
         columnText.setCanvas(canvas);
-        if (columnDefs.isEmpty()) {
-            throw new DocumentException(MessageLocalization.getComposedMessage("multicolumntext.has.no.columns"));
-        }
+        validateColumns();
+
         overflow = false;
         float currentHeight = 0;
         boolean done = false;
+
         try {
             while (!done) {
-                if (top == AUTOMATIC) {
-                    top = document.getVerticalPosition(
-                            true); // RS - 07/07/2005 - Get current doc writing position for top of columns on new page.
-                } else if (nextY == AUTOMATIC) {
-                    nextY = document.getVerticalPosition(
-                            true); // RS - 07/07/2005 - - Get current doc writing position for top of columns on new page.
-                }
+                adjustTopPosition();
                 ColumnDef currentDef = columnDefs.get(getCurrentColumn());
                 columnText.setYLine(top);
 
                 float[] left = currentDef.resolvePositions(Rectangle.LEFT);
                 float[] right = currentDef.resolvePositions(Rectangle.RIGHT);
-                if (document.isMarginMirroring() && document.getPageNumber() % 2 == 0) {
-                    float delta = document.rightMargin() - document.left();
-                    left = left.clone();
-                    right = right.clone();
-                    for (int i = 0; i < left.length; i += 2) {
-                        left[i] -= delta;
-                    }
-                    for (int i = 0; i < right.length; i += 2) {
-                        right[i] -= delta;
-                    }
-                }
+
+                adjustForMarginMirroring(left, right);
 
                 currentHeight = Math.max(currentHeight, getHeight(left, right));
-
-                if (currentDef.isSimple()) {
-                    columnText.setSimpleColumn(left[2], left[3], right[0], right[1]);
-                } else {
-                    columnText.setColumns(left, right);
-                }
+                configureColumnText(currentDef, left, right);
 
                 int result = columnText.go();
-                if ((result & ColumnText.NO_MORE_TEXT) != 0) {
-                    done = true;
-                    top = columnText.getYLine();
-                } else if (shiftCurrentColumn()) {
+                done = handleResult(result);
+
+                if (!done && shiftCurrentColumn()) {
                     top = nextY;
-                } else {  // check if we are done because of height
+                } else if (!done) {
                     totalHeight += currentHeight;
                     if ((desiredHeight != AUTOMATIC) && (totalHeight >= desiredHeight)) {
                         overflow = true;
-                        break;
-                    } else {  // need to start new page and reset the columns
+                        done = true;
+                    } else {
                         documentY = nextY;
                         newPage();
                         currentHeight = 0;
@@ -356,11 +335,59 @@ public class MultiColumnText implements Element {
             ex.printStackTrace();
             throw ex;
         }
+
+        return finalizeHeight(documentY, currentHeight);
+    }
+
+    private void validateColumns() throws DocumentException {
+        if (columnDefs.isEmpty()) {
+            throw new DocumentException(MessageLocalization.getComposedMessage("multicolumntext.has.no.columns"));
+        }
+    }
+
+    private void adjustTopPosition() {
+        if (top == AUTOMATIC) {
+            top = document.getVerticalPosition(true);
+        } else if (nextY == AUTOMATIC) {
+            nextY = document.getVerticalPosition(true);
+        }
+    }
+
+    private void adjustForMarginMirroring(float[] left, float[] right) {
+        if (document.isMarginMirroring() && document.getPageNumber() % 2 == 0) {
+            float delta = document.rightMargin() - document.left();
+            for (int i = 0; i < left.length; i += 2) {
+                left[i] -= delta;
+            }
+            for (int i = 0; i < right.length; i += 2) {
+                right[i] -= delta;
+            }
+        }
+    }
+
+    private void configureColumnText(ColumnDef currentDef, float[] left, float[] right) throws DocumentException {
+        if (currentDef.isSimple()) {
+            columnText.setSimpleColumn(left[2], left[3], right[0], right[1]);
+        } else {
+            columnText.setColumns(left, right);
+        }
+    }
+
+    private boolean handleResult(int result) {
+        if ((result & ColumnText.NO_MORE_TEXT) != 0) {
+            top = columnText.getYLine();
+            return true;
+        }
+        return false;
+    }
+
+    private float finalizeHeight(float documentY, float currentHeight) {
         if (desiredHeight == AUTOMATIC && columnDefs.size() == 1) {
-            currentHeight = documentY - columnText.getYLine();
+            return documentY - columnText.getYLine();
         }
         return currentHeight;
     }
+
 
     private void newPage() throws DocumentException {
         resetCurrentColumn();
@@ -433,7 +460,7 @@ public class MultiColumnText implements Element {
      */
 
     public ArrayList<Element> getChunks() {
-        return new int[0];
+        return new ArrayList<>();
     }
 
     /**
@@ -615,7 +642,7 @@ public class MultiColumnText implements Element {
             }
             if (top == AUTOMATIC) {
                 // this is bad - must be programmer error
-                   throw new InvalidTopPositionException("resolvePositions called with top=AUTOMATIC (-1). Top position must be set before lines can be resolved.");
+                throw new InvalidTopPositionException("resolvePositions called with top=AUTOMATIC (-1). Top position must be set before lines can be resolved.");
             }
             positions[1] = top;
             positions[3] = getColumnBottom();
