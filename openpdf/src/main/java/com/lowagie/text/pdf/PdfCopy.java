@@ -71,7 +71,7 @@ public class PdfCopy extends PdfWriter {
     protected HashMap<RefKey, IndirectReferences> indirects;
     protected HashMap<PdfReader, HashMap<RefKey, IndirectReferences>> indirectMap;
     protected PdfReader reader;
-    protected PdfIndirectReference ACroForm;
+    protected PdfIndirectReference afIndirectReference;
     protected int[] namePtr = {0};
     protected PdfArray fieldArray;
     protected HashMap<PdfTemplate, Object> fieldTemplates;
@@ -191,7 +191,7 @@ public class PdfCopy extends PdfWriter {
 
         for (PdfName key : in.getKeys()) {
             PdfObject value = in.get(key);
-            
+
             if (PdfName.PAGE.equals(type)) {
                 if (!key.equals(PdfName.B) && !key.equals(PdfName.PARENT)) {
                     out.put(key, copyObject(value));
@@ -247,12 +247,14 @@ public class PdfCopy extends PdfWriter {
      * @throws BadPdfFormatException on error with the Pdf format
      */
     protected PdfObject copyObject(PdfObject in) throws IOException, BadPdfFormatException {
+        String stringToLog;
+
         if (in == null) {
             return PdfNull.PDFNULL;
         }
         switch (in.type) {
             case PdfObject.DICTIONARY:
-                
+
                 return copyDictionary((PdfDictionary) in);
             case PdfObject.INDIRECT:
                 PdfObject obj = copyIndirect((PRIndirectReference) in);
@@ -262,12 +264,12 @@ public class PdfCopy extends PdfWriter {
                 return obj;
             case PdfObject.ARRAY:
                 return copyArray((PdfArray) in);
-            case PdfObject.NUMBER:
-            case PdfObject.NAME:
-            case PdfObject.STRING:
-            case PdfObject.NULL:
-            case PdfObject.BOOLEAN:
-            case 0:
+            case PdfObject.NUMBER,
+                 PdfObject.NAME,
+                 PdfObject.STRING,
+                 PdfObject.NULL,
+                 PdfObject.BOOLEAN,
+                 0:
                 return in;
             case PdfObject.STREAM:
                 return copyStream((PRStream) in);
@@ -280,7 +282,8 @@ public class PdfCopy extends PdfWriter {
                     }
                     return new PdfLiteral(lit);
                 }
-                logger.info("CANNOT COPY type " + in.type);
+                stringToLog = "CANNOT COPY type " + in.type;
+                logger.info(stringToLog);
                 return null;
         }
     }
@@ -433,7 +436,7 @@ public class PdfCopy extends PdfWriter {
         if (fieldArray == null) {
             return;
         }
-        PdfDictionary ACroForm = new PdfDictionary();
+        PdfDictionary acroForm = new PdfDictionary();
         catalog.put(PdfName.ACROFORM, acroForm);
         acroForm.put(PdfName.FIELDS, fieldArray);
         acroForm.put(PdfName.DA, new PdfString("/Helv 0 Tf 0 g "));
@@ -442,11 +445,11 @@ public class PdfCopy extends PdfWriter {
         }
         PdfDictionary dr = new PdfDictionary();
         acroForm.put(PdfName.DR, dr);
-        for (Object o : fieldTemplates.keySet()) {
-            PdfTemplate template = (PdfTemplate) o;
+        for (PdfTemplate o : fieldTemplates.keySet()) {
+            PdfTemplate template = o;
             PdfFormField.mergeResources(dr, (PdfDictionary) template.getResources());
         }
-        
+
         PdfDictionary fonts = dr.getAsDict(PdfName.FONT);
         if (fonts == null) {
             fonts = new PdfDictionary();
@@ -496,6 +499,7 @@ public class PdfCopy extends PdfWriter {
 
     @Override
     public void addAnnotation(PdfAnnotation annot) {
+        //empty on purpose
     }
 
     @Override
@@ -850,7 +854,7 @@ public class PdfCopy extends PdfWriter {
         public PdfContentByte getDuplicate() {
             return new PdfCopy.StampContent(writer, pageResources);
         }
-        
+
         @Override
         PageResources getPageResources() {
             return pageResources;
