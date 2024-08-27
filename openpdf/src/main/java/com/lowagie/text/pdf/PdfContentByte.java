@@ -159,6 +159,10 @@ public class PdfContentByte {
     static final float MIN_FONT_SIZE = 0.0001f;
     private static final float[] unitRect = {0, 0, 0, 1, 1, 0, 1, 1};
     private static final Map<PdfName, String> abrev = new HashMap<>();
+    public static final char SINGLE_SPACE = ' ';
+    public static final String DO_Q = " Do Q";
+    public static final String BEFORE_WRITING_ANY_TEXT = "font.and.size.must.be.set.before.writing.any.text";
+    public static final String UNBALANCED_BEGIN_END_TEXT_OPERATORS = "unbalanced.begin.end.text.operators";
     // membervariables
 
     static {
@@ -296,9 +300,7 @@ public class PdfContentByte {
                 case '\f':
                     content.append("\\f");
                     break;
-                case '(':
-                case ')':
-                case '\\':
+                case '(', ')', '\\':
                     content.append_i('\\').append_i(c);
                     break;
                 default:
@@ -343,22 +345,22 @@ public class PdfContentByte {
         }
 
         float fragAngle;
-        int Nfrag;
+        int nfrag;
         if (Math.abs(extent) <= 90f) {
             fragAngle = extent;
-            Nfrag = 1;
+            nfrag = 1;
         } else {
-            Nfrag = (int) (Math.ceil(Math.abs(extent) / 90f));
-            fragAngle = extent / Nfrag;
+            nfrag = (int) (Math.ceil(Math.abs(extent) / 90f));
+            fragAngle = extent / nfrag;
         }
-        float x_cen = (x1 + x2) / 2f;
-        float y_cen = (y1 + y2) / 2f;
+        float xCen = (x1 + x2) / 2f;
+        float yCen = (y1 + y2) / 2f;
         float rx = (x2 - x1) / 2f;
         float ry = (y2 - y1) / 2f;
         float halfAng = (float) (fragAngle * Math.PI / 360.);
         float kappa = (float) (Math.abs(4. / 3. * (1. - Math.cos(halfAng)) / Math.sin(halfAng)));
         List<float[]> pointList = new ArrayList<>();
-        for (int i = 0; i < Nfrag; ++i) {
+        for (int i = 0; i < nfrag; ++i) {
             float theta0 = (float) ((startAng + i * fragAngle) * Math.PI / 180.);
             float theta1 = (float) ((startAng + (i + 1) * fragAngle) * Math.PI / 180.);
             float cos0 = (float) Math.cos(theta0);
@@ -366,23 +368,23 @@ public class PdfContentByte {
             float sin0 = (float) Math.sin(theta0);
             float sin1 = (float) Math.sin(theta1);
             if (fragAngle > 0f) {
-                pointList.add(new float[]{x_cen + rx * cos0,
-                        y_cen - ry * sin0,
-                        x_cen + rx * (cos0 - kappa * sin0),
-                        y_cen - ry * (sin0 + kappa * cos0),
-                        x_cen + rx * (cos1 + kappa * sin1),
-                        y_cen - ry * (sin1 - kappa * cos1),
-                        x_cen + rx * cos1,
-                        y_cen - ry * sin1});
+                pointList.add(new float[]{xCen + rx * cos0,
+                        yCen - ry * sin0,
+                        xCen + rx * (cos0 - kappa * sin0),
+                        yCen - ry * (sin0 + kappa * cos0),
+                        xCen + rx * (cos1 + kappa * sin1),
+                        yCen - ry * (sin1 - kappa * cos1),
+                        xCen + rx * cos1,
+                        yCen - ry * sin1});
             } else {
-                pointList.add(new float[]{x_cen + rx * cos0,
-                        y_cen - ry * sin0,
-                        x_cen + rx * (cos0 + kappa * sin0),
-                        y_cen - ry * (sin0 - kappa * cos0),
-                        x_cen + rx * (cos1 - kappa * sin1),
-                        y_cen - ry * (sin1 + kappa * cos1),
-                        x_cen + rx * cos1,
-                        y_cen - ry * sin1});
+                pointList.add(new float[]{xCen + rx * cos0,
+                        yCen - ry * sin0,
+                        xCen + rx * (cos0 + kappa * sin0),
+                        yCen - ry * (sin0 - kappa * cos0),
+                        xCen + rx * (cos1 - kappa * sin1),
+                        yCen - ry * (sin1 + kappa * cos1),
+                        xCen + rx * cos1,
+                        yCen - ry * sin1});
             }
         }
         return pointList;
@@ -612,7 +614,7 @@ public class PdfContentByte {
      */
 
     public void setLineDash(float unitsOn, float unitsOff, float phase) {
-        content.append("[").append(unitsOn).append(' ').append(unitsOff).append("] ").append(phase).append(" d")
+        content.append("[").append(unitsOn).append(SINGLE_SPACE).append(unitsOff).append("] ").append(phase).append(" d")
                 .append_i(separator);
     }
 
@@ -632,7 +634,7 @@ public class PdfContentByte {
         for (int i = 0; i < array.length; i++) {
             content.append(array[i]);
             if (i < array.length - 1) {
-                content.append(' ');
+                content.append(SINGLE_SPACE);
             }
         }
         content.append("] ").append(phase).append(" d").append_i(separator);
@@ -763,10 +765,10 @@ public class PdfContentByte {
      * @param green the intensity of green. A value between 0 and 255
      * @param blue  the intensity of blue. A value between 0 and 255
      */
-    private void HelperRGB(int red, int green, int blue) {
-        HelperRGB((float) (red & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE,
-                (float) (green & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE,
-                (float) (blue & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE);
+    private void helperRGB(int red, int green, int blue) {
+        helperRGB((red & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE,
+                (green & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE,
+                (blue & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE);
     }
 
     /**
@@ -776,7 +778,7 @@ public class PdfContentByte {
      * @param green the intensity of green. A value between 0 and 1
      * @param blue  the intensity of blue. A value between 0 and 1
      */
-    private void HelperRGB(float red, float green, float blue) {
+    private void helperRGB(float red, float green, float blue) {
         PdfXConformanceImp.checkPDFXConformance(writer, PdfXConformanceImp.PDFXKEY_RGB, null);
         if (red < 0.0f) {
             red = 0.0f;
@@ -793,7 +795,7 @@ public class PdfContentByte {
         } else if (blue > MAX_FLOAT_COLOR_VALUE) {
             blue = MAX_FLOAT_COLOR_VALUE;
         }
-        content.append(red).append(' ').append(green).append(' ').append(blue);
+        content.append(red).append(SINGLE_SPACE).append(green).append(SINGLE_SPACE).append(blue);
     }
 
     /**
@@ -816,7 +818,7 @@ public class PdfContentByte {
 
     public void setRGBColorFillF(float red, float green, float blue, float alpha) {
         saveColorFill(new RGBColor(red, green, blue, alpha));
-        HelperRGB(red, green, blue);
+        helperRGB(red, green, blue);
         content.append(" rg").append_i(separator);
     }
 
@@ -845,7 +847,7 @@ public class PdfContentByte {
 
     public void setRGBColorStrokeF(float red, float green, float blue) {
         saveColorStroke(new RGBColor(red, green, blue));
-        HelperRGB(red, green, blue);
+        helperRGB(red, green, blue);
         content.append(" RG").append_i(separator);
     }
 
@@ -866,11 +868,11 @@ public class PdfContentByte {
      * @param yellow  the intensity of yellow. A value between 0 and 255
      * @param black   the intensity of black. A value between 0 and 255
      */
-    private void HelperCMYK(int cyan, int magenta, int yellow, int black) {
-        HelperCMYK((float) (cyan & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE,
-                (float) (magenta & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE,
-                (float) (yellow & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE,
-                (float) (black & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE);
+    private void helperCMYK(int cyan, int magenta, int yellow, int black) {
+        helperCMYK((cyan & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE,
+                (magenta & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE,
+                (yellow & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE,
+                (black & MAX_COLOR_VALUE) / MAX_INT_COLOR_VALUE);
     }
 
     /**
@@ -881,7 +883,7 @@ public class PdfContentByte {
      * @param yellow  the intensity of yellow. A value between 0 and 1
      * @param black   the intensity of black. A value between 0 and 1
      */
-    private void HelperCMYK(float cyan, float magenta, float yellow, float black) {
+    private void helperCMYK(float cyan, float magenta, float yellow, float black) {
         if (cyan < 0.0f) {
             cyan = 0.0f;
         } else if (cyan > MAX_FLOAT_COLOR_VALUE) {
@@ -902,7 +904,8 @@ public class PdfContentByte {
         } else if (black > MAX_FLOAT_COLOR_VALUE) {
             black = MAX_FLOAT_COLOR_VALUE;
         }
-        content.append(cyan).append(' ').append(magenta).append(' ').append(yellow).append(' ').append(black);
+        content.append(cyan).append(SINGLE_SPACE).append(magenta).append(SINGLE_SPACE).append(yellow).append(
+                SINGLE_SPACE).append(black);
     }
 
     /**
@@ -925,7 +928,7 @@ public class PdfContentByte {
 
     public void setCMYKColorFillF(float cyan, float magenta, float yellow, float black, float alpha) {
         saveColorFill(new CMYKColor(cyan, magenta, yellow, black, alpha));
-        HelperCMYK(cyan, magenta, yellow, black);
+        helperCMYK(cyan, magenta, yellow, black);
         content.append(" k").append_i(separator);
     }
 
@@ -935,7 +938,7 @@ public class PdfContentByte {
 
     public void resetCMYKColorFill() {
         saveColorFill(new CMYKColor(0.0f, 0.0f, 0.0f, MAX_FLOAT_COLOR_VALUE));
-        HelperCMYK(0.0f, 0.0f, 0.0f, MAX_FLOAT_COLOR_VALUE);
+        helperCMYK(0.0f, 0.0f, 0.0f, MAX_FLOAT_COLOR_VALUE);
         content.append(" k").append_i(separator);
     }
 
@@ -960,7 +963,7 @@ public class PdfContentByte {
 
     public void setCMYKColorStrokeF(float cyan, float magenta, float yellow, float black, float alpha) {
         saveColorStroke(new CMYKColor(cyan, magenta, yellow, black, alpha));
-        HelperCMYK(cyan, magenta, yellow, black);
+        helperCMYK(cyan, magenta, yellow, black);
         content.append(" K").append_i(separator);
     }
 
@@ -970,7 +973,7 @@ public class PdfContentByte {
 
     public void resetCMYKColorStroke() {
         saveColorStroke(new CMYKColor(0.0f, 0.0f, 0.0f, MAX_FLOAT_COLOR_VALUE));
-        HelperCMYK(0.0f, 0.0f, 0.0f, MAX_FLOAT_COLOR_VALUE);
+        helperCMYK(0.0f, 0.0f, 0.0f, MAX_FLOAT_COLOR_VALUE);
         content.append(" K").append_i(separator);
     }
 
@@ -982,7 +985,7 @@ public class PdfContentByte {
      */
 
     public void moveTo(float x, float y) {
-        content.append(x).append(' ').append(y).append(" m").append_i(separator);
+        content.append(x).append(SINGLE_SPACE).append(y).append(" m").append_i(separator);
     }
 
     /**
@@ -993,7 +996,7 @@ public class PdfContentByte {
      */
 
     public void lineTo(float x, float y) {
-        content.append(x).append(' ').append(y).append(" l").append_i(separator);
+        content.append(x).append(SINGLE_SPACE).append(y).append(" l").append_i(separator);
     }
 
     /**
@@ -1008,8 +1011,9 @@ public class PdfContentByte {
      */
 
     public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3) {
-        content.append(x1).append(' ').append(y1).append(' ').append(x2).append(' ').append(y2).append(' ').append(x3)
-                .append(' ').append(y3).append(" c").append_i(separator);
+        content.append(x1).append(SINGLE_SPACE).append(y1).append(SINGLE_SPACE).append(x2).append(SINGLE_SPACE).append(y2).append(
+                        SINGLE_SPACE).append(x3)
+                .append(SINGLE_SPACE).append(y3).append(" c").append_i(separator);
     }
 
     /**
@@ -1022,7 +1026,7 @@ public class PdfContentByte {
      */
 
     public void curveTo(float x2, float y2, float x3, float y3) {
-        content.append(x2).append(' ').append(y2).append(' ').append(x3).append(' ').append(y3).append(" v")
+        content.append(x2).append(SINGLE_SPACE).append(y2).append(SINGLE_SPACE).append(x3).append(SINGLE_SPACE).append(y3).append(" v")
                 .append_i(separator);
     }
 
@@ -1036,7 +1040,7 @@ public class PdfContentByte {
      */
 
     public void curveFromTo(float x1, float y1, float x3, float y3) {
-        content.append(x1).append(' ').append(y1).append(' ').append(x3).append(' ').append(y3).append(" y")
+        content.append(x1).append(SINGLE_SPACE).append(y1).append(SINGLE_SPACE).append(x3).append(SINGLE_SPACE).append(y3).append(" y")
                 .append_i(separator);
     }
 
@@ -1066,7 +1070,7 @@ public class PdfContentByte {
      */
 
     public void rectangle(float x, float y, float w, float h) {
-        content.append(x).append(' ').append(y).append(' ').append(w).append(' ').append(h).append(" re")
+        content.append(x).append(SINGLE_SPACE).append(y).append(SINGLE_SPACE).append(w).append(SINGLE_SPACE).append(h).append(" re")
                 .append_i(separator);
     }
 
@@ -1094,218 +1098,190 @@ public class PdfContentByte {
         float b = rect.getBottom();
         float r = rect.getRight();
         float l = rect.getLeft();
-        float wt = rect.getBorderWidthTop();
-        float wb = rect.getBorderWidthBottom();
-        float wr = rect.getBorderWidthRight();
-        float wl = rect.getBorderWidthLeft();
-        Color ct = rect.getBorderColorTop();
-        Color cb = rect.getBorderColorBottom();
-        Color cr = rect.getBorderColorRight();
-        Color cl = rect.getBorderColorLeft();
+
+        BorderParams topBorder = new BorderParams(rect.getBorderWidthTop(), rect.getBorderColorTop(), l, t - rect.getBorderWidthTop() / 2f, r, t - rect.getBorderWidthTop() / 2f);
+        BorderParams bottomBorder = new BorderParams(rect.getBorderWidthBottom(), rect.getBorderColorBottom(), r, b + rect.getBorderWidthBottom() / 2f, l, b + rect.getBorderWidthBottom() / 2f);
+        BorderParams rightBorder = new BorderParams(rect.getBorderWidthRight(), rect.getBorderColorRight(), r - rect.getBorderWidthRight() / 2f, compareColors(rect.getBorderColorTop(), rect.getBorderColorRight()) ? t : t - rect.getBorderWidthTop(), r - rect.getBorderWidthRight() / 2f, compareColors(rect.getBorderColorBottom(), rect.getBorderColorRight()) ? b : b + rect.getBorderWidthBottom());
+        BorderParams leftBorder = new BorderParams(rect.getBorderWidthLeft(), rect.getBorderColorLeft(), l + rect.getBorderWidthLeft() / 2f, compareColors(rect.getBorderColorTop(), rect.getBorderColorLeft()) ? t : t - rect.getBorderWidthTop(), l + rect.getBorderWidthLeft() / 2f, compareColors(rect.getBorderColorBottom(), rect.getBorderColorLeft()) ? b : b + rect.getBorderWidthBottom());
+
         saveState();
         setLineCap(PdfContentByte.LINE_CAP_BUTT);
         setLineJoin(PdfContentByte.LINE_JOIN_MITER);
-        float clw = 0;
-        boolean cdef = false;
-        Color ccol = null;
-        boolean cdefi = false;
-        Color cfil = null;
-        // draw top
-        if (wt > 0) {
-            clw = wt;
-            setLineWidth(clw);
-            cdef = true;
-            if (ct == null) {
-                resetRGBColorStroke();
-            } else {
-                setColorStroke(ct);
-            }
-            ccol = ct;
-            moveTo(l, t - wt / 2f);
-            lineTo(r, t - wt / 2f);
-            stroke();
-        }
 
-        // Draw bottom
-        if (wb > 0) {
-            if (wb != clw) {
-                clw = wb;
-                setLineWidth(clw);
-            }
-            if (!cdef || !compareColors(ccol, cb)) {
-                cdef = true;
-                if (cb == null) {
-                    resetRGBColorStroke();
-                } else {
-                    setColorStroke(cb);
-                }
-                ccol = cb;
-            }
-            moveTo(r, b + wb / 2f);
-            lineTo(l, b + wb / 2f);
-            stroke();
-        }
+        drawBorder(topBorder);
+        drawBorder(bottomBorder);
+        drawRightBorderWithFills(rightBorder, rect);
+        drawLeftBorderWithFills(leftBorder, rect);
 
-        // Draw right
-        if (wr > 0) {
-            if (wr != clw) {
-                clw = wr;
-                setLineWidth(clw);
-            }
-            if (!cdef || !compareColors(ccol, cr)) {
-                cdef = true;
-                if (cr == null) {
-                    resetRGBColorStroke();
-                } else {
-                    setColorStroke(cr);
-                }
-                ccol = cr;
-            }
-            boolean bt = compareColors(ct, cr);
-            boolean bb = compareColors(cb, cr);
-            moveTo(r - wr / 2f, bt ? t : t - wt);
-            lineTo(r - wr / 2f, bb ? b : b + wb);
-            stroke();
-            if (!bt || !bb) {
-                cdefi = true;
-                if (cr == null) {
-                    resetRGBColorFill();
-                } else {
-                    setColorFill(cr);
-                }
-                cfil = cr;
-                if (!bt) {
-                    moveTo(r, t);
-                    lineTo(r, t - wt);
-                    lineTo(r - wr, t - wt);
-                    fill();
-                }
-                if (!bb) {
-                    moveTo(r, b);
-                    lineTo(r, b + wb);
-                    lineTo(r - wr, b + wb);
-                    fill();
-                }
-            }
-        }
-
-        // Draw Left
-        if (wl > 0) {
-            if (wl != clw) {
-                setLineWidth(wl);
-            }
-            if (!cdef || !compareColors(ccol, cl)) {
-                if (cl == null) {
-                    resetRGBColorStroke();
-                } else {
-                    setColorStroke(cl);
-                }
-            }
-            boolean bt = compareColors(ct, cl);
-            boolean bb = compareColors(cb, cl);
-            moveTo(l + wl / 2f, bt ? t : t - wt);
-            lineTo(l + wl / 2f, bb ? b : b + wb);
-            stroke();
-            if (!bt || !bb) {
-                if (!cdefi || !compareColors(cfil, cl)) {
-                    if (cl == null) {
-                        resetRGBColorFill();
-                    } else {
-                        setColorFill(cl);
-                    }
-                }
-                if (!bt) {
-                    moveTo(l, t);
-                    lineTo(l, t - wt);
-                    lineTo(l + wl, t - wt);
-                    fill();
-                }
-                if (!bb) {
-                    moveTo(l, b);
-                    lineTo(l, b + wb);
-                    lineTo(l + wl, b + wb);
-                    fill();
-                }
-            }
-        }
         restoreState();
     }
 
+    private void drawBorder(BorderParams border) {
+        if (border.width > 0) {
+            setLineWidth(border.width);
+            if (border.color == null) {
+                resetRGBColorStroke();
+            } else {
+                setColorStroke(border.color);
+            }
+            moveTo(border.startX, border.startY);
+            lineTo(border.endX, border.endY);
+            stroke();
+        }
+    }
+
+    private void drawRightBorderWithFills(BorderParams border, Rectangle rect) {
+        if (border.width > 0) {
+            drawBorder(border);
+            boolean bt = compareColors(rect.getBorderColorTop(), border.color);
+            boolean bb = compareColors(rect.getBorderColorBottom(), border.color);
+
+            if (!bt || !bb) {
+                if (border.color != null) {
+                    setColorFill(border.color);
+                } else {
+                    resetRGBColorFill();
+                }
+
+                if (!bt) {
+                    fillCorner(border.endX + border.width / 2f, rect.getTop(), border.endX - border.width, rect.getTop() - rect.getBorderWidthTop());
+                }
+                if (!bb) {
+                    fillCorner(border.endX + border.width / 2f, rect.getBottom(), border.endX - border.width, rect.getBottom() + rect.getBorderWidthBottom());
+                }
+            }
+        }
+    }
+
+    private void drawLeftBorderWithFills(BorderParams border, Rectangle rect) {
+        if (border.width > 0) {
+            drawBorder(border);
+            boolean bt = compareColors(rect.getBorderColorTop(), border.color);
+            boolean bb = compareColors(rect.getBorderColorBottom(), border.color);
+
+            if (!bt || !bb) {
+                if (border.color != null) {
+                    setColorFill(border.color);
+                } else {
+                    resetRGBColorFill();
+                }
+
+                if (!bt) {
+                    fillCorner(border.startX - border.width / 2f, rect.getTop(), border.startX + border.width, rect.getTop() - rect.getBorderWidthTop());
+                }
+                if (!bb) {
+                    fillCorner(border.startX - border.width / 2f, rect.getBottom(), border.startX + border.width, rect.getBottom() + rect.getBorderWidthBottom());
+                }
+            }
+        }
+    }
+
+    private void fillCorner(float x1, float y1, float x2, float y2) {
+        moveTo(x1, y1);
+        lineTo(x1, y2);
+        lineTo(x2, y2);
+        fill();
+    }
+
+    private static class BorderParams {
+        float width;
+        Color color;
+        float startX;
+        float startY;
+        float endX;
+        float endY;
+
+        BorderParams(float width, Color color, float startX, float startY, float endX, float endY) {
+            this.width = width;
+            this.color = color;
+            this.startX = startX;
+            this.startY = startY;
+            this.endX = endX;
+            this.endY = endY;
+        }
+    }
+
+
     /**
-     * Adds a border (complete or partially) to the current path..
+     * Adds a border (complete or partially) to the current path.
      *
      * @param rectangle a <CODE>Rectangle</CODE>
      */
 
-    public void rectangle(Rectangle rectangle) {
-        // the coordinates of the border are retrieved
-        float x1 = rectangle.getLeft();
-        float y1 = rectangle.getBottom();
-        float x2 = rectangle.getRight();
-        float y2 = rectangle.getTop();
-
-        // the backgroundcolor is set
+    private void drawRectangleWithBackground(Rectangle rectangle, float x1, float y1, float x2, float y2) {
         Color background = rectangle.getBackgroundColor();
         if (background != null) {
             saveState();
             setColorFill(background);
-            rectangle(x1, y1, x2 - x1, y2 - y1);
+            drawRectangle(x1, y1, x2, y2);
             fill();
             restoreState();
         }
+    }
 
-        // if the element hasn't got any borders, nothing is added
+    private void drawRectangle(float x1, float y1, float x2, float y2) {
+        rectangle(x1, y1, x2 - x1, y2 - y1);
+    }
+
+    private void drawBorders(Rectangle rectangle, float x1, float y1, float x2, float y2) {
         if (!rectangle.hasBorders()) {
             return;
         }
 
-        // if any of the individual border colors are set
-        // we draw the borders all around using the
-        // different colors
         if (rectangle.isUseVariableBorders()) {
             variableRectangle(rectangle);
         } else {
-            // the width is set to the width of the element
-            if (rectangle.getBorderWidth() != Rectangle.UNDEFINED) {
-                setLineWidth(rectangle.getBorderWidth());
-            }
-
-            // the color is set to the color of the element
-            Color color = rectangle.getBorderColor();
-            if (color != null) {
-                setColorStroke(color);
-            }
-
-            // if the box is a rectangle, it is added as a rectangle
-            if (rectangle.hasBorder(Rectangle.BOX)) {
-                rectangle(x1, y1, x2 - x1, y2 - y1);
-            } else {
-                // if the border isn't a rectangle, the different sides are added apart
-                if (rectangle.hasBorder(Rectangle.RIGHT)) {
-                    moveTo(x2, y1);
-                    lineTo(x2, y2);
-                }
-                if (rectangle.hasBorder(Rectangle.LEFT)) {
-                    moveTo(x1, y1);
-                    lineTo(x1, y2);
-                }
-                if (rectangle.hasBorder(Rectangle.BOTTOM)) {
-                    moveTo(x1, y1);
-                    lineTo(x2, y1);
-                }
-                if (rectangle.hasBorder(Rectangle.TOP)) {
-                    moveTo(x1, y2);
-                    lineTo(x2, y2);
-                }
-            }
-
-            stroke();
-
-            if (color != null) {
-                resetRGBColorStroke();
-            }
+            drawStaticBorders(rectangle, x1, y1, x2, y2);
         }
     }
+
+    private void drawStaticBorders(Rectangle rectangle, float x1, float y1, float x2, float y2) {
+        if (rectangle.getBorderWidth() != Rectangle.UNDEFINED) {
+            setLineWidth(rectangle.getBorderWidth());
+        }
+
+        Color color = rectangle.getBorderColor();
+        if (color != null) {
+            setColorStroke(color);
+        }
+
+        if (rectangle.hasBorder(Rectangle.BOX)) {
+            drawRectangle(x1, y1, x2, y2);
+        } else {
+            drawIndividualBorders(rectangle, x1, y1, x2, y2);
+        }
+
+        stroke();
+
+        if (color != null) {
+            resetRGBColorStroke();
+        }
+    }
+
+    private void drawIndividualBorders(Rectangle rectangle, float x1, float y1, float x2, float y2) {
+        if (rectangle.hasBorder(Rectangle.RIGHT)) {
+            moveTo(x2, y1);
+            lineTo(x2, y2);
+        }
+        if (rectangle.hasBorder(Rectangle.LEFT)) {
+            moveTo(x1, y1);
+            lineTo(x1, y2);
+        }
+        if (rectangle.hasBorder(Rectangle.BOTTOM)) {
+            moveTo(x1, y1);
+            lineTo(x2, y1);
+        }
+        if (rectangle.hasBorder(Rectangle.TOP)) {
+            moveTo(x1, y2);
+            lineTo(x2, y2);
+        }
+    }
+
+    public void drawRectangle(Rectangle rectangle, float x1, float y1, float x2, float y2) {
+        drawRectangleWithBackground(rectangle, x1, y1, x2, y2);
+        drawBorders(rectangle, x1, y1, x2, y2);
+    }
+
 
     /**
      * Closes the current subpath by appending a straight line segment from the current point to the starting point of
@@ -1414,8 +1390,8 @@ public class PdfContentByte {
         float[] matrix = image.matrix();
         matrix[Image.CX] = image.getAbsoluteX() - matrix[Image.CX];
         matrix[Image.CY] = image.getAbsoluteY() - matrix[Image.CY];
-        TransformationMatrix transformationMatrix = new TransformationMatrix(matrix[0], matrix[1], matrix[2], 
-            matrix[3], matrix[4], matrix[5]);
+        TransformationMatrix transformationMatrix = new TransformationMatrix(matrix[0], matrix[1], matrix[2],
+                matrix[3], matrix[4], matrix[5]);
         addImage(image, transformationMatrix, inlineImage);
     }
 
@@ -1443,12 +1419,6 @@ public class PdfContentByte {
      * The image can be placed inline.
      *
      * @param image       the <CODE>Image</CODE> object
-     * @param a           an element of the transformation matrix
-     * @param b           an element of the transformation matrix
-     * @param c           an element of the transformation matrix
-     * @param d           an element of the transformation matrix
-     * @param e           an element of the transformation matrix
-     * @param f           an element of the transformation matrix
      * @param inlineImage <CODE>true</CODE> to place this image inline, <CODE>false</CODE> otherwise
      * @throws DocumentException on error
      */
@@ -1500,11 +1470,11 @@ public class PdfContentByte {
     }
 
     private void appendMatrix(TransformationMatrix matrix) {
-        content.append(matrix.getA()).append(' ');
-        content.append(matrix.getB()).append(' ');
-        content.append(matrix.getC()).append(' ');
-        content.append(matrix.getD()).append(' ');
-        content.append(matrix.getE()).append(' ');
+        content.append(matrix.getA()).append(SINGLE_SPACE);
+        content.append(matrix.getB()).append(SINGLE_SPACE);
+        content.append(matrix.getC()).append(SINGLE_SPACE);
+        content.append(matrix.getD()).append(SINGLE_SPACE);
+        content.append(matrix.getE()).append(SINGLE_SPACE);
         content.append(matrix.getF()).append(" cm");
     }
 
@@ -1570,7 +1540,7 @@ public class PdfContentByte {
         handleImageMask(image, prs);
         PdfName name = writer.addDirectImageSimple(image);
         name = prs.addXObject(name, writer.getImageReference(name));
-        content.append(' ').append(name.getBytes()).append(" Do Q").append_i(separator);
+        content.append(SINGLE_SPACE).append(name.getBytes()).append(DO_Q).append_i(separator);
     }
 
     private void handleImageMask(Image image, PageResources prs) throws DocumentException {
@@ -1665,7 +1635,7 @@ public class PdfContentByte {
     public void beginText() {
         if (inText) {
             throw new IllegalPdfSyntaxException(
-                    MessageLocalization.getComposedMessage("unbalanced.begin.end.text.operators"));
+                    MessageLocalization.getComposedMessage(UNBALANCED_BEGIN_END_TEXT_OPERATORS));
         }
         inText = true;
         state.xTLM = 0;
@@ -1680,7 +1650,7 @@ public class PdfContentByte {
     public void endText() {
         if (!inText) {
             throw new IllegalPdfSyntaxException(
-                    MessageLocalization.getComposedMessage("unbalanced.begin.end.text.operators"));
+                    MessageLocalization.getComposedMessage(UNBALANCED_BEGIN_END_TEXT_OPERATORS));
         }
         inText = false;
         content.append("ET").append_i(separator);
@@ -1732,7 +1702,7 @@ public class PdfContentByte {
         PageResources prs = getPageResources();
         PdfName name = state.fontDetails.getFontName();
         name = prs.addFont(name, state.fontDetails.getIndirectReference());
-        content.append(name.getBytes()).append(' ').append(size).append(" Tf").append_i(separator);
+        content.append(name.getBytes()).append(SINGLE_SPACE).append(size).append(" Tf").append_i(separator);
     }
 
     /**
@@ -1764,7 +1734,7 @@ public class PdfContentByte {
     private void showText2(String text) {
         if (state.fontDetails == null) {
             throw new NullPointerException(
-                    MessageLocalization.getComposedMessage("font.and.size.must.be.set.before.writing.any.text"));
+                    MessageLocalization.getComposedMessage(BEFORE_WRITING_ANY_TEXT));
         }
         byte[] b = state.fontDetails.convertToBytes(text, getPdfDocument().getTextRenderingOptions());
         escapeAndAppendString(b, content);
@@ -1778,7 +1748,7 @@ public class PdfContentByte {
     public void showText(String text) {
         if (state.fontDetails == null) {
             throw new NullPointerException(
-                    MessageLocalization.getComposedMessage("font.and.size.must.be.set.before.writing.any.text"));
+                    MessageLocalization.getComposedMessage(BEFORE_WRITING_ANY_TEXT));
         }
         BaseFont baseFont = state.fontDetails.getBaseFont();
         if (LayoutProcessor.supportsFont(baseFont)) {
@@ -1823,7 +1793,7 @@ public class PdfContentByte {
     public void showText(GlyphVector glyphVector, int beginIndex, int endIndex) {
         if (state.fontDetails == null) {
             throw new NullPointerException(
-                    MessageLocalization.getComposedMessage("font.and.size.must.be.set.before.writing.any.text"));
+                    MessageLocalization.getComposedMessage(BEFORE_WRITING_ANY_TEXT));
         }
         byte[] b = state.fontDetails.convertToBytes(glyphVector, beginIndex, endIndex);
         escapeAndAppendString(b, content);
@@ -1838,7 +1808,7 @@ public class PdfContentByte {
     public void showTextKerned(String text) {
         if (state.fontDetails == null) {
             throw new NullPointerException(
-                    MessageLocalization.getComposedMessage("font.and.size.must.be.set.before.writing.any.text"));
+                    MessageLocalization.getComposedMessage(BEFORE_WRITING_ANY_TEXT));
         }
         BaseFont bf = state.fontDetails.getBaseFont();
         if (bf.hasKernPairs()) {
@@ -1869,7 +1839,7 @@ public class PdfContentByte {
      */
     public void newlineShowText(float wordSpacing, float charSpacing, String text) {
         state.yTLM -= state.leading;
-        content.append(wordSpacing).append(' ').append(charSpacing);
+        content.append(wordSpacing).append(SINGLE_SPACE).append(charSpacing);
         showText2(text);
         content.append("\"").append_i(separator);
 
@@ -1894,9 +1864,9 @@ public class PdfContentByte {
     public void setTextMatrix(float a, float b, float c, float d, float x, float y) {
         state.xTLM = x;
         state.yTLM = y;
-        content.append(a).append(' ').append(b).append_i(' ')
-                .append(c).append_i(' ').append(d).append_i(' ')
-                .append(x).append_i(' ').append(y).append(" Tm").append_i(separator);
+        content.append(a).append(SINGLE_SPACE).append(b).append_i(SINGLE_SPACE)
+                .append(c).append_i(SINGLE_SPACE).append(d).append_i(SINGLE_SPACE)
+                .append(x).append_i(SINGLE_SPACE).append(y).append(" Tm").append_i(separator);
     }
 
     /**
@@ -1935,7 +1905,7 @@ public class PdfContentByte {
     void moveTextBasic(float x, float y) {
         state.xTLM += x;
         state.yTLM += y;
-        content.append(x).append(' ').append(y).append(" Td").append_i(separator);
+        content.append(x).append(SINGLE_SPACE).append(y).append(" Td").append_i(separator);
     }
 
     /**
@@ -1955,7 +1925,7 @@ public class PdfContentByte {
         state.xTLM += x;
         state.yTLM += y;
         state.leading = -y;
-        content.append(x).append(' ').append(y).append(" TD").append_i(separator);
+        content.append(x).append(SINGLE_SPACE).append(y).append(" TD").append_i(separator);
     }
 
     /**
@@ -2025,7 +1995,7 @@ public class PdfContentByte {
         if (state.wordSpace != 0.0f && (ft == BaseFont.FONT_TYPE_T1 || ft == BaseFont.FONT_TYPE_TT
                 || ft == BaseFont.FONT_TYPE_T3)) {
             for (int i = 0; i < (text.length() - 1); i++) {
-                if (text.charAt(i) == ' ') {
+                if (text.charAt(i) == SINGLE_SPACE) {
                     w += state.wordSpace;
                 }
             }
@@ -2054,7 +2024,7 @@ public class PdfContentByte {
     private void showTextAligned(int alignment, String text, float x, float y, float rotation, boolean kerned) {
         if (state.fontDetails == null) {
             throw new NullPointerException(
-                    MessageLocalization.getComposedMessage("font.and.size.must.be.set.before.writing.any.text"));
+                    MessageLocalization.getComposedMessage(BEFORE_WRITING_ANY_TEXT));
         }
         if (rotation == 0) {
             switch (alignment) {
@@ -2063,6 +2033,11 @@ public class PdfContentByte {
                     break;
                 case ALIGN_RIGHT:
                     x -= getEffectiveStringWidth(text, kerned);
+                    break;
+                default:
+                    // Handle any other unexpected alignment values
+                    // You can leave it empty or assign a default behavior
+                    // For example, assume left alignment (no adjustment):
                     break;
             }
             setTextMatrix(x, y);
@@ -2086,6 +2061,9 @@ public class PdfContentByte {
                     len = getEffectiveStringWidth(text, kerned);
                     x -= len * cos;
                     y -= len * sin;
+                    break;
+                default:
+                    // Handle the default case, could be logging, setting default alignment, etc.
                     break;
             }
             setTextMatrix(cos, sin, -sin, cos, x, y);
@@ -2122,8 +2100,8 @@ public class PdfContentByte {
      * @param f an element of the transformation matrix
      **/
     public void concatCTM(float a, float b, float c, float d, float e, float f) {
-        content.append(a).append(' ').append(b).append(' ').append(c).append(' ');
-        content.append(d).append(' ').append(e).append(' ').append(f).append(" cm").append_i(separator);
+        content.append(a).append(SINGLE_SPACE).append(b).append(SINGLE_SPACE).append(c).append(SINGLE_SPACE);
+        content.append(d).append(SINGLE_SPACE).append(e).append(SINGLE_SPACE).append(f).append(" cm").append_i(separator);
     }
 
     /**
@@ -2312,13 +2290,13 @@ public class PdfContentByte {
         PageResources prs = getPageResources();
         name = prs.addXObject(name, template.getIndirectReference());
         content.append("q ");
-        content.append(a).append(' ');
-        content.append(b).append(' ');
-        content.append(c).append(' ');
-        content.append(d).append(' ');
-        content.append(e).append(' ');
+        content.append(a).append(SINGLE_SPACE);
+        content.append(b).append(SINGLE_SPACE);
+        content.append(c).append(SINGLE_SPACE);
+        content.append(d).append(SINGLE_SPACE);
+        content.append(e).append(SINGLE_SPACE);
         content.append(f).append(" cm ");
-        content.append(name.getBytes()).append(" Do Q").append_i(separator);
+        content.append(name.getBytes()).append(DO_Q).append_i(separator);
     }
 
     void addTemplateReference(PdfIndirectReference template, PdfName name, TransformationMatrix matrix) {
@@ -2326,13 +2304,13 @@ public class PdfContentByte {
         PageResources prs = getPageResources();
         name = prs.addXObject(name, template);
         content.append("q ");
-        content.append(matrix.getA()).append(' ');
-        content.append(matrix.getB()).append(' ');
-        content.append(matrix.getC()).append(' ');
-        content.append(matrix.getD()).append(' ');
-        content.append(matrix.getE()).append(' ');
+        content.append(matrix.getA()).append(SINGLE_SPACE);
+        content.append(matrix.getB()).append(SINGLE_SPACE);
+        content.append(matrix.getC()).append(SINGLE_SPACE);
+        content.append(matrix.getD()).append(SINGLE_SPACE);
+        content.append(matrix.getE()).append(SINGLE_SPACE);
         content.append(matrix.getF()).append(" cm ");
-        content.append(name.getBytes()).append(" Do Q").append_i(separator);
+        content.append(name.getBytes()).append(DO_Q).append_i(separator);
     }
 
     /**
@@ -2367,13 +2345,13 @@ public class PdfContentByte {
         name = prs.addXObject(name, template.getIndirectReference());
 
         content.append("q ");
-        content.append(a).append(' ');
-        content.append(b).append(' ');
-        content.append(c).append(' ');
-        content.append(d).append(' ');
-        content.append(e).append(' ');
+        content.append(a).append(SINGLE_SPACE);
+        content.append(b).append(SINGLE_SPACE);
+        content.append(c).append(SINGLE_SPACE);
+        content.append(d).append(SINGLE_SPACE);
+        content.append(e).append(SINGLE_SPACE);
         content.append(f).append(" cm ");
-        content.append(name.getBytes()).append(" Do Q").append_i(separator);
+        content.append(name.getBytes()).append(DO_Q).append_i(separator);
     }
 
     /**
@@ -2395,7 +2373,7 @@ public class PdfContentByte {
      */
 
     public void setCMYKColorFill(int cyan, int magenta, int yellow, int black) {
-        HelperCMYK(cyan, magenta, yellow, black);
+        helperCMYK(cyan, magenta, yellow, black);
         content.append(" k").append_i(separator);
     }
 
@@ -2416,7 +2394,7 @@ public class PdfContentByte {
      */
 
     public void setCMYKColorStroke(int cyan, int magenta, int yellow, int black) {
-        HelperCMYK(cyan, magenta, yellow, black);
+        helperCMYK(cyan, magenta, yellow, black);
         content.append(" K").append_i(separator);
     }
 
@@ -2443,7 +2421,7 @@ public class PdfContentByte {
 
     public void setRGBColorFill(int red, int green, int blue, int alpha) {
         saveColorFill(new RGBColor(red, green, blue, alpha));
-        HelperRGB(red, green, blue);
+        helperRGB(red, green, blue);
         content.append(" rg").append_i(separator);
     }
 
@@ -2468,7 +2446,7 @@ public class PdfContentByte {
 
     public void setRGBColorStroke(int red, int green, int blue, int alpha) {
         saveColorStroke(new RGBColor(red, green, blue, alpha));
-        HelperRGB(red, green, blue);
+        helperRGB(red, green, blue);
         content.append(" RG").append_i(separator);
     }
 
@@ -2640,19 +2618,19 @@ public class PdfContentByte {
         int type = ExtendedColor.getType(color);
         switch (type) {
             case ExtendedColor.TYPE_RGB:
-                content.append((float) (color.getRed()) / MAX_INT_COLOR_VALUE);
-                content.append(' ');
-                content.append((float) (color.getGreen()) / MAX_INT_COLOR_VALUE);
-                content.append(' ');
-                content.append((float) (color.getBlue()) / MAX_INT_COLOR_VALUE);
+                content.append(color.getRed() / MAX_INT_COLOR_VALUE);
+                content.append(SINGLE_SPACE);
+                content.append(color.getGreen() / MAX_INT_COLOR_VALUE);
+                content.append(SINGLE_SPACE);
+                content.append(color.getBlue() / MAX_INT_COLOR_VALUE);
                 break;
             case ExtendedColor.TYPE_GRAY:
                 content.append(((GrayColor) color).getGray());
                 break;
             case ExtendedColor.TYPE_CMYK: {
                 CMYKColor cmyk = (CMYKColor) color;
-                content.append(cmyk.getCyan()).append(' ').append(cmyk.getMagenta());
-                content.append(' ').append(cmyk.getYellow()).append(' ').append(cmyk.getBlack());
+                content.append(cmyk.getCyan()).append(SINGLE_SPACE).append(cmyk.getMagenta());
+                content.append(SINGLE_SPACE).append(cmyk.getYellow()).append(SINGLE_SPACE).append(cmyk.getBlack());
                 break;
             }
             case ExtendedColor.TYPE_SEPARATION:
@@ -2688,7 +2666,7 @@ public class PdfContentByte {
         checkWriter();
         if (!p.isStencil()) {
             throw new InvalidColorTypeException(
-                MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
+                    MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
         }
         saveColorFill(new RGBColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
         PageResources prs = getPageResources();
@@ -2698,7 +2676,7 @@ public class PdfContentByte {
         PdfName cName = prs.addColor(csDetail.getColorName(), csDetail.getIndirectReference());
         content.append(cName.getBytes()).append(" cs").append_i(separator);
         outputColorNumbers(color, tint);
-        content.append(' ').append(name.getBytes()).append(" scn").append_i(separator);
+        content.append(SINGLE_SPACE).append(name.getBytes()).append(" scn").append_i(separator);
     }
 
     /**
@@ -2726,7 +2704,7 @@ public class PdfContentByte {
         checkWriter();
         if (!p.isStencil()) {
             throw new InvalidColorTypeException(
-                MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
+                    MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
         }
         saveColorStroke(new PatternColor(p));
         PageResources prs = getPageResources();
@@ -2736,7 +2714,7 @@ public class PdfContentByte {
         PdfName cName = prs.addColor(csDetail.getColorName(), csDetail.getIndirectReference());
         content.append(cName.getBytes()).append(" CS").append_i(separator);
         outputColorNumbers(color, tint);
-        content.append(' ').append(name.getBytes()).append(" SCN").append_i(separator);
+        content.append(SINGLE_SPACE).append(name.getBytes()).append(" SCN").append_i(separator);
     }
 
     /**
@@ -2839,7 +2817,7 @@ public class PdfContentByte {
     public void showText(PdfGlyphArray glyphs) {
         if (state.fontDetails == null) {
             throw new NullPointerException(
-                    MessageLocalization.getComposedMessage("font.and.size.must.be.set.before.writing.any.text"));
+                    MessageLocalization.getComposedMessage(BEFORE_WRITING_ANY_TEXT));
         }
         if (glyphs.isEmpty()) {
             return;
@@ -2854,7 +2832,7 @@ public class PdfContentByte {
                 lastWasDisplacement = false;
             } else { // displacement
                 if (lastWasDisplacement) {
-                    content.append(' ');
+                    content.append(SINGLE_SPACE);
                 } else {
                     lastWasDisplacement = true;
                 }
@@ -2872,7 +2850,7 @@ public class PdfContentByte {
     public void showText(PdfTextArray text) {
         if (state.fontDetails == null) {
             throw new NullPointerException(
-                    MessageLocalization.getComposedMessage("font.and.size.must.be.set.before.writing.any.text"));
+                    MessageLocalization.getComposedMessage(BEFORE_WRITING_ANY_TEXT));
         }
         content.append("[");
         List<String> arrayList = text.getArrayList();
@@ -2883,7 +2861,7 @@ public class PdfContentByte {
                 lastWasNumber = false;
             } else {
                 if (lastWasNumber) {
-                    content.append(' ');
+                    content.append(SINGLE_SPACE);
                 } else {
                     lastWasNumber = true;
                 }
@@ -3483,8 +3461,9 @@ public class PdfContentByte {
     public void transform(AffineTransform af) {
         double[] arr = new double[6];
         af.getMatrix(arr);
-        content.append(arr[0]).append(' ').append(arr[1]).append(' ').append(arr[2]).append(' ');
-        content.append(arr[3]).append(' ').append(arr[4]).append(' ').append(arr[5]).append(" cm").append_i(separator);
+        content.append(arr[0]).append(SINGLE_SPACE).append(arr[1]).append(SINGLE_SPACE).append(arr[2]).append(
+                SINGLE_SPACE);
+        content.append(arr[3]).append(SINGLE_SPACE).append(arr[4]).append(SINGLE_SPACE).append(arr[5]).append(" cm").append_i(separator);
     }
 
     void addAnnotation(PdfAnnotation annot) {
@@ -3581,7 +3560,7 @@ public class PdfContentByte {
         if (property == null) {
             content.append(tag.getBytes()).append(" BMC").append_i(separator);
         } else {
-            content.append(tag.getBytes()).append(' ');
+            content.append(tag.getBytes()).append(SINGLE_SPACE);
             if (inline) {
                 try {
                     property.toPdf(writer, content);
@@ -3630,7 +3609,7 @@ public class PdfContentByte {
         }
         if (inText) {
             throw new IllegalPdfSyntaxException(
-                    MessageLocalization.getComposedMessage("unbalanced.begin.end.text.operators"));
+                    MessageLocalization.getComposedMessage(UNBALANCED_BEGIN_END_TEXT_OPERATORS));
         }
         if (layerDepth != null && !layerDepth.isEmpty()) {
             throw new IllegalPdfSyntaxException(MessageLocalization.getComposedMessage("unbalanced.layer.operators"));

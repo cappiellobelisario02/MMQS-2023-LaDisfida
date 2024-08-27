@@ -120,6 +120,8 @@ class PdfContents extends PdfStream {
                     out.write(DocWriter.getISOBytes(ByteBuffer.formatDouble(page.getRight())));
                     out.write(ROTATEFINAL);
                     break;
+                default:
+                    throw new IllegalArgumentException("Unexpected rotation value: " + rotation);
             }
             if (under.size() > 0) {
                 out.write(SAVESTATE);
