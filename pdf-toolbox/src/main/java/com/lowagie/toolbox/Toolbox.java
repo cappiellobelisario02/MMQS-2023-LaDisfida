@@ -67,6 +67,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
+import javax.swing.WindowConstants;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -120,7 +121,7 @@ public class Toolbox extends JFrame implements ActionListener {
     public Toolbox() {
         super();
         setSize(600, 500);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setResizable(true);
         setTitle("iText Toolbox");
         desktop = new JDesktopPane();
@@ -183,6 +184,7 @@ public class Toolbox extends JFrame implements ActionListener {
                 tool.execute();
             } catch (PropertyVetoException | InstantiationException | IllegalAccessException
                      | ClassNotFoundException ex) {
+                ex.printStackTrace();
             }
         }
     }
@@ -240,13 +242,13 @@ public class Toolbox extends JFrame implements ActionListener {
         reset.addActionListener(this);
         view.add(reset);
         // JMenuItem filelist = new JMenuItem(FILELIST)
-        // filelist.addActionListener(this);
-        // view.add(filelist);
+        // filelist.addActionListener(this
+        // view.add(filelist
         JMenu tools = new JMenu(ToolMenuItems.TOOLS);
         // Here one day should be the wizard to help you create a new beanshell script
         // JMenuItem create = new JMenuItem(CREATE)
-        // create.addActionListener(this);
-        // tools.add(create);
+        // create.addActionListener(this
+        // tools.add(create
         buildPluginMenuItems(new TreeMap<>(p), tools);
         JMenu help = new JMenu(ToolMenuItems.HELP);
         JMenuItem about = new JMenuItem(ToolMenuItems.ABOUT);

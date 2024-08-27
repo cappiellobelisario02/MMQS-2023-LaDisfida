@@ -90,8 +90,6 @@ package com.lowagie.text.pdf;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.AlgorithmParameterGenerator;
-import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -165,7 +163,7 @@ public class PdfPublicKeySecurityHandler {
 
     public byte[] getEncodedRecipient(int index) throws IOException,
             GeneralSecurityException {
-        
+
         PdfPublicKeyRecipient recipient = recipients
                 .get(index);
         byte[] cms = recipient.getCms();
@@ -230,41 +228,42 @@ public class PdfPublicKeySecurityHandler {
     private ASN1Primitive createDERForRecipient(byte[] in, X509Certificate cert)
             throws IOException, GeneralSecurityException {
 
-        String s = "1.2.840.113549.3.2";
+        String algorithm = "AES/GCM/NoPadding"; // Strong algorithm with no padding
 
-        AlgorithmParameterGenerator algorithmparametergenerator = AlgorithmParameterGenerator
-                .getInstance(s);
-        AlgorithmParameters algorithmparameters = algorithmparametergenerator
-                .generateParameters();
-        ByteArrayInputStream bytearrayinputstream = new ByteArrayInputStream(
-                algorithmparameters.getEncoded("ASN.1"));
-        ASN1InputStream asn1inputstream = new ASN1InputStream(bytearrayinputstream);
-        ASN1Primitive derobject = asn1inputstream.readObject();
-        KeyGenerator keygenerator = KeyGenerator.getInstance(s);
-        keygenerator.init(128);
-        SecretKey secretkey = keygenerator.generateKey();
-        Cipher cipher = Cipher.getInstance(s);
-        cipher.init(1, secretkey, algorithmparameters);
-        byte[] abyte1 = cipher.doFinal(in);
-        DEROctetString deroctetstring = new DEROctetString(abyte1);
-        KeyTransRecipientInfo keytransrecipientinfo = computeRecipientInfo(cert,
-                secretkey.getEncoded());
-        DERSet derset = new DERSet(new RecipientInfo(keytransrecipientinfo));
-        AlgorithmIdentifier algorithmidentifier = new AlgorithmIdentifier(
-                new ASN1ObjectIdentifier(s), derobject);
-        EncryptedContentInfo encryptedcontentinfo = new EncryptedContentInfo(
-                PKCSObjectIdentifiers.data, algorithmidentifier, deroctetstring);
-        ASN1Set set = null;
-        EnvelopedData env = new EnvelopedData(null, derset, encryptedcontentinfo,
-                set);
-        ContentInfo contentinfo = new ContentInfo(
-                PKCSObjectIdentifiers.envelopedData, env);
-        // OJO... Modificacion de
-        // Felix--------------------------------------------------
-        
-        return contentinfo.toASN1Primitive();
-        // ******************************************************************************
+        // Generate AES key
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(256); // Use a 256-bit AES key for strong encryption
+        SecretKey secretKey = keyGenerator.generateKey();
+
+        // Initialize GCM parameters (IV and GCMParameterSpec)
+        Cipher cipher = Cipher.getInstance(algorithm);
+        byte[] iv = new byte[12]; // 12 bytes is the recommended IV size for GCM
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(iv);
+        // Initialize the cipher for encryption
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        byte[] encryptedData = cipher.doFinal(in);
+
+        // Wrap the encrypted data and parameters in ASN.1 structures
+        DEROctetString derOctetString = new DEROctetString(encryptedData);
+        KeyTransRecipientInfo keyTransRecipientInfo = computeRecipientInfo(cert, secretKey.getEncoded());
+        DERSet derSet = new DERSet(new RecipientInfo(keyTransRecipientInfo));
+
+        // Prepare AlgorithmIdentifier with AES-GCM
+        AlgorithmIdentifier algorithmIdentifier = new AlgorithmIdentifier(
+                new ASN1ObjectIdentifier("2.16.840.1.101.3.4.1.6"), // OID for AES with GCM
+                new DEROctetString(iv)); // Include IV in the parameters
+
+        EncryptedContentInfo encryptedContentInfo = new EncryptedContentInfo(
+                PKCSObjectIdentifiers.data, algorithmIdentifier, derOctetString);
+
+        ASN1Set asn1Set = null;
+        EnvelopedData envelopedData = new EnvelopedData(null, derSet, encryptedContentInfo, asn1Set);
+        ContentInfo contentInfo = new ContentInfo(PKCSObjectIdentifiers.envelopedData, envelopedData);
+
+        return contentInfo.toASN1Primitive();
     }
+
 
     private KeyTransRecipientInfo computeRecipientInfo(
             X509Certificate x509certificate, byte[] abyte0)
