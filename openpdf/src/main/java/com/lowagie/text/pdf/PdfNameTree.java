@@ -58,10 +58,10 @@ import java.util.Map;
  */
 public class PdfNameTree {
 
-    private static final int leafSize = 64;
+    private static final int LEAF_SIZE = 64;
 
     private PdfNameTree(){
-        
+
     }
 
     /**
@@ -99,7 +99,7 @@ public class PdfNameTree {
         }
         String[] names = items.keySet().toArray(new String[0]);
         Arrays.sort(names);
-        if (names.length <= leafSize) {
+        if (names.length <= LEAF_SIZE) {
             PdfDictionary dic = new PdfDictionary();
             PdfArray ar = new PdfArray();
             for (String name : names) {
@@ -109,11 +109,11 @@ public class PdfNameTree {
             dic.put(PdfName.NAMES, ar);
             return dic;
         }
-        int skip = leafSize;
-        PdfIndirectReference[] kids = new PdfIndirectReference[(names.length + leafSize - 1) / leafSize];
+        int skip = LEAF_SIZE;
+        PdfIndirectReference[] kids = new PdfIndirectReference[(names.length + LEAF_SIZE - 1) / LEAF_SIZE];
         for (int k = 0; k < kids.length; ++k) {
-            int offset = k * leafSize;
-            int end = Math.min(offset + leafSize, names.length);
+            int offset = k * LEAF_SIZE;
+            int end = Math.min(offset + LEAF_SIZE, names.length);
             PdfDictionary dic = new PdfDictionary();
             PdfArray arr = new PdfArray();
             arr.add(new PdfString(names[offset], null));
@@ -129,7 +129,7 @@ public class PdfNameTree {
         }
         int top = kids.length;
         while (true) {
-            if (top <= leafSize) {
+            if (top <= LEAF_SIZE) {
                 PdfArray arr = new PdfArray();
                 for (int k = 0; k < top; ++k) {
                     arr.add(kids[k]);
@@ -138,11 +138,11 @@ public class PdfNameTree {
                 dic.put(PdfName.KIDS, arr);
                 return dic;
             }
-            skip *= leafSize;
+            skip *= LEAF_SIZE;
             int tt = (names.length + skip - 1) / skip;
             for (int k = 0; k < tt; ++k) {
-                int offset = k * leafSize;
-                int end = Math.min(offset + leafSize, top);
+                int offset = k * LEAF_SIZE;
+                int end = Math.min(offset + LEAF_SIZE, top);
                 PdfDictionary dic = new PdfDictionary();
                 PdfArray arr = new PdfArray();
                 arr.add(new PdfString(names[k * skip], null));

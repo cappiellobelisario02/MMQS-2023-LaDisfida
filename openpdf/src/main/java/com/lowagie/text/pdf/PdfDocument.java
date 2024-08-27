@@ -82,7 +82,6 @@ import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
 import com.lowagie.text.pdf.internal.PdfViewerPreferencesImp;
 import java.awt.Color;
 import java.io.IOException;
-import java.rmi.UnexpectedException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -115,7 +114,7 @@ public class PdfDocument extends Document {
     /**
      * The characters to be applied the hanging punctuation.
      */
-    static final String hangingPunctuation = ".,;:'";
+    static final String HANGING_PUNCTUATION = ".,;:'";
 
 // CONSTRUCTING A PdfDocument/PdfWriter INSTANCE
     /**
@@ -329,7 +328,7 @@ public class PdfDocument extends Document {
         PdfPTable table = new PdfPTable(1);
         table.setWidthPercentage(100f);
         PdfPCell cell = new PdfPCell();
-        cell.setBorder(Table.NO_BORDER);
+        cell.setBorder(Rectangle.NO_BORDER);
         cell.setPadding(0);
         int i = 0;
         while (i < paragraph.size()) {
@@ -1052,11 +1051,11 @@ public class PdfDocument extends Document {
      * @see com.lowagie.text.DocListener#setMarginMirroring(boolean)
      */
     @Override
-    public boolean setMarginMirroring(boolean MarginMirroring) {
+    public boolean setMarginMirroring(boolean marginMirroring) {
         if (writer != null && writer.isPaused()) {
             return false;
         }
-        return super.setMarginMirroring(MarginMirroring);
+        return super.setMarginMirroring(marginMirroring);
     }
 
     /**
@@ -1064,11 +1063,11 @@ public class PdfDocument extends Document {
      * @since 2.1.6
      */
     @Override
-    public boolean setMarginMirroringTopBottom(boolean MarginMirroringTopBottom) {
+    public boolean setMarginMirroringTopBottom(boolean marginMirroringTopBottom) {
         if (writer != null && writer.isPaused()) {
             return false;
         }
-        return super.setMarginMirroringTopBottom(MarginMirroringTopBottom);
+        return super.setMarginMirroringTopBottom(marginMirroringTopBottom);
     }
 
     /**
@@ -1401,7 +1400,7 @@ public class PdfDocument extends Document {
                 if (last != null) {
                     String s = last.toString();
                     char c = s.charAt(s.length() - 1);
-                    if (s.length() > 0 && hangingPunctuation.indexOf(c) >= 0) {
+                    if (s.length() > 0 && HANGING_PUNCTUATION.indexOf(c) >= 0) {
                         float oldWidth = width;
                         width += last.font().width(c) * 0.4f;
                         hangingCorrection = width - oldWidth;
