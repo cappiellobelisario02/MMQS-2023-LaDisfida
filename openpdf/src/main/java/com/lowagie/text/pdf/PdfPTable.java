@@ -94,6 +94,7 @@ public class PdfPTable implements LargeElement {
      * The index of the duplicate <CODE>PdfContentByte</CODE> where the text will be drawn.
      */
     public static final int TEXTCANVAS = 3;
+    public static final String WRONG_NUMBER_OF_COLUMNS = "wrong.number.of.columns";
 
     protected ArrayList<PdfPRow> rows = new ArrayList<>();
     protected float totalHeight = 0;
@@ -346,7 +347,7 @@ public class PdfPTable implements LargeElement {
      */
     public void setWidths(float[] relativeWidths) throws DocumentException {
         if (relativeWidths.length != getNumberOfColumns()) {
-            throw new DocumentException(MessageLocalization.getComposedMessage("wrong.number.of.columns"));
+            throw new DocumentException(MessageLocalization.getComposedMessage(WRONG_NUMBER_OF_COLUMNS));
         }
         this.relativeWidths = new float[relativeWidths.length];
         System.arraycopy(relativeWidths, 0, this.relativeWidths, 0, relativeWidths.length);
@@ -382,8 +383,10 @@ public class PdfPTable implements LargeElement {
         for (int k = 0; k < numCols; ++k) {
             total += relativeWidths[k];
         }
-        for (int k = 0; k < numCols; ++k) {
-            absoluteWidths[k] = totalWidth * relativeWidths[k] / total;
+        if(total != 0){
+            for (int k = 0; k < numCols; ++k) {
+                absoluteWidths[k] = totalWidth * relativeWidths[k] / total;
+            }
         }
     }
 
@@ -396,7 +399,7 @@ public class PdfPTable implements LargeElement {
      */
     public void setWidthPercentage(float[] columnWidth, Rectangle pageSize) throws DocumentException {
         if (columnWidth.length != getNumberOfColumns()) {
-            throw new IllegalArgumentException(MessageLocalization.getComposedMessage("wrong.number.of.columns"));
+            throw new IllegalArgumentException(MessageLocalization.getComposedMessage(WRONG_NUMBER_OF_COLUMNS));
         }
         float totalWidthPercentage = 0;
         for (float v : columnWidth) {
@@ -438,7 +441,7 @@ public class PdfPTable implements LargeElement {
      */
     public void setTotalWidth(float[] columnWidth) throws DocumentException {
         if (columnWidth.length != getNumberOfColumns()) {
-            throw new DocumentException(MessageLocalization.getComposedMessage("wrong.number.of.columns"));
+            throw new DocumentException(MessageLocalization.getComposedMessage(WRONG_NUMBER_OF_COLUMNS));
         }
         totalWidth = 0;
         for (float v : columnWidth) {
@@ -584,9 +587,9 @@ public class PdfPTable implements LargeElement {
         PdfPCell[] cells = rows.get(row).getCells();
         for (int i = 0; i < cells.length; i++) {
             if (cells[i] != null && col >= i && col < (i + cells[i].getColspan())) {
-                
-                    return cells[i];
-                
+
+                return cells[i];
+
             }
         }
         return null;
@@ -1443,10 +1446,10 @@ public class PdfPTable implements LargeElement {
      */
     public void setRunDirection(int runDirection) {
         switch (runDirection) {
-            case PdfWriter.RUN_DIRECTION_DEFAULT:
-            case PdfWriter.RUN_DIRECTION_NO_BIDI:
-            case PdfWriter.RUN_DIRECTION_LTR:
-            case PdfWriter.RUN_DIRECTION_RTL:
+            case PdfWriter.RUN_DIRECTION_DEFAULT,
+                 PdfWriter.RUN_DIRECTION_NO_BIDI,
+                 PdfWriter.RUN_DIRECTION_LTR,
+                 PdfWriter.RUN_DIRECTION_RTL:
                 this.runDirection = runDirection;
                 break;
             default:

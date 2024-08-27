@@ -69,6 +69,7 @@ import java.util.Map;
 
 public class PdfSmartCopy extends PdfCopy {
 
+    public static final String MAX_LEVEL_REACHED = "Max level reached";
     /**
      * the cache with the streams and references.
      */
@@ -148,7 +149,7 @@ public class PdfSmartCopy extends PdfCopy {
 
     static class ByteStore {
 
-        private final int MAX_LEVELS = 100;
+        private static final int MAX_LEVELS = 100;
         private byte[] b;
         private int hash;
         private MessageDigest md5;
@@ -168,7 +169,7 @@ public class PdfSmartCopy extends PdfCopy {
 
         private void serObject(PdfObject obj, int level, ByteBuffer bb) throws IOException {
             if (level <= 0) {
-                throw new IOException("Max level reached");
+                throw new IOException(MAX_LEVEL_REACHED);
             }
             if (obj == null) {
                 bb.append("$Lnull");
@@ -196,7 +197,7 @@ public class PdfSmartCopy extends PdfCopy {
         private void serDic(PdfDictionary dic, int level, ByteBuffer bb) throws IOException {
             bb.append("$D");
             if (level <= 0) {
-                throw new IOException("Max level reached");
+                throw new IOException(MAX_LEVEL_REACHED);
             }
             Object[] keys = dic.getKeys().toArray();
             Arrays.sort(keys);
@@ -209,7 +210,7 @@ public class PdfSmartCopy extends PdfCopy {
         private void serArray(PdfArray array, int level, ByteBuffer bb) throws IOException {
             bb.append("$A");
             if (level <= 0) {
-                throw new IOException("Max level reached");
+                throw new IOException(MAX_LEVEL_REACHED);
             }
             for (int k = 0; k < array.size(); ++k) {
                 serObject(array.getPdfObject(k), level, bb);

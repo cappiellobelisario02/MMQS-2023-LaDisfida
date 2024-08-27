@@ -93,6 +93,7 @@ public class PdfEncryption {
 
     private static final byte[] metadataPad = {(byte) 255, (byte) 255,
             (byte) 255, (byte) 255};
+    public static final String AES_CBC_NO_PADDING = "AES/CBC/NoPadding";
     static long seq = System.currentTimeMillis();
     /**
      * The public key security handler for certificate encryption
@@ -369,29 +370,29 @@ public class PdfEncryption {
      *
      */
     private byte[] computeOwnerKey(byte[] userPad, byte[] ownerPad) {
-        byte[] owner_Key = new byte[32];
+        byte[] mOwnerKey = new byte[32];
 
         byte[] digest = md5.digest(ownerPad);
         if (revision == STANDARD_ENCRYPTION_128 || revision == AES_128) {
-            byte[] m_Key = new byte[keyLength / 8];
+            byte[] mKey = new byte[keyLength / 8];
             // only use for the input as many bit as the key consists of
             for (int k = 0; k < 50; ++k) {
-                System.arraycopy(md5.digest(digest), 0, digest, 0, m_Key.length);
+                System.arraycopy(md5.digest(digest), 0, digest, 0, mKey.length);
             }
-            System.arraycopy(userPad, 0, owner_Key, 0, 32);
+            System.arraycopy(userPad, 0, mOwnerKey, 0, 32);
             for (int i = 0; i < 20; ++i) {
-                for (int j = 0; j < m_Key.length; ++j) {
-                    m_Key[j] = (byte) (digest[j] ^ i);
+                for (int j = 0; j < mKey.length; ++j) {
+                    mKey[j] = (byte) (digest[j] ^ i);
                 }
-                arcfour.prepareARCFOURKey(m_Key);
-                arcfour.encryptARCFOUR(owner_Key);
+                arcfour.prepareARCFOURKey(mKey);
+                arcfour.encryptARCFOUR(mOwnerKey);
             }
         } else {
             arcfour.prepareARCFOURKey(digest, 0, 5);
-            arcfour.encryptARCFOUR(userPad, owner_Key);
+            arcfour.encryptARCFOUR(userPad, mOwnerKey);
         }
 
-        return owner_Key;
+        return mOwnerKey;
     }
 
     /**
@@ -800,7 +801,7 @@ public class PdfEncryption {
     public void setupByOwnerPassword(byte[] documentID, byte[] ownerPassword,
             byte[] uValue, byte[] oValue, byte[] oeValue, int permissions)
             throws GeneralSecurityException {
-        final Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+        final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING);
 
         byte[] hashAlg2B = hashAlg2B(ownerPassword, Arrays.copyOfRange(oValue, 40, 48), uValue);
         cipher.init(Cipher.DECRYPT_MODE,
@@ -821,7 +822,7 @@ public class PdfEncryption {
     public void setupByUserPassword(byte[] documentID, byte[] userPassword,
             byte[] uValue, byte[] ueValue, byte[] oValue, int permissions)
             throws GeneralSecurityException {
-        final Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+        final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING);
 
         byte[] hashAlg2B = hashAlg2B(userPassword, Arrays.copyOfRange(uValue, 40, 48), null);
         cipher.init(Cipher.DECRYPT_MODE,
@@ -840,7 +841,7 @@ public class PdfEncryption {
      * decrypt it (revision 6 and later) - ISO 32000-2 section 7.6.4.3.3
      */
     public boolean decryptAndCheckPerms(byte[] permsValue) throws GeneralSecurityException {
-        final Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+        final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING);
 
         cipher.init(Cipher.DECRYPT_MODE,
                 new SecretKeySpec(key, "AES"),
@@ -861,7 +862,7 @@ public class PdfEncryption {
         final MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
         final MessageDigest sha384 = MessageDigest.getInstance("SHA-384");
         final MessageDigest sha512 = MessageDigest.getInstance("SHA-512");
-        final Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+        final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING);
 
         if (userKey == null) {
             userKey = new byte[0];
@@ -872,7 +873,9 @@ public class PdfEncryption {
         sha256.update(userKey);
         byte[] k = sha256.digest();
 
-        for (int round = 0, lastEByte = 0; round < 64 || lastEByte > round - 32; round++) {
+        int lastEByte = 0;
+
+        for (int round = 0; round < 64 || lastEByte > round - 32; round++) {
             int singleSequenceSize = input.length + k.length + userKey.length;
             byte[] k1 = new byte[singleSequenceSize * 64];
             System.arraycopy(input, 0, k1, 0, input.length);
@@ -909,7 +912,7 @@ public class PdfEncryption {
      * (Security handlers of revision 6) - ISO 32000-2 section 7.6.4.4.7
      */
     void computeUAndUeAlg8(byte[] userPassword) throws GeneralSecurityException {
-        final Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+        final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING);
 
         if (userPassword == null) {
             userPassword = new byte[0];
@@ -936,7 +939,7 @@ public class PdfEncryption {
      * (Security handlers of revision 6) - ISO 32000-2 section 7.6.4.4.8
      */
     void computeOAndOeAlg9(byte[] ownerPassword) throws GeneralSecurityException {
-        final Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+        final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING);
 
         if (ownerPassword == null) {
             ownerPassword = new byte[0];
@@ -963,7 +966,7 @@ public class PdfEncryption {
      * revision 6) - ISO 32000-2 section 7.6.4.4.9
      */
     void computePermsAlg10(int permissions) throws GeneralSecurityException {
-        final Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+        final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING);
 
         byte[] rawPerms = new byte[16];
         rawPerms[0] = (byte) (permissions & 0xff);

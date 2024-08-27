@@ -83,6 +83,8 @@ import java.util.logging.Logger;
 public class PdfStamper
         implements PdfViewerPreferences, PdfEncryptionSettings, AutoCloseable {
 
+    public static final String NOT_SUPPORT_CHANGING_THE_ENCRYPTION_STATUS = "append.mode.does.not.support.changing.the.encryption.status";
+    public static final String ALREADY_WRITTEN_TO_THE_OUTPUT = "content.was.already.written.to.the.output";
     static Logger logger = Logger.getLogger(PdfStamper.class.getName());
 
     /**
@@ -191,12 +193,12 @@ public class PdfStamper
                 tempFile = Files.createTempFile(tempFile.toPath(), "pdf", null).toFile();
             }
             try (FileOutputStream fout = new FileOutputStream(tempFile)) {
-            stp = new PdfStamper(reader, fout, pdfVersion, append);
-            stp.sigApp = new PdfSignatureAppearance(stp.stamper);
-            stp.sigApp.setTempFile(tempFile);
+                stp = new PdfStamper(reader, fout, pdfVersion, append);
+                stp.sigApp = new PdfSignatureAppearance(stp.stamper);
+                stp.sigApp.setTempFile(tempFile);
 
             } catch (IOException e) {
-            // Exception handling
+                // Exception handling
             }
         }
         stp.sigApp.setOriginalout(os);
@@ -466,11 +468,11 @@ public class PdfStamper
             throws DocumentException {
         if (stamper.isAppend()) {
             throw new DocumentException(MessageLocalization.getComposedMessage(
-                    "append.mode.does.not.support.changing.the.encryption.status"));
+                    NOT_SUPPORT_CHANGING_THE_ENCRYPTION_STATUS));
         }
         if (stamper.isContentWritten()) {
             throw new DocumentException(
-                    MessageLocalization.getComposedMessage("content.was.already.written.to.the.output"));
+                    MessageLocalization.getComposedMessage(ALREADY_WRITTEN_TO_THE_OUTPUT));
         }
         stamper.setEncryption(userPassword, ownerPassword, permissions,
                 strength128Bits ? PdfWriter.STANDARD_ENCRYPTION_128 : PdfWriter.STANDARD_ENCRYPTION_40);
@@ -494,11 +496,11 @@ public class PdfStamper
             throws DocumentException {
         if (stamper.isAppend()) {
             throw new DocumentException(MessageLocalization.getComposedMessage(
-                    "append.mode.does.not.support.changing.the.encryption.status"));
+                    NOT_SUPPORT_CHANGING_THE_ENCRYPTION_STATUS));
         }
         if (stamper.isContentWritten()) {
             throw new DocumentException(
-                    MessageLocalization.getComposedMessage("content.was.already.written.to.the.output"));
+                    MessageLocalization.getComposedMessage(ALREADY_WRITTEN_TO_THE_OUTPUT));
         }
         stamper.setEncryption(userPassword, ownerPassword, permissions, encryptionType);
     }
@@ -556,11 +558,11 @@ public class PdfStamper
     public void setEncryption(Certificate[] certs, int[] permissions, int encryptionType) throws DocumentException {
         if (stamper.isAppend()) {
             throw new DocumentException(MessageLocalization.getComposedMessage(
-                    "append.mode.does.not.support.changing.the.encryption.status"));
+                    NOT_SUPPORT_CHANGING_THE_ENCRYPTION_STATUS));
         }
         if (stamper.isContentWritten()) {
             throw new DocumentException(
-                    MessageLocalization.getComposedMessage("content.was.already.written.to.the.output"));
+                    MessageLocalization.getComposedMessage(ALREADY_WRITTEN_TO_THE_OUTPUT));
         }
         stamper.setEncryption(certs, permissions, encryptionType);
     }

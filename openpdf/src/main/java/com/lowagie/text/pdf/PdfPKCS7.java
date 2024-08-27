@@ -143,35 +143,69 @@ public class PdfPKCS7 {
     private static final Map<String, String> algorithmNames = new HashMap<>();
     private static final Map<String, String> allowedDigests = new HashMap<>();
 
+    public static final String KEY11354925 = "1.2.840.113549.2.5";
+
+    public static final String KEY11354922 = "1.2.840.113549.2.2";
+
+    public static final String KEY143226 = "1.3.14.3.2.26";
+
+    public static final String KEY1013424 = "2.16.840.1.101.3.4.2.4";
+
+    public static final String SHA_224 = "SHA224";
+
+    public static final String KEY1013421 = "2.16.840.1.101.3.4.2.1";
+
+    public static final String SHA_256 = "SHA256";
+
+    public static final String SHA_384 = "SHA384";
+
+    public static final String SHA_512 = "SHA512";
+
+    public static final String RIPEMD_128 = "RIPEMD128";
+
+    public static final String RIPEMD_160 = "RIPEMD160";
+
+    public static final String RIPEMD_256 = "RIPEMD256";
+
+    public static final String KEY1013422 = "2.16.840.1.101.3.4.2.2";
+
+    public static final String KEY1013423 = "2.16.840.1.101.3.4.2.3";
+
+    public static final String KEY36322 = "1.3.36.3.2.2";
+
+    public static final String KEY36321 = "1.3.36.3.2.1";
+
+    public static final String KEY36323 = "1.3.36.3.2.3";
+
     static {
-        digestNames.put("1.2.840.113549.2.5", "MD5");
-        digestNames.put("1.2.840.113549.2.2", "MD2");
-        digestNames.put("1.3.14.3.2.26", "SHA1");
-        digestNames.put("2.16.840.1.101.3.4.2.4", "SHA224");
-        digestNames.put("2.16.840.1.101.3.4.2.1", "SHA256");
-        digestNames.put("2.16.840.1.101.3.4.2.2", "SHA384");
-        digestNames.put("2.16.840.1.101.3.4.2.3", "SHA512");
-        digestNames.put("1.3.36.3.2.2", "RIPEMD128");
-        digestNames.put("1.3.36.3.2.1", "RIPEMD160");
-        digestNames.put("1.3.36.3.2.3", "RIPEMD256");
+        digestNames.put(KEY11354925, "MD5");
+        digestNames.put(KEY11354922, "MD2");
+        digestNames.put(KEY143226, "SHA1");
+        digestNames.put(KEY1013424, SHA_224);
+        digestNames.put(KEY1013421, SHA_256);
+        digestNames.put(KEY1013422, SHA_384);
+        digestNames.put(KEY1013423, SHA_512);
+        digestNames.put(KEY36322, RIPEMD_128);
+        digestNames.put(KEY36321, RIPEMD_160);
+        digestNames.put(KEY36323, RIPEMD_256);
         digestNames.put("1.2.840.113549.1.1.4", "MD5");
         digestNames.put("1.2.840.113549.1.1.2", "MD2");
         digestNames.put("1.2.840.113549.1.1.5", "SHA1");
-        digestNames.put("1.2.840.113549.1.1.14", "SHA224");
-        digestNames.put("1.2.840.113549.1.1.11", "SHA256");
-        digestNames.put("1.2.840.113549.1.1.12", "SHA384");
-        digestNames.put("1.2.840.113549.1.1.13", "SHA512");
+        digestNames.put("1.2.840.113549.1.1.14", SHA_224);
+        digestNames.put("1.2.840.113549.1.1.11", SHA_256);
+        digestNames.put("1.2.840.113549.1.1.12", SHA_384);
+        digestNames.put("1.2.840.113549.1.1.13", SHA_512);
         digestNames.put("1.2.840.10040.4.3", "SHA1");    // TODO: bug - duplicate key - overwrites this with DSA
-        digestNames.put("2.16.840.1.101.3.4.3.1", "SHA224");  // TODO: bug - duplicate key - overwrites this with DSA
-        digestNames.put("2.16.840.1.101.3.4.3.2", "SHA256");
-        digestNames.put("2.16.840.1.101.3.4.3.3", "SHA384");
-        digestNames.put("2.16.840.1.101.3.4.3.4", "SHA512");
-        digestNames.put("1.3.36.3.3.1.3", "RIPEMD128");
-        digestNames.put("1.3.36.3.3.1.2", "RIPEMD160");
-        digestNames.put("1.3.36.3.3.1.4", "RIPEMD256");
+        digestNames.put("2.16.840.1.101.3.4.3.1", SHA_224);  // TODO: bug - duplicate key - overwrites this with DSA
+        digestNames.put("2.16.840.1.101.3.4.3.2", SHA_256);
+        digestNames.put("2.16.840.1.101.3.4.3.3", SHA_384);
+        digestNames.put("2.16.840.1.101.3.4.3.4", SHA_512);
+        digestNames.put("1.3.36.3.3.1.3", RIPEMD_128);
+        digestNames.put("1.3.36.3.3.1.2", RIPEMD_160);
+        digestNames.put("1.3.36.3.3.1.4", RIPEMD_256);
 
-        algorithmNames.put("1.2.840.113549.1.1.1", "RSA");
-        algorithmNames.put("1.2.840.10040.4.1", "DSA");
+        algorithmNames.put(ID_RSA, "RSA");
+        algorithmNames.put(ID_DSA, "DSA");
         algorithmNames.put("1.2.840.113549.1.1.2", "RSA");
         algorithmNames.put("1.2.840.113549.1.1.4", "RSA");
         algorithmNames.put("1.2.840.113549.1.1.5", "RSA");
@@ -192,26 +226,26 @@ public class PdfPKCS7 {
         algorithmNames.put("1.2.840.10045.4.3.3", "ECDSA");
         algorithmNames.put("1.2.840.10045.4.3.4", "ECDSA");
         algorithmNames.put("1.2.840.113549.1.1.10", "RSAandMGF1");
-        allowedDigests.put("MD5", "1.2.840.113549.2.5");
-        allowedDigests.put("MD2", "1.2.840.113549.2.2");
-        allowedDigests.put("SHA1", "1.3.14.3.2.26");
-        allowedDigests.put("SHA224", "2.16.840.1.101.3.4.2.4");
-        allowedDigests.put("SHA256", "2.16.840.1.101.3.4.2.1");
-        allowedDigests.put("SHA384", "2.16.840.1.101.3.4.2.2");
-        allowedDigests.put("SHA512", "2.16.840.1.101.3.4.2.3");
-        allowedDigests.put("MD-5", "1.2.840.113549.2.5");
-        allowedDigests.put("MD-2", "1.2.840.113549.2.2");
-        allowedDigests.put("SHA-1", "1.3.14.3.2.26");
-        allowedDigests.put("SHA-224", "2.16.840.1.101.3.4.2.4");
-        allowedDigests.put("SHA-256", "2.16.840.1.101.3.4.2.1");
-        allowedDigests.put("SHA-384", "2.16.840.1.101.3.4.2.2");
-        allowedDigests.put("SHA-512", "2.16.840.1.101.3.4.2.3");
-        allowedDigests.put("RIPEMD128", "1.3.36.3.2.2");
-        allowedDigests.put("RIPEMD-128", "1.3.36.3.2.2");
-        allowedDigests.put("RIPEMD160", "1.3.36.3.2.1");
-        allowedDigests.put("RIPEMD-160", "1.3.36.3.2.1");
-        allowedDigests.put("RIPEMD256", "1.3.36.3.2.3");
-        allowedDigests.put("RIPEMD-256", "1.3.36.3.2.3");
+        allowedDigests.put("MD5", KEY11354925);
+        allowedDigests.put("MD2", KEY11354922);
+        allowedDigests.put("SHA1", KEY143226);
+        allowedDigests.put(SHA_224, KEY1013424);
+        allowedDigests.put(SHA_256, KEY1013421);
+        allowedDigests.put(SHA_384, KEY1013422);
+        allowedDigests.put(SHA_512, KEY1013423);
+        allowedDigests.put("MD-5", KEY11354925);
+        allowedDigests.put("MD-2", KEY11354922);
+        allowedDigests.put("SHA-1", KEY143226);
+        allowedDigests.put("SHA-224", KEY1013424);
+        allowedDigests.put("SHA-256", KEY1013421);
+        allowedDigests.put("SHA-384", KEY1013422);
+        allowedDigests.put("SHA-512", KEY1013423);
+        allowedDigests.put(RIPEMD_128, KEY36322);
+        allowedDigests.put("RIPEMD-128", KEY36322);
+        allowedDigests.put(RIPEMD_160, KEY36321);
+        allowedDigests.put("RIPEMD-160", KEY36321);
+        allowedDigests.put(RIPEMD_256, KEY36323);
+        allowedDigests.put("RIPEMD-256", KEY36323);
     }
 
     private final List<Certificate> certs;
@@ -427,7 +461,7 @@ public class PdfPKCS7 {
                 if (digestAttr == null) {
                     throw new IllegalArgumentException(
                             MessageLocalization
-                                .getComposedMessage("authenticated.attribute.is.missing.the.digest"));
+                                    .getComposedMessage("authenticated.attribute.is.missing.the.digest"));
                 }
                 ++next;
             }
@@ -702,10 +736,10 @@ public class PdfPKCS7 {
     }
 
     private Object[] certificateVerification (KeyStore keyStore, Calendar calendar,
-        X509Certificate certificate) {
+            X509Certificate certificate) {
         try{
             for (Enumeration<?> aliases = keyStore.aliases(); aliases
-                        .hasMoreElements(); ) {
+                    .hasMoreElements(); ) {
                 try {
                     String alias = (String) aliases.nextElement();
                     if (!keyStore.isCertificateEntry(alias)) {
@@ -760,10 +794,10 @@ public class PdfPKCS7 {
                 if (accessDescription.size() == 2 &&
                         (accessDescription.getObjectAt(0) instanceof ASN1ObjectIdentifier identifier)
                         && identifier.getId().equals("1.3.6.1.5.5.7.48.1")) {
-                    
-                        return getStringFromGeneralName((ASN1Primitive) accessDescription
-                                .getObjectAt(1));
-                    
+
+                    return getStringFromGeneralName((ASN1Primitive) accessDescription
+                            .getObjectAt(1));
+
                 }
             }
         } catch (Exception ignored) {
@@ -856,16 +890,16 @@ public class PdfPKCS7 {
         if ("SHA1".equals(algName)) {
             return "SHA-1";
         }
-        if ("SHA224".equals(algName)) {
+        if (SHA_224.equals(algName)) {
             return "SHA-224";
         }
-        if ("SHA256".equals(algName)) {
+        if (SHA_256.equals(algName)) {
             return "SHA-256";
         }
-        if ("SHA384".equals(algName)) {
+        if (SHA_384.equals(algName)) {
             return "SHA-384";
         }
-        if ("SHA512".equals(algName)) {
+        if (SHA_512.equals(algName)) {
             return "SHA-512";
         }
         return algName;
@@ -1146,7 +1180,7 @@ public class PdfPKCS7 {
             // OJO... Modificacion de
             // Felix--------------------------------------------------
             // CertificateID tis = new CertificateID(CertificateID.HASH_SHA1, isscer,
-            
+
             DigestCalculatorProvider digCalcProv = new JcaDigestCalculatorProviderBuilder()
                     .setProvider(provider).build();
             CertificateID id = new CertificateID(
