@@ -148,7 +148,7 @@ class PdfContents extends PdfStream {
         } catch (Exception e) {
             throw new BadPdfFormatException(e.getMessage());
         }
-        put(PdfName.LENGTH, new PdfNumber(streamBytes.size()));
+        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(streamBytes.size()));
         if (compressed) {
             put(PdfName.FILTER, PdfName.FLATEDECODE);
         }

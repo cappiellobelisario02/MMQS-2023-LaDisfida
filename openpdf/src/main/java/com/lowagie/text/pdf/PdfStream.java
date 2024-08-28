@@ -53,7 +53,6 @@ import com.lowagie.text.DocWriter;
 import com.lowagie.text.Document;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.error_messages.MessageLocalization;
-import com.lowagie.text.exceptions.IllegalNumberException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -140,7 +139,7 @@ public class PdfStream extends PdfDictionary {
         type = STREAM;
         this.bytes = bytes;
         rawLength = bytes.length;
-        put(PdfName.LENGTH, new PdfNumber(bytes.length));
+        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
     }
 
     /**
@@ -164,7 +163,7 @@ public class PdfStream extends PdfDictionary {
         this.inputStream = inputStream;
         this.writer = writer;
         ref = writer.getPdfIndirectReference();
-        put(PdfName.LENGTH, ref);
+        put(PdfName.PDF_NAME_LENGTH, ref);
     }
 
     /**
@@ -263,7 +262,7 @@ public class PdfStream extends PdfDictionary {
             // update the object
             streamBytes = stream;
             bytes = null;
-            put(PdfName.LENGTH, new PdfNumber(streamBytes.size()));
+            put(PdfName.PDF_NAME_LENGTH, new PdfNumber(streamBytes.size()));
             if (filter == null) {
                 put(PdfName.FILTER, PdfName.FLATEDECODE);
             } else {
@@ -306,12 +305,12 @@ public class PdfStream extends PdfDictionary {
                 }
             }
         }
-        PdfObject nn = get(PdfName.LENGTH);
+        PdfObject nn = get(PdfName.PDF_NAME_LENGTH);
         if (crypto != null && nn != null && nn.isNumber()) {
             int sz = ((PdfNumber) nn).intValue();
-            put(PdfName.LENGTH, new PdfNumber(crypto.calculateStreamSize(sz)));
+            put(PdfName.PDF_NAME_LENGTH, new PdfNumber(crypto.calculateStreamSize(sz)));
             superToPdf(writer, os);
-            put(PdfName.LENGTH, nn);
+            put(PdfName.PDF_NAME_LENGTH, nn);
         } else {
             superToPdf(writer, os);
         }

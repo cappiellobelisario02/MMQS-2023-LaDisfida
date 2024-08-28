@@ -58,7 +58,10 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -158,73 +161,81 @@ public class PdfEncodings {
      * @param text     the <CODE>String</CODE> to be converted
      * @return an array of <CODE>byte</CODE> representing the conversion according to the font's encoding
      */
-    public static final byte[] convertToBytes(String text, String encoding) {
+    public static byte[] convertToBytes(String text, String encoding) {
         if (text == null) {
             return new byte[0];
         }
-        if (encoding == null || encoding.length() == 0) {
-            int len = text.length();
-            byte[] b = new byte[len];
-            for (int k = 0; k < len; ++k) {
-                b[k] = (byte) text.charAt(k);
-            }
-            return b;
+        if (encoding == null || encoding.isEmpty()) {
+            return getDefaultEncodingBytes(text);
         }
+        if (extraEncodings.containsKey(encoding.toLowerCase(Locale.ROOT))) {
+            return handleExtraEncodings(text, encoding);
+        }
+        return switch (encoding) {
+            case BaseFont.WINANSI -> handleWinAnsiEncoding(text);
+            case PdfObject.TEXT_PDFDOCENCODING -> handlePdfDocEncoding(text);
+            case PdfObject.TEXT_UNICODE -> handleUnicodeEncoding(text);
+            default -> handleDefaultEncoding(text, encoding);
+        };
+    }
+
+    private static byte[] getDefaultEncodingBytes(String text) {
+        int len = text.length();
+        byte[] bytes = new byte[len];
+        for (int i = 0; i < len; ++i) {
+            bytes[i] = (byte) text.charAt(i);
+        }
+        return bytes;
+    }
+
+    private static byte[] handleExtraEncodings(String text, String encoding) {
         ExtraEncoding extra = extraEncodings.get(encoding.toLowerCase(Locale.ROOT));
-        if (extra != null) {
-            byte[] b = extra.charToByte(text, encoding);
-            if (b != null) {
-                return b;
+        byte[] bytes = extra.charToByte(text, encoding);
+        return Objects.requireNonNullElseGet(bytes, () -> new byte[0]);
+    }
+
+    private static byte[] handleWinAnsiEncoding(String text) {
+        return handleSpecificEncoding(text, winansi);
+    }
+
+    private static byte[] handlePdfDocEncoding(String text) {
+        return handleSpecificEncoding(text, pdfEncoding);
+    }
+
+    private static byte[] handleSpecificEncoding(String text, IntHashtable hash) {
+        char[] chars = text.toCharArray();
+        byte[] bytes = new byte[chars.length];
+        int index = 0;
+        for (char c : chars) {
+            int byteValue = (c < 128 || (c > 160 && c <= 255)) ? c : hash.get(c);
+            if (byteValue != 0) {
+                bytes[index++] = (byte) byteValue;
             }
         }
-        IntHashtable hash = null;
-        if (encoding.equals(BaseFont.WINANSI)) {
-            hash = winansi;
-        } else if (encoding.equals(PdfObject.TEXT_PDFDOCENCODING)) {
-            hash = pdfEncoding;
+        return Arrays.copyOf(bytes, index);
+    }
+
+    private static byte[] handleUnicodeEncoding(String text) {
+        char[] chars = text.toCharArray();
+        byte[] bytes = new byte[chars.length * 2 + 2];
+        bytes[0] = (byte) 0xFF;
+        bytes[1] = (byte) 0xFE;
+        int index = 2;
+        for (char c : chars) {
+            bytes[index++] = (byte) (c & 0xFF);
+            bytes[index++] = (byte) (c >> 8);
         }
-        if (hash != null) {
-            char[] cc = text.toCharArray();
-            int len = cc.length;
-            int ptr = 0;
-            byte[] b = new byte[len];
-            int c = 0;
-            for (char char1 : cc) {
-                if (char1 < 128 || char1 > 160 && char1 <= 255) {
-                    c = char1;
-                } else {
-                    c = hash.get(char1);
-                }
-                if (c != 0) {
-                    b[ptr++] = (byte) c;
-                }
-            }
-            if (ptr == len) {
-                return b;
-            }
-            byte[] b2 = new byte[ptr];
-            System.arraycopy(b, 0, b2, 0, ptr);
-            return b2;
-        }
-        if (encoding.equals(PdfObject.TEXT_UNICODE)) {
-            // workaround for jdk 1.2.2 bug
-            char[] cc = text.toCharArray();
-            byte[] b = new byte[cc.length * 2 + 2];
-            b[0] = -2;
-            b[1] = -1;
-            int bptr = 2;
-            for (char c : cc) {
-                b[bptr++] = (byte) (c >> 8);
-                b[bptr++] = (byte) (c & 0xff);
-            }
-            return b;
-        }
+        return bytes;
+    }
+
+    private static byte[] handleDefaultEncoding(String text, String encoding) {
         try {
             return text.getBytes(encoding);
         } catch (UnsupportedEncodingException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * Converts a <CODE>String</CODE> to a <CODE>byte</CODE> array according to the font's encoding.
@@ -233,10 +244,30 @@ public class PdfEncodings {
      * @param char1    the <CODE>char</CODE> to be converted
      * @return an array of <CODE>byte</CODE> representing the conversion according to the font's encoding
      */
-    public static final byte[] convertToBytes(char char1, String encoding) {
-        if (encoding == null || encoding.length() == 0) {
+    public static byte[] convertToBytes(char char1, String encoding) {
+        if (encoding == null || encoding.isEmpty()) {
             return new byte[]{(byte) char1};
         }
+
+        byte[] result = handleExtraEncodings(char1, encoding);
+        if (result.length == 0) {
+            return result;
+        }
+
+        result = handleStandardEncodings(char1, encoding);
+        if (result.length == 0) {
+            return result;
+        }
+
+        result = handleUnicodeEncoding(char1, encoding);
+        if (result.length == 0) {
+            return result;
+        }
+
+        return handleDefaultEncoding(char1, encoding);
+    }
+
+    private static byte[] handleExtraEncodings(char char1, String encoding) {
         ExtraEncoding extra = extraEncodings.get(encoding.toLowerCase(Locale.ROOT));
         if (extra != null) {
             byte[] b = extra.charToByte(char1, encoding);
@@ -244,6 +275,10 @@ public class PdfEncodings {
                 return b;
             }
         }
+        return new byte[0];
+    }
+
+    private static byte[] handleStandardEncodings(char char1, String encoding) {
         IntHashtable hash = null;
         if (encoding.equals(BaseFont.WINANSI)) {
             hash = winansi;
@@ -251,20 +286,27 @@ public class PdfEncodings {
             hash = pdfEncoding;
         }
         if (hash != null) {
-            int c = 0;
-            if (char1 < 128 || char1 > 160 && char1 <= 255) {
-                c = char1;
-            } else {
-                c = hash.get(char1);
-            }
+            int c = getEncodingValue(char1, hash);
             if (c != 0) {
                 return new byte[]{(byte) c};
             } else {
                 return new byte[0];
             }
         }
+        return new byte[0];
+    }
+
+    private static int getEncodingValue(char char1, IntHashtable hash) {
+        if (char1 < 128 || (char1 > 160 && char1 <= 255)) {
+            return char1;
+        } else {
+            return hash.get(char1);
+        }
+    }
+
+    private static byte[] handleUnicodeEncoding(char char1, String encoding) {
         if (encoding.equals(PdfObject.TEXT_UNICODE)) {
-            // workaround for jdk 1.2.2 bug
+            // workaround for JDK 1.2.2 bug
             byte[] b = new byte[4];
             b[0] = -2;
             b[1] = -1;
@@ -272,12 +314,17 @@ public class PdfEncodings {
             b[3] = (byte) (char1 & 0xff);
             return b;
         }
+        return new byte[0];
+    }
+
+    private static byte[] handleDefaultEncoding(char char1, String encoding) {
         try {
             return String.valueOf(char1).getBytes(encoding);
         } catch (UnsupportedEncodingException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * Converts a <CODE>byte</CODE> array to a <CODE>String</CODE> according to the some encoding.
@@ -286,11 +333,11 @@ public class PdfEncodings {
      * @param encoding the encoding
      * @return the converted <CODE>String</CODE>
      */
-    public static final String convertToString(byte[] bytes, String encoding) {
+    public static String convertToString(byte[] bytes, String encoding) {
         if (bytes == null) {
             return PdfObject.NOTHING;
         }
-        if (encoding == null || encoding.length() == 0) {
+        if (encoding == null || encoding.isEmpty()) {
             char[] c = new char[bytes.length];
             for (int k = 0; k < bytes.length; ++k) {
                 c[k] = (char) (bytes[k] & 0xff);
@@ -355,7 +402,7 @@ public class PdfEncodings {
      * @param name the name of the cmap to clear or all the cmaps if the empty string
      */
     public static void clearCmap(String name) {
-        if (name.length() == 0) {
+        if (name.isEmpty()) {
             cmaps.clear();
         } else {
             cmaps.remove(name);
@@ -465,70 +512,75 @@ public class PdfEncodings {
         in.close();
     }
 
-    static void encodeStream(InputStream in, ArrayList<char[]> planes)
-            throws IOException {
-        BufferedReader rd = new BufferedReader(new InputStreamReader(in,
-                StandardCharsets.ISO_8859_1));
-        String line = null;
-        int state = CIDNONE;
-        byte[] seqs = new byte[7];
-        while ((line = rd.readLine()) != null) {
-            if (line.length() < 6) {
-                continue;
-            }
-            switch (state) {
-                case CIDNONE: {
-                    if (line.contains("begincidrange")) {
-                        state = CIDRANGE;
-                    } else if (line.contains("begincidchar")) {
-                        state = CIDCHAR;
-                    } else if (line.contains("usecmap")) {
-                        StringTokenizer tk = new StringTokenizer(line);
-                        String t = tk.nextToken();
-                        readCmap(t.substring(1), planes);
-                    }
-                    break;
+    static void encodeStream(InputStream in, ArrayList<char[]> planes) throws IOException {
+        try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, StandardCharsets.ISO_8859_1))) {
+            String line;
+            int state = CIDNONE;
+            byte[] seqs = new byte[7];
+
+            while ((line = rd.readLine()) != null) {
+                if (line.length() < 6) {
+                    continue;
                 }
-                case CIDRANGE: {
-                    if (line.contains("endcidrange")) {
-                        state = CIDNONE;
-                        break;
-                    }
-                    StringTokenizer tk = new StringTokenizer(line);
-                    String t = tk.nextToken();
-                    int size = t.length() / 2 - 1;
-                    long start = Long.parseLong(t.substring(1, t.length() - 1), 16);
-                    t = tk.nextToken();
-                    long end = Long.parseLong(t.substring(1, t.length() - 1), 16);
-                    t = tk.nextToken();
-                    int cid = Integer.parseInt(t);
-                    for (long k = start; k <= end; ++k) {
-                        breakLong(k, size, seqs);
-                        encodeSequence(size, seqs, (char) cid, planes);
-                        ++cid;
-                    }
-                    break;
-                }
-                case CIDCHAR: {
-                    if (line.contains("endcidchar")) {
-                        state = CIDNONE;
-                        break;
-                    }
-                    StringTokenizer tk = new StringTokenizer(line);
-                    String t = tk.nextToken();
-                    int size = t.length() / 2 - 1;
-                    long start = Long.parseLong(t.substring(1, t.length() - 1), 16);
-                    t = tk.nextToken();
-                    int cid = Integer.parseInt(t);
-                    breakLong(start, size, seqs);
-                    encodeSequence(size, seqs, (char) cid, planes);
-                    break;
-                }
-                default:
-                    throw new IllegalArgumentException("Unrecognized state: " + state);
+                state = switch (state) {
+                    case CIDNONE -> handleCidNoneState(line, state, planes);
+                    case CIDRANGE -> handleCidRangeState(line, seqs, planes);
+                    case CIDCHAR -> handleCidCharState(line, seqs, planes);
+                    default -> throw new IllegalArgumentException("Unrecognized state: " + state);
+                };
             }
         }
     }
+
+    private static int handleCidNoneState(String line, int currentState, ArrayList<char[]> planes) throws IOException {
+        if (line.contains("begincidrange")) {
+            return CIDRANGE;
+        } else if (line.contains("begincidchar")) {
+            return CIDCHAR;
+        } else if (line.contains("usecmap")) {
+            StringTokenizer tk = new StringTokenizer(line);
+            String t = tk.nextToken();
+            readCmap(t.substring(1), planes);
+        }
+        return currentState;
+    }
+
+    private static int handleCidRangeState(String line, byte[] seqs, ArrayList<char[]> planes) {
+        if (line.contains("endcidrange")) {
+            return CIDNONE;
+        }
+        StringTokenizer tk = new StringTokenizer(line);
+        String t = tk.nextToken();
+        int size = t.length() / 2 - 1;
+        long start = Long.parseLong(t.substring(1, t.length() - 1), 16);
+        t = tk.nextToken();
+        long end = Long.parseLong(t.substring(1, t.length() - 1), 16);
+        t = tk.nextToken();
+        int cid = Integer.parseInt(t);
+
+        for (long k = start; k <= end; ++k) {
+            breakLong(k, size, seqs);
+            encodeSequence(size, seqs, (char) cid, planes);
+            ++cid;
+        }
+        return CIDRANGE;
+    }
+
+    private static int handleCidCharState(String line, byte[] seqs, ArrayList<char[]> planes) {
+        if (line.contains("endcidchar")) {
+            return CIDNONE;
+        }
+        StringTokenizer tk = new StringTokenizer(line);
+        String t = tk.nextToken();
+        int size = t.length() / 2 - 1;
+        long start = Long.parseLong(t.substring(1, t.length() - 1), 16);
+        t = tk.nextToken();
+        int cid = Integer.parseInt(t);
+        breakLong(start, size, seqs);
+        encodeSequence(size, seqs, (char) cid, planes);
+        return CIDCHAR;
+    }
+
 
     static void breakLong(long n, int size, byte[] seqs) {
         for (int k = 0; k < size; ++k) {

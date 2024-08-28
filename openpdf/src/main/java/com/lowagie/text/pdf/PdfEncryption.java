@@ -520,7 +520,6 @@ public class PdfEncryption {
     /**
      * @param documentID    byte array of document id
      * @param ownerPassword byte array of owner password
-     * @param userKey       byte array of user key
      * @param ownerKey      byte array of owner key
      * @param permissions   permissions
      */
@@ -572,147 +571,173 @@ public class PdfEncryption {
         PdfDictionary dic = new PdfDictionary();
 
         if (publicKeyHandler.getRecipientsSize() > 0) {
-            PdfArray recipients = null;
-
-            dic.put(PdfName.FILTER, PdfName.PUBSEC);
-            dic.put(PdfName.R, new PdfNumber(revision));
-
-            try {
-                recipients = publicKeyHandler.getEncodedRecipients();
-            } catch (Exception f) {
-                throw new ExceptionConverter(f);
-            }
-
-            if (revision == STANDARD_ENCRYPTION_40) {
-                dic.put(PdfName.V, new PdfNumber(1));
-                dic.put(PdfName.SUBFILTER, PdfName.ADBE_PKCS7_S4);
-                dic.put(PdfName.RECIPIENTS, recipients);
-            } else if (revision == STANDARD_ENCRYPTION_128 && encryptMetadata) {
-                dic.put(PdfName.V, new PdfNumber(2));
-                dic.put(PdfName.LENGTH, new PdfNumber(128));
-                dic.put(PdfName.SUBFILTER, PdfName.ADBE_PKCS7_S4);
-                dic.put(PdfName.RECIPIENTS, recipients);
-            } else {
-                dic.put(PdfName.R, new PdfNumber(AES_128));
-                dic.put(PdfName.V, new PdfNumber(4));
-                dic.put(PdfName.SUBFILTER, PdfName.ADBE_PKCS7_S5);
-
-                PdfDictionary stdcf = new PdfDictionary();
-                stdcf.put(PdfName.RECIPIENTS, recipients);
-                if (!encryptMetadata) {
-                    stdcf.put(PdfName.ENCRYPTMETADATA, PdfBoolean.PDFFALSE);
-                }
-
-                if (revision == AES_128) {
-                    stdcf.put(PdfName.CFM, PdfName.AESV2);
-                } else {
-                    stdcf.put(PdfName.CFM, PdfName.V2);
-                }
-                PdfDictionary cf = new PdfDictionary();
-                cf.put(PdfName.DEFAULTCRYPTFILTER, stdcf);
-                dic.put(PdfName.CF, cf);
-                if (embeddedFilesOnly) {
-                    dic.put(PdfName.EFF, PdfName.DEFAULTCRYPTFILTER);
-                    dic.put(PdfName.STRF, PdfName.IDENTITY);
-                    dic.put(PdfName.STMF, PdfName.IDENTITY);
-                } else {
-                    dic.put(PdfName.STRF, PdfName.DEFAULTCRYPTFILTER);
-                    dic.put(PdfName.STMF, PdfName.DEFAULTCRYPTFILTER);
-                }
-            }
-
-            MessageDigest md = null;
-            byte[] encodedRecipient = null;
-
-            try {
-                md = MessageDigest.getInstance("SHA-1");
-                md.update(publicKeyHandler.getSeed());
-                for (int i = 0; i < publicKeyHandler.getRecipientsSize(); i++) {
-                    encodedRecipient = publicKeyHandler.getEncodedRecipient(i);
-                    md.update(encodedRecipient);
-                }
-                if (!encryptMetadata) {
-                    md.update(new byte[]{(byte) 255, (byte) 255, (byte) 255,
-                            (byte) 255});
-                }
-            } catch (Exception f) {
-                throw new ExceptionConverter(f);
-            }
-
-            byte[] mdResult = md.digest();
-
-            setupByEncryptionKey(mdResult, keyLength);
+            handleEncryptionForRecipients(dic);
         } else {
-            dic.put(PdfName.FILTER, PdfName.STANDARD);
-            dic.put(PdfName.O, new PdfLiteral(PdfContentByte
-                    .escapeString(ownerKey)));
-            dic.put(PdfName.U, new PdfLiteral(PdfContentByte
-                    .escapeString(userKey)));
-            dic.put(PdfName.P, new PdfNumber(permissions));
-            dic.put(PdfName.R, new PdfNumber(revision));
-
-            if (revision == STANDARD_ENCRYPTION_40) {
-                dic.put(PdfName.V, new PdfNumber(1));
-            } else if (revision == STANDARD_ENCRYPTION_128 && encryptMetadata) {
-                dic.put(PdfName.V, new PdfNumber(2));
-                dic.put(PdfName.LENGTH, new PdfNumber(128));
-            } else if (revision == STANDARD_ENCRYPTION_128 || revision == AES_128) {
-                if (!encryptMetadata) {
-                    dic.put(PdfName.ENCRYPTMETADATA, PdfBoolean.PDFFALSE);
-                }
-                dic.put(PdfName.R, new PdfNumber(AES_128));
-                dic.put(PdfName.V, new PdfNumber(4));
-                dic.put(PdfName.LENGTH, new PdfNumber(128));
-                PdfDictionary stdcf = new PdfDictionary();
-                stdcf.put(PdfName.LENGTH, new PdfNumber(16));
-                if (embeddedFilesOnly) {
-                    stdcf.put(PdfName.AUTHEVENT, PdfName.EFOPEN);
-                    dic.put(PdfName.EFF, PdfName.STDCF);
-                    dic.put(PdfName.STRF, PdfName.IDENTITY);
-                    dic.put(PdfName.STMF, PdfName.IDENTITY);
-                } else {
-                    stdcf.put(PdfName.AUTHEVENT, PdfName.DOCOPEN);
-                    dic.put(PdfName.STRF, PdfName.STDCF);
-                    dic.put(PdfName.STMF, PdfName.STDCF);
-                }
-                if (revision == AES_128) {
-                    stdcf.put(PdfName.CFM, PdfName.AESV2);
-                } else {
-                    stdcf.put(PdfName.CFM, PdfName.V2);
-                }
-                PdfDictionary cf = new PdfDictionary();
-                cf.put(PdfName.STDCF, stdcf);
-                dic.put(PdfName.CF, cf);
-            } else if (revision == AES_256_V3) {
-                if (!encryptMetadata) {
-                    dic.put(PdfName.ENCRYPTMETADATA, PdfBoolean.PDFFALSE);
-                }
-                dic.put(PdfName.V, new PdfNumber(5));
-                dic.put(PdfName.OE, new PdfLiteral(PdfContentByte.escapeString(oeKey)));
-                dic.put(PdfName.UE, new PdfLiteral(PdfContentByte.escapeString(ueKey)));
-                dic.put(PdfName.PERMS, new PdfLiteral(PdfContentByte.escapeString(perms)));
-                dic.put(PdfName.LENGTH, new PdfNumber(256));
-                PdfDictionary stdcf = new PdfDictionary();
-                stdcf.put(PdfName.LENGTH, new PdfNumber(32));
-                if (embeddedFilesOnly) {
-                    stdcf.put(PdfName.AUTHEVENT, PdfName.EFOPEN);
-                    dic.put(PdfName.EFF, PdfName.STDCF);
-                    dic.put(PdfName.STRF, PdfName.IDENTITY);
-                    dic.put(PdfName.STMF, PdfName.IDENTITY);
-                } else {
-                    stdcf.put(PdfName.AUTHEVENT, PdfName.DOCOPEN);
-                    dic.put(PdfName.STRF, PdfName.STDCF);
-                    dic.put(PdfName.STMF, PdfName.STDCF);
-                }
-                stdcf.put(PdfName.CFM, PdfName.AESV3);
-                PdfDictionary cf = new PdfDictionary();
-                cf.put(PdfName.STDCF, stdcf);
-                dic.put(PdfName.CF, cf);
-            }
+            handleEncryptionForStandard(dic);
         }
 
         return dic;
     }
+
+    private void handleEncryptionForRecipients(PdfDictionary dic) {
+        PdfArray recipients = getEncodedRecipients();
+
+        addBasicEncryptionEntries(dic);
+
+        if (revision == STANDARD_ENCRYPTION_40) {
+            addStandardEncryption40(dic, recipients);
+        } else if (revision == STANDARD_ENCRYPTION_128 && encryptMetadata) {
+            addStandardEncryption128(dic, recipients);
+        } else {
+            addAdvancedEncryption(dic, recipients);
+        }
+
+        byte[] mdResult = calculateMessageDigest();
+        setupByEncryptionKey(mdResult, keyLength);
+    }
+
+    private PdfArray getEncodedRecipients() {
+        try {
+            return publicKeyHandler.getEncodedRecipients();
+        } catch (Exception e) {
+            throw new ExceptionConverter(e);
+        }
+    }
+
+    private void addBasicEncryptionEntries(PdfDictionary dic) {
+        dic.put(PdfName.FILTER, PdfName.PUBSEC);
+        dic.put(PdfName.R, new PdfNumber(revision));
+    }
+
+    private void addStandardEncryption40(PdfDictionary dic, PdfArray recipients) {
+        dic.put(PdfName.V, new PdfNumber(1));
+        dic.put(PdfName.SUBFILTER, PdfName.ADBE_PKCS7_S4);
+        dic.put(PdfName.RECIPIENTS, recipients);
+    }
+
+    private void addStandardEncryption128(PdfDictionary dic, PdfArray recipients) {
+        dic.put(PdfName.V, new PdfNumber(2));
+        dic.put(PdfName.PDF_NAME_LENGTH, new PdfNumber(128));
+        dic.put(PdfName.SUBFILTER, PdfName.ADBE_PKCS7_S4);
+        dic.put(PdfName.RECIPIENTS, recipients);
+    }
+
+    private void addAdvancedEncryption(PdfDictionary dic, PdfArray recipients) {
+        dic.put(PdfName.R, new PdfNumber(AES_128));
+        dic.put(PdfName.V, new PdfNumber(4));
+        dic.put(PdfName.SUBFILTER, PdfName.ADBE_PKCS7_S5);
+
+        PdfDictionary stdcf = new PdfDictionary();
+        stdcf.put(PdfName.RECIPIENTS, recipients);
+        if (!encryptMetadata) {
+            stdcf.put(PdfName.ENCRYPTMETADATA, PdfBoolean.PDFFALSE);
+        }
+
+        stdcf.put(PdfName.CFM, revision == AES_128 ? PdfName.AESV2 : PdfName.V2);
+        PdfDictionary cf = new PdfDictionary();
+        cf.put(PdfName.DEFAULTCRYPTFILTER, stdcf);
+        dic.put(PdfName.CF, cf);
+
+        if (embeddedFilesOnly) {
+            dic.put(PdfName.EFF, PdfName.DEFAULTCRYPTFILTER);
+            dic.put(PdfName.STRF, PdfName.IDENTITY);
+            dic.put(PdfName.STMF, PdfName.IDENTITY);
+        } else {
+            dic.put(PdfName.STRF, PdfName.DEFAULTCRYPTFILTER);
+            dic.put(PdfName.STMF, PdfName.DEFAULTCRYPTFILTER);
+        }
+    }
+
+    private void handleEncryptionForStandard(PdfDictionary dic) {
+        dic.put(PdfName.FILTER, PdfName.STANDARD);
+        dic.put(PdfName.O, new PdfLiteral(PdfContentByte.escapeString(ownerKey)));
+        dic.put(PdfName.U, new PdfLiteral(PdfContentByte.escapeString(userKey)));
+        dic.put(PdfName.P, new PdfNumber(permissions));
+        dic.put(PdfName.R, new PdfNumber(revision));
+
+        if (revision == STANDARD_ENCRYPTION_40) {
+            dic.put(PdfName.V, new PdfNumber(1));
+        } else if (revision == STANDARD_ENCRYPTION_128 && encryptMetadata) {
+            dic.put(PdfName.V, new PdfNumber(2));
+            dic.put(PdfName.PDF_NAME_LENGTH, new PdfNumber(128));
+        } else if (revision == STANDARD_ENCRYPTION_128 || revision == AES_128) {
+            addStandardOrAdvancedEncryption(dic);
+        } else if (revision == AES_256_V3) {
+            addAES256Encryption(dic);
+        }
+    }
+
+    private void addStandardOrAdvancedEncryption(PdfDictionary dic) {
+        if (!encryptMetadata) {
+            dic.put(PdfName.ENCRYPTMETADATA, PdfBoolean.PDFFALSE);
+        }
+        dic.put(PdfName.R, new PdfNumber(AES_128));
+        dic.put(PdfName.V, new PdfNumber(4));
+        dic.put(PdfName.PDF_NAME_LENGTH, new PdfNumber(128));
+
+        PdfDictionary stdcf = new PdfDictionary();
+        stdcf.put(PdfName.PDF_NAME_LENGTH, new PdfNumber(16));
+        if (embeddedFilesOnly) {
+            stdcf.put(PdfName.AUTHEVENT, PdfName.EFOPEN);
+            dic.put(PdfName.EFF, PdfName.STDCF);
+            dic.put(PdfName.STRF, PdfName.IDENTITY);
+            dic.put(PdfName.STMF, PdfName.IDENTITY);
+        } else {
+            stdcf.put(PdfName.AUTHEVENT, PdfName.DOCOPEN);
+            dic.put(PdfName.STRF, PdfName.STDCF);
+            dic.put(PdfName.STMF, PdfName.STDCF);
+        }
+        stdcf.put(PdfName.CFM, revision == AES_128 ? PdfName.AESV2 : PdfName.V2);
+        PdfDictionary cf = new PdfDictionary();
+        cf.put(PdfName.STDCF, stdcf);
+        dic.put(PdfName.CF, cf);
+    }
+
+    private void addAES256Encryption(PdfDictionary dic) {
+        if (!encryptMetadata) {
+            dic.put(PdfName.ENCRYPTMETADATA, PdfBoolean.PDFFALSE);
+        }
+        dic.put(PdfName.V, new PdfNumber(5));
+        dic.put(PdfName.OE, new PdfLiteral(PdfContentByte.escapeString(oeKey)));
+        dic.put(PdfName.UE, new PdfLiteral(PdfContentByte.escapeString(ueKey)));
+        dic.put(PdfName.PERMS, new PdfLiteral(PdfContentByte.escapeString(perms)));
+        dic.put(PdfName.PDF_NAME_LENGTH, new PdfNumber(256));
+
+        PdfDictionary stdcf = new PdfDictionary();
+        stdcf.put(PdfName.PDF_NAME_LENGTH, new PdfNumber(32));
+        if (embeddedFilesOnly) {
+            stdcf.put(PdfName.AUTHEVENT, PdfName.EFOPEN);
+            dic.put(PdfName.EFF, PdfName.STDCF);
+            dic.put(PdfName.STRF, PdfName.IDENTITY);
+            dic.put(PdfName.STMF, PdfName.IDENTITY);
+        } else {
+            stdcf.put(PdfName.AUTHEVENT, PdfName.DOCOPEN);
+            dic.put(PdfName.STRF, PdfName.STDCF);
+            dic.put(PdfName.STMF, PdfName.STDCF);
+        }
+        stdcf.put(PdfName.CFM, PdfName.AESV3);
+        PdfDictionary cf = new PdfDictionary();
+        cf.put(PdfName.STDCF, stdcf);
+        dic.put(PdfName.CF, cf);
+    }
+
+    private byte[] calculateMessageDigest() {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            md.update(publicKeyHandler.getSeed());
+            for (int i = 0; i < publicKeyHandler.getRecipientsSize(); i++) {
+                byte[] encodedRecipient = publicKeyHandler.getEncodedRecipient(i);
+                md.update(encodedRecipient);
+            }
+            if (!encryptMetadata) {
+                md.update(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+            }
+            return md.digest();
+        } catch (Exception e) {
+            throw new ExceptionConverter(e);
+        }
+    }
+
 
     public PdfObject getFileID() {
         return createInfoId(documentID);

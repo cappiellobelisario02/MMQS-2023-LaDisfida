@@ -135,59 +135,58 @@ public class PdfDate extends PdfString {
         if (d.startsWith("D:")) {
             d = d.substring(2);
         }
+
         StringBuilder sb = new StringBuilder();
-        if (d.length() < 4) {
-            return "0000";
-        }
-        sb.append(d, 0, 4); //year
-        d = d.substring(4);
-        if (d.length() < 2) {
-            return sb.toString();
-        }
-        sb.append('-').append(d, 0, 2); //month
-        d = d.substring(2);
-        if (d.length() < 2) {
-            return sb.toString();
-        }
-        sb.append('-').append(d, 0, 2); //day
-        d = d.substring(2);
-        if (d.length() < 2) {
-            return sb.toString();
-        }
-        sb.append('T').append(d, 0, 2); //hour
-        d = d.substring(2);
-        if (d.length() < 2) {
+        sb.append(parseDateComponent(d, 4, "0000")); // year
+        sb.append(parseDateComponent(d, 2, "-"));    // month
+        sb.append(parseDateComponent(d, 2, "-"));    // day
+        sb.append(parseDateComponent(d, 2, "T"));    // hour
+
+        if (d.length() > 8) {
+            sb.append(':').append(d, 8, 10); // minute
+            d = d.substring(10);
+        } else {
             sb.append(":00Z");
             return sb.toString();
         }
-        sb.append(':').append(d, 0, 2); //minute
-        d = d.substring(2);
-        if (d.length() < 2) {
+
+        if (d.length() > 0) {
+            sb.append(parseSecondsAndTimeZone(d)); // second and timezone
+        } else {
             sb.append('Z');
-            return sb.toString();
         }
-        sb.append(':').append(d, 0, 2); //second
+
+        return sb.toString();
+    }
+
+    private static String parseDateComponent(String d, int length, String prefix) {
+        if (d.length() < length) {
+            return prefix.equals("0000") ? prefix : "";
+        }
+        String component = d.substring(0, length);
+        return prefix + component;
+    }
+
+    private static String parseSecondsAndTimeZone(String d) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(':').append(d.substring(0, 2)); // second
         d = d.substring(2);
+
         if (d.startsWith("-") || d.startsWith("+")) {
             String sign = d.substring(0, 1);
             d = d.substring(1);
-            String h = "00";
-            String m = "00";
-            if (d.length() >= 2) {
-                h = d.substring(0, 2);
-                if (d.length() > 2) {
-                    d = d.substring(3);
-                    if (d.length() >= 2) {
-                        m = d.substring(0, 2);
-                    }
-                }
-                sb.append(sign).append(h).append(':').append(m);
-                return sb.toString();
-            }
+            String h = d.length() >= 2 ? d.substring(0, 2) : "00";
+            String m = d.length() > 2 ? d.substring(3, 5) : "00";
+
+            sb.append(sign).append(h).append(':').append(m);
+        } else {
+            sb.append('Z');
         }
-        sb.append('Z');
+
         return sb.toString();
     }
+
 
     /**
      * Converts a PDF string representing a date into a Calendar.
@@ -200,47 +199,74 @@ public class PdfDate extends PdfString {
             if (s.startsWith("D:")) {
                 s = s.substring(2);
             }
-            GregorianCalendar calendar;
+
             int slen = s.length();
             int idx = s.indexOf('Z');
+            GregorianCalendar calendar;
+
             if (idx >= 0) {
+                calendar = createCalendarWithTimeZone(0);
                 slen = idx;
-                calendar = new GregorianCalendar(new SimpleTimeZone(0, "ZPDF"));
             } else {
-                int sign = 1;
-                idx = s.indexOf('+');
-                if (idx < 0) {
-                    idx = s.indexOf('-');
-                    if (idx >= 0) {
-                        sign = -1;
-                    }
-                }
-                if (idx < 0) {
-                    calendar = new GregorianCalendar();
-                } else {
-                    int offset = Integer.parseInt(s.substring(idx + 1, idx + 3)) * 60;
-                    if (idx + 5 < s.length()) {
-                        offset += Integer.parseInt(s.substring(idx + 4, idx + 6));
-                    }
-                    calendar = new GregorianCalendar(new SimpleTimeZone(offset * sign * 60000, "ZPDF"));
+                calendar = handleTimeZone(s);
+                idx = findTimeZoneIndex(s);
+                if (idx >= 0) {
                     slen = idx;
                 }
             }
+
             calendar.clear();
-            idx = 0;
-            for (int k = 0; k < DATE_SPACE.length; k += 3) {
-                if (idx >= slen) {
-                    break;
-                }
-                calendar.set(DATE_SPACE[k],
-                        Integer.parseInt(s.substring(idx, idx + DATE_SPACE[k + 1])) + DATE_SPACE[k + 2]);
-                idx += DATE_SPACE[k + 1];
-            }
+            parseDateComponents(s, slen, calendar);
+
             return calendar;
         } catch (Exception e) {
             return null;
         }
     }
+
+    private static GregorianCalendar createCalendarWithTimeZone(int offset) {
+        return new GregorianCalendar(new SimpleTimeZone(offset, "ZPDF"));
+    }
+
+    private static GregorianCalendar handleTimeZone(String s) {
+        int idx = findTimeZoneIndex(s);
+        if (idx < 0) {
+            return new GregorianCalendar();
+        }
+
+        int sign = s.charAt(idx) == '-' ? -1 : 1;
+        int offset = parseOffset(s, idx + 1);
+        return createCalendarWithTimeZone(offset * sign * 60000);
+    }
+
+    private static int findTimeZoneIndex(String s) {
+        int idx = s.indexOf('+');
+        if (idx < 0) {
+            idx = s.indexOf('-');
+        }
+        return idx;
+    }
+
+    private static int parseOffset(String s, int idx) {
+        int offset = Integer.parseInt(s.substring(idx, idx + 2)) * 60;
+        if (idx + 4 < s.length()) {
+            offset += Integer.parseInt(s.substring(idx + 3, idx + 5));
+        }
+        return offset;
+    }
+
+    private static void parseDateComponents(String s, int slen, GregorianCalendar calendar) {
+        int idx = 0;
+        for (int k = 0; k < DATE_SPACE.length; k += 3) {
+            if (idx >= slen) {
+                break;
+            }
+            calendar.set(DATE_SPACE[k],
+                    Integer.parseInt(s.substring(idx, idx + DATE_SPACE[k + 1])) + DATE_SPACE[k + 2]);
+            idx += DATE_SPACE[k + 1];
+        }
+    }
+
 
     /**
      * Adds a number of leading zeros to a given <CODE>String</CODE> in order to get a <CODE>String</CODE> of a certain

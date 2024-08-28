@@ -183,76 +183,92 @@ public class PdfFileSpecification extends PdfDictionary {
      */
     public static PdfFileSpecification fileEmbedded(PdfWriter writer, String filePath, String fileDisplay,
             byte[] fileStore, String mimeType, PdfDictionary fileParameter, int compressionLevel) throws IOException {
-        PdfFileSpecification fs = new PdfFileSpecification();
-        fs.writer = writer;
-        fs.put(PdfName.F, new PdfString(fileDisplay));
-        fs.setUnicodeFileName(fileDisplay, !PdfEncodings.isPdfDocEncoding(fileDisplay));
-        PdfEFStream stream;
+        PdfFileSpecification fs = fileExtern(writer, fileDisplay);
+        PdfEFStream stream = createPdfEFStream(writer, filePath, fileStore, compressionLevel);
+        PdfDictionary param = createFileParameter(fileParameter, fileStore, stream);
+        addOptionalMimeType(mimeType, stream);
+
+        PdfIndirectReference ref = writer.addToBody(stream).getIndirectReference();
+        if (fileStore == null) {
+            handleFileStore(writer, stream, param);
+        }
+
+        return createPdfFileSpecification(fs, ref);
+    }
+
+    private static PdfEFStream createPdfEFStream(PdfWriter writer, String filePath, byte[] fileStore, int compressionLevel) throws IOException {
         InputStream in = null;
-        PdfIndirectReference ref;
-        PdfIndirectReference refFileLength = null;
         try {
-            if (fileStore == null) {
-                refFileLength = writer.getPdfIndirectReference();
-                File file = new File(filePath);
-                if (file.canRead()) {
-                    in = new FileInputStream(filePath);
-                } else {
-                    if (filePath.startsWith("file:/") || filePath.startsWith("http://") || filePath.startsWith(
-                            "https://") || filePath.startsWith("jar:")) {
-                        in = new URL(filePath).openStream();
-                    } else {
-                        in = BaseFont.getResourceStream(filePath);
-                        if (in == null) {
-                            throw new IOException(
-                                    MessageLocalization.getComposedMessage("1.not.found.as.file.or.resource",
-                                            filePath));
-                        }
-                    }
-                }
-                stream = new PdfEFStream(in, writer);
-            } else {
-                stream = new PdfEFStream(fileStore);
-            }
-            stream.put(PdfName.TYPE, PdfName.EMBEDDEDFILE);
-            stream.flateCompress(compressionLevel);
-            PdfDictionary param = new PdfDictionary();
-            if (fileParameter != null) {
-                param.merge(fileParameter);
-            }
-
             if (fileStore != null) {
-                param.put(PdfName.SIZE, new PdfNumber(stream.getRawLength()));
-                stream.put(PdfName.PARAMS, param);
-            } else {
-                stream.put(PdfName.PARAMS, refFileLength);
+                return new PdfEFStream(fileStore);
             }
 
-            if (mimeType != null) {
-                stream.put(PdfName.SUBTYPE, new PdfName(mimeType));
-            }
-
-            ref = writer.addToBody(stream).getIndirectReference();
-            if (fileStore == null) {
-                stream.writeLength();
-                param.put(PdfName.SIZE, new PdfNumber(stream.getRawLength()));
-                writer.addToBody(param, refFileLength);
-            }
+            in = openInputStream(filePath);
+            PdfEFStream stream = new PdfEFStream(in, writer);
+            stream.flateCompress(compressionLevel);
+            return stream;
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (Exception e) {
+                    // Log exception (could use a logging framework)
                     e.printStackTrace();
                 }
             }
         }
+    }
+
+    private static InputStream openInputStream(String filePath) throws IOException {
+        if (filePath.startsWith("file:/") || filePath.startsWith("http://") || filePath.startsWith("https://") || filePath.startsWith("jar:")) {
+            return new URL(filePath).openStream();
+        }
+
+        File file = new File(filePath);
+        if (file.canRead()) {
+            return new FileInputStream(filePath);
+        }
+
+        InputStream in = BaseFont.getResourceStream(filePath);
+        if (in == null) {
+            throw new IOException(MessageLocalization.getComposedMessage("1.not.found.as.file.or.resource", filePath));
+        }
+        return in;
+    }
+
+    private static PdfDictionary createFileParameter(PdfDictionary fileParameter, byte[] fileStore, PdfEFStream stream) {
+        PdfDictionary param = new PdfDictionary();
+        if (fileParameter != null) {
+            param.merge(fileParameter);
+        }
+        if (fileStore != null) {
+            param.put(PdfName.SIZE, new PdfNumber(stream.getRawLength()));
+            stream.put(PdfName.PARAMS, param);
+        }
+        return param;
+    }
+
+    private static void addOptionalMimeType(String mimeType, PdfEFStream stream) {
+        if (mimeType != null) {
+            stream.put(PdfName.SUBTYPE, new PdfName(mimeType));
+        }
+    }
+
+    private static void handleFileStore(PdfWriter writer, PdfEFStream stream, PdfDictionary param) throws IOException {
+        PdfIndirectReference refFileLength = writer.getPdfIndirectReference();
+        stream.writeLength();
+        param.put(PdfName.SIZE, new PdfNumber(stream.getRawLength()));
+        writer.addToBody(param, refFileLength);
+    }
+
+    private static PdfFileSpecification createPdfFileSpecification(PdfFileSpecification fs, PdfIndirectReference ref) {
         PdfDictionary f = new PdfDictionary();
         f.put(PdfName.F, ref);
         f.put(PdfName.UF, ref);
         fs.put(PdfName.EF, f);
         return fs;
     }
+
 
     /**
      * Creates a file specification for an external file.
@@ -308,10 +324,10 @@ public class PdfFileSpecification extends PdfDictionary {
      * Sets a flag that indicates whether an external file referenced by the file specification is volatile. If the
      * value is true, applications should never cache a copy of the file.
      *
-     * @param volatile_file if true, the external file should not be cached
+     * @param volatileFile if true, the external file should not be cached
      */
-    public void setVolatile(boolean volatile_file) {
-        put(PdfName.V, new PdfBoolean(volatile_file));
+    public void setVolatile(boolean volatileFile) {
+        put(PdfName.V, new PdfBoolean(volatileFile));
     }
 
     /**

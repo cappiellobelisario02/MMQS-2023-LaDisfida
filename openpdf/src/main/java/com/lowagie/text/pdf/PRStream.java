@@ -192,7 +192,7 @@ public class PRStream extends PdfStream {
 
     public void setLength(int length) {
         this.length = length;
-        put(PdfName.LENGTH, new PdfNumber(length));
+        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(length));
     }
 
     public PdfReader getReader() {
@@ -224,14 +224,14 @@ public class PRStream extends PdfStream {
         if (writer != null) {
             crypto = writer.getEncryption();
         }
-        PdfObject objLen = get(PdfName.LENGTH);
+        PdfObject objLen = get(PdfName.PDF_NAME_LENGTH);
         int nn = b.length;
         if (crypto != null) {
             nn = crypto.calculateStreamSize(nn);
         }
-        put(PdfName.LENGTH, new PdfNumber(nn));
+        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(nn));
         superToPdf(writer, os);
-        put(PdfName.LENGTH, objLen);
+        put(PdfName.PDF_NAME_LENGTH, objLen);
         os.write(STARTSTREAM);
         if (length > 0) {
             if (crypto != null && !crypto.isEmbeddedFilesOnly()) {

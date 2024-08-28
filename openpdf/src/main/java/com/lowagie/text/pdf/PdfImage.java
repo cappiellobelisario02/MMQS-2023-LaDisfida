@@ -126,7 +126,7 @@ public class PdfImage extends PdfStream {
                     put(PdfName.MASK, new PdfLiteral(s));
                 }
                 bytes = image.getRawData();
-                put(PdfName.LENGTH, new PdfNumber(bytes.length));
+                put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
                 int bpc = image.getBpc();
                 if (bpc > 0xff) {
                     if (!image.isMask()) {
@@ -219,7 +219,7 @@ public class PdfImage extends PdfStream {
                     put(PdfName.BITSPERCOMPONENT, new PdfNumber(8));
                     if (image.getRawData() != null) {
                         bytes = image.getRawData();
-                        put(PdfName.LENGTH, new PdfNumber(bytes.length));
+                        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
                         return;
                     }
                     streamBytes = new ByteArrayOutputStream();
@@ -242,7 +242,7 @@ public class PdfImage extends PdfStream {
                     }
                     if (image.getRawData() != null) {
                         bytes = image.getRawData();
-                        put(PdfName.LENGTH, new PdfNumber(bytes.length));
+                        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
                         return;
                     }
                     streamBytes = new ByteArrayOutputStream();
@@ -254,7 +254,7 @@ public class PdfImage extends PdfStream {
                     put(PdfName.BITSPERCOMPONENT, new PdfNumber(1));
                     if (image.getRawData() != null) {
                         bytes = image.getRawData();
-                        put(PdfName.LENGTH, new PdfNumber(bytes.length));
+                        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
                         return;
                     }
                     streamBytes = new ByteArrayOutputStream();
@@ -264,7 +264,7 @@ public class PdfImage extends PdfStream {
                     throw new BadPdfFormatException(
                             MessageLocalization.getComposedMessage("1.is.an.unknown.image.format", errorID));
             }
-            put(PdfName.LENGTH, new PdfNumber(streamBytes.size()));
+            put(PdfName.PDF_NAME_LENGTH, new PdfNumber(streamBytes.size()));
         } catch (IOException ioe) {
             throw new BadPdfFormatException(ioe.getMessage());
         } finally {

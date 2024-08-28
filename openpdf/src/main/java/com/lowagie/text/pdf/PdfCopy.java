@@ -657,52 +657,51 @@ public class PdfCopy extends PdfWriter {
         }
 
         public void alterContents() throws IOException {
-            if (over == null && under == null) {
-                return;
-            }
-            PdfArray ar = null;
-            PdfObject content = PdfReader.getPdfObject(pageN.get(PdfName.CONTENTS), pageN);
-            if (content.isArray()) {
-                ar = (PdfArray) content;
-            } else if (content.isStream()) {
-                ar = new PdfArray();
-                ar.add(pageN.get(PdfName.CONTENTS));
-                pageN.put(PdfName.CONTENTS, ar);
-            } else {
-                ar = new PdfArray();
-                pageN.put(PdfName.CONTENTS, ar);
-            }
-            try{
-                ByteBuffer out = new ByteBuffer();
-            } catch (Exception e){
+            try(ByteBuffer out = new ByteBuffer()) {
+                if (over == null && under == null) {
+                    return;
+                }
+                PdfArray ar = null;
+                PdfObject content = PdfReader.getPdfObject(pageN.get(PdfName.CONTENTS), pageN);
+                if (content.isArray()) {
+                    ar = (PdfArray) content;
+                } else if (content.isStream()) {
+                    ar = new PdfArray();
+                    ar.add(pageN.get(PdfName.CONTENTS));
+                    pageN.put(PdfName.CONTENTS, ar);
+                } else {
+                    ar = new PdfArray();
+                    pageN.put(PdfName.CONTENTS, ar);
+                }
+                if (under != null) {
+                    out.append(PdfContents.SAVESTATE);
+                    applyRotation(pageN, out);
+                    out.append(under.getInternalBuffer());
+                    out.append(PdfContents.RESTORESTATE);
+                }
+                if (over != null) {
+                    out.append(PdfContents.SAVESTATE);
+                }
+                PdfStream stream = new PdfStream(out.toByteArray());
+                stream.flateCompress(cstp.getCompressionLevel());
+                PdfIndirectReference ref1 = cstp.addToBody(stream).getIndirectReference();
+                ar.addFirst(ref1);
+                out.reset();
+                if (over != null) {
+                    out.append(' ');
+                    out.append(PdfContents.RESTORESTATE);
+                    out.append(PdfContents.SAVESTATE);
+                    applyRotation(pageN, out);
+                    out.append(over.getInternalBuffer());
+                    out.append(PdfContents.RESTORESTATE);
+                    stream = new PdfStream(out.toByteArray());
+                    stream.flateCompress(cstp.getCompressionLevel());
+                    ar.add(cstp.addToBody(stream).getIndirectReference());
+                }
+                pageN.put(PdfName.RESOURCES, pageResources.getResources());
+            }catch (Exception e) {
                 logger.info("ByteBuffer error: " + e.getMessage());
             }
-            if (under != null) {
-                out.append(PdfContents.SAVESTATE);
-                applyRotation(pageN, out);
-                out.append(under.getInternalBuffer());
-                out.append(PdfContents.RESTORESTATE);
-            }
-            if (over != null) {
-                out.append(PdfContents.SAVESTATE);
-            }
-            PdfStream stream = new PdfStream(out.toByteArray());
-            stream.flateCompress(cstp.getCompressionLevel());
-            PdfIndirectReference ref1 = cstp.addToBody(stream).getIndirectReference();
-            ar.addFirst(ref1);
-            out.reset();
-            if (over != null) {
-                out.append(' ');
-                out.append(PdfContents.RESTORESTATE);
-                out.append(PdfContents.SAVESTATE);
-                applyRotation(pageN, out);
-                out.append(over.getInternalBuffer());
-                out.append(PdfContents.RESTORESTATE);
-                stream = new PdfStream(out.toByteArray());
-                stream.flateCompress(cstp.getCompressionLevel());
-                ar.add(cstp.addToBody(stream).getIndirectReference());
-            }
-            pageN.put(PdfName.RESOURCES, pageResources.getResources());
         }
 
         void applyRotation(PdfDictionary pageN, ByteBuffer out) {
@@ -754,86 +753,117 @@ public class PdfCopy extends PdfWriter {
 
         public void addAnnotation(PdfAnnotation annot) {
             try {
-                List<PdfAnnotation> allAnnots = new ArrayList<>();
-                if (annot.isForm()) {
-                    PdfFormField field = (PdfFormField) annot;
-                    if (field.getParent() != null) {
-                        return;
+                List<PdfAnnotation> allAnnots = getAllAnnotations(annot);
+                for (PdfAnnotation currentAnnot : allAnnots) {
+                    if (currentAnnot.isForm()) {
+                        processFormAnnotation(currentAnnot);
                     }
-                    expandFields(field, allAnnots);
-                    if (cstp.fieldTemplates == null) {
-                        cstp.fieldTemplates = new HashMap<>();
+                    if (currentAnnot.isAnnotation()) {
+                        processPageAnnotation(currentAnnot);
                     }
-                } else {
-                    allAnnots.add(annot);
-                }
-                for (PdfAnnotation allAnnot : allAnnots) {
-                    annot = allAnnot;
-                    if (annot.isForm()) {
-                        if (!annot.isUsed()) {
-                            Map<PdfTemplate, Object> templates = annot.getTemplates();
-                            if (templates != null) {
-                                cstp.fieldTemplates.putAll(templates);
-                            }
-                        }
-                        PdfFormField field = (PdfFormField) annot;
-                        if (field.getParent() == null) {
-                            addDocumentField(field.getIndirectReference());
-                        }
-                    }
-                    if (annot.isAnnotation()) {
-                        PdfObject pdfobj = PdfReader.getPdfObject(pageN.get(PdfName.ANNOTS), pageN);
-                        PdfArray annots;
-                        if (pdfobj == null || !pdfobj.isArray()) {
-                            annots = new PdfArray();
-                            pageN.put(PdfName.ANNOTS, annots);
-                        } else {
-                            annots = (PdfArray) pdfobj;
-                        }
-                        annots.add(annot.getIndirectReference());
-                        if (!annot.isUsed()) {
-                            PdfRectangle rect = (PdfRectangle) annot.get(PdfName.RECT);
-                            if (rect != null && (rect.left() != 0 || rect.right() != 0 || rect.top() != 0
-                                    || rect.bottom() != 0)) {
-                                int rotation = PdfReader.getPageRotation(pageN);
-                                Rectangle pageSize = reader.getPageSizeWithRotation(pageN);
-                                switch (rotation) {
-                                    case 90:
-                                        annot.put(PdfName.RECT, new PdfRectangle(
-                                                pageSize.getTop() - rect.bottom(),
-                                                rect.left(),
-                                                pageSize.getTop() - rect.top(),
-                                                rect.right()));
-                                        break;
-                                    case 180:
-                                        annot.put(PdfName.RECT, new PdfRectangle(
-                                                pageSize.getRight() - rect.left(),
-                                                pageSize.getTop() - rect.bottom(),
-                                                pageSize.getRight() - rect.right(),
-                                                pageSize.getTop() - rect.top()));
-                                        break;
-                                    case 270:
-                                        annot.put(PdfName.RECT, new PdfRectangle(
-                                                rect.bottom(),
-                                                pageSize.getRight() - rect.left(),
-                                                rect.top(),
-                                                pageSize.getRight() - rect.right()));
-                                        break;
-                                    default:
-                                        throw new IllegalArgumentException("Invalid rotation: " + rotation);
-                                }
-                            }
-                        }
-                    }
-                    if (!annot.isUsed()) {
-                        annot.setUsed();
-                        cstp.addToBody(annot, annot.getIndirectReference());
-                    }
+                    finalizeAnnotation(currentAnnot);
                 }
             } catch (IOException e) {
                 throw new ExceptionConverter(e);
             }
         }
+
+        private List<PdfAnnotation> getAllAnnotations(PdfAnnotation annot) {
+            List<PdfAnnotation> allAnnots = new ArrayList<>();
+            if (annot.isForm()) {
+                PdfFormField field = (PdfFormField) annot;
+                if (field.getParent() == null) {
+                    expandFields(field, allAnnots);
+                    if (cstp.fieldTemplates == null) {
+                        cstp.fieldTemplates = new HashMap<>();
+                    }
+                }
+            } else {
+                allAnnots.add(annot);
+            }
+            return allAnnots;
+        }
+
+        private void processFormAnnotation(PdfAnnotation annot) {
+            if (!annot.isUsed()) {
+                Map<PdfTemplate, Object> templates = annot.getTemplates();
+                if (templates != null) {
+                    cstp.fieldTemplates.putAll(templates);
+                }
+            }
+            PdfFormField field = (PdfFormField) annot;
+            if (field.getParent() == null) {
+                addDocumentField(field.getIndirectReference());
+            }
+        }
+
+        private void processPageAnnotation(PdfAnnotation annot) {
+            PdfArray annots = getOrCreateAnnotsArray();
+            annots.add(annot.getIndirectReference());
+            if (!annot.isUsed()) {
+                adjustAnnotationRectangle(annot);
+            }
+        }
+
+        private PdfArray getOrCreateAnnotsArray() {
+            PdfObject pdfobj = PdfReader.getPdfObject(pageN.get(PdfName.ANNOTS), pageN);
+            if (pdfobj == null || !pdfobj.isArray()) {
+                PdfArray annots = new PdfArray();
+                pageN.put(PdfName.ANNOTS, annots);
+                return annots;
+            } else {
+                return (PdfArray) pdfobj;
+            }
+        }
+
+        private void adjustAnnotationRectangle(PdfAnnotation annot) {
+            PdfRectangle rect = (PdfRectangle) annot.get(PdfName.RECT);
+            if (rect == null || (rect.left() == 0 && rect.right() == 0 && rect.top() == 0 && rect.bottom() == 0)) {
+                return;
+            }
+            int rotation = PdfReader.getPageRotation(pageN);
+            Rectangle pageSize = reader.getPageSizeWithRotation(pageN);
+            PdfRectangle adjustedRect = getAdjustedRectangle(rect, rotation, pageSize);
+            annot.put(PdfName.RECT, adjustedRect);
+        }
+
+        private PdfRectangle getAdjustedRectangle(PdfRectangle rect, int rotation, Rectangle pageSize) {
+            switch (rotation) {
+                case 90:
+                    return new PdfRectangle(
+                            pageSize.getTop() - rect.bottom(),
+                            rect.left(),
+                            pageSize.getTop() - rect.top(),
+                            rect.right()
+                    );
+                case 180:
+                    return new PdfRectangle(
+                            pageSize.getRight() - rect.left(),
+                            pageSize.getTop() - rect.bottom(),
+                            pageSize.getRight() - rect.right(),
+                            pageSize.getTop() - rect.top()
+                    );
+                case 270:
+                    return new PdfRectangle(
+                            rect.bottom(),
+                            pageSize.getRight() - rect.left(),
+                            rect.top(),
+                            pageSize.getRight() - rect.right()
+                    );
+                case 0:
+                    return rect;
+                default:
+                    throw new IllegalArgumentException("Invalid rotation: " + rotation);
+            }
+        }
+
+        private void finalizeAnnotation(PdfAnnotation annot) throws IOException {
+            if (!annot.isUsed()) {
+                annot.setUsed();
+                cstp.addToBody(annot, annot.getIndirectReference());
+            }
+        }
+
     }
 
     public static class StampContent extends PdfContentByte {

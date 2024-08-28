@@ -87,100 +87,117 @@ public class PdfEFStream extends PdfStream {
      */
     @Override
     public void toPdf(PdfWriter writer, OutputStream os) throws IOException {
-        if (inputStream != null && compressed) {
-            put(PdfName.FILTER, PdfName.FLATEDECODE);
-        }
-        PdfEncryption crypto = null;
-        if (writer != null) {
-            crypto = writer.getEncryption();
-        }
-        if (crypto != null) {
-            PdfObject filter = get(PdfName.FILTER);
-            if (filter != null) {
-                if (PdfName.CRYPT.equals(filter)) {
-                    crypto = null;
-                } else if (filter.isArray()) {
-                    PdfArray a = (PdfArray) filter;
-                    if (!a.isEmpty() && PdfName.CRYPT.equals(a.getPdfObject(0))) {
-                        crypto = null;
-                    }
-                }
-            }
-        }
-        if (crypto != null && crypto.isEmbeddedFilesOnly()) {
-            PdfArray filter = new PdfArray();
-            PdfArray decodeparms = new PdfArray();
-            PdfDictionary crypt = new PdfDictionary();
-            crypt.put(PdfName.NAME, PdfName.STDCF);
-            filter.add(PdfName.CRYPT);
-            decodeparms.add(crypt);
-            if (compressed) {
-                filter.add(PdfName.FLATEDECODE);
-                decodeparms.add(new PdfNull());
-            }
-            put(PdfName.FILTER, filter);
-            put(PdfName.DECODEPARMS, decodeparms);
-        }
-        PdfObject nn = get(PdfName.LENGTH);
-        if (crypto != null && nn != null && nn.isNumber()) {
-            int sz = ((PdfNumber) nn).intValue();
-            put(PdfName.LENGTH, new PdfNumber(crypto.calculateStreamSize(sz)));
-            superToPdf(writer, os);
-            put(PdfName.LENGTH, nn);
+        PdfEncryption crypto = prepareEncryption(writer);
+        configureFilterAndDecodeParams(crypto);
+
+        PdfObject lengthObject = get(PdfName.PDF_NAME_LENGTH);
+        if (crypto != null && lengthObject != null && lengthObject.isNumber()) {
+            adjustLengthForEncryption(crypto, lengthObject);
         } else {
             superToPdf(writer, os);
         }
 
         os.write(STARTSTREAM);
         if (inputStream != null) {
-            rawLength = 0;
-            DeflaterOutputStream def = null;
-            OutputStreamCounter osc = new OutputStreamCounter(os);
-            OutputStreamEncryption ose = null;
-            OutputStream fout = osc;
-            if (crypto != null) {
-                fout = ose = crypto.getEncryptionStream(fout);
-            }
-            Deflater deflater = null;
-            if (compressed) {
-                deflater = new Deflater(compressionLevel);
-                fout = def = new DeflaterOutputStream(fout, deflater, 0x8000);
-            }
-
-            byte[] buf = new byte[4192];
-            while (true) {
-                int n = inputStream.read(buf);
-                if (n <= 0) {
-                    break;
-                }
-                fout.write(buf, 0, n);
-                rawLength += n;
-            }
-            if (def != null) {
-                def.finish();
-                deflater.end();
-            }
-            if (ose != null) {
-                ose.finish();
-            }
-            inputStreamLength = osc.getCounter();
+            writeStreamWithEncryptionAndCompression(os, crypto);
         } else {
-            if (crypto == null) {
-                if (streamBytes != null) {
-                    streamBytes.writeTo(os);
-                } else {
-                    os.write(bytes);
-                }
-            } else {
-                byte[] b;
-                if (streamBytes != null) {
-                    b = crypto.encryptByteArray(streamBytes.toByteArray());
-                } else {
-                    b = crypto.encryptByteArray(bytes);
-                }
-                os.write(b);
-            }
+            writeBytesToOutputStream(os, crypto);
         }
         os.write(ENDSTREAM);
     }
+
+    private PdfEncryption prepareEncryption(PdfWriter writer) {
+        PdfEncryption crypto = null;
+        if (writer != null) {
+            crypto = writer.getEncryption();
+        }
+        if (crypto != null) {
+            PdfObject filter = get(PdfName.FILTER);
+            if (filter != null && shouldNullifyCrypto(filter)) {
+                crypto = null;
+            }
+        }
+        return crypto;
+    }
+
+    private boolean shouldNullifyCrypto(PdfObject filter) {
+        if (PdfName.CRYPT.equals(filter)) {
+            return true;
+        } else if (filter.isArray()) {
+            PdfArray array = (PdfArray) filter;
+            return !array.isEmpty() && PdfName.CRYPT.equals(array.getPdfObject(0));
+        }
+        return false;
+    }
+
+    private void configureFilterAndDecodeParams(PdfEncryption crypto) {
+        if (crypto != null && crypto.isEmbeddedFilesOnly()) {
+            PdfArray filter = new PdfArray();
+            PdfArray decodeParams = new PdfArray();
+            PdfDictionary cryptDict = new PdfDictionary();
+            cryptDict.put(PdfName.NAME, PdfName.STDCF);
+            filter.add(PdfName.CRYPT);
+            decodeParams.add(cryptDict);
+            if (compressed) {
+                filter.add(PdfName.FLATEDECODE);
+                decodeParams.add(new PdfNull());
+            }
+            put(PdfName.FILTER, filter);
+            put(PdfName.DECODEPARMS, decodeParams);
+        }
+    }
+
+    private void adjustLengthForEncryption(PdfEncryption crypto, PdfObject lengthObject) throws IOException {
+        int size = ((PdfNumber) lengthObject).intValue();
+        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(crypto.calculateStreamSize(size)));
+        superToPdf(null, null); // Assuming superToPdf does not need writer and os here
+        put(PdfName.PDF_NAME_LENGTH, lengthObject);
+    }
+
+    private void writeStreamWithEncryptionAndCompression(OutputStream os, PdfEncryption crypto) throws IOException {
+        rawLength = 0;
+        try (OutputStreamCounter osc = new OutputStreamCounter(os);
+                DeflaterOutputStream deflaterStream = createDeflaterStream(crypto, osc)) {
+
+            byte[] buf = new byte[4192];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buf)) > 0) {
+                deflaterStream.write(buf, 0, bytesRead);
+                rawLength += bytesRead;
+            }
+            deflaterStream.finish();
+            if (crypto != null) {
+                crypto.getEncryptionStream(osc).finish();
+            }
+            inputStreamLength = osc.getCounter();
+        }
+    }
+
+    private DeflaterOutputStream createDeflaterStream(PdfEncryption crypto, OutputStreamCounter osc) {
+        OutputStream stream = osc;
+        if (crypto != null) {
+            stream = crypto.getEncryptionStream(stream);
+        }
+        if (compressed) {
+            Deflater deflater = new Deflater(compressionLevel);
+            return new DeflaterOutputStream(stream, deflater, 0x8000);
+        }
+        return new DeflaterOutputStream(stream);
+    }
+
+    private void writeBytesToOutputStream(OutputStream os, PdfEncryption crypto) throws IOException {
+        if (crypto == null) {
+            if (streamBytes != null) {
+                streamBytes.writeTo(os);
+            } else {
+                os.write(bytes);
+            }
+        } else {
+            byte[] encryptedBytes = (streamBytes != null)
+                    ? crypto.encryptByteArray(streamBytes.toByteArray())
+                    : crypto.encryptByteArray(bytes);
+            os.write(encryptedBytes);
+        }
+    }
+
 }

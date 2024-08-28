@@ -1593,7 +1593,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
     /**
      * A name
      */
-    public static final PdfName lenght = new PdfName("Length");
+    public static final PdfName PDF_NAME_LENGTH = new PdfName("Length");
     /**
      * A name
      */

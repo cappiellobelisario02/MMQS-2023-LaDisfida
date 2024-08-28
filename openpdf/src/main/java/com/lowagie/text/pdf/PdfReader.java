@@ -1511,7 +1511,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     cryptoMode = PdfWriter.STANDARD_ENCRYPTION_40;
                     break;
                 case 3:
-                    o = enc.get(PdfName.LENGTH);
+                    o = enc.get(PdfName.PDF_NAME_LENGTH);
                     if (!o.isNumber()) {
                         throw new InvalidPdfException(
                                 MessageLocalization.getComposedMessage("illegal.length.value"));
@@ -1577,7 +1577,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     recipients = (PdfArray) enc.get(PdfName.RECIPIENTS);
                     break;
                 case 2:
-                    o = enc.get(PdfName.LENGTH);
+                    o = enc.get(PdfName.PDF_NAME_LENGTH);
                     if (!o.isNumber()) {
                         throw new InvalidPdfException(
                                 MessageLocalization.getComposedMessage("illegal.length.value"));
@@ -2003,7 +2003,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         int start = stream.getOffset();
         boolean calc = false;
         int streamLength = 0;
-        PdfObject obj = getPdfObjectRelease(stream.get(PdfName.LENGTH));
+        PdfObject obj = getPdfObjectRelease(stream.get(PdfName.PDF_NAME_LENGTH));
         if (obj != null && obj.type() == PdfObject.NUMBER) {
             streamLength = ((PdfNumber) obj).intValue();
             if (streamLength + start > fileTokensLength - 20) {
@@ -2267,7 +2267,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             trailer = new PdfDictionary();
             trailer.putAll(stm);
         }
-        stm.setLength(((PdfNumber) stm.get(PdfName.LENGTH)).intValue());
+        stm.setLength(((PdfNumber) stm.get(PdfName.PDF_NAME_LENGTH)).intValue());
         int size = ((PdfNumber) stm.get(PdfName.SIZE)).intValue();
         PdfArray index;
         PdfObject obj = stm.get(PdfName.INDEX);

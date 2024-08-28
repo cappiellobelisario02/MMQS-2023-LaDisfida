@@ -1877,7 +1877,7 @@ public abstract class BaseFont {
                 throws DocumentException {
             try {
                 bytes = contents;
-                put(PdfName.LENGTH, new PdfNumber(bytes.length));
+                put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
                 for (int k = 0; k < lengths.length; ++k) {
                     put(new PdfName("Length" + (k + 1)), new PdfNumber(
                             lengths[k]));
@@ -1901,7 +1901,7 @@ public abstract class BaseFont {
                 throws DocumentException {
             try {
                 bytes = contents;
-                put(PdfName.LENGTH, new PdfNumber(bytes.length));
+                put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
                 if (subType != null) {
                     put(PdfName.SUBTYPE, new PdfName(subType));
                 }
