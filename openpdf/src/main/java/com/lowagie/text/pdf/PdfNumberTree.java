@@ -73,73 +73,120 @@ public class PdfNumberTree {
      * @return the dictionary with the number tree.
      * @throws IOException on error
      */
-    public static PdfDictionary writeTree(Map<Integer, ? extends PdfObject> items, PdfWriter writer)
-            throws IOException {
+    public static PdfDictionary writeTree(Map<Integer, ? extends PdfObject> items, PdfWriter writer) throws IOException {
         if (items.isEmpty()) {
             return null;
         }
-        Integer[] numbers = new Integer[items.size()];
-        numbers = items.keySet().toArray(numbers);
+
+        Integer[] numbers = items.keySet().toArray(new Integer[0]);
         Arrays.sort(numbers);
+
         if (numbers.length <= LEAF_SIZE) {
-            PdfDictionary dic = new PdfDictionary();
-            PdfArray ar = new PdfArray();
-            for (Integer number : numbers) {
-                ar.add(new PdfNumber(number));
-                ar.add(items.get(number));
-            }
-            dic.put(PdfName.NUMS, ar);
-            return dic;
+            return createLeafDictionary(numbers, items);
         }
-        int skip = LEAF_SIZE;
-        PdfIndirectReference[] kids = new PdfIndirectReference[(numbers.length + LEAF_SIZE - 1) / LEAF_SIZE];
-        for (int k = 0; k < kids.length; ++k) {
-            int offset = k * LEAF_SIZE;
-            int end = Math.min(offset + LEAF_SIZE, numbers.length);
-            PdfDictionary dic = new PdfDictionary();
-            PdfArray arr = new PdfArray();
-            arr.add(new PdfNumber(numbers[offset]));
-            arr.add(new PdfNumber(numbers[end - 1]));
-            dic.put(PdfName.LIMITS, arr);
-            arr = new PdfArray();
-            for (; offset < end; ++offset) {
-                arr.add(new PdfNumber(numbers[offset]));
-                arr.add(items.get(numbers[offset]));
-            }
-            dic.put(PdfName.NUMS, arr);
+
+        return createTreeDictionary(numbers, items, writer);
+    }
+
+    private static PdfDictionary createLeafDictionary(Integer[] numbers, Map<Integer, ? extends PdfObject> items) {
+        PdfDictionary dic = new PdfDictionary();
+        PdfArray ar = new PdfArray();
+        for (Integer number : numbers) {
+            ar.add(new PdfNumber(number));
+            ar.add(items.get(number));
+        }
+        dic.put(PdfName.NUMS, ar);
+        return dic;
+    }
+
+    private static PdfDictionary createTreeDictionary(Integer[] numbers, Map<Integer, ? extends PdfObject> items, PdfWriter writer) throws IOException {
+        int leafSize = LEAF_SIZE;
+        PdfIndirectReference[] kids = createKidsArray(numbers, items, writer, leafSize);
+
+        return buildTree(kids, numbers.length, leafSize, writer);
+    }
+
+    private static PdfIndirectReference[] createKidsArray(Integer[] numbers, Map<Integer, ? extends PdfObject> items, PdfWriter writer, int leafSize) throws IOException {
+        int numKids = (numbers.length + leafSize - 1) / leafSize;
+        PdfIndirectReference[] kids = new PdfIndirectReference[numKids];
+        for (int k = 0; k < numKids; ++k) {
+            int offset = k * leafSize;
+            int end = Math.min(offset + leafSize, numbers.length);
+            PdfDictionary dic = createNodeDictionary(numbers, items, offset, end);
             kids[k] = writer.addToBody(dic).getIndirectReference();
         }
+        return kids;
+    }
+
+    private static PdfDictionary createNodeDictionary(Integer[] numbers, Map<Integer, ? extends PdfObject> items, int offset, int end) {
+        PdfDictionary dic = new PdfDictionary();
+        PdfArray limits = new PdfArray();
+        limits.add(new PdfNumber(numbers[offset]));
+        limits.add(new PdfNumber(numbers[end - 1]));
+        dic.put(PdfName.LIMITS, limits);
+
+        PdfArray nums = new PdfArray();
+        for (; offset < end; ++offset) {
+            nums.add(new PdfNumber(numbers[offset]));
+            nums.add(items.get(numbers[offset]));
+        }
+        dic.put(PdfName.NUMS, nums);
+
+        return dic;
+    }
+
+    private static PdfDictionary buildTree(PdfIndirectReference[] kids, int totalSize, int leafSize, PdfWriter writer) throws IOException {
         int top = kids.length;
         while (true) {
-            if (top <= LEAF_SIZE) {
-                PdfArray arr = new PdfArray();
-                for (int k = 0; k < top; ++k) {
-                    arr.add(kids[k]);
-                }
-                PdfDictionary dic = new PdfDictionary();
-                dic.put(PdfName.KIDS, arr);
-                return dic;
+            if (top <= leafSize) {
+                return createTopLevelDictionary(kids);
             }
-            skip *= LEAF_SIZE;
-            int tt = (numbers.length + skip - 1) / skip;
-            for (int k = 0; k < tt; ++k) {
-                int offset = k * LEAF_SIZE;
-                int end = Math.min(offset + LEAF_SIZE, top);
-                PdfDictionary dic = new PdfDictionary();
-                PdfArray arr = new PdfArray();
-                arr.add(new PdfNumber(numbers[k * skip]));
-                arr.add(new PdfNumber(numbers[Math.min((k + 1) * skip, numbers.length) - 1]));
-                dic.put(PdfName.LIMITS, arr);
-                arr = new PdfArray();
-                for (; offset < end; ++offset) {
-                    arr.add(kids[offset]);
-                }
-                dic.put(PdfName.KIDS, arr);
-                kids[k] = writer.addToBody(dic).getIndirectReference();
-            }
-            top = tt;
+
+            leafSize *= LEAF_SIZE;
+            int numNodes = (totalSize + leafSize - 1) / leafSize;
+            kids = createIntermediateNodes(kids, top, leafSize, writer);
+            top = numNodes;
         }
     }
+
+    private static PdfDictionary createTopLevelDictionary(PdfIndirectReference[] kids) {
+        PdfArray arr = new PdfArray();
+        for (PdfIndirectReference kid : kids) {
+            arr.add(kid);
+        }
+        PdfDictionary dic = new PdfDictionary();
+        dic.put(PdfName.KIDS, arr);
+        return dic;
+    }
+
+    private static PdfIndirectReference[] createIntermediateNodes(PdfIndirectReference[] kids, int top, int leafSize, PdfWriter writer) throws IOException {
+        int numNodes = (kids.length + leafSize - 1) / leafSize;
+        PdfIndirectReference[] newKids = new PdfIndirectReference[numNodes];
+        for (int k = 0; k < numNodes; ++k) {
+            int offset = k * leafSize;
+            int end = Math.min(offset + leafSize, top);
+            PdfDictionary dic = createIntermediateNodeDictionary(kids, offset, end);
+            newKids[k] = writer.addToBody(dic).getIndirectReference();
+        }
+        return newKids;
+    }
+
+    private static PdfDictionary createIntermediateNodeDictionary(PdfIndirectReference[] kids, int offset, int end) {
+        PdfDictionary dic = new PdfDictionary();
+        PdfArray limits = new PdfArray();
+        limits.add(new PdfNumber(kids[offset].getNumber()));  // Assuming the first indirect reference number is the lower limit
+        limits.add(new PdfNumber(kids[end - 1].getNumber()));  // Assuming the last indirect reference number is the upper limit
+        dic.put(PdfName.LIMITS, limits);
+
+        PdfArray kidsArray = new PdfArray();
+        for (; offset < end; ++offset) {
+            kidsArray.add(kids[offset]);
+        }
+        dic.put(PdfName.KIDS, kidsArray);
+
+        return dic;
+    }
+
 
     private static void iterateItems(PdfDictionary dic, Map<Integer, PdfObject> items) {
         PdfArray nn = (PdfArray) PdfReader.getPdfObjectRelease(dic.get(PdfName.NUMS));

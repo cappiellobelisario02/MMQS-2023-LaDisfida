@@ -136,7 +136,7 @@ public class PdfPCell extends Rectangle {
     /**
      * The rotation of the cell. Possible values are 0, 90, 180 and 270.
      */
-    private int rotation;
+    private int rotationPdfPCell;
 
     /**
      * Constructs an empty <CODE>PdfPCell</CODE>. The default padding is 2.
@@ -157,7 +157,8 @@ public class PdfPCell extends Rectangle {
         super(0, 0, 0, 0);
         borderWidth = 0.5f;
         border = BOX;
-        column.addText(this.phrase = phrase);
+        this.phrase = phrase;
+        column.addText(this.phrase);
         column.setLeading(0, 1);
     }
 
@@ -186,7 +187,8 @@ public class PdfPCell extends Rectangle {
             column.setLeading(0, 1);
             setPadding(borderWidth / 2);
         } else {
-            column.addText(this.phrase = new Phrase(new Chunk(image, 0, 0)));
+            this.phrase = new Phrase(new Chunk(image, 0, 0));
+            column.addText(this.phrase);
             column.setLeading(0, 1);
             setPadding(0);
         }
@@ -230,7 +232,7 @@ public class PdfPCell extends Rectangle {
             cellEvent = style.cellEvent;
             useDescender = style.useDescender;
             useBorderPadding = style.useBorderPadding;
-            rotation = style.rotation;
+            rotationPdfPCell = style.rotationPdfPCell;
         } else {
             setPadding(0);
         }
@@ -263,7 +265,7 @@ public class PdfPCell extends Rectangle {
         useDescender = cell.useDescender;
         column = ColumnText.duplicate(cell.column);
         useBorderPadding = cell.useBorderPadding;
-        rotation = cell.rotation;
+        rotationPdfPCell = cell.rotationPdfPCell;
     }
 
     /**
@@ -296,7 +298,8 @@ public class PdfPCell extends Rectangle {
     public void setPhrase(Phrase phrase) {
         table = null;
         image = null;
-        column.setText(this.phrase = phrase);
+        this.phrase = phrase;
+        column.setText(this.phrase);
     }
 
     /**
@@ -901,7 +904,7 @@ public class PdfPCell extends Rectangle {
      * @return a List object.
      * @since 2.1.1
      */
-    public List getCompositeElements() {
+    public List<Element> getCompositeElements() {
         return getColumn().compositeElements;
     }
 
@@ -910,25 +913,27 @@ public class PdfPCell extends Rectangle {
      *
      * @return the rotation of the cell.
      */
-    public int getRotation() {
-        return rotation;
+    @Override
+    public int getRotationPdfPCell() {
+        return rotationPdfPCell;
     }
 
     /**
      * Sets the rotation of the cell. Possible values are 0, 90, 180 and 270.
      *
-     * @param rotation the rotation of the cell
+     * @param rotationPdfPCell the rotation of the cell
      */
-    public void setRotation(int rotation) {
-        rotation %= 360;
-        if (rotation < 0) {
-            rotation += 360;
+    @Override
+    public void setRotationPdfPCell(int rotationPdfPCell) {
+        rotationPdfPCell %= 360;
+        if (rotationPdfPCell < 0) {
+            rotationPdfPCell += 360;
         }
-        if ((rotation % 90) != 0) {
+        if ((rotationPdfPCell % 90) != 0) {
             throw new IllegalArgumentException(
                     MessageLocalization.getComposedMessage("rotation.must.be.a.multiple.of.90"));
         }
-        this.rotation = rotation;
+        this.rotationPdfPCell = rotationPdfPCell;
     }
 
     /**
@@ -941,7 +946,7 @@ public class PdfPCell extends Rectangle {
         float rightLimit = getRight() - getEffectivePaddingRight();
         float leftLimit = getLeft() + getEffectivePaddingLeft();
         float bry = height - getEffectivePaddingTop() - getEffectivePaddingBottom();
-        if (getRotation() != 90 && getRotation() != 270) {
+        if (getRotationPdfPCell() != 90 && getRotationPdfPCell() != 270) {
             column.setSimpleColumn(leftLimit, bry + 0.001f, rightLimit, 0);
         } else {
             column.setSimpleColumn(0, leftLimit, bry + 0.001f, rightLimit);
@@ -960,57 +965,93 @@ public class PdfPCell extends Rectangle {
      * @since 3.0.0
      */
     public float getMaxHeight() {
-        boolean pivoted = (getRotation() == 90 || getRotation() == 270);
+        boolean pivoted = isPivoted();
         Image img = getImage();
+
         if (img != null) {
-            img.scalePercent(100);
-            float refWidth = pivoted ? img.getScaledHeight() : img.getScaledWidth();
-            float scale = (getRight() - getEffectivePaddingRight()
-                    - getEffectivePaddingLeft() - getLeft()) / refWidth;
-            img.scalePercent(scale * 100);
-            float refHeight = pivoted ? img.getScaledWidth() : img.getScaledHeight();
-            setBottom(getTop() - getEffectivePaddingTop() - getEffectivePaddingBottom() - refHeight);
+            return calculateHeightFromImage(img, pivoted);
         } else {
-            if ((pivoted && hasFixedHeight()) || getColumn() == null) {
-                setBottom(getTop() - getFixedHeight());
-            } else {
-                ColumnText ct = ColumnText.duplicate(getColumn());
-                float right, top, left, bottom;
-                if (pivoted) {
-                    right = PdfPRow.RIGHT_LIMIT;
-                    top = getRight() - getEffectivePaddingRight();
-                    left = 0;
-                    bottom = getLeft() + getEffectivePaddingLeft();
-                } else {
-                    right = isNoWrap() ? PdfPRow.RIGHT_LIMIT : getRight() - getEffectivePaddingRight();
-                    top = getTop() - getEffectivePaddingTop();
-                    left = getLeft() + getEffectivePaddingLeft();
-                    bottom = hasFixedHeight() ? getTop() + getEffectivePaddingBottom() - getFixedHeight()
-                            : PdfPRow.BOTTOM_LIMIT;
-                }
-                PdfPRow.setColumn(ct, left, bottom, right, top);
-                try {
-                    ct.go(true);
-                } catch (DocumentException e) {
-                    throw new ExceptionConverter(e);
-                }
-                if (pivoted) {
-                    setBottom(getTop() - getEffectivePaddingTop() - getEffectivePaddingBottom() - ct.getFilledWidth());
-                } else {
-                    float yLine = ct.getYLine();
-                    if (isUseDescender()) {
-                        yLine += ct.getDescender();
-                    }
-                    setBottom(yLine - getEffectivePaddingBottom());
-                }
-            }
+            return calculateHeightFromColumn(pivoted);
         }
+    }
+
+    private boolean isPivoted() {
+        int rotation = getRotationPdfPCell();
+        return rotation == 90 || rotation == 270;
+    }
+
+    private float calculateHeightFromImage(Image img, boolean pivoted) {
+        img.scalePercent(100);
+        float refWidth = pivoted ? img.getScaledHeight() : img.getScaledWidth();
+        float scale = (getRight() - getEffectivePaddingRight() - getEffectivePaddingLeft() - getLeft()) / refWidth;
+        img.scalePercent(scale * 100);
+        float refHeight = pivoted ? img.getScaledWidth() : img.getScaledHeight();
+        setBottom(getTop() - getEffectivePaddingTop() - getEffectivePaddingBottom() - refHeight);
+
+        return getFinalHeight();
+    }
+
+    private float calculateHeightFromColumn(boolean pivoted) {
+        if ((pivoted && hasFixedHeight()) || getColumn() == null) {
+            setBottom(getTop() - getFixedHeight());
+        } else {
+            ColumnText ct = ColumnText.duplicate(getColumn());
+            setColumnTextBounds(ct, pivoted);
+            processColumnText(ct, pivoted);
+        }
+
+        return getFinalHeight();
+    }
+
+    private void setColumnTextBounds(ColumnText ct, boolean pivoted) {
+        float right;
+        float top;
+        float left;
+        float bottom;
+
+        if (pivoted) {
+            right = PdfPRow.RIGHT_LIMIT;
+            top = getRight() - getEffectivePaddingRight();
+            left = 0;
+            bottom = getLeft() + getEffectivePaddingLeft();
+        } else {
+            right = isNoWrap() ? PdfPRow.RIGHT_LIMIT : getRight() - getEffectivePaddingRight();
+            top = getTop() - getEffectivePaddingTop();
+            left = getLeft() + getEffectivePaddingLeft();
+            bottom = hasFixedHeight() ? getTop() - getFixedHeight() : PdfPRow.BOTTOM_LIMIT;
+        }
+
+        PdfPRow.setColumn(ct, left, bottom, right, top);
+    }
+
+    private void processColumnText(ColumnText ct, boolean pivoted) {
+        try {
+            ct.go(true);
+        } catch (DocumentException e) {
+            throw new ExceptionConverter(e);
+        }
+
+        if (pivoted) {
+            setBottom(getTop() - getEffectivePaddingTop() - getEffectivePaddingBottom() - ct.getFilledWidth());
+        } else {
+            float yLine = ct.getYLine();
+            if (isUseDescender()) {
+                yLine += ct.getDescender();
+            }
+            setBottom(yLine - getEffectivePaddingBottom());
+        }
+    }
+
+    private float getFinalHeight() {
         float height = getHeight();
+
         if (hasFixedHeight()) {
             height = getFixedHeight();
         } else if (height < getMinimumHeight()) {
             height = getMinimumHeight();
         }
+
         return height;
     }
+
 }

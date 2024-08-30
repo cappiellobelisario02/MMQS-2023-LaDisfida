@@ -103,62 +103,76 @@ public class PdfPageLabels {
      * @return a String array or <code>null</code> if no page labels are present
      */
     public static String[] getPageLabels(PdfReader reader) {
+        int numberOfPages = reader.getNumberOfPages();
+        String[] pageLabels = new String[numberOfPages];
 
-        int n = reader.getNumberOfPages();
+        PdfDictionary catalog = reader.getCatalog();
+        PdfDictionary labelsDict = (PdfDictionary) PdfReader.getPdfObjectRelease(catalog.get(PdfName.PAGELABELS));
 
-        PdfDictionary dict = reader.getCatalog();
-        PdfDictionary labels = (PdfDictionary) PdfReader.getPdfObjectRelease(dict.get(PdfName.PAGELABELS));
-        if (labels == null) {
-            return new int[];
+        if (labelsDict == null) {
+            // Return default labels if no page labels are present
+            return getDefaultLabels(numberOfPages);
         }
 
-        String[] labelstrings = new String[n];
+        Map<Integer, PdfObject> numberTree = PdfNumberTree.readTree(labelsDict);
 
-        Map<Integer, PdfObject> numberTree = PdfNumberTree.readTree(labels);
-
-        int pagecount = 1;
-        Integer current;
+        int pageCount = 1;
         char type = 'D';
         String prefix = "";
-        for (int i = 0; i < n; i++) {
-            current = i;
-            if (numberTree.containsKey(current)) {
-                PdfDictionary d = (PdfDictionary) PdfReader.getPdfObjectRelease(numberTree.get(current));
-                if (d.contains(PdfName.ST)) {
-                    pagecount = ((PdfNumber) d.get(PdfName.ST)).intValue();
-                } else {
-                    pagecount = 1;
-                }
-                if (d.contains(PdfName.P)) {
-                    prefix = ((PdfString) d.get(PdfName.P)).toUnicodeString();
-                } else {
-                    prefix = "";
-                }
-                if (d.contains(PdfName.S)) {
-                    type = d.get(PdfName.S).toString().charAt(1);
-                }
+
+        for (int i = 0; i < numberOfPages; i++) {
+            Integer currentPage = i;
+            if (numberTree.containsKey(currentPage)) {
+                PdfDictionary pageLabelDict = (PdfDictionary) PdfReader.getPdfObjectRelease(numberTree.get(currentPage));
+                pageCount = getPageCount(pageLabelDict);
+                prefix = getPrefix(pageLabelDict);
+                type = getType(pageLabelDict);
             }
-            switch (type) {
-                case 'R':
-                    labelstrings[i] = prefix + RomanNumberFactory.getUpperCaseString(pagecount);
-                    break;
-                case 'r':
-                    labelstrings[i] = prefix + RomanNumberFactory.getLowerCaseString(pagecount);
-                    break;
-                case 'A':
-                    labelstrings[i] = prefix + RomanAlphabetFactory.getUpperCaseString(pagecount);
-                    break;
-                case 'a':
-                    labelstrings[i] = prefix + RomanAlphabetFactory.getLowerCaseString(pagecount);
-                    break;
-                default:
-                    labelstrings[i] = prefix + pagecount;
-                    break;
-            }
-            pagecount++;
+            pageLabels[i] = generatePageLabel(prefix, pageCount, type);
+            pageCount++;
         }
-        return labelstrings;
+        return pageLabels;
     }
+
+    private static int getPageCount(PdfDictionary pageLabelDict) {
+        if (pageLabelDict.contains(PdfName.ST)) {
+            return ((PdfNumber) pageLabelDict.get(PdfName.ST)).intValue();
+        }
+        return 1;
+    }
+
+    private static String getPrefix(PdfDictionary pageLabelDict) {
+        if (pageLabelDict.contains(PdfName.P)) {
+            return ((PdfString) pageLabelDict.get(PdfName.P)).toUnicodeString();
+        }
+        return "";
+    }
+
+    private static char getType(PdfDictionary pageLabelDict) {
+        if (pageLabelDict.contains(PdfName.S)) {
+            return pageLabelDict.get(PdfName.S).toString().charAt(1);
+        }
+        return 'D';
+    }
+
+    private static String generatePageLabel(String prefix, int pageCount, char type) {
+        return switch (type) {
+            case 'R' -> prefix + RomanNumberFactory.getUpperCaseString(pageCount);
+            case 'r' -> prefix + RomanNumberFactory.getLowerCaseString(pageCount);
+            case 'A' -> prefix + RomanAlphabetFactory.getUpperCaseString(pageCount);
+            case 'a' -> prefix + RomanAlphabetFactory.getLowerCaseString(pageCount);
+            default -> prefix + pageCount;
+        };
+    }
+
+    private static String[] getDefaultLabels(int numberOfPages) {
+        String[] defaultLabels = new String[numberOfPages];
+        for (int i = 0; i < numberOfPages; i++) {
+            defaultLabels[i] = String.valueOf(i + 1);
+        }
+        return defaultLabels;
+    }
+
 
     /**
      * Retrieves the page labels from a PDF as an array of {@link PdfPageLabelFormat} objects.
@@ -171,7 +185,7 @@ public class PdfPageLabels {
         PdfDictionary dict = reader.getCatalog();
         PdfDictionary labels = (PdfDictionary) PdfReader.getPdfObjectRelease(dict.get(PdfName.PAGELABELS));
         if (labels == null) {
-            return new int[];
+            return new PdfPageLabelFormat[0];
         }
         Map<Integer, PdfObject> numberTree = PdfNumberTree.readTree(labels);
         Integer[] numbers = new Integer[numberTree.size()];

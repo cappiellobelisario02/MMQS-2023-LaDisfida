@@ -366,53 +366,89 @@ public class PdfGraphics2D extends Graphics2D {
     @SuppressWarnings("unchecked")
     protected void doAttributes(AttributedCharacterIterator iter) {
         underline = false;
-        Set<AttributedCharacterIterator.Attribute> set = iter.getAttributes().keySet();
-        for (AttributedCharacterIterator.Attribute attribute : set) {
-            if (!(attribute instanceof TextAttribute textattribute)) {
+        Set<AttributedCharacterIterator.Attribute> attributes = iter.getAttributes().keySet();
+
+        for (AttributedCharacterIterator.Attribute attribute : attributes) {
+            if (!(attribute instanceof TextAttribute textAttribute)) {
                 continue;
             }
-            if (textattribute.equals(TextAttribute.FONT)) {
-                Font mFont = (Font) iter.getAttributes().get(textattribute);
-                setFont(mFont);
-            } else if (textattribute.equals(TextAttribute.UNDERLINE)) {
-                if (iter.getAttributes().get(textattribute) == TextAttribute.UNDERLINE_ON) {
-                    underline = true;
-                }
-            } else if (textattribute.equals(TextAttribute.SIZE)) {
-                Object obj = iter.getAttributes().get(textattribute);
-                if (obj instanceof Integer) {
-                    int i = (Integer) obj;
-                    setFont(getFont().deriveFont(getFont().getStyle(), i));
-                } else if (obj instanceof Float) {
-                    float f = (Float) obj;
-                    setFont(getFont().deriveFont(getFont().getStyle(), f));
-                }
-            } else if (textattribute.equals(TextAttribute.FOREGROUND)) {
-                setColor((Color) iter.getAttributes().get(textattribute));
-            } else if (textattribute.equals(TextAttribute.FAMILY)) {
-                Font mFont = getFont();
-                Map<TextAttribute, Object> fontAttributes = (Map<TextAttribute, Object>) mFont.getAttributes();
-                fontAttributes.put(TextAttribute.FAMILY, iter.getAttributes().get(textattribute));
-                setFont(mFont.deriveFont(fontAttributes));
-            } else if (textattribute.equals(TextAttribute.POSTURE)) {
-                Font mFont = getFont();
-                Map<TextAttribute, Object> fontAttributes = (Map<TextAttribute, Object>) mFont.getAttributes();
-                fontAttributes.put(TextAttribute.POSTURE, iter.getAttributes().get(textattribute));
-                setFont(mFont.deriveFont(fontAttributes));
-            } else if (textattribute.equals(TextAttribute.WEIGHT)) {
-                Font mFont = getFont();
-                Map<TextAttribute, Object> fontAttributes = (Map<TextAttribute, Object>) mFont.getAttributes();
-                fontAttributes.put(TextAttribute.WEIGHT, iter.getAttributes().get(textattribute));
-                setFont(mFont.deriveFont(fontAttributes));
+
+            handleFontAttribute(textAttribute, iter);
+            handleUnderlineAttribute(textAttribute, iter);
+            handleSizeAttribute(textAttribute, iter);
+            handleColorAttribute(textAttribute, iter);
+            handleFamilyAttribute(textAttribute, iter);
+            handlePostureAttribute(textAttribute, iter);
+            handleWeightAttribute(textAttribute, iter);
+        }
+    }
+
+    private void handleFontAttribute(TextAttribute textAttribute, AttributedCharacterIterator iter) {
+        if (textAttribute.equals(TextAttribute.FONT)) {
+            Font mFont = (Font) iter.getAttributes().get(textAttribute);
+            setFont(mFont);
+        }
+    }
+
+    private void handleUnderlineAttribute(TextAttribute textAttribute, AttributedCharacterIterator iter) {
+        if (textAttribute.equals(TextAttribute.UNDERLINE) && iter.getAttributes().get(textAttribute) == TextAttribute.UNDERLINE_ON) {
+            underline = true;
+        }
+
+    }
+
+    private void handleSizeAttribute(TextAttribute textAttribute, AttributedCharacterIterator iter) {
+        if (textAttribute.equals(TextAttribute.SIZE)) {
+            Object obj = iter.getAttributes().get(textAttribute);
+            if (obj instanceof Integer) {
+                int size = (Integer) obj;
+                setFont(getFont().deriveFont(getFont().getStyle(), size));
+            } else if (obj instanceof Float) {
+                float size = (Float) obj;
+                setFont(getFont().deriveFont(getFont().getStyle(), size));
             }
         }
     }
+
+    private void handleColorAttribute(TextAttribute textAttribute, AttributedCharacterIterator iter) {
+        if (textAttribute.equals(TextAttribute.FOREGROUND)) {
+            setColor((Color) iter.getAttributes().get(textAttribute));
+        }
+    }
+
+    private void handleFamilyAttribute(TextAttribute textAttribute, AttributedCharacterIterator iter) {
+        if (textAttribute.equals(TextAttribute.FAMILY)) {
+            Font mFfont = getFont();
+            Map<TextAttribute, Object> fontAttributes = new HashMap<>(mFfont.getAttributes());
+            fontAttributes.put(TextAttribute.FAMILY, iter.getAttributes().get(textAttribute));
+            setFont(mFfont.deriveFont(fontAttributes));
+        }
+    }
+
+    private void handlePostureAttribute(TextAttribute textAttribute, AttributedCharacterIterator iter) {
+        if (textAttribute.equals(TextAttribute.POSTURE)) {
+            Font mFont = getFont();
+            Map<TextAttribute, Object> fontAttributes = new HashMap<>(mFont.getAttributes());
+            fontAttributes.put(TextAttribute.POSTURE, iter.getAttributes().get(textAttribute));
+            setFont(mFont.deriveFont(fontAttributes));
+        }
+    }
+
+    private void handleWeightAttribute(TextAttribute textAttribute, AttributedCharacterIterator iter) {
+        if (textAttribute.equals(TextAttribute.WEIGHT)) {
+            Font mFont = getFont();
+            Map<TextAttribute, Object> fontAttributes = new HashMap<>(mFont.getAttributes());
+            fontAttributes.put(TextAttribute.WEIGHT, iter.getAttributes().get(textAttribute));
+            setFont(mFont.deriveFont(fontAttributes));
+        }
+    }
+
 
     /**
      * @see Graphics2D#drawString(String, float, float)
      */
     public void drawString(String s, float x, float y) {
-        if (s.length() == 0) {
+        if (s.isEmpty()) {
             return;
         }
         setFillPaint();
@@ -457,135 +493,29 @@ public class PdfGraphics2D extends Graphics2D {
         boolean restoreTextRenderingMode = false;
         AffineTransform at = getTransform();
         try {
-            AffineTransform at2 = getTransform();
-            at2.translate(x, y);
-            at2.concatenate(font.getTransform());
-            setTransform(at2);
-            AffineTransform inverse = this.normalizeMatrix();
-            AffineTransform flipper = AffineTransform.getScaleInstance(1, -1);
-            inverse.concatenate(flipper);
-            double[] mx = new double[6];
-            inverse.getMatrix(mx);
+            setupTransformation(x, y);
+            double[] mx = calculateTextMatrix();
+
             cb.beginText();
             cb.setFontAndSize(baseFont, fontSize);
-            // Check if we need to simulate an italic font.
-            if (font.isItalic()) {
-                float angle = baseFont.getFontDescriptor(BaseFont.ITALICANGLE, 1000);
-                float angle2 = font.getItalicAngle();
-                // When there are different fonts for italic, bold, italic bold
-                // the font.getName() will be different from the font.getFontName()
-                // value. When they are the same value then we are normally dealing
-                // with a single font that has been made into an italic or bold
-                // font. When there are only a plain and a bold font available,
-                // we need to enter this logic too.
-                if (Objects.equals(font.getFontName(), font.getName()) || (angle == 0f && angle2 == 0f)) {
-                    // We don't have an italic version of this font so we need
-                    // to set the font angle ourselves to produce an italic font.
-                    if (angle2 == 0) {
-                        // The JavaVM didn't have an angle setting for making
-                        // the font an italic font so use a default of
-                        // italic angle of 15 degrees.
-                        angle2 = 15.0f;
-                    } else {
-                        // This sign of the angle for Java and PDF seams
-                        // seams to be reversed.
-                        angle2 = -angle2;
-                    }
-                    if (angle == 0) {
-                        mx[2] = angle2 / 100.0f;
-                    }
-                }
-            }
+
+            simulateItalicFont(mx);
             cb.setTextMatrix((float) mx[0], (float) mx[1], (float) mx[2], (float) mx[3], (float) mx[4], (float) mx[5]);
-            Float fontTextAttributeWidth = (Float) font.getAttributes().get(TextAttribute.WIDTH);
-            fontTextAttributeWidth = (fontTextAttributeWidth == null)
-                    ? TextAttribute.WIDTH_REGULAR
-                    : fontTextAttributeWidth;
 
-            if (!TextAttribute.WIDTH_REGULAR.equals(fontTextAttributeWidth)) {
-                cb.setHorizontalScaling(100.0f / fontTextAttributeWidth);
-            }
+            handleHorizontalScaling();
 
-            // Check if we need to simulate a bold font.
-            // Do nothing if the BaseFont is already bold. This test is not foolproof but it will work most of the times.
-            if (!baseFont.getPostscriptFontName().toLowerCase(Locale.ROOT).contains("bold")) {
-                // Get the weight of the font so we can detect fonts with a weight
-                // that makes them bold, but the Font.isBold() value is false.
-                Float weight = (Float) font.getAttributes().get(TextAttribute.WEIGHT);
-                if (weight == null) {
-                    weight = (font.isBold()) ? TextAttribute.WEIGHT_BOLD
-                            : TextAttribute.WEIGHT_REGULAR;
-                }
-                String fontFaceName = font.getFontName();
-                String fontLogicalName = font.getName();
-                if ((font.isBold() || (weight >= TextAttribute.WEIGHT_SEMIBOLD))
-                        && (fontFaceName.equals(fontLogicalName) ||
-                        // bold logical font face name has suffix ".bold" / ".bolditalic"
-                        (LOGICAL_FONT_NAMES.contains(fontLogicalName) &&
-                                (fontFaceName.equals(fontLogicalName + BOLD_FONT_FACE_NAME_SUFFIX) ||
-                                        fontFaceName.equals(fontLogicalName + BOLD_ITALIC_FONT_FACE_NAME_SUFFIX))))) {
-                    // Simulate a bold font.
-                    float strokeWidth = font.getSize2D() * (weight - TextAttribute.WEIGHT_REGULAR) / 30f;
-                    if (strokeWidth != 1 && realPaint instanceof Color color) {
-                        cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_FILL_STROKE);
-                        oldStroke = new BasicStroke(strokeWidth);
-                        cb.setLineWidth(strokeWidth);
-                        int colorAlpha = color.getAlpha();
-                        if (colorAlpha != currentStrokeGState) {
-                            currentStrokeGState = colorAlpha;
-                            PdfGState gs = strokeGState[colorAlpha];
-                            if (gs == null) {
-                                gs = new PdfGState();
-                                gs.setStrokeOpacity(colorAlpha / 255f);
-                                strokeGState[colorAlpha] = gs;
-                            }
-                            cb.setGState(gs);
-                        }
-                        setStrokePaint();
-                        restoreTextRenderingMode = true;
-                    }
-                }
-            }
+            restoreTextRenderingMode = simulateBoldFont(baseFont);
 
-            double mWidth = 0;
-            if (font.getSize2D() > 0) {
-                float scale = 1000 / font.getSize2D();
-                Font derivedFont = font.deriveFont(AffineTransform.getScaleInstance(scale, scale));
-                mWidth = derivedFont.getStringBounds(s, getFontRenderContext()).getWidth();
-                if (derivedFont.isTransformed()) {
-                    mWidth /= scale;
-                }
-            }
-            // if the hyperlink flag is set add an action to the text
-            Object url = getRenderingHint(HyperLinkKey.KEY_INSTANCE);
-            if (url != null && !url.equals(HyperLinkKey.VALUE_HYPERLINKKEY_OFF)) {
-                float scale = 1000 / font.getSize2D();
-                Font derivedFont = font.deriveFont(AffineTransform.getScaleInstance(scale, scale));
-                double mHeight = derivedFont.getStringBounds(s, getFontRenderContext()).getHeight();
-                if (derivedFont.isTransformed()) {
-                    mHeight /= scale;
-                }
-                double leftX = cb.getXTLM();
-                double leftY = cb.getYTLM();
-                PdfAction action = new PdfAction(url.toString());
-                cb.setAction(action, (float) leftX, (float) leftY, (float) (leftX + mWidth), (float) (leftY + mHeight));
-            }
-            if (s.length() > 1) {
-                float adv = ((float) mWidth - baseFont.getWidthPoint(s, fontSize)) / (s.length() - 1);
-                cb.setCharacterSpacing(adv);
-            }
+            double mWidth = calculateStringWidth(s);
+            handleHyperlink(s, mWidth);
+
+            applyCharacterSpacing(s, mWidth, baseFont);
+
             cb.showText(s);
-            if (s.length() > 1) {
-                cb.setCharacterSpacing(0);
-            }
-            if (!TextAttribute.WIDTH_REGULAR.equals(fontTextAttributeWidth)) {
-                cb.setHorizontalScaling(100);
-            }
 
-            // Restore the original TextRenderingMode if needed.
-            if (restoreTextRenderingMode) {
-                cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_FILL);
-            }
+            resetCharacterSpacing(s);
+            resetHorizontalScaling();
+            restoreTextRenderingModeIfNeeded(restoreTextRenderingMode);
 
             cb.endText();
             return mWidth;
@@ -593,6 +523,167 @@ public class PdfGraphics2D extends Graphics2D {
             setTransform(at);
         }
     }
+
+    private void setupTransformation(double x, double y) {
+        AffineTransform at2 = getTransform();
+        at2.translate(x, y);
+        at2.concatenate(font.getTransform());
+        setTransform(at2);
+    }
+
+    private double[] calculateTextMatrix() {
+        AffineTransform inverse = this.normalizeMatrix();
+        AffineTransform flipper = AffineTransform.getScaleInstance(1, -1);
+        inverse.concatenate(flipper);
+        double[] mx = new double[6];
+        inverse.getMatrix(mx);
+        return mx;
+    }
+
+    private void simulateItalicFont(double[] mx) {
+        if (font.isItalic()) {
+            float angle = baseFont.getFontDescriptor(BaseFont.ITALICANGLE, 1000);
+            float angle2 = font.getItalicAngle();
+
+            if (shouldSimulateItalicFont(angle, angle2)) {
+                angle2 = adjustItalicAngle(angle2);
+                if (angle == 0) {
+                    mx[2] = angle2 / 100.0f;
+                }
+            }
+        }
+    }
+
+    private boolean shouldSimulateItalicFont(float angle, float angle2) {
+        return Objects.equals(font.getFontName(), font.getName()) || (angle == 0f && angle2 == 0f);
+    }
+
+    private float adjustItalicAngle(float angle2) {
+        return (angle2 == 0) ? 15.0f : -angle2;
+    }
+
+    private void handleHorizontalScaling() {
+        Float fontTextAttributeWidth = getFontTextAttributeWidth();
+        if (!TextAttribute.WIDTH_REGULAR.equals(fontTextAttributeWidth)) {
+            cb.setHorizontalScaling(100.0f / fontTextAttributeWidth);
+        }
+    }
+
+    private Float getFontTextAttributeWidth() {
+        return (Float) font.getAttributes().getOrDefault(TextAttribute.WIDTH, TextAttribute.WIDTH_REGULAR);
+    }
+
+    private boolean simulateBoldFont(BaseFont baseFont) {
+        if (!baseFont.getPostscriptFontName().toLowerCase(Locale.ROOT).contains("bold")) {
+            Float weight = getFontWeight();
+            if (shouldSimulateBoldFont(weight)) {
+                simulateBoldFontRendering(weight);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Float getFontWeight() {
+        return (Float) font.getAttributes().getOrDefault(TextAttribute.WEIGHT, font.isBold() ? TextAttribute.WEIGHT_BOLD : TextAttribute.WEIGHT_REGULAR);
+    }
+
+    private boolean shouldSimulateBoldFont(Float weight) {
+        String fontFaceName = font.getFontName();
+        String fontLogicalName = font.getName();
+        return (font.isBold() || weight >= TextAttribute.WEIGHT_SEMIBOLD) &&
+                (fontFaceName.equals(fontLogicalName) || isLogicalFontBold(fontFaceName, fontLogicalName));
+    }
+
+    private boolean isLogicalFontBold(String fontFaceName, String fontLogicalName) {
+        return LOGICAL_FONT_NAMES.contains(fontLogicalName) &&
+                (fontFaceName.equals(fontLogicalName + BOLD_FONT_FACE_NAME_SUFFIX) ||
+                        fontFaceName.equals(fontLogicalName + BOLD_ITALIC_FONT_FACE_NAME_SUFFIX));
+    }
+
+    private void simulateBoldFontRendering(Float weight) {
+        float strokeWidth = font.getSize2D() * (weight - TextAttribute.WEIGHT_REGULAR) / 30f;
+        if (strokeWidth != 1 && realPaint instanceof Color color) {
+            cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_FILL_STROKE);
+            oldStroke = new BasicStroke(strokeWidth);
+            cb.setLineWidth(strokeWidth);
+            setStrokeColorState(color);
+            setStrokePaint();
+        }
+    }
+
+    private void setStrokeColorState(Color color) {
+        int colorAlpha = color.getAlpha();
+        if (colorAlpha != currentStrokeGState) {
+            currentStrokeGState = colorAlpha;
+            PdfGState gs = strokeGState[colorAlpha];
+            if (gs == null) {
+                gs = new PdfGState();
+                gs.setStrokeOpacity(colorAlpha / 255f);
+                strokeGState[colorAlpha] = gs;
+            }
+            cb.setGState(gs);
+        }
+    }
+
+    private double calculateStringWidth(String s) {
+        double mWidth = 0;
+        if (font.getSize2D() > 0) {
+            float scale = 1000 / font.getSize2D();
+            Font derivedFont = font.deriveFont(AffineTransform.getScaleInstance(scale, scale));
+            mWidth = derivedFont.getStringBounds(s, getFontRenderContext()).getWidth();
+            if (derivedFont.isTransformed()) {
+                mWidth /= scale;
+            }
+        }
+        return mWidth;
+    }
+
+    private void handleHyperlink(String s, double mWidth) {
+        Object url = getRenderingHint(HyperLinkKey.KEY_INSTANCE);
+        if (url != null && !url.equals(HyperLinkKey.VALUE_HYPERLINKKEY_OFF)) {
+            applyHyperlink(url, s, mWidth);
+        }
+    }
+
+    private void applyHyperlink(Object url, String s, double mWidth) {
+        float scale = 1000 / font.getSize2D();
+        Font derivedFont = font.deriveFont(AffineTransform.getScaleInstance(scale, scale));
+        double mHeight = derivedFont.getStringBounds(s, getFontRenderContext()).getHeight();
+        if (derivedFont.isTransformed()) {
+            mHeight /= scale;
+        }
+        double leftX = cb.getXTLM();
+        double leftY = cb.getYTLM();
+        PdfAction action = new PdfAction(url.toString());
+        cb.setAction(action, (float) leftX, (float) leftY, (float) (leftX + mWidth), (float) (leftY + mHeight));
+    }
+
+    private void applyCharacterSpacing(String s, double mWidth, BaseFont baseFont) {
+        if (s.length() > 1) {
+            float adv = ((float) mWidth - baseFont.getWidthPoint(s, fontSize)) / (s.length() - 1);
+            cb.setCharacterSpacing(adv);
+        }
+    }
+
+    private void resetCharacterSpacing(String s) {
+        if (s.length() > 1) {
+            cb.setCharacterSpacing(0);
+        }
+    }
+
+    private void resetHorizontalScaling() {
+        if (!TextAttribute.WIDTH_REGULAR.equals(getFontTextAttributeWidth())) {
+            cb.setHorizontalScaling(100);
+        }
+    }
+
+    private void restoreTextRenderingModeIfNeeded(boolean restoreTextRenderingMode) {
+        if (restoreTextRenderingMode) {
+            cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_FILL);
+        }
+    }
+
 
     /**
      * @see Graphics#drawString(AttributedCharacterIterator, int, int)
@@ -676,22 +767,29 @@ public class PdfGraphics2D extends Graphics2D {
     }
 
     private void setStrokeDiff(Stroke newStroke, Stroke oldStroke) {
-        if (newStroke == oldStroke) {
+        if (newStroke == oldStroke || !(newStroke instanceof BasicStroke basicStroke)) {
             return;
         }
-        if (!(newStroke instanceof BasicStroke basicStroke)) {
-            return;
+
+        BasicStroke oStroke = (oldStroke instanceof BasicStroke) ? (BasicStroke) oldStroke : null;
+        boolean oldOk = oStroke != null;
+
+        setLineWidthIfDifferent(basicStroke, oStroke, oldOk);
+        setLineCapIfDifferent(basicStroke, oStroke, oldOk);
+        setLineJoinIfDifferent(basicStroke, oStroke, oldOk);
+        setMiterLimitIfDifferent(basicStroke, oStroke, oldOk);
+        setDashPatternIfDifferent(basicStroke, oStroke, oldOk);
+    }
+
+    private void setLineWidthIfDifferent(BasicStroke newStroke, BasicStroke oldStroke, boolean oldOk) {
+        if (!oldOk || newStroke.getLineWidth() != oldStroke.getLineWidth()) {
+            cb.setLineWidth(newStroke.getLineWidth());
         }
-        boolean oldOk = (oldStroke instanceof BasicStroke);
-        BasicStroke oStroke = null;
-        if (oldOk) {
-            oStroke = (BasicStroke) oldStroke;
-        }
-        if (!oldOk || basicStroke.getLineWidth() != oStroke.getLineWidth()) {
-            cb.setLineWidth(basicStroke.getLineWidth());
-        }
-        if (!oldOk || basicStroke.getEndCap() != oStroke.getEndCap()) {
-            switch (basicStroke.getEndCap()) {
+    }
+
+    private void setLineCapIfDifferent(BasicStroke newStroke, BasicStroke oldStroke, boolean oldOk) {
+        if (!oldOk || newStroke.getEndCap() != oldStroke.getEndCap()) {
+            switch (newStroke.getEndCap()) {
                 case BasicStroke.CAP_BUTT:
                     cb.setLineCap(0);
                     break;
@@ -702,8 +800,11 @@ public class PdfGraphics2D extends Graphics2D {
                     cb.setLineCap(1);
             }
         }
-        if (!oldOk || basicStroke.getLineJoin() != oStroke.getLineJoin()) {
-            switch (basicStroke.getLineJoin()) {
+    }
+
+    private void setLineJoinIfDifferent(BasicStroke newStroke, BasicStroke oldStroke, boolean oldOk) {
+        if (!oldOk || newStroke.getLineJoin() != oldStroke.getLineJoin()) {
+            switch (newStroke.getLineJoin()) {
                 case BasicStroke.JOIN_MITER:
                     cb.setLineJoin(0);
                     break;
@@ -714,39 +815,43 @@ public class PdfGraphics2D extends Graphics2D {
                     cb.setLineJoin(1);
             }
         }
-        if (!oldOk || basicStroke.getMiterLimit() != oStroke.getMiterLimit()) {
-            cb.setMiterLimit(basicStroke.getMiterLimit());
+    }
+
+    private void setMiterLimitIfDifferent(BasicStroke newStroke, BasicStroke oldStroke, boolean oldOk) {
+        if (!oldOk || newStroke.getMiterLimit() != oldStroke.getMiterLimit()) {
+            cb.setMiterLimit(newStroke.getMiterLimit());
         }
-        boolean makeDash;
+    }
+
+    private void setDashPatternIfDifferent(BasicStroke newStroke, BasicStroke oldStroke, boolean oldOk) {
+        boolean makeDash = true;
+
         if (oldOk) {
-            if (basicStroke.getDashArray() != null) {
-                if (basicStroke.getDashPhase() != oStroke.getDashPhase()) {
-                    makeDash = true;
-                } else {
-                    makeDash = !java.util.Arrays.equals(basicStroke.getDashArray(), oStroke.getDashArray());
-                }
+            if (newStroke.getDashArray() != null) {
+                makeDash = newStroke.getDashPhase() != oldStroke.getDashPhase() ||
+                        !java.util.Arrays.equals(newStroke.getDashArray(), oldStroke.getDashArray());
             } else {
-                makeDash = oStroke.getDashArray() != null;
+                makeDash = oldStroke.getDashArray() != null;
             }
-        } else {
-            makeDash = true;
         }
+
         if (makeDash) {
-            float[] dash = basicStroke.getDashArray();
+            float[] dash = newStroke.getDashArray();
             if (dash == null) {
                 cb.setLiteral("[]0 d\n");
             } else {
                 cb.setLiteral('[');
-                for (float dash1 : dash) {
-                    cb.setLiteral(dash1);
+                for (float dashValue : dash) {
+                    cb.setLiteral(dashValue);
                     cb.setLiteral(' ');
                 }
                 cb.setLiteral(']');
-                cb.setLiteral(basicStroke.getDashPhase());
+                cb.setLiteral(newStroke.getDashPhase());
                 cb.setLiteral(" d\n");
             }
         }
     }
+
 
     /**
      * Sets a rendering hint
@@ -1394,82 +1499,118 @@ public class PdfGraphics2D extends Graphics2D {
         if (s == null) {
             return;
         }
-        if ((drawType == actualStroke) && (!(actualStroke instanceof BasicStroke))) {
-            s = actualStroke.createStrokedShape(s);
-            followPath(s, FILL);
-            return;
-        }
-        if (drawType == actualStroke) {
-            setStrokeDiff(actualStroke, oldStroke);
-            oldStroke = actualStroke;
-            setStrokePaint();
+
+        s = handleStrokedShape(s, drawType);
+        if (drawType == STROKE) {
+            applyStrokeSettings();
         } else if (drawType == FILL) {
             setFillPaint();
         }
-        PathIterator points;
-        int traces = 0;
-        if (drawType == CLIP) {
-            points = s.getPathIterator(IDENTITY);
-        } else {
-            points = s.getPathIterator(transform);
+
+        PathIterator points = getPathIterator(s, drawType);
+        processPath(points, drawType);
+    }
+
+    private Shape handleStrokedShape(Shape s, int drawType) {
+        if (drawType == STROKE && !(actualStroke instanceof BasicStroke)) {
+            s = actualStroke.createStrokedShape(s);
+            followPath(s, FILL);
+            return null; // Early return; no further processing needed
         }
+        return s;
+    }
+
+    private void applyStrokeSettings() {
+        setStrokeDiff(actualStroke, oldStroke);
+        oldStroke = actualStroke;
+        setStrokePaint();
+    }
+
+    private PathIterator getPathIterator(Shape s, int drawType) {
+        return (drawType == CLIP) ? s.getPathIterator(IDENTITY) : s.getPathIterator(transform);
+    }
+
+    private void processPath(PathIterator points, int drawType) {
         float[] coords = new float[6];
+        int traces = 0;
+
         while (!points.isDone()) {
-            ++traces;
+            traces++;
             int segtype = points.currentSegment(coords);
             normalizeY(coords);
-            switch (segtype) {
-                case PathIterator.SEG_CLOSE:
-                    cb.closePath();
-                    break;
-
-                case PathIterator.SEG_CUBICTO:
-                    cb.curveTo(coords[0], coords[1], coords[2], coords[3], coords[4], coords[5]);
-                    break;
-
-                case PathIterator.SEG_LINETO:
-                    cb.lineTo(coords[0], coords[1]);
-                    break;
-
-                case PathIterator.SEG_MOVETO:
-                    cb.moveTo(coords[0], coords[1]);
-                    break;
-
-                case PathIterator.SEG_QUADTO:
-                    cb.curveTo(coords[0], coords[1], coords[2], coords[3]);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unsupported segment type: " + segtype);
-            }
+            drawSegment(segtype, coords);
             points.next();
         }
-        switch (drawType) {
-            case FILL:
-                if (traces > 0) {
-                    if (points.getWindingRule() == PathIterator.WIND_EVEN_ODD) {
-                        cb.eoFill();
-                    } else {
-                        cb.fill();
-                    }
-                }
+
+        finishDrawing(drawType, points, traces);
+    }
+
+    private void drawSegment(int segtype, float[] coords) {
+        switch (segtype) {
+            case PathIterator.SEG_CLOSE:
+                cb.closePath();
                 break;
-            case actualStroke:
-                if (traces > 0) {
-                    cb.stroke();
-                }
+            case PathIterator.SEG_CUBICTO:
+                cb.curveTo(coords[0], coords[1], coords[2], coords[3], coords[4], coords[5]);
                 break;
-            default: //drawType==CLIP
-                if (traces == 0) {
-                    cb.rectangle(0, 0, 0, 0);
-                }
-                if (points.getWindingRule() == PathIterator.WIND_EVEN_ODD) {
-                    cb.eoClip();
-                } else {
-                    cb.clip();
-                }
-                cb.newPath();
+            case PathIterator.SEG_LINETO:
+                cb.lineTo(coords[0], coords[1]);
+                break;
+            case PathIterator.SEG_MOVETO:
+                cb.moveTo(coords[0], coords[1]);
+                break;
+            case PathIterator.SEG_QUADTO:
+                cb.curveTo(coords[0], coords[1], coords[2], coords[3]);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported segment type: " + segtype);
         }
     }
+
+    private void finishDrawing(int drawType, PathIterator points, int traces) {
+        switch (drawType) {
+            case FILL:
+                handleFill(traces, points);
+                break;
+            case STROKE:
+                handleStroke(traces);
+                break;
+            case CLIP:
+                handleClip(traces, points);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown drawType: " + drawType);
+        }
+    }
+
+    private void handleFill(int traces, PathIterator points) {
+        if (traces > 0) {
+            if (points.getWindingRule() == PathIterator.WIND_EVEN_ODD) {
+                cb.eoFill();
+            } else {
+                cb.fill();
+            }
+        }
+    }
+
+    private void handleStroke(int traces) {
+        if (traces > 0) {
+            cb.stroke();
+        }
+    }
+
+    private void handleClip(int traces, PathIterator points) {
+        if (traces == 0) {
+            cb.rectangle(0, 0, 0, 0);
+        }
+        if (points.getWindingRule() == PathIterator.WIND_EVEN_ODD) {
+            cb.eoClip();
+        } else {
+            cb.clip();
+        }
+        cb.newPath();
+    }
+
 
     private float normalizeY(float y) {
         return this.height - y;
@@ -1590,126 +1731,143 @@ public class PdfGraphics2D extends Graphics2D {
 
     private void setPaint(boolean invert, double xoffset, double yoffset, boolean fill) {
         if (paint instanceof Color color) {
-            int colorAlpha = color.getAlpha();
-            if (fill) {
-                if (colorAlpha != currentFillGState) {
-                    currentFillGState = colorAlpha;
-                    PdfGState gs = fillGState[colorAlpha];
-                    if (gs == null) {
-                        gs = new PdfGState();
-                        gs.setFillOpacity(colorAlpha / 255f);
-                        fillGState[colorAlpha] = gs;
-                    }
-                    cb.setGState(gs);
-                }
-                cb.setColorFill(color);
-            } else {
-                if (colorAlpha != currentStrokeGState) {
-                    currentStrokeGState = colorAlpha;
-                    PdfGState gs = strokeGState[colorAlpha];
-                    if (gs == null) {
-                        gs = new PdfGState();
-                        gs.setStrokeOpacity(colorAlpha / 255f);
-                        strokeGState[colorAlpha] = gs;
-                    }
-                    cb.setGState(gs);
-                }
-                cb.setColorStroke(color);
-            }
+            handleColorPaint(color, fill);
         } else if (paint instanceof GradientPaint gp) {
-            Point2D p1 = gp.getPoint1();
-            transform.transform(p1, p1);
-            Point2D p2 = gp.getPoint2();
-            transform.transform(p2, p2);
-            Coordinates coords = new Coordinates((float) p1.getX(), normalizeY((float) p1.getY()),
-                    (float) p2.getX(), normalizeY((float) p2.getY()));
-            ColorPair colors = new ColorPair(gp.getColor1(), gp.getColor2());
-            PdfShading shading = PdfShading.simpleAxial(cb.getPdfWriter(), coords, colors);
-            PdfShadingPattern pat = new PdfShadingPattern(shading);
-            if (fill) {
-                cb.setShadingFill(pat);
-            } else {
-                cb.setShadingStroke(pat);
-            }
-        } else if (paint instanceof TexturePaint) {
-            try {
-                TexturePaint tp = (TexturePaint) paint;
-                BufferedImage img = tp.getImage();
-                Rectangle2D rect = tp.getAnchorRect();
-                com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
-                PdfPatternPainter pattern = cb.createPattern(image.getWidth(), image.getHeight());
-                AffineTransform inverse = this.normalizeMatrix();
-                inverse.translate(rect.getX(), rect.getY());
-                inverse.scale(rect.getWidth() / image.getWidth(), -rect.getHeight() / image.getHeight());
-                double[] mx = new double[6];
-                inverse.getMatrix(mx);
-                pattern.setPatternMatrix((float) mx[0], (float) mx[1], (float) mx[2], (float) mx[3], (float) mx[4],
-                        (float) mx[5]);
-                image.setAbsolutePosition(0, 0);
-                pattern.addImage(image);
-                if (fill) {
-                    cb.setPatternFill(pattern);
-                } else {
-                    cb.setPatternStroke(pattern);
-                }
-            } catch (Exception ex) {
-                if (fill) {
-                    cb.setColorFill(Color.gray);
-                } else {
-                    cb.setColorStroke(Color.gray);
-                }
-            }
+            handleGradientPaint(gp, fill);
+        } else if (paint instanceof TexturePaint tp) {
+            handleTexturePaint(tp, fill);
         } else {
-            try {
-                BufferedImage img = null;
-                int type = BufferedImage.TYPE_4BYTE_ABGR;
-                if (paint.getTransparency() == Transparency.OPAQUE) {
-                    type = BufferedImage.TYPE_3BYTE_BGR;
-                }
-                img = new BufferedImage((int) width, (int) height, type);
-                Graphics2D g = (Graphics2D) img.getGraphics();
-                g.transform(transform);
-                AffineTransform inv = transform.createInverse();
-                Shape fillRect = new Rectangle2D.Double(0, 0, img.getWidth(), img.getHeight());
-                fillRect = inv.createTransformedShape(fillRect);
-                g.setPaint(paint);
-                g.fill(fillRect);
-                if (invert) {
-                    AffineTransform tx = new AffineTransform();
-                    tx.scale(1, -1);
-                    tx.translate(-xoffset, -yoffset);
-                    g.drawImage(img, tx, null);
-                }
-                g.dispose();
-                com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
-                PdfPatternPainter pattern = cb.createPattern(width, height);
-                image.setAbsolutePosition(0, 0);
-                pattern.addImage(image);
-
-                if (fill) {
-                    if (currentFillGState != 255) {
-                        currentFillGState = 255;
-                        PdfGState gs = fillGState[255];
-                        if (gs == null) {
-                            gs = new PdfGState();
-                            gs.setFillOpacity(1);
-                            fillGState[255] = gs;
-                        }
-                        cb.setGState(gs);
-                    }
-                    cb.setPatternFill(pattern);
-                } else {
-                    cb.setPatternStroke(pattern);
-                }
-            } catch (Exception ex) {
-                if (fill) {
-                    cb.setColorFill(Color.gray);
-                } else {
-                    cb.setColorStroke(Color.gray);
-                }
-            }
+            handleDefaultPaint(invert, xoffset, yoffset, fill);
         }
     }
+
+    private void handleColorPaint(Color color, boolean fill) {
+        int colorAlpha = color.getAlpha();
+        if (fill) {
+            if (colorAlpha != currentFillGState) {
+                currentFillGState = colorAlpha;
+                PdfGState gs = fillGState[colorAlpha];
+                if (gs == null) {
+                    gs = new PdfGState();
+                    gs.setFillOpacity(colorAlpha / 255f);
+                    fillGState[colorAlpha] = gs;
+                }
+                cb.setGState(gs);
+            }
+            cb.setColorFill(color);
+        } else {
+            if (colorAlpha != currentStrokeGState) {
+                currentStrokeGState = colorAlpha;
+                PdfGState gs = strokeGState[colorAlpha];
+                if (gs == null) {
+                    gs = new PdfGState();
+                    gs.setStrokeOpacity(colorAlpha / 255f);
+                    strokeGState[colorAlpha] = gs;
+                }
+                cb.setGState(gs);
+            }
+            cb.setColorStroke(color);
+        }
+    }
+
+    private void handleGradientPaint(GradientPaint gp, boolean fill) {
+        Point2D p1 = gp.getPoint1();
+        transform.transform(p1, p1);
+        Point2D p2 = gp.getPoint2();
+        transform.transform(p2, p2);
+        Coordinates coords = new Coordinates((float) p1.getX(), normalizeY((float) p1.getY()), (float) p2.getX(), normalizeY((float) p2.getY()));
+        ColorPair colors = new ColorPair(gp.getColor1(), gp.getColor2());
+        PdfShading shading = PdfShading.simpleAxial(cb.getPdfWriter(), coords, colors);
+        PdfShadingPattern pat = new PdfShadingPattern(shading);
+        if (fill) {
+            cb.setShadingFill(pat);
+        } else {
+            cb.setShadingStroke(pat);
+        }
+    }
+
+    private void handleTexturePaint(TexturePaint tp, boolean fill) {
+        try {
+            BufferedImage img = tp.getImage();
+            Rectangle2D rect = tp.getAnchorRect();
+            com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
+            PdfPatternPainter pattern = cb.createPattern(image.getWidth(), image.getHeight());
+            AffineTransform inverse = this.normalizeMatrix();
+            inverse.translate(rect.getX(), rect.getY());
+            inverse.scale(rect.getWidth() / image.getWidth(), -rect.getHeight() / image.getHeight());
+            double[] mx = new double[6];
+            inverse.getMatrix(mx);
+            pattern.setPatternMatrix((float) mx[0], (float) mx[1], (float) mx[2], (float) mx[3], (float) mx[4], (float) mx[5]);
+            image.setAbsolutePosition(0, 0);
+            pattern.addImage(image);
+            if (fill) {
+                cb.setPatternFill(pattern);
+            } else {
+                cb.setPatternStroke(pattern);
+            }
+        } catch (Exception ex) {
+            handlePaintException(fill);
+        }
+    }
+
+    private void handleDefaultPaint(boolean invert, double xoffset, double yoffset, boolean fill) {
+        try {
+            BufferedImage img = createBufferedImage();
+            Graphics2D g = (Graphics2D) img.getGraphics();
+            g.transform(transform);
+            AffineTransform inv = transform.createInverse();
+            Shape fillRect = new Rectangle2D.Double(0, 0, img.getWidth(), img.getHeight());
+            fillRect = inv.createTransformedShape(fillRect);
+            g.setPaint(paint);
+            g.fill(fillRect);
+            if (invert) {
+                AffineTransform tx = new AffineTransform();
+                tx.scale(1, -1);
+                tx.translate(-xoffset, -yoffset);
+                g.drawImage(img, tx, null);
+            }
+            g.dispose();
+            com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
+            PdfPatternPainter pattern = cb.createPattern(width, height);
+            image.setAbsolutePosition(0, 0);
+            pattern.addImage(image);
+            applyPatternFillOrStroke(fill, pattern);
+        } catch (Exception ex) {
+            handlePaintException(fill);
+        }
+    }
+
+    private BufferedImage createBufferedImage() {
+        int type = paint.getTransparency() == Transparency.OPAQUE ? BufferedImage.TYPE_3BYTE_BGR : BufferedImage.TYPE_4BYTE_ABGR;
+        return new BufferedImage((int) width, (int) height, type);
+    }
+
+    private void applyPatternFillOrStroke(boolean fill, PdfPatternPainter pattern) {
+        if (fill) {
+            if (currentFillGState != 255) {
+                currentFillGState = 255;
+                PdfGState gs = fillGState[255];
+                if (gs == null) {
+                    gs = new PdfGState();
+                    gs.setFillOpacity(1);
+                    fillGState[255] = gs;
+                }
+                cb.setGState(gs);
+            }
+            cb.setPatternFill(pattern);
+        } else {
+            cb.setPatternStroke(pattern);
+        }
+    }
+
+    private void handlePaintException(boolean fill) {
+        if (fill) {
+            cb.setColorFill(Color.gray);
+        } else {
+            cb.setColorStroke(Color.gray);
+        }
+    }
+
 
     private synchronized void waitForImage(java.awt.Image image) {
         if (mediaTracker == null) {
@@ -2016,63 +2174,97 @@ public class PdfGraphics2D extends Graphics2D {
         private void splitStringIntoDisplayableParts(String s, Font compositeFont,
                 Function<Font, BaseFont> fontConverter)
                 throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+            Object result = validateCompositeFont(compositeFont);
+            clearBuffers();
+
+            BaseFont baseFontFromCompositeFont = fontConverter.apply(compositeFont);
+            assert GET_NUM_SLOTS_METHOD != null;
+            Object numSlotsResult = GET_NUM_SLOTS_METHOD.invoke(result);
+            int numSlots = (Integer) numSlotsResult;
+
+            BaseFont lastBaseFont = null;
+
+            for (int charIndex = 0; charIndex < s.length(); charIndex++) {
+                char c = s.charAt(charIndex);
+
+                BaseFont correspondingBaseFont = findCorrespondingBaseFont(result, numSlots, c, compositeFont, fontConverter);
+
+                if (correspondingBaseFont != null && correspondingBaseFont.charExists(c)) {
+                    processCharacterWithBaseFont(correspondingBaseFont, c, lastBaseFont);
+                    lastBaseFont = correspondingBaseFont;
+                } else {
+                    processCharacterWithoutBaseFont(c, baseFontFromCompositeFont, lastBaseFont);
+                    lastBaseFont = null;
+                }
+            }
+
+            finalizeStringPart();
+        }
+
+        private Object validateCompositeFont(Font compositeFont) throws IllegalAccessException, InvocationTargetException, IllegalArgumentException {
+            assert GET_FONT2D_METHOD != null;
             Object result = GET_FONT2D_METHOD.invoke(null, compositeFont);
             if (result.getClass() != COMPOSITE_FONT_CLASS) {
                 throw new IllegalArgumentException("Given font isn't a composite font.");
             }
+            return result;
+        }
+
+        private void clearBuffers() {
             sb.setLength(0);
             stringParts.clear();
             correspondingBaseFontsForParts.clear();
-            BaseFont baseFontFromCompositeFont = fontConverter.apply(compositeFont);
-            BaseFont lastBaseFont = null;
-            Object numSlotsResult = GET_NUM_SLOTS_METHOD.invoke(result);
-            int numSlots = (Integer) numSlotsResult;
-            for (int charIndex = 0; charIndex < s.length(); charIndex++) {
-                char c = s.charAt(charIndex);
-                boolean found = false;
-                for (int slotIndex = 0; slotIndex < numSlots; slotIndex++) {
-                    Object phFont = GET_SLOT_FONT_METHOD.invoke(result, slotIndex);
-                    if (phFont == null) {
-                        continue;
-                    }
-                    Boolean canBeDysplayedByPhysicalFont = (Boolean) CAN_DYSPLAY_METHOD.invoke(phFont, c);
-                    if (canBeDysplayedByPhysicalFont) {
-                        Object fontNameResult = GET_FONT_NAME_METHOD.invoke(phFont, (Locale) null);
-                        Font font = new Font((String) fontNameResult, compositeFont.getStyle(),
-                                compositeFont.getSize());
-                        BaseFont correspondingBaseFont = fontConverter.apply(font);
-                        if (correspondingBaseFont != null && correspondingBaseFont.charExists(c)) {
-                            if (sb.length() == 0) {
-                                correspondingBaseFontsForParts.add(correspondingBaseFont);
-                                lastBaseFont = correspondingBaseFont;
-                            } else if (!Objects.equals(lastBaseFont, correspondingBaseFont)) {
-                                stringParts.add(sb.toString());
-                                sb.setLength(0);
-                                correspondingBaseFontsForParts.add(correspondingBaseFont);
-                                lastBaseFont = correspondingBaseFont;
-                            }
-                            sb.append(c);
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (!found) {
-                    if (sb.length() == 0) {
-                        correspondingBaseFontsForParts.add(baseFontFromCompositeFont);
-                        lastBaseFont = null;
-                    } else if (lastBaseFont != null) {
-                        stringParts.add(sb.toString());
-                        sb.setLength(0);
-                        correspondingBaseFontsForParts.add(baseFontFromCompositeFont);
-                        lastBaseFont = null;
-                    }
-                    sb.append(c);
+        }
+
+        private BaseFont findCorrespondingBaseFont(Object result, int numSlots, char c, Font compositeFont,
+                Function<Font, BaseFont> fontConverter)
+                throws IllegalAccessException, InvocationTargetException {
+            for (int slotIndex = 0; slotIndex < numSlots; slotIndex++) {
+                assert GET_SLOT_FONT_METHOD != null;
+                Object phFont = GET_SLOT_FONT_METHOD.invoke(result, slotIndex);
+                if (phFont == null) continue;
+
+                Boolean canBeDisplayedByPhysicalFont = (Boolean) CAN_DYSPLAY_METHOD.invoke(phFont, c);
+                if (canBeDisplayedByPhysicalFont) {
+                    assert GET_FONT_NAME_METHOD != null;
+                    Object fontNameResult = GET_FONT_NAME_METHOD.invoke(phFont, (Locale) null);
+                    Font font = new Font((String) fontNameResult, compositeFont.getStyle(), compositeFont.getSize());
+                    return fontConverter.apply(font);
                 }
             }
-            stringParts.add(sb.toString());
-            sb.setLength(0);
+            return null;
         }
+
+        private void processCharacterWithBaseFont(BaseFont correspondingBaseFont, char c, BaseFont lastBaseFont) {
+            if (sb.isEmpty() || !Objects.equals(lastBaseFont, correspondingBaseFont)) {
+                if (!sb.isEmpty()) {
+                    stringParts.add(sb.toString());
+                    sb.setLength(0);
+                }
+                correspondingBaseFontsForParts.add(correspondingBaseFont);
+            }
+            sb.append(c);
+        }
+
+        private void processCharacterWithoutBaseFont(char c, BaseFont baseFontFromCompositeFont, BaseFont lastBaseFont) {
+            if (sb.isEmpty() || lastBaseFont != null) {
+                if (!sb.isEmpty()) {
+                    stringParts.add(sb.toString());
+                    sb.setLength(0);
+                }
+                correspondingBaseFontsForParts.add(baseFontFromCompositeFont);
+            }
+            sb.append(c);
+        }
+
+        private void finalizeStringPart() {
+            if (!sb.isEmpty()) {
+                stringParts.add(sb.toString());
+                sb.setLength(0);
+            }
+        }
+
 
         @FunctionalInterface
         public interface DrawStringFunction {

@@ -115,48 +115,68 @@ public class PdfPages {
         if (pages.isEmpty()) {
             throw new IOException(MessageLocalization.getComposedMessage("the.document.has.no.pages"));
         }
+
+        return buildPageTree();
+    }
+
+    private PdfIndirectReference buildPageTree() throws IOException {
         int leaf = 1;
         ArrayList<PdfIndirectReference> tParents = parents;
         ArrayList<PdfIndirectReference> tPages = pages;
         ArrayList<PdfIndirectReference> nextParents = new ArrayList<>();
+
         while (true) {
             leaf *= leafSize;
-            int stdCount = leafSize;
-            int rightCount = tPages.size() % leafSize;
-            if (rightCount == 0) {
-                rightCount = leafSize;
-            }
+            int rightCount = calculateRightCount(tPages.size(), leafSize);
+
             for (int p = 0; p < tParents.size(); ++p) {
-                int count;
-                int thisLeaf = leaf;
-                if (p == tParents.size() - 1) {
-                    count = rightCount;
-                    thisLeaf = pages.size() % leaf;
-                    if (thisLeaf == 0) {
-                        thisLeaf = leaf;
-                    }
-                } else {
-                    count = stdCount;
-                }
-                PdfDictionary top = new PdfDictionary(PdfName.PAGES);
-                top.put(PdfName.COUNT, new PdfNumber(thisLeaf));
-                PdfArray kids = new PdfArray(tPages.subList(p * stdCount, p * stdCount + count));
-                top.put(PdfName.KIDS, kids);
-                if (tParents.size() > 1) {
-                    if ((p % leafSize) == 0) {
-                        nextParents.add(writer.getPdfIndirectReference());
-                    }
-                    top.put(PdfName.PARENT, nextParents.get(p / leafSize));
-                }
+                int count = determineCount(p, tParents.size(), rightCount);
+                int thisLeaf = adjustLeafSize(p, tParents.size(), leaf);
+
+                PdfDictionary top = createPageDictionary(thisLeaf, tPages, p, count);
+                addParentReference(tParents.size(), p, nextParents, top);
+
                 writer.addToBody(top, tParents.get(p));
             }
+
             if (tParents.size() == 1) {
                 topParent = tParents.get(0);
                 return topParent;
             }
+
             tPages = tParents;
             tParents = nextParents;
             nextParents = new ArrayList<>();
+        }
+    }
+
+    private int calculateRightCount(int pageSize, int leafSize) {
+        int rightCount = pageSize % leafSize;
+        return rightCount == 0 ? leafSize : rightCount;
+    }
+
+    private int determineCount(int index, int totalParents, int rightCount) {
+        return (index == totalParents - 1) ? rightCount : leafSize;
+    }
+
+    private int adjustLeafSize(int index, int totalParents, int leaf) {
+        return (index == totalParents - 1) ? pages.size() % leaf : leaf;
+    }
+
+    private PdfDictionary createPageDictionary(int thisLeaf, ArrayList<PdfIndirectReference> tPages, int p, int count) {
+        PdfDictionary top = new PdfDictionary(PdfName.PAGES);
+        top.put(PdfName.COUNT, new PdfNumber(thisLeaf));
+        PdfArray kids = new PdfArray(tPages.subList(p * leafSize, p * leafSize + count));
+        top.put(PdfName.KIDS, kids);
+        return top;
+    }
+
+    private void addParentReference(int totalParents, int index, ArrayList<PdfIndirectReference> nextParents, PdfDictionary top) {
+        if (totalParents > 1) {
+            if ((index % leafSize) == 0) {
+                nextParents.add(writer.getPdfIndirectReference());
+            }
+            top.put(PdfName.PARENT, nextParents.get(index / leafSize));
         }
     }
 

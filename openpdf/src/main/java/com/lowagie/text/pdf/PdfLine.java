@@ -164,58 +164,92 @@ public class PdfLine {
      */
 
     PdfChunk add(PdfChunk chunk) {
-        // nothing happens if the chunk is null.
-        if (chunk == null || chunk.toString().equals("")) {
+        // Handle null or empty chunks
+        if (isChunkInvalid(chunk)) {
             return null;
         }
 
-        // we split the chunk to be added
+        // Split the chunk if necessary and update the newlineSplit flag
         PdfChunk overflow = chunk.split(width);
         newlineSplit = (chunk.isNewlineSplit() || overflow == null);
 
+        // Process tab chunks
         if (chunk.isTab()) {
-            Object[] tab = (Object[]) chunk.getAttribute(Chunk.TAB);
-            float tabPosition = (Float) tab[1];
-            boolean newline = (Boolean) tab[2];
-            if (newline && tabPosition < originalWidth - width) {
-                return chunk;
-            }
-            width = originalWidth - tabPosition;
-            chunk.adjustLeft(left);
-            addToLine(chunk);
-        } else if (chunk.length() > 0 || chunk.isImage()) {
-            // if the length of the chunk > 0 we add it to the line
-            if (overflow != null) {
-                chunk.trimLastSpace();
-            }
-            width -= chunk.width();
-            addToLine(chunk);
-        } else if (line.isEmpty()) {
-            // if the length == 0 and there were no other chunks added to the line yet,
-            // we risk to end up in an endless loop trying endlessly to add the same chunk
+            return handleTabChunk(chunk);
+        }
+
+        // Process non-tab chunks with content or images
+        if (chunk.length() > 0 || chunk.isImage()) {
+            return handleNonTabChunk(chunk, overflow);
+        }
+
+        // Process empty lines
+        if (line.isEmpty()) {
+            return handleEmptyLine(chunk, overflow);
+        }
+
+        // Adjust width and return overflow
+        width += line.get(line.size() - 1).trimLastSpace();
+        return overflow;
+    }
+
+    private boolean isChunkInvalid(PdfChunk chunk) {
+        return chunk == null || chunk.toString().isEmpty();
+    }
+
+    private PdfChunk handleTabChunk(PdfChunk chunk) {
+        Object[] tab = (Object[]) chunk.getAttribute(Chunk.TAB);
+        float tabPosition = (Float) tab[1];
+        boolean newline = (Boolean) tab[2];
+
+        if (newline && tabPosition < originalWidth - width) {
+            return chunk;
+        }
+
+        width = originalWidth - tabPosition;
+        chunk.adjustLeft(left);
+        addToLine(chunk);
+
+        return null; // No overflow for tab chunks
+    }
+
+    private PdfChunk handleNonTabChunk(PdfChunk chunk, PdfChunk overflow) {
+        if (overflow != null) {
+            chunk.trimLastSpace();
+        }
+
+        width -= chunk.width();
+        addToLine(chunk);
+
+        return overflow;
+    }
+
+    private PdfChunk handleEmptyLine(PdfChunk chunk, PdfChunk overflow) {
+        if (overflow != null) {
             chunk = overflow;
             overflow = chunk.truncate(width);
             width -= chunk.width();
+
             if (chunk.length() > 0) {
                 addToLine(chunk);
                 return overflow;
             } else {
-                // if the chunk couldn't even be truncated, we add everything, so be it
+                // Add the remaining overflow if it exists
                 if (overflow != null) {
                     addToLine(overflow);
                 }
-                return null;
+                return null; // Everything has been added
             }
-        } else {
-            width += line.get(line.size() - 1).trimLastSpace();
         }
-        return overflow;
+
+        return null; // No overflow if chunk is null
     }
 
     private void addToLine(PdfChunk chunk) {
         if (chunk.changeLeading && chunk.isImage()) {
-            float f =
-                    chunk.getImage().getScaledHeight() + chunk.getImageOffsetY() + chunk.getImage().getBorderWidthTop();
+            float f = chunk.getImage().getScaledHeight() +
+                    chunk.getImageOffsetY() +
+                    chunk.getImage().getBorderWidthTop();
             if (f > height) {
                 height = f;
             }

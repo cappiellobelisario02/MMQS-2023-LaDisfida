@@ -61,7 +61,8 @@ import com.lowagie.text.exceptions.IllegalNumberException;
 import com.lowagie.text.exceptions.InvalidRunDirectionException;
 import com.lowagie.text.pdf.events.PdfPTableEventForwarder;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This is a table that can be put at an absolute position but can also be added to the document as the class
@@ -630,9 +631,6 @@ public class PdfPTable implements LargeElement {
         if (aboveCell == null) {
             int col = currCol - 1;
             aboveCell = obtainCell(row, col);
-            while ((aboveCell == null) && (row > 0)) {
-                aboveCell = obtainCell(row, --col);
-            }
             return aboveCell != null && aboveCell.getRowspan() > distance;
         }
 
@@ -730,37 +728,67 @@ public class PdfPTable implements LargeElement {
      */
     public float writeSelectedRows(int colStart, int colEnd, int rowStart, int rowEnd, float xPos, float yPos,
             PdfContentByte[] canvases) {
-        if (totalWidth <= 0) {
-            throw new IllegalNumberException(
-                    MessageLocalization.getComposedMessage("the.table.width.must.be.greater.than.zero"));
-        }
+        validateTableWidth();
 
-        int totalRows = rows.size();
-        if (rowStart < 0) {
-            rowStart = 0;
-        }
-        if (rowEnd < 0) {
-            rowEnd = totalRows;
-        } else {
-            rowEnd = Math.min(rowEnd, totalRows);
-        }
+        // Normalize input parameters
+        rowStart = normalizeRowStart(rowStart);
+        rowEnd = normalizeRowEnd(rowEnd);
+        colStart = normalizeColStart(colStart);
+        colEnd = normalizeColEnd(colEnd);
+
+        // Early exit if no rows to process
         if (rowStart >= rowEnd) {
             return yPos;
-        }
+        }else{
 
+            // Process rows and update yPosStart
+            float yPosStart = processRows(colStart, colEnd, rowStart, rowEnd, xPos, yPos, canvases);
+
+            // Handle table event if needed
+            if (shouldHandleTableEvent(colStart, colEnd)) {
+                // Check if handleTableEvent modifies yPosStart
+                handleTableEvent(rowStart, rowEnd, xPos, yPosStart, canvases);
+            }
+
+            // Return the updated y position
+            return yPosStart;
+
+        }
+    }
+
+    private void validateTableWidth() {
+        if (totalWidth <= 0) {
+            throw new IllegalArgumentException(
+                    MessageLocalization.getComposedMessage("the.table.width.must.be.greater.than.zero"));
+        }
+    }
+
+    private int normalizeRowStart(int rowStart) {
+        return Math.max(rowStart, 0);
+    }
+
+    private int normalizeRowEnd(int rowEnd) {
+        int totalRows = rows.size();
+        if (rowEnd < 0) {
+            return totalRows;
+        }
+        return Math.min(rowEnd, totalRows);
+    }
+
+    private int normalizeColStart(int colStart) {
+        return Math.max(colStart, 0);
+    }
+
+    private int normalizeColEnd(int colEnd) {
         int totalCols = getNumberOfColumns();
-        if (colStart < 0) {
-            colStart = 0;
-        } else {
-            colStart = Math.min(colStart, totalCols);
-        }
         if (colEnd < 0) {
-            colEnd = totalCols;
-        } else {
-            colEnd = Math.min(colEnd, totalCols);
+            return totalCols;
         }
+        return Math.min(colEnd, totalCols);
+    }
 
-        float yPosStart = yPos;
+    private float processRows(int colStart, int colEnd, int rowStart, int rowEnd, float xPos, float yPos,
+            PdfContentByte[] canvases) {
         for (int k = rowStart; k < rowEnd; ++k) {
             PdfPRow row = rows.get(k);
             if (row != null) {
@@ -768,24 +796,27 @@ public class PdfPTable implements LargeElement {
                 yPos -= row.getMaxHeights();
             }
         }
-
-        if (tableEvent != null && colStart == 0 && colEnd == totalCols) {
-            float[] heights = new float[rowEnd - rowStart + 1];
-            heights[0] = yPosStart;
-            for (int k = rowStart; k < rowEnd; ++k) {
-                PdfPRow row = rows.get(k);
-                float hr = 0;
-                if (row != null) {
-                    hr = row.getMaxHeights();
-                }
-                heights[k - rowStart + 1] = heights[k - rowStart] - hr;
-            }
-            tableEvent.tableLayout(this, getEventWidths(xPos, rowStart, rowEnd, headersInEvent), heights,
-                    headersInEvent ? headerRows : 0, rowStart, canvases);
-        }
-
-        return yPos;
+        return yPos;  // Ensure the final yPos is returned
     }
+
+
+    private boolean shouldHandleTableEvent(int colStart, int colEnd) {
+        return tableEvent != null && colStart == 0 && colEnd == getNumberOfColumns();
+    }
+
+    private void handleTableEvent(int rowStart, int rowEnd, float xPos, float yPosStart,
+            PdfContentByte[] canvases) {
+        float[] heights = new float[rowEnd - rowStart + 1];
+        heights[0] = yPosStart;
+        for (int k = rowStart; k < rowEnd; ++k) {
+            PdfPRow row = rows.get(k);
+            float hr = (row != null) ? row.getMaxHeights() : 0;
+            heights[k - rowStart + 1] = heights[k - rowStart] - hr;
+        }
+        tableEvent.tableLayout(this, getEventWidths(xPos, rowStart, rowEnd, headersInEvent), heights,
+                headersInEvent ? headerRows : 0, rowStart, canvases);
+    }
+
 
     /**
      * Writes the selected rows to the document.
@@ -884,7 +915,7 @@ public class PdfPTable implements LargeElement {
     }
 
     private void redistributeRowspanHeight() {
-        float delta = 0.001f;
+        float delta = 0.001f;  // Threshold for distribution
         if (rows == null) {
             return;
         }
@@ -899,53 +930,87 @@ public class PdfPTable implements LargeElement {
             PdfPCell[] cells = row.getCells();
             for (PdfPCell cell : cells) {
                 if (cell != null && cell.getRowspan() > 1) {
-                    float existingHeights = 0;
-                    for (int r = rowIdx; r < rows.size() && r < rowIdx + cell.getRowspan(); r++) {
-                        PdfPRow rowAtTheMoment = rows.get(r);
-
-                        if (rowAtTheMoment == null) {
-                            continue;
-                        }
-
-                        existingHeights += rowAtTheMoment.getMaxHeights();
-                    }
+                    float existingHeights = calculateExistingHeights(rowIdx, cell);
                     float heightToDistribute = cell.getMaxHeight() - existingHeights;
+
                     if (heightToDistribute > delta) {
-                        ArrayList<Integer> rowsByHeight = new ArrayList<>(cell.getRowspan());
-                        for (int r = rowIdx; r < rows.size() && r < rowIdx + cell.getRowspan(); r++) {
-                            if (rows.get(r) == null) {
-                                continue;
-                            }
-                            rowsByHeight.add(r);
-                        }
-                        rowsByHeight.sort(Comparator.comparing(r -> rows.get(r).getMaxHeights()));
-                        for (int i = 0; i < rowsByHeight.size(); i++) {
-                            if (heightToDistribute < delta) {
-                                break;
-                            }
-                            float additionalHeightPerRow = heightToDistribute / (i + 1);
-                            if (i + 1 < rowsByHeight.size()) {
-                                float currentRowHeight = rows.get(rowsByHeight.get(i)).getMaxHeights();
-                                float nextRowHeight = rows.get(rowsByHeight.get(i + 1)).getMaxHeights();
-                                if (Math.abs(currentRowHeight - nextRowHeight) < delta) {
-                                    continue;
-                                } else {
-                                    additionalHeightPerRow = Math.min(additionalHeightPerRow,
-                                            nextRowHeight - currentRowHeight);
-                                }
-                            }
-                            for (int j = 0; j <= i; j++) {
-                                int r = rowsByHeight.get(j);
-                                PdfPRow smallerRow = rows.get(r);
-                                smallerRow.setMaxHeights(smallerRow.getMaxHeights() + additionalHeightPerRow);
-                                heightToDistribute -= additionalHeightPerRow;
-                            }
-                        }
+                        distributeHeightToRows(rowIdx, cell.getRowspan(), heightToDistribute, delta);
                     }
                 }
             }
         }
     }
+
+    private float calculateExistingHeights(int rowIdx, PdfPCell cell) {
+        float existingHeights = 0;
+        int endRowIdx = Math.min(rows.size(), rowIdx + cell.getRowspan());
+        for (int r = rowIdx; r < endRowIdx; r++) {
+            PdfPRow rowAtTheMoment = rows.get(r);
+            if (rowAtTheMoment != null) {
+                existingHeights += rowAtTheMoment.getMaxHeights();
+            }
+        }
+        return existingHeights;
+    }
+
+    private void distributeHeightToRows(int rowIdx, int rowspan, float heightToDistribute, float delta) {
+        List<Integer> rowsByHeight = getRowsByHeight(rowIdx, rowspan);
+        rowspan = adjustRowspanIfNeeded(rowsByHeight.size(), rowspan);
+
+        for (int i = 0; i < rowsByHeight.size(); i++) {
+            if (heightToDistribute < delta) {
+                break;
+            }
+
+            float additionalHeightPerRow = calculateAdditionalHeightPerRow(heightToDistribute, i, rowsByHeight, delta);
+
+            distributeHeightToRows(rowsByHeight, i, additionalHeightPerRow, delta, heightToDistribute);
+        }
+    }
+
+    private List<Integer> getRowsByHeight(int rowIdx, int rowspan) {
+        List<Integer> rowsByHeight = new ArrayList<>(rowspan);
+        int endRowIdx = Math.min(rows.size(), rowIdx + rowspan);
+        for (int r = rowIdx; r < endRowIdx; r++) {
+            if (rows.get(r) != null) {
+                rowsByHeight.add(r);
+            }
+        }
+        return rowsByHeight;
+    }
+
+    private int adjustRowspanIfNeeded(int availableRows, int rowspan) {
+        return Math.min(availableRows, rowspan);
+    }
+
+    private float calculateAdditionalHeightPerRow(float heightToDistribute, int currentIndex, List<Integer> rowsByHeight, float delta) {
+        float additionalHeightPerRow = heightToDistribute / (currentIndex + 1);
+        if (currentIndex + 1 < rowsByHeight.size()) {
+            float currentRowHeight = rows.get(rowsByHeight.get(currentIndex)).getMaxHeights();
+            float nextRowHeight = rows.get(rowsByHeight.get(currentIndex + 1)).getMaxHeights();
+            if (Math.abs(currentRowHeight - nextRowHeight) >= delta) {
+                additionalHeightPerRow = Math.min(additionalHeightPerRow, nextRowHeight - currentRowHeight);
+            }
+        }
+        return additionalHeightPerRow;
+    }
+
+    private void distributeHeightToRows(List<Integer> rowsByHeight, int endIndex, float additionalHeightPerRow, float delta, float heightToDistribute) {
+        for (int j = 0; j <= endIndex; j++) {
+            if (heightToDistribute < delta) {
+                break;
+            }
+
+            int r = rowsByHeight.get(j);
+            PdfPRow smallerRow = rows.get(r);
+            if (smallerRow != null) {
+                smallerRow.setMaxHeights(smallerRow.getMaxHeights() + additionalHeightPerRow);
+                heightToDistribute -= additionalHeightPerRow;
+            }
+        }
+    }
+
+
 
     /**
      * Gets the height of a particular row.
@@ -1220,7 +1285,7 @@ public class PdfPTable implements LargeElement {
      *
      * @return an arraylist
      */
-    public ArrayList<PdfPRow> getRows() {
+    public List<PdfPRow> getRows() {
         return rows;
     }
 
@@ -1232,49 +1297,78 @@ public class PdfPTable implements LargeElement {
      * @return a selection of rows
      * @since 2.1.6
      */
-    public ArrayList<PdfPRow> getRows(int start, int end) {
+    public List<PdfPRow> getRows(int start, int end) {
         ArrayList<PdfPRow> list = new ArrayList<>();
-        if (start < 0 || end > size()) {
+        if (!isValidRange(start, end)) {
             return list;
         }
-        PdfPRow firstRow = adjustCellsInRow(start, end);
+        PdfPRow firstRow = initializeFirstRow(start, end);
+        processColumns(start, end, firstRow);
+        list.add(firstRow);
+        addRemainingRows(start, end, list);
+        return list;
+    }
+
+    private boolean isValidRange(int start, int end) {
+        return start >= 0 && end <= size();
+    }
+
+    private PdfPRow initializeFirstRow(int start, int end) {
+        return adjustCellsInRow(start, end);
+    }
+
+    private void processColumns(int start, int end, PdfPRow firstRow) {
         int colIndex = 0;
-        PdfPCell cell;
         while (colIndex < getNumberOfColumns()) {
-            int rowIndex = start;
-            while (rowSpanAbove(rowIndex--, colIndex)) {
-                PdfPRow row = getRow(rowIndex);
-                if (row != null) {
-                    PdfPCell replaceCell = row.getCells()[colIndex];
-                    if (replaceCell != null && firstRow != null) {
-                        firstRow.getCells()[colIndex] = new PdfPCell(replaceCell);
-                        float extra = 0;
-                        int stop = Math.min(rowIndex + replaceCell.getRowspan(), end);
-                        for (int j = start + 1; j < stop; j++) {
-                            extra += getRowHeight(j);
-                        }
-                        firstRow.setExtraHeight(colIndex, extra);
-                        float diff = getRowspanHeight(rowIndex, colIndex)
-                                - getRowHeight(start) - extra;
-                        firstRow.getCells()[colIndex].consumeHeight(diff);
-                    }
-                }
-            }
-            if (firstRow != null) {
-                cell = firstRow.getCells()[colIndex];
-                if (cell == null) {
-                    colIndex++;
-                } else {
-                    colIndex += cell.getColspan();
+            processColumn(start, end, firstRow, colIndex);
+            colIndex = getNextColumnIndex(firstRow, colIndex);
+        }
+    }
+
+    private void processColumn(int start, int end, PdfPRow firstRow, int colIndex) {
+        int rowIndex = start;
+        while (rowSpanAbove(rowIndex--, colIndex)) {
+            PdfPRow row = getRow(rowIndex);
+            if (row != null) {
+                PdfPCell replaceCell = row.getCells()[colIndex];
+                if (replaceCell != null && firstRow != null) {
+                    adjustFirstRowCell(firstRow, replaceCell, rowIndex, start, end, colIndex);
                 }
             }
         }
-        list.add(firstRow);
+    }
+
+    private void adjustFirstRowCell(PdfPRow firstRow, PdfPCell replaceCell, int rowIndex, int start, int end, int colIndex) {
+        firstRow.getCells()[colIndex] = new PdfPCell(replaceCell);
+        float extra = calculateExtraHeight(start, end, rowIndex, replaceCell);
+        float diff = calculateHeightDifference(start, extra, rowIndex, colIndex);
+        firstRow.getCells()[colIndex].consumeHeight(diff);
+    }
+
+    private float calculateExtraHeight(int start, int end, int rowIndex, PdfPCell replaceCell) {
+        float extra = 0;
+        int stop = Math.min(rowIndex + replaceCell.getRowspan(), end);
+        for (int j = start + 1; j < stop; j++) {
+            extra += getRowHeight(j);
+        }
+        return extra;
+    }
+
+    private float calculateHeightDifference(int start, float extra, int rowIndex, int colIndex) {
+        return getRowspanHeight(rowIndex, colIndex) - getRowHeight(start) - extra;
+    }
+
+    private int getNextColumnIndex(PdfPRow firstRow, int colIndex) {
+        PdfPCell cell = firstRow.getCells()[colIndex];
+        return (cell == null) ? colIndex + 1 : colIndex + cell.getColspan();
+    }
+
+    private void addRemainingRows(int start, int end, ArrayList<PdfPRow> list) {
         for (int i = start + 1; i < end; i++) {
             list.add(adjustCellsInRow(i, end));
         }
-        return list;
     }
+
 
     /**
      * Calculates the extra height needed in a row because of rowspans.
@@ -1347,44 +1441,70 @@ public class PdfPTable implements LargeElement {
     }
 
     float[][] getEventWidths(float xPos, int firstRow, int lastRow, boolean includeHeaders) {
-        if (includeHeaders) {
-            firstRow = Math.max(firstRow, headerRows);
-            lastRow = Math.max(lastRow, headerRows);
-        }
-        float[][] widths = new float[(includeHeaders ? headerRows : 0) + lastRow - firstRow][];
+        // Adjust row indices based on headers
+        firstRow = adjustRowIndexForHeaders(firstRow, includeHeaders);
+        lastRow = adjustRowIndexForHeaders(lastRow, includeHeaders);
+
+        // Initialize widths array
+        float[][] widths = initializeWidthArray(firstRow, lastRow, includeHeaders);
+
+        // Compute widths based on column span
         if (isColspan) {
-            int n = 0;
-            if (includeHeaders) {
-                for (int k = 0; k < headerRows; ++k) {
-                    PdfPRow row = rows.get(k);
-                    if (row == null) {
-                        ++n;
-                    } else {
-                        widths[n++] = row.getEventWidth(xPos);
-                    }
-                }
-            }
-            for (; firstRow < lastRow; ++firstRow) {
-                PdfPRow row = rows.get(firstRow);
-                if (row == null) {
-                    ++n;
-                } else {
-                    widths[n++] = row.getEventWidth(xPos);
-                }
-            }
+            computeColspanWidths(xPos, firstRow, lastRow, widths);
         } else {
-            int numCols = getNumberOfColumns();
-            float[] width = new float[numCols + 1];
-            width[0] = xPos;
-            for (int k = 0; k < numCols; ++k) {
-                width[k + 1] = width[k] + absoluteWidths[k];
-            }
-            for (int k = 0; k < widths.length; ++k) {
-                widths[k] = width;
-            }
+            computeNoColspanWidths(xPos, widths);
         }
+
         return widths;
     }
+
+    private int adjustRowIndexForHeaders(int rowIndex, boolean includeHeaders) {
+        return includeHeaders ? Math.max(rowIndex, headerRows) : rowIndex;
+    }
+
+    private float[][] initializeWidthArray(int firstRow, int lastRow, boolean includeHeaders) {
+        return new float[(includeHeaders ? headerRows : 0) + lastRow - firstRow][];
+    }
+
+    private void computeColspanWidths(float xPos, int firstRow, int lastRow, float[][] widths) {
+        int n = 0;
+
+        // Handle header rows if included
+        if (headerRows > 0) {
+            n = processHeaderRows(xPos, widths, n);
+        }
+
+        // Process rows based on column span
+        for (; firstRow < lastRow; ++firstRow) {
+            PdfPRow row = rows.get(firstRow);
+            widths[n++] = (row == null) ? null : row.getEventWidth(xPos);
+        }
+    }
+
+    private int processHeaderRows(float xPos, float[][] widths, int n) {
+        for (int k = 0; k < headerRows; ++k) {
+            PdfPRow row = rows.get(k);
+            widths[n++] = (row == null) ? null : row.getEventWidth(xPos);
+        }
+        return n;
+    }
+
+    private void computeNoColspanWidths(float xPos, float[][] widths) {
+        int numCols = getNumberOfColumns();
+        float[] width = computeColumnWidths(xPos, numCols);
+
+        Arrays.fill(widths, width);
+    }
+
+    private float[] computeColumnWidths(float xPos, int numCols) {
+        float[] width = new float[numCols + 1];
+        width[0] = xPos;
+        for (int k = 0; k < numCols; ++k) {
+            width[k + 1] = width[k] + absoluteWidths[k];
+        }
+        return width;
+    }
+
 
 
     /**

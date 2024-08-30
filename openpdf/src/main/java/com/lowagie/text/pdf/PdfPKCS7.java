@@ -57,6 +57,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -1283,125 +1284,154 @@ public class PdfPKCS7 {
     public byte[] getEncodedPKCS7(byte[] secondDigest, Calendar signingTime,
             TSAClient tsaClient, byte[] ocsp) {
         try {
-            if (externalDigest != null) {
-                digest = externalDigest;
-                if (rsaData != null) {
-                    rsaData = externalRSAdata;
-                }
-            } else if (externalRSAdata != null && rsaData != null) {
-                rsaData = externalRSAdata;
-                sig.update(rsaData);
-                digest = sig.sign();
-            } else {
-                if (rsaData != null) {
-                    rsaData = messageDigest.digest();
-                    sig.update(rsaData);
-                }
-                digest = sig.sign();
-            }
+            // Step 1: Compute the Digest
+            byte[] mDigest = computeDigest(secondDigest);
 
-            // Create the set of Hash algorithms
-            ASN1EncodableVector digestAlgorithms = new ASN1EncodableVector();
-            for (String digestalgo : digestalgos) {
-                ASN1EncodableVector algos = new ASN1EncodableVector();
-                algos.add(new ASN1ObjectIdentifier(digestalgo));
-                algos.add(DERNull.INSTANCE);
-                digestAlgorithms.add(new DERSequence(algos));
-            }
+            // Step 2: Create Digest Algorithms Sequence
+            DERSequence digestAlgorithms = createDigestAlgorithmsSequence();
 
-            // Create the contentInfo.
-            ASN1EncodableVector v = new ASN1EncodableVector();
-            v.add(new ASN1ObjectIdentifier(ID_PKCS7_DATA));
-            if (rsaData != null) {
-                v.add(new DERTaggedObject(0, new DEROctetString(rsaData)));
-            }
-            DERSequence contentinfo = new DERSequence(v);
+            // Step 3: Create Content Info
+            DERSequence contentInfo = createContentInfo();
 
-            // Get all the certificates
-            //
-            v = new ASN1EncodableVector();
-            for (Certificate cert : certs) {
-                ASN1InputStream tempstream = new ASN1InputStream(
-                        new ByteArrayInputStream(((X509Certificate) cert).getEncoded()));
-                v.add(tempstream.readObject());
-            }
+            // Step 4: Create Certificates Set
+            DERSet certificatesSet = createCertificatesSet();
 
-            DERSet dercertificates = new DERSet(v);
+            // Step 5: Create Signer Info
+            DERSet signerInfo = createSignerInfo(secondDigest, signingTime, ocsp, mDigest, tsaClient);
 
-            // Create signerinfo structure.
-            //
-            ASN1EncodableVector signerinfo = new ASN1EncodableVector();
-
-            // Add the signerInfo version
-            //
-            signerinfo.add(new ASN1Integer(signerversion));
-
-            v = new ASN1EncodableVector();
-            v.add(getIssuer(signCert.getTBSCertificate()));
-            v.add(new ASN1Integer(signCert.getSerialNumber()));
-            signerinfo.add(new DERSequence(v));
-
-            // Add the digestAlgorithm
-            v = new ASN1EncodableVector();
-            v.add(new ASN1ObjectIdentifier(digestAlgorithm));
-            v.add(DERNull.INSTANCE);
-            signerinfo.add(new DERSequence(v));
-
-            // add the authenticated attribute if present
-            if (secondDigest != null && signingTime != null) {
-                signerinfo.add(new DERTaggedObject(false, 0,
-                        getAuthenticatedAttributeSet(secondDigest, signingTime, ocsp)));
-            }
-            // Add the digestEncryptionAlgorithm
-            v = new ASN1EncodableVector();
-            v.add(new ASN1ObjectIdentifier(digestEncryptionAlgorithm));
-            v.add(DERNull.INSTANCE);
-            signerinfo.add(new DERSequence(v));
-
-            // Add the digest
-            signerinfo.add(new DEROctetString(digest));
-
-            // When requested, go get and add the timestamp. May throw an exception.
-            if (tsaClient != null) {
-                byte[] tsImprint = tsaClient.getMessageDigest().digest(digest);
-                byte[] tsToken = tsaClient.getTimeStampToken(this, tsImprint);
-                if (tsToken != null) {
-                    ASN1EncodableVector unauthAttributes = buildUnauthenticatedAttributes(tsToken);
-                    if (unauthAttributes != null) {
-                        signerinfo.add(new DERTaggedObject(false, 1, new DERSet(
-                                unauthAttributes)));
-                    }
-                }
-            }
-
-            // Finally build the body out of all the components above
-            ASN1EncodableVector body = new ASN1EncodableVector();
-            body.add(new ASN1Integer(version));
-            body.add(new DERSet(digestAlgorithms));
-            body.add(contentinfo);
-            body.add(new DERTaggedObject(false, 0, dercertificates));
-
-            // Only allow one signerInfo
-            body.add(new DERSet(new DERSequence(signerinfo)));
-
-            // Now we have the body, wrap it in it's PKCS7Signed shell
-            // and return it
-            //
-            ASN1EncodableVector whole = new ASN1EncodableVector();
-            whole.add(new ASN1ObjectIdentifier(ID_PKCS7_SIGNED_DATA));
-            whole.add(new DERTaggedObject(0, new DERSequence(body)));
-
-            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-
-            ASN1OutputStream dout = ASN1OutputStream.create(bOut);
-            dout.writeObject(new DERSequence(whole));
-            dout.close();
-
-            return bOut.toByteArray();
+            // Step 6: Assemble the Final PKCS7 Structure
+            return buildPKCS7Structure(digestAlgorithms, contentInfo, certificatesSet, signerInfo);
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
     }
+
+    // Compute the Digest
+    private byte[] computeDigest(byte[] secondDigest) throws GeneralSecurityException, SignatureException {
+        if (externalDigest != null) {
+            digest = externalDigest;
+            if (rsaData != null) {
+                rsaData = externalRSAdata;
+            }
+        } else if (externalRSAdata != null && rsaData != null) {
+            rsaData = externalRSAdata;
+            sig.update(rsaData);
+            digest = sig.sign();
+        } else {
+            if (rsaData != null) {
+                rsaData = messageDigest.digest();
+                sig.update(rsaData);
+            }
+            digest = sig.sign();
+        }
+        return digest;
+    }
+
+    // Create Digest Algorithms Sequence
+    private DERSequence createDigestAlgorithmsSequence() {
+        ASN1EncodableVector digestAlgorithms = new ASN1EncodableVector();
+        for (String digestAlgo : digestalgos) {
+            ASN1EncodableVector algos = new ASN1EncodableVector();
+            algos.add(new ASN1ObjectIdentifier(digestAlgo));
+            algos.add(DERNull.INSTANCE);
+            digestAlgorithms.add(new DERSequence(algos));
+        }
+        return new DERSequence(digestAlgorithms);
+    }
+
+    // Create Content Info
+    private DERSequence createContentInfo() {
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add(new ASN1ObjectIdentifier(ID_PKCS7_DATA));
+        if (rsaData != null) {
+            v.add(new DERTaggedObject(0, new DEROctetString(rsaData)));
+        }
+        return new DERSequence(v);
+    }
+
+    // Create Certificates Set
+    private DERSet createCertificatesSet() throws IOException {
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        for (Certificate cert : certs) {
+            ASN1InputStream tempStream = new ASN1InputStream(
+                    new ByteArrayInputStream(((X509Certificate) cert).getEncoded()));
+            v.add(tempStream.readObject());
+        }
+        return new DERSet(v);
+    }
+
+    // Create Signer Info
+    private DERSet createSignerInfo(byte[] secondDigest, Calendar signingTime, byte[] ocsp,
+            byte[] digest, TSAClient tsaClient) throws IOException, GeneralSecurityException {
+        ASN1EncodableVector signerInfo = new ASN1EncodableVector();
+
+        // Add the signerInfo version
+        signerInfo.add(new ASN1Integer(signerversion));
+
+        // Add issuer and serial number
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add(getIssuer(signCert.getTBSCertificate()));
+        v.add(new ASN1Integer(signCert.getSerialNumber()));
+        signerInfo.add(new DERSequence(v));
+
+        // Add digestAlgorithm
+        v = new ASN1EncodableVector();
+        v.add(new ASN1ObjectIdentifier(digestAlgorithm));
+        v.add(DERNull.INSTANCE);
+        signerInfo.add(new DERSequence(v));
+
+        // Add authenticated attributes if present
+        if (secondDigest != null && signingTime != null) {
+            signerInfo.add(new DERTaggedObject(false, 0,
+                    getAuthenticatedAttributeSet(secondDigest, signingTime, ocsp)));
+        }
+
+        // Add digestEncryptionAlgorithm
+        v = new ASN1EncodableVector();
+        v.add(new ASN1ObjectIdentifier(digestEncryptionAlgorithm));
+        v.add(DERNull.INSTANCE);
+        signerInfo.add(new DERSequence(v));
+
+        // Add digest
+        signerInfo.add(new DEROctetString(digest));
+
+        // Add timestamp if TSAClient is available
+        if (tsaClient != null) {
+            byte[] tsImprint = tsaClient.getMessageDigest().digest(digest);
+            byte[] tsToken = tsaClient.getTimeStampToken(this, tsImprint);
+            if (tsToken != null) {
+                ASN1EncodableVector unauthAttributes = buildUnauthenticatedAttributes(tsToken);
+                if (unauthAttributes != null) {
+                    signerInfo.add(new DERTaggedObject(false, 1, new DERSet(unauthAttributes)));
+                }
+            }
+        }
+
+        return new DERSet(new DERSequence(signerInfo));
+    }
+
+    // Build PKCS7 Structure
+    private byte[] buildPKCS7Structure(DERSequence digestAlgorithms, DERSequence contentInfo,
+            DERSet certificatesSet, DERSet signerInfo) throws IOException {
+        ASN1EncodableVector body = new ASN1EncodableVector();
+        body.add(new ASN1Integer(version));
+        body.add(digestAlgorithms);
+        body.add(contentInfo);
+        body.add(new DERTaggedObject(false, 0, certificatesSet));
+        body.add(signerInfo);
+
+        ASN1EncodableVector whole = new ASN1EncodableVector();
+        whole.add(new ASN1ObjectIdentifier(ID_PKCS7_SIGNED_DATA));
+        whole.add(new DERTaggedObject(0, new DERSequence(body)));
+
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        ASN1OutputStream dout = ASN1OutputStream.create(bOut);
+        dout.writeObject(new DERSequence(whole));
+        dout.close();
+
+        return bOut.toByteArray();
+    }
+
 
     /**
      * Added by Aiken Sam, 2006-11-15, modifed by Martin Brunecky 07/12/2007 to start with the timeStampToken
@@ -1836,39 +1866,68 @@ public class PdfPKCS7 {
                 return null;
             }
 
-            int end = index + 1;
-            boolean quoted = false;
-            boolean escaped = false;
-
             buf.setLength(0);
-
-            while (end != oid.length()) {
-                char c = oid.charAt(end);
-
-                if (c == '"') {
-                    if (!escaped) {
-                        quoted = !quoted;
-                    } else {
-                        buf.append(c);
-                    }
-                    escaped = false;
-                } else {
-                    if (escaped || quoted) {
-                        buf.append(c);
-                        escaped = false;
-                    } else if (c == '\\') {
-                        escaped = true;
-                    } else if (c == ',') {
-                        break;
-                    } else {
-                        buf.append(c);
-                    }
-                }
-                end++;
-            }
+            int end = processToken();
 
             index = end;
             return buf.toString().trim();
         }
+
+        private int processToken() {
+            int end = index;
+            boolean quoted = false;
+            boolean escaped = false;
+
+            while (end < oid.length()) {
+                char c = oid.charAt(end);
+
+                switch (c) {
+                    case '"':
+                        end = handleQuote(end, escaped);
+                        quoted = !quoted;
+                        break;
+                    case '\\':
+                        end = handleBackslash(end, escaped);
+                        escaped = !escaped;
+                        break;
+                    case ',':
+                        if (!quoted) {
+                            break;
+                        }
+                        // fall through
+                    default:
+                        end = handleOtherCharacters(end, c);
+                        escaped = false;
+                        break;
+                }
+                end++;
+            }
+
+            return end;
+        }
+
+        private int handleQuote(int end, boolean escaped) {
+            if (escaped) {
+                buf.append('"');
+            }
+            return end;
+        }
+
+        private int handleBackslash(int end, boolean escaped) {
+            if (escaped) {
+                buf.append('\\');
+                return end;
+            }
+            // Move to the next character and re-evaluate
+            end++;
+            return end;
+        }
+
+        private int handleOtherCharacters(int end, char c) {
+            buf.append(c);
+            return end;
+        }
+
+
     }
 }

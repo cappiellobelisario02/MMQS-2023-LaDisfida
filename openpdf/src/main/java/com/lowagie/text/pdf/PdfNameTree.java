@@ -100,64 +100,99 @@ public class PdfNameTree {
         String[] names = items.keySet().toArray(new String[0]);
         Arrays.sort(names);
         if (names.length <= LEAF_SIZE) {
-            PdfDictionary dic = new PdfDictionary();
-            PdfArray ar = new PdfArray();
-            for (String name : names) {
-                ar.add(new PdfString(name, null));
-                ar.add(items.get(name));
-            }
-            dic.put(PdfName.NAMES, ar);
-            return dic;
+            return createLeafDictionary(items, names);
         }
-        int skip = LEAF_SIZE;
-        PdfIndirectReference[] kids = new PdfIndirectReference[(names.length + LEAF_SIZE - 1) / LEAF_SIZE];
-        for (int k = 0; k < kids.length; ++k) {
+        return createInternalDictionaryTree(items, names, writer);
+    }
+
+    private static PdfDictionary createLeafDictionary(Map<String, ? extends PdfObject> items, String[] names) {
+        PdfDictionary dic = new PdfDictionary();
+        PdfArray ar = new PdfArray();
+        for (String name : names) {
+            ar.add(new PdfString(name, null));
+            ar.add(items.get(name));
+        }
+        dic.put(PdfName.NAMES, ar);
+        return dic;
+    }
+
+    private static PdfDictionary createInternalDictionaryTree(Map<String, ? extends PdfObject> items, String[] names, PdfWriter writer) throws IOException {
+        int numKids = (names.length + LEAF_SIZE - 1) / LEAF_SIZE;
+        PdfIndirectReference[] kids = new PdfIndirectReference[numKids];
+
+        for (int k = 0; k < numKids; ++k) {
             int offset = k * LEAF_SIZE;
             int end = Math.min(offset + LEAF_SIZE, names.length);
-            PdfDictionary dic = new PdfDictionary();
-            PdfArray arr = new PdfArray();
-            arr.add(new PdfString(names[offset], null));
-            arr.add(new PdfString(names[end - 1], null));
-            dic.put(PdfName.LIMITS, arr);
-            arr = new PdfArray();
-            for (; offset < end; ++offset) {
-                arr.add(new PdfString(names[offset], null));
-                arr.add(items.get(names[offset]));
-            }
-            dic.put(PdfName.NAMES, arr);
+            PdfDictionary dic = createNodeDictionary(names, items, offset, end);
             kids[k] = writer.addToBody(dic).getIndirectReference();
         }
-        int top = kids.length;
-        while (true) {
-            if (top <= LEAF_SIZE) {
-                PdfArray arr = new PdfArray();
-                for (int k = 0; k < top; ++k) {
-                    arr.add(kids[k]);
-                }
-                PdfDictionary dic = new PdfDictionary();
-                dic.put(PdfName.KIDS, arr);
-                return dic;
-            }
-            skip *= LEAF_SIZE;
-            int tt = (names.length + skip - 1) / skip;
-            for (int k = 0; k < tt; ++k) {
-                int offset = k * LEAF_SIZE;
-                int end = Math.min(offset + LEAF_SIZE, top);
-                PdfDictionary dic = new PdfDictionary();
-                PdfArray arr = new PdfArray();
-                arr.add(new PdfString(names[k * skip], null));
-                arr.add(new PdfString(names[Math.min((k + 1) * skip, names.length) - 1], null));
-                dic.put(PdfName.LIMITS, arr);
-                arr = new PdfArray();
-                for (; offset < end; ++offset) {
-                    arr.add(kids[offset]);
-                }
-                dic.put(PdfName.KIDS, arr);
-                kids[k] = writer.addToBody(dic).getIndirectReference();
-            }
-            top = tt;
-        }
+
+        return createInternalTree(kids, names.length, writer);
     }
+
+    private static PdfDictionary createNodeDictionary(String[] names, Map<String, ? extends PdfObject> items, int offset, int end) {
+        PdfDictionary dic = new PdfDictionary();
+        PdfArray limits = new PdfArray();
+        limits.add(new PdfString(names[offset], null));
+        limits.add(new PdfString(names[end - 1], null));
+        dic.put(PdfName.LIMITS, limits);
+
+        PdfArray namesArray = new PdfArray();
+        for (int i = offset; i < end; ++i) {
+            namesArray.add(new PdfString(names[i], null));
+            namesArray.add(items.get(names[i]));
+        }
+        dic.put(PdfName.NAMES, namesArray);
+
+        return dic;
+    }
+
+    private static PdfDictionary createInternalTree(PdfIndirectReference[] kids, int totalItems, PdfWriter writer) throws IOException {
+        int numKids = kids.length;
+        int skip = LEAF_SIZE;
+
+        while (numKids > LEAF_SIZE) {
+            skip *= LEAF_SIZE;
+            int newNumKids = (totalItems + skip - 1) / skip;
+            PdfIndirectReference[] newKids = new PdfIndirectReference[newNumKids];
+
+            for (int k = 0; k < newNumKids; ++k) {
+                int offset = k * LEAF_SIZE;
+                int end = Math.min(offset + LEAF_SIZE, numKids);
+                PdfDictionary dic = createInternalNodeDictionary(kids, offset, end);
+                newKids[k] = writer.addToBody(dic).getIndirectReference();
+            }
+
+            numKids = newNumKids;
+            kids = newKids;
+        }
+
+        PdfDictionary rootDic = new PdfDictionary();
+        PdfArray kidsArray = new PdfArray();
+        for (PdfIndirectReference kid : kids) {
+            kidsArray.add(kid);
+        }
+        rootDic.put(PdfName.KIDS, kidsArray);
+
+        return rootDic;
+    }
+
+    private static PdfDictionary createInternalNodeDictionary(PdfIndirectReference[] kids, int offset, int end) {
+        PdfDictionary dic = new PdfDictionary();
+        PdfArray limits = new PdfArray();
+        limits.add(new PdfString(kids[offset].toString(), null));
+        limits.add(new PdfString(kids[end - 1].toString(), null));
+        dic.put(PdfName.LIMITS, limits);
+
+        PdfArray kidsArray = new PdfArray();
+        for (int i = offset; i < end; ++i) {
+            kidsArray.add(kids[i]);
+        }
+        dic.put(PdfName.KIDS, kidsArray);
+
+        return dic;
+    }
+
 
     private static void iterateItems(PdfDictionary dic, HashMap<String, PdfObject> items) {
         PdfArray nn = (PdfArray) PdfReader.getPdfObjectRelease(dic.get(PdfName.NAMES));

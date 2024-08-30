@@ -52,6 +52,7 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.Element;
 import com.lowagie.text.Image;
 import com.lowagie.text.error_messages.MessageLocalization;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,7 +70,7 @@ public class PdfImage extends PdfStream {
     /**
      * This is the <CODE>PdfName</CODE> of the image.
      */
-    protected PdfName name = null;
+    protected PdfName name;
 
     // constructor
 
@@ -89,193 +90,215 @@ public class PdfImage extends PdfStream {
         put(PdfName.SUBTYPE, PdfName.IMAGE);
         put(PdfName.WIDTH, new PdfNumber(image.getWidth()));
         put(PdfName.HEIGHT, new PdfNumber(image.getHeight()));
+
+        setLayer(image);
+        setImageMask(image);
+        setMaskReference(maskRef, image);
+        setDecode(image);
+        setInterpolation(image);
+
+        try (InputStream is = getInputStream(image)) {
+            processImageData(image, is);
+        } catch (IOException ioe) {
+            throw new BadPdfFormatException(ioe.getMessage());
+        }
+    }
+
+    private void setLayer(Image image) {
         if (image.getLayer() != null) {
             put(PdfName.OC, image.getLayer().getRef());
         }
+    }
+
+    private void setImageMask(Image image) {
         if (image.isMask() && (image.getBpc() == 1 || image.getBpc() > 0xff)) {
             put(PdfName.IMAGEMASK, PdfBoolean.PDFTRUE);
         }
+    }
+
+    private void setMaskReference(PdfIndirectReference maskRef, Image image) {
         if (maskRef != null) {
-            if (image.isSmask()) {
-                put(PdfName.SMASK, maskRef);
-            } else {
-                put(PdfName.MASK, maskRef);
-            }
+            put(image.isSmask() ? PdfName.SMASK : PdfName.MASK, maskRef);
         }
+    }
+
+    private void setDecode(Image image) {
         if (image.isMask() && image.isInverted()) {
             put(PdfName.DECODE, new PdfLiteral("[1 0]"));
         }
+    }
+
+    private void setInterpolation(Image image) {
         if (image.isInterpolation()) {
             put(PdfName.INTERPOLATE, PdfBoolean.PDFTRUE);
         }
-        InputStream is = null;
-        try {
-            // Raw Image data
-            if (image.isImgRaw()) {
-                // will also have the CCITT parameters
-                int colorspace = image.getColorspace();
-                int[] transparency = image.getTransparency();
-                if (transparency != null && !image.isMask() && maskRef == null) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("[");
-                    for (int i : transparency) {
-                        sb.append(i).append(" ");
-                    }
-                    sb.append("]");
-                    String s = sb.toString();
-                    put(PdfName.MASK, new PdfLiteral(s));
-                }
-                bytes = image.getRawData();
-                put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
-                int bpc = image.getBpc();
-                if (bpc > 0xff) {
-                    if (!image.isMask()) {
-                        put(PdfName.COLORSPACE, PdfName.DEVICEGRAY);
-                    }
-                    put(PdfName.BITSPERCOMPONENT, new PdfNumber(1));
-                    put(PdfName.FILTER, PdfName.CCITTFAXDECODE);
-                    int k = bpc - Element.CCITTG3_1D;
-                    PdfDictionary decodeparms = new PdfDictionary();
-                    if (k != 0) {
-                        decodeparms.put(PdfName.K, new PdfNumber(k));
-                    }
-                    if ((colorspace & Element.CCITT_BLACKIS1) != 0) {
-                        decodeparms.put(PdfName.BLACKIS1, PdfBoolean.PDFTRUE);
-                    }
-                    if ((colorspace & Element.CCITT_ENCODEDBYTEALIGN) != 0) {
-                        decodeparms.put(PdfName.ENCODEDBYTEALIGN, PdfBoolean.PDFTRUE);
-                    }
-                    if ((colorspace & Element.CCITT_ENDOFLINE) != 0) {
-                        decodeparms.put(PdfName.ENDOFLINE, PdfBoolean.PDFTRUE);
-                    }
-                    if ((colorspace & Element.CCITT_ENDOFBLOCK) != 0) {
-                        decodeparms.put(PdfName.ENDOFBLOCK, PdfBoolean.PDFFALSE);
-                    }
-                    decodeparms.put(PdfName.COLUMNS, new PdfNumber(image.getWidth()));
-                    decodeparms.put(PdfName.ROWS, new PdfNumber(image.getHeight()));
-                    put(PdfName.DECODEPARMS, decodeparms);
-                } else {
-                    switch (colorspace) {
-                        case 1:
-                            put(PdfName.COLORSPACE, PdfName.DEVICEGRAY);
-                            if (image.isInverted()) {
-                                put(PdfName.DECODE, new PdfLiteral("[1 0]"));
-                            }
-                            break;
-                        case 3:
-                            put(PdfName.COLORSPACE, PdfName.DEVICERGB);
-                            if (image.isInverted()) {
-                                put(PdfName.DECODE, new PdfLiteral("[1 0 1 0 1 0]"));
-                            }
-                            break;
-                        case 4:
-                        default:
-                            put(PdfName.COLORSPACE, PdfName.DEVICECMYK);
-                            if (image.isInverted()) {
-                                put(PdfName.DECODE, new PdfLiteral("[1 0 1 0 1 0 1 0]"));
-                            }
-                    }
-                    PdfDictionary additional = image.getAdditional();
-                    if (additional != null) {
-                        putAll(additional);
-                    }
-                    if (image.isMask() && (image.getBpc() == 1 || image.getBpc() > 8)) {
-                        remove(PdfName.COLORSPACE);
-                    }
-                    put(PdfName.BITSPERCOMPONENT, new PdfNumber(image.getBpc()));
-                    if (image.isDeflated()) {
-                        put(PdfName.FILTER, PdfName.FLATEDECODE);
-                    } else {
-                        flateCompress(image.getCompressionLevel());
-                    }
-                }
-                return;
-            }
-            // GIF, JPEG or PNG
-            String errorID;
-            if (image.getRawData() == null) {
-                is = image.getUrl().openStream();
-                errorID = image.getUrl().toString();
-            } else {
-                is = new java.io.ByteArrayInputStream(image.getRawData());
-                errorID = "Byte array";
-            }
-            switch (image.type()) {
-                case Element.JPEG:
-                    put(PdfName.FILTER, PdfName.DCTDECODE);
-                    switch (image.getColorspace()) {
-                        case 1:
-                            put(PdfName.COLORSPACE, PdfName.DEVICEGRAY);
-                            break;
-                        case 3:
-                            put(PdfName.COLORSPACE, PdfName.DEVICERGB);
-                            break;
-                        default:
-                            put(PdfName.COLORSPACE, PdfName.DEVICECMYK);
-                            if (image.isInverted()) {
-                                put(PdfName.DECODE, new PdfLiteral("[1 0 1 0 1 0 1 0]"));
-                            }
-                    }
-                    put(PdfName.BITSPERCOMPONENT, new PdfNumber(8));
-                    if (image.getRawData() != null) {
-                        bytes = image.getRawData();
-                        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
-                        return;
-                    }
-                    streamBytes = new ByteArrayOutputStream();
-                    transferBytes(is, streamBytes, -1);
-                    break;
-                case Element.JPEG2000:
-                    put(PdfName.FILTER, PdfName.JPXDECODE);
-                    if (image.getColorspace() > 0) {
-                        switch (image.getColorspace()) {
-                            case 1:
-                                put(PdfName.COLORSPACE, PdfName.DEVICEGRAY);
-                                break;
-                            case 3:
-                                put(PdfName.COLORSPACE, PdfName.DEVICERGB);
-                                break;
-                            default:
-                                put(PdfName.COLORSPACE, PdfName.DEVICECMYK);
-                        }
-                        put(PdfName.BITSPERCOMPONENT, new PdfNumber(image.getBpc()));
-                    }
-                    if (image.getRawData() != null) {
-                        bytes = image.getRawData();
-                        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
-                        return;
-                    }
-                    streamBytes = new ByteArrayOutputStream();
-                    transferBytes(is, streamBytes, -1);
-                    break;
-                case Element.JBIG2:
-                    put(PdfName.FILTER, PdfName.JBIG2DECODE);
-                    put(PdfName.COLORSPACE, PdfName.DEVICEGRAY);
-                    put(PdfName.BITSPERCOMPONENT, new PdfNumber(1));
-                    if (image.getRawData() != null) {
-                        bytes = image.getRawData();
-                        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
-                        return;
-                    }
-                    streamBytes = new ByteArrayOutputStream();
-                    transferBytes(is, streamBytes, -1);
-                    break;
-                default:
-                    throw new BadPdfFormatException(
-                            MessageLocalization.getComposedMessage("1.is.an.unknown.image.format", errorID));
-            }
-            put(PdfName.PDF_NAME_LENGTH, new PdfNumber(streamBytes.size()));
-        } catch (IOException ioe) {
-            throw new BadPdfFormatException(ioe.getMessage());
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Exception ee) {
-                    // empty on purpose
-                }
-            }
+    }
+
+    private InputStream getInputStream(Image image) throws IOException {
+        if (image.getRawData() == null) {
+            return image.getUrl().openStream();
+        } else {
+            return new ByteArrayInputStream(image.getRawData());
         }
+    }
+
+    private void processImageData(Image image, InputStream is) throws IOException, BadPdfFormatException {
+        if (image.isImgRaw()) {
+            processRawImageData(image);
+        } else {
+            processEncodedImageData(image, is);
+        }
+    }
+
+    private void processRawImageData(Image image) {
+        int colorspace = image.getColorspace();
+        int[] transparency = image.getTransparency();
+
+        if (transparency != null && !image.isMask() && maskRef == null) {
+            put(PdfName.MASK, new PdfLiteral(arrayToString(transparency)));
+        }
+
+        bytes = image.getRawData();
+        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
+        int bpc = image.getBpc();
+        if (bpc > 0xff) {
+            processCCITTImageData(image, colorspace, bpc);
+        } else {
+            processStandardImageData(image, colorspace);
+        }
+    }
+
+    private String arrayToString(int[] array) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i : array) {
+            sb.append(i).append(" ");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    private void processCCITTImageData(Image image, int colorspace, int bpc) {
+        if (!image.isMask()) {
+            put(PdfName.COLORSPACE, PdfName.DEVICEGRAY);
+        }
+        put(PdfName.BITSPERCOMPONENT, new PdfNumber(1));
+        put(PdfName.FILTER, PdfName.CCITTFAXDECODE);
+        PdfDictionary decodeparms = createCCITTDecodeParms(image, colorspace, bpc);
+        put(PdfName.DECODEPARMS, decodeparms);
+    }
+
+    private PdfDictionary createCCITTDecodeParms(Image image, int colorspace, int bpc) {
+        PdfDictionary decodeparms = new PdfDictionary();
+        int k = bpc - Element.CCITTG3_1D;
+        if (k != 0) {
+            decodeparms.put(PdfName.K, new PdfNumber(k));
+        }
+        if ((colorspace & Element.CCITT_BLACKIS1) != 0) {
+            decodeparms.put(PdfName.BLACKIS1, PdfBoolean.PDFTRUE);
+        }
+        if ((colorspace & Element.CCITT_ENCODEDBYTEALIGN) != 0) {
+            decodeparms.put(PdfName.ENCODEDBYTEALIGN, PdfBoolean.PDFTRUE);
+        }
+        if ((colorspace & Element.CCITT_ENDOFLINE) != 0) {
+            decodeparms.put(PdfName.ENDOFLINE, PdfBoolean.PDFTRUE);
+        }
+        if ((colorspace & Element.CCITT_ENDOFBLOCK) != 0) {
+            decodeparms.put(PdfName.ENDOFBLOCK, PdfBoolean.PDFFALSE);
+        }
+        decodeparms.put(PdfName.COLUMNS, new PdfNumber(image.getWidth()));
+        decodeparms.put(PdfName.ROWS, new PdfNumber(image.getHeight()));
+        return decodeparms;
+    }
+
+    private void processStandardImageData(Image image, int colorspace) {
+        switch (colorspace) {
+            case 1:
+                put(PdfName.COLORSPACE, PdfName.DEVICEGRAY);
+                if (image.isInverted()) {
+                    put(PdfName.DECODE, new PdfLiteral("[1 0]"));
+                }
+                break;
+            case 3:
+                put(PdfName.COLORSPACE, PdfName.DEVICERGB);
+                if (image.isInverted()) {
+                    put(PdfName.DECODE, new PdfLiteral("[1 0 1 0 1 0]"));
+                }
+                break;
+            case 4:
+            default:
+                put(PdfName.COLORSPACE, PdfName.DEVICECMYK);
+                if (image.isInverted()) {
+                    put(PdfName.DECODE, new PdfLiteral("[1 0 1 0 1 0 1 0]"));
+                }
+        }
+        PdfDictionary additional = image.getAdditional();
+        if (additional != null) {
+            putAll(additional);
+        }
+        if (image.isMask() && (image.getBpc() == 1 || image.getBpc() > 8)) {
+            remove(PdfName.COLORSPACE);
+        }
+        put(PdfName.BITSPERCOMPONENT, new PdfNumber(image.getBpc()));
+        if (image.isDeflated()) {
+            put(PdfName.FILTER, PdfName.FLATEDECODE);
+        } else {
+            flateCompress(image.getCompressionLevel());
+        }
+    }
+
+    private void processEncodedImageData(Image image, InputStream is) throws IOException, BadPdfFormatException {
+        String errorID = image.getRawData() == null ? image.getUrl().toString() : "Byte array";
+
+        switch (image.type()) {
+            case Element.JPEG:
+                put(PdfName.FILTER, PdfName.DCTDECODE);
+                processJPEGData(image);
+                break;
+            case Element.JPEG2000:
+                put(PdfName.FILTER, PdfName.JPXDECODE);
+                processJPEG2000Data(image);
+                break;
+            case Element.JBIG2:
+                put(PdfName.FILTER, PdfName.JBIG2DECODE);
+                put(PdfName.COLORSPACE, PdfName.DEVICEGRAY);
+                put(PdfName.BITSPERCOMPONENT, new PdfNumber(1));
+                break;
+            default:
+                throw new BadPdfFormatException(
+                        MessageLocalization.getComposedMessage("1.is.an.unknown.image.format", errorID));
+        }
+
+        if (image.getRawData() != null) {
+            bytes = image.getRawData();
+            put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
+        } else {
+            ByteArrayOutputStream streamBytes = new ByteArrayOutputStream();
+            transferBytes(is, streamBytes, -1);
+            put(PdfName.PDF_NAME_LENGTH, new PdfNumber(streamBytes.size()));
+        }
+    }
+
+    private void processJPEGData(Image image) {
+        put(PdfName.BITSPERCOMPONENT, new PdfNumber(8));
+        put(PdfName.COLORSPACE, getColorSpace(image));
+        if (image.isInverted()) {
+            put(PdfName.DECODE, new PdfLiteral("[1 0 1 0 1 0 1 0]"));
+        }
+    }
+
+    private void processJPEG2000Data(Image image) {
+        if (image.getColorspace() > 0) {
+            put(PdfName.COLORSPACE, getColorSpace(image));
+            put(PdfName.BITSPERCOMPONENT, new PdfNumber(image.getBpc()));
+        }
+    }
+
+    private PdfName getColorSpace(Image image) {
+        return switch (image.getColorspace()) {
+            case 1 -> PdfName.DEVICEGRAY;
+            case 3 -> PdfName.DEVICERGB;
+            default -> PdfName.DEVICECMYK;
+        };
     }
 
     static void transferBytes(InputStream in, OutputStream out, int len) throws IOException {
