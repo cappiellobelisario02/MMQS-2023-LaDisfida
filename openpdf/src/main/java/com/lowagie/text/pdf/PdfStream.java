@@ -219,62 +219,84 @@ public class PdfStream extends PdfDictionary {
      * @since 2.1.3
      */
     public void flateCompress(int compressionLevel) {
-        if (!Document.compress) {
+        if (!shouldCompress()) {
             return;
         }
-        // check if the flateCompress-method has already been
-        if (compressed) {
-            return;
-        }
-        this.compressionLevel = compressionLevel;
         if (inputStream != null) {
-            compressed = true;
+            compressWithInputStream();
             return;
         }
-        // check if a filter already exists
+        handleFilter();
+        performCompression(compressionLevel);
+    }
+
+    private boolean shouldCompress() {
+        return Document.compress && !compressed;
+    }
+
+    private void compressWithInputStream() {
+        // If inputStream is not null, just mark as compressed
+        compressed = true;
+    }
+
+    private void handleFilter() {
         PdfObject filter = PdfReader.getPdfObject(get(PdfName.FILTER));
         if (filter != null) {
             if (filter.isName()) {
                 if (PdfName.FLATEDECODE.equals(filter)) {
-                    return;
+                    return; // FLATEDECODE is already set
                 }
             } else if (filter.isArray()) {
                 if (((PdfArray) filter).contains(PdfName.FLATEDECODE)) {
-                    return;
+                    return; // FLATEDECODE is already in the array
                 }
             } else {
                 throw new IllegalArgumentException(MessageLocalization.getComposedMessage(
                         "stream.could.not.be.compressed.filter.is.not.a.name.or.array"));
             }
         }
+        // Update filter to include FLATEDECODE if not present
+        updateFilter();
+    }
+
+    private void updateFilter() {
+        PdfObject existingFilter = PdfReader.getPdfObject(get(PdfName.FILTER));
+        if (existingFilter == null) {
+            put(PdfName.FILTER, PdfName.FLATEDECODE);
+        } else {
+            PdfArray filters;
+            if (existingFilter.isArray()) {
+                filters = (PdfArray) existingFilter;
+            } else {
+                filters = new PdfArray(existingFilter);
+            }
+            filters.add(PdfName.FLATEDECODE);
+            put(PdfName.FILTER, filters);
+        }
+    }
+
+    private void performCompression(int compressionLevel) {
         try {
-            // compress
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             Deflater deflater = new Deflater(compressionLevel);
-            DeflaterOutputStream zip = new DeflaterOutputStream(stream, deflater);
-            if (streamBytes != null) {
-                streamBytes.writeTo(zip);
-            } else {
-                zip.write(bytes);
+            try (DeflaterOutputStream zip = new DeflaterOutputStream(stream, deflater)) {
+                if (streamBytes != null) {
+                    streamBytes.writeTo(zip);
+                } else {
+                    zip.write(bytes);
+                }
             }
-            zip.close();
             deflater.end();
-            // update the object
+            // Update the object with compressed data
             streamBytes = stream;
             bytes = null;
             put(PdfName.PDF_NAME_LENGTH, new PdfNumber(streamBytes.size()));
-            if (filter == null) {
-                put(PdfName.FILTER, PdfName.FLATEDECODE);
-            } else {
-                PdfArray filters = new PdfArray(filter);
-                filters.add(PdfName.FLATEDECODE);
-                put(PdfName.FILTER, filters);
-            }
             compressed = true;
         } catch (IOException ioe) {
             throw new ExceptionConverter(ioe);
         }
     }
+
 
     protected void superToPdf(PdfWriter writer, OutputStream os) throws IOException {
         super.toPdf(writer, os);
@@ -285,87 +307,102 @@ public class PdfStream extends PdfDictionary {
      */
     @Override
     public void toPdf(PdfWriter writer, OutputStream os) throws IOException {
-        if (inputStream != null && compressed) {
-            put(PdfName.FILTER, PdfName.FLATEDECODE);
-        }
-        PdfEncryption crypto = null;
-        if (writer != null) {
-            crypto = writer.getEncryption();
-        }
-        if (crypto != null) {
-            PdfObject filter = get(PdfName.FILTER);
-            if (filter != null) {
-                if (PdfName.CRYPT.equals(filter)) {
-                    crypto = null;
-                } else if (filter.isArray()) {
-                    PdfArray a = (PdfArray) filter;
-                    if (!a.isEmpty() && PdfName.CRYPT.equals(a.getPdfObject(0))) {
-                        crypto = null;
-                    }
-                }
-            }
-        }
-        PdfObject nn = get(PdfName.PDF_NAME_LENGTH);
-        if (crypto != null && nn != null && nn.isNumber()) {
-            int sz = ((PdfNumber) nn).intValue();
-            put(PdfName.PDF_NAME_LENGTH, new PdfNumber(crypto.calculateStreamSize(sz)));
-            superToPdf(writer, os);
-            put(PdfName.PDF_NAME_LENGTH, nn);
+        handleCompression();
+        PdfEncryption crypto = getEncryption(writer);
+        PdfObject lengthObject = get(PdfName.PDF_NAME_LENGTH);
+
+        if (crypto != null && lengthObject != null && lengthObject.isNumber()) {
+            updateStreamLength(crypto, lengthObject, writer, os);
         } else {
             superToPdf(writer, os);
         }
+
         os.write(STARTSTREAM);
         if (inputStream != null) {
-            rawLength = 0;
-            DeflaterOutputStream def = null;
-            OutputStreamCounter osc = new OutputStreamCounter(os);
-            OutputStreamEncryption ose = null;
-            OutputStream fout = osc;
-            if (crypto != null && !crypto.isEmbeddedFilesOnly()) {
-                fout = ose = crypto.getEncryptionStream(fout);
-            }
-            Deflater deflater = null;
-            if (compressed) {
-                deflater = new Deflater(compressionLevel);
-                fout = def = new DeflaterOutputStream(fout, deflater, 0x8000);
-            }
-
-            byte[] buf = new byte[4192];
-            while (true) {
-                int n = inputStream.read(buf);
-                if (n <= 0) {
-                    break;
-                }
-                fout.write(buf, 0, n);
-                rawLength += n;
-            }
-            if (def != null) {
-                def.finish();
-                deflater.end();
-            }
-            if (ose != null) {
-                ose.finish();
-            }
-            inputStreamLength = osc.getCounter();
+            processInputStream(os, crypto);
         } else {
-            if (crypto != null && !crypto.isEmbeddedFilesOnly()) {
-                byte[] b;
-                if (streamBytes != null) {
-                    b = crypto.encryptByteArray(streamBytes.toByteArray());
-                } else {
-                    b = crypto.encryptByteArray(bytes);
-                }
-                os.write(b);
-            } else {
-                if (streamBytes != null) {
-                    streamBytes.writeTo(os);
-                } else {
-                    os.write(bytes);
-                }
-            }
+            processBytes(os, crypto);
         }
         os.write(ENDSTREAM);
     }
+
+    private void handleCompression() {
+        if (inputStream != null && compressed) {
+            put(PdfName.FILTER, PdfName.FLATEDECODE);
+        }
+    }
+
+    private PdfEncryption getEncryption(PdfWriter writer) {
+        if (writer == null) {
+            return null;
+        }
+
+        PdfEncryption crypto = writer.getEncryption();
+        PdfObject filter = get(PdfName.FILTER);
+        if (filter != null && isEncryptionFilter(filter)) {
+            return null;
+        }
+        return crypto;
+    }
+
+    private boolean isEncryptionFilter(PdfObject filter) {
+        if (PdfName.CRYPT.equals(filter)) {
+            return true;
+        }
+        if (filter.isArray()) {
+            PdfArray array = (PdfArray) filter;
+            return !array.isEmpty() && PdfName.CRYPT.equals(array.getPdfObject(0));
+        }
+        return false;
+    }
+
+    private void updateStreamLength(PdfEncryption crypto, PdfObject lengthObject, PdfWriter writer, OutputStream os) throws IOException {
+        int originalSize = ((PdfNumber) lengthObject).intValue();
+        put(PdfName.PDF_NAME_LENGTH, new PdfNumber(crypto.calculateStreamSize(originalSize)));
+        superToPdf(writer, os); // Use actual writer and os
+        put(PdfName.PDF_NAME_LENGTH, lengthObject);
+    }
+
+    private void processInputStream(OutputStream os, PdfEncryption crypto) throws IOException {
+        try (DeflaterOutputStream deflaterStream = createDeflaterStream(os, crypto);
+                OutputStreamCounter counterStream = new OutputStreamCounter(deflaterStream)) {
+
+            byte[] buffer = new byte[4192];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) > 0) {
+                deflaterStream.write(buffer, 0, bytesRead);
+            }
+            deflaterStream.finish();
+            inputStreamLength = counterStream.getCounter();
+        }
+    }
+
+    private DeflaterOutputStream createDeflaterStream(OutputStream os, PdfEncryption crypto){
+        OutputStream outputStream = (crypto != null && !crypto.isEmbeddedFilesOnly())
+                ? crypto.getEncryptionStream(os)
+                : os;
+        if (compressed) {
+            Deflater deflater = new Deflater(compressionLevel);
+            return new DeflaterOutputStream(outputStream, deflater, 0x8000);
+        }
+        return new DeflaterOutputStream(outputStream);
+    }
+
+    private void processBytes(OutputStream os, PdfEncryption crypto) throws IOException {
+        if (crypto != null && !crypto.isEmbeddedFilesOnly()) {
+            byte[] encryptedBytes = (streamBytes != null)
+                    ? crypto.encryptByteArray(streamBytes.toByteArray())
+                    : crypto.encryptByteArray(bytes);
+            os.write(encryptedBytes);
+        } else {
+            if (streamBytes != null) {
+                streamBytes.writeTo(os);
+            } else {
+                os.write(bytes);
+            }
+        }
+    }
+
 
     /**
      * Writes the data content to an <CODE>OutputStream</CODE>.

@@ -160,7 +160,7 @@ public final class Pfm2afm {
     private RandomAccessFileOrArray in;
     private PrintWriter out;
     private short vers;
-    private int h_len;             /* Total length of .pfm file */
+    private int hLen;             /* Total length of .pfm file */
     private String copyright;   /* Copyright string [60]*/
     private short type;
     private short points;
@@ -206,7 +206,7 @@ public final class Pfm2afm {
     /**
      * Translate table from 1004 to psstd.  1004 is an extension of the Windows translate table used in PM.
      */
-    private int[] Win2PSStd = {
+    private final int[] win2PSStd = {
             0, 0, 0, 0, 197, 198, 199, 0, 202, 0, 205, 206, 207, 0, 0, 0,   // 00
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   // 10
             32, 33, 34, 35, 36, 37, 38, 169, 40, 41, 42, 43, 44, 45, 46, 47,  // 20
@@ -228,7 +228,7 @@ public final class Pfm2afm {
      * Character class.  This is a minor attempt to overcome the problem that in the pfm file, all unused characters are
      * given the width of space. Note that this array isn't used in iText.
      */
-    private int[] WinClass = {
+    private int[] winClass = {
             0, 0, 0, 0, 2, 2, 2, 0, 2, 0, 2, 2, 2, 0, 0, 0,   /* 00 */
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   /* 10 */
             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   /* 20 */
@@ -249,7 +249,7 @@ public final class Pfm2afm {
     /**
      * Windows character names.  Give a name to the used locations for when the all flag is specified.
      */
-    private String[] WinChars = {
+    private String[] winChars = {
             "W00",              /*   00    */
             "W01",              /*   01    */
             "W02",              /*   02    */
@@ -511,7 +511,7 @@ public final class Pfm2afm {
     /**
      * Creates a new instance of Pfm2afm
      */
-    private Pfm2afm(RandomAccessFileOrArray in, OutputStream out) throws IOException {
+    private Pfm2afm(RandomAccessFileOrArray in, OutputStream out) {
         this.in = in;
         this.out = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.ISO_8859_1));
     }
@@ -534,26 +534,26 @@ public final class Pfm2afm {
     }
 
     public static void main(String[] args) {
-            RandomAccessFileOrArray in = null;
-            try {
-                in = createRandomAccessFileOrArray(args[0]);
-                OutputStream out = new FileOutputStream(args[1]);
-                convert(in, out);
-                in.close();
-                out.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        RandomAccessFileOrArray in = null;
+        try {
+            in = createRandomAccessFileOrArray(args[0]);
+            OutputStream out = new FileOutputStream(args[1]);
+            convert(in, out);
+            in.close();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
 
-        private static RandomAccessFileOrArray createRandomAccessFileOrArray(String fileName) {
-            try {
-                return new RandomAccessFileOrArray(fileName);
-            } catch (Exception e) {
-                logger.info("ERROR RandomAccessFileOrArray >> " + e);
-                return null;
-            }
+    private static RandomAccessFileOrArray createRandomAccessFileOrArray(String fileName) {
+        try {
+            return new RandomAccessFileOrArray(fileName);
+        } catch (Exception e) {
+            logger.info("ERROR RandomAccessFileOrArray >> " + e);
+            return null;
         }
+    }
 
     private String readString(int n) throws IOException {
         byte[] b = new byte[n];
@@ -602,7 +602,7 @@ public final class Pfm2afm {
     private void openpfm() throws IOException {
         in.seek(0);
         vers = in.readShortLE();
-        h_len = in.readIntLE();
+        hLen = in.readIntLE();
         copyright = readString(60);
         type = in.readShortLE();
         points = in.readShortLE();
@@ -637,7 +637,7 @@ public final class Pfm2afm {
         kernpairs = in.readIntLE();
         res2 = in.readIntLE();
         fontname = in.readIntLE();
-        if (h_len != in.length() || extlen != 30 || fontname < 75 || fontname > 512) {
+        if (hLen != in.length() || extlen != 30 || fontname < 75 || fontname > 512) {
             throw new IOException(MessageLocalization.getComposedMessage("not.a.valid.pfm.file"));
         }
         in.seek(psext + 14);
@@ -649,31 +649,58 @@ public final class Pfm2afm {
 
     private void putheader() throws IOException {
         out.print("StartFontMetrics 2.0\n");
-        if (copyright.length() > 0) {
+        printCopyright();
+        printFontName();
+        printEncodingScheme();
+        printFullName();
+        printFamilyName();
+        printWeight();
+        printItalicAngle();
+        printIsFixedPitch();
+        printFontBBox();
+        printOtherMetrics();
+    }
+
+    private void printCopyright() throws IOException {
+        if (!copyright.isEmpty()) {
             out.print("Comment " + copyright + '\n');
         }
+    }
+
+    private void printFontName() throws IOException {
         out.print("FontName ");
         in.seek(fontname);
         String fname = readString();
         out.print(fname);
+    }
+
+    private void printEncodingScheme() throws IOException {
         out.print("\nEncodingScheme ");
         if (charset != 0) {
             out.print("FontSpecific\n");
         } else {
             out.print("AdobeStandardEncoding\n");
         }
-        /*
-         * The .pfm is missing full name, so construct from font name by
-         * changing the hyphen to a space.  This actually works in a lot
-         * of cases.
-         */
-        out.print("FullName " + fname.replace('-', ' '));
+    }
+
+    private void printFullName() throws IOException {
+        out.print("FullName ");
+        // We need to seek to the correct position for the full name in this case
+        in.seek(fontname);
+        String fname = readString();
+        out.print(fname.replace('-', ' '));
+    }
+
+    private void printFamilyName() throws IOException {
         if (face != 0) {
             in.seek(face);
             out.print("\nFamilyName " + readString());
         }
+    }
 
+    private void printWeight() throws IOException {
         out.print("\nWeight ");
+        String fname = readString();
         if (weight > 475 || fname.toLowerCase(Locale.ROOT).contains("bold")) {
             out.print("Bold");
         } else if ((weight < 325 && weight != 0) || fname.toLowerCase(Locale.ROOT).contains("light")) {
@@ -683,108 +710,128 @@ public final class Pfm2afm {
         } else {
             out.print("Medium");
         }
+    }
 
+    private void printItalicAngle() throws IOException {
         out.print("\nItalicAngle ");
+        String fname = readString();
         if (italic != 0 || fname.toLowerCase(Locale.ROOT).contains("italic")) {
             out.print("-12.00");
         } else {
-            // this is a typical value; something else may work better for a specific font
             out.print("0");
         }
+    }
 
-        /*
-         *  The mono flag in the pfm actually indicates whether there is a
-         *  table of font widths, not if they are all the same.
-         */
+    private void printIsFixedPitch() {
         out.print("\nIsFixedPitch ");
-        if ((kind & 1) == 0 ||                  /* Flag for mono */
-                avgwidth == maxwidth) {  /* Avg width = max width */
+        if ((kind & 1) == 0 || avgwidth == maxwidth) {
             out.print("true");
             isMono = true;
         } else {
             out.print("false");
             isMono = false;
         }
+    }
 
-        /*
-         * The font bounding box is lost, but try to reconstruct it.
-         * Much of this is just guess work.  The bounding box is required in
-         * the .afm, but is not used by the PM font installer.
-         */
-        out.print("\nFontBBox");
+    private void printFontBBox() {
+        out.print("\nFontBBox ");
         if (isMono) {
-            outval(-20);      /* Just guess at left bounds */
+            outval(-20); // Just guess at left bounds
         } else {
             outval(-100);
         }
-        outval(-(descender + 5));  /* Descender is given as positive value */
+        outval(-(descender + 5)); // Descender is given as a positive value
         outval(maxwidth + 10);
         outval(ascent + 5);
+    }
 
-        /*
-         * Give other metrics that were kept
-         */
-        out.print("\nCapHeight");
+    private void printOtherMetrics() {
+        out.print("\nCapHeight ");
         outval(capheight);
-        out.print("\nXHeight");
+        out.print("\nXHeight ");
         outval(xheight);
-        out.print("\nDescender");
+        out.print("\nDescender ");
         outval(descender);
-        out.print("\nAscender");
+        out.print("\nAscender ");
         outval(ascender);
         out.print('\n');
     }
 
     private void putchartab() throws IOException {
         int count = lastchar - firstchar + 1;
+        int[] ctabs = readCtabs(count);
+        int[] back = initializeBackArray();
+
+        if (charset == 0) {
+            populateBackArray(back);
+        }
+
+        printHeader(count);
+
+        if (charset != 0) {
+            processNonStandardCharset(ctabs);
+        } else {
+            processStandardCharset(ctabs, back);
+        }
+
+        printTrailer();
+    }
+
+    private int[] readCtabs(int count) throws IOException {
         int[] ctabs = new int[count];
         in.seek(chartab);
         for (int k = 0; k < count; ++k) {
             ctabs[k] = in.readUnsignedShortLE();
         }
-        int[] back = new int[256];
-        if (charset == 0) {
-            for (int i = firstchar; i <= lastchar; ++i) {
-                if (Win2PSStd[i] != 0) {
-                    back[Win2PSStd[i]] = i;
-                }
+        return ctabs;
+    }
+
+    private int[] initializeBackArray() {
+        return new int[256];
+    }
+
+    private void populateBackArray(int[] back) {
+        for (int i = firstchar; i <= lastchar; ++i) {
+            if (win2PSStd[i] != 0) {
+                back[win2PSStd[i]] = i;
             }
         }
-        /* Put out the header */
-        out.print("StartCharMetrics");
+    }
+
+    private void printHeader(int count) throws IOException {
+        out.print("StartCharMetrics ");
         outval(count);
         out.print('\n');
+    }
 
-        /* Put out all encoded chars */
-        if (charset != 0) {
-            /*
-             * If the charset is not the Windows standard, just put out
-             * unnamed entries.
-             */
-            for (int i = firstchar; i <= lastchar; i++) {
-                if (ctabs[i - firstchar] != 0) {
-                    outchar(i, ctabs[i - firstchar], null);
-                }
-            }
-        } else {
-            for (int i = 0; i < 256; i++) {
-                int j = back[i];
-                if (j != 0) {
-                    outchar(i, ctabs[j - firstchar], WinChars[j]);
-                    ctabs[j - firstchar] = 0;
-                }
-            }
-            /* Put out all non-encoded chars */
-            for (int i = firstchar; i <= lastchar; i++) {
-                if (ctabs[i - firstchar] != 0) {
-                    outchar(-1, ctabs[i - firstchar], WinChars[i]);
-                }
+    private void processNonStandardCharset(int[] ctabs) throws IOException {
+        for (int i = firstchar; i <= lastchar; i++) {
+            if (ctabs[i - firstchar] != 0) {
+                outchar(i, ctabs[i - firstchar], null);
             }
         }
-        /* Put out the trailer */
-        out.print("EndCharMetrics\n");
-
     }
+
+    private void processStandardCharset(int[] ctabs, int[] back) throws IOException {
+        for (int i = 0; i < 256; i++) {
+            int j = back[i];
+            if (j != 0) {
+                outchar(i, ctabs[j - firstchar], winChars[j]);
+                ctabs[j - firstchar] = 0;
+            }
+        }
+        // Put out all non-encoded chars
+        for (int i = firstchar; i <= lastchar; i++) {
+            if (ctabs[i - firstchar] != 0) {
+                outchar(-1, ctabs[i - firstchar], winChars[i]);
+            }
+        }
+    }
+
+    private void printTrailer() throws IOException {
+        out.print("EndCharMetrics\n");
+    }
+
 
     private void putkerntab() throws IOException {
         if (kernpairs == 0) {
@@ -813,9 +860,9 @@ public final class Pfm2afm {
         for (int k = 0; k < kerns.length; k += 3) {
             if (kerns[k + 2] != 0) {
                 out.print("KPX ");
-                out.print(WinChars[kerns[k]]);
+                out.print(winChars[kerns[k]]);
                 out.print(' ');
-                out.print(WinChars[kerns[k + 1]]);
+                out.print(winChars[kerns[k + 1]]);
                 outval(kerns[k + 2]);
                 out.print('\n');
             }

@@ -55,6 +55,7 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.Row;
 import com.lowagie.text.Table;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -145,78 +146,110 @@ public class PdfTable extends Rectangle {
      */
 
     private void updateRowAdditionsInternal() {
-        // correct table : fill empty cells/ parse table in table
-        Row row;
         int prevRows = rows();
+        int firstDataRow = table.getLastHeaderRow() + 1;
+        float[] offsets = initializeOffsets(table.size() + 1);
+
+        ArrayList<PdfCell> newCells = new ArrayList<>();
+        int groupNumber = 0;
+
+        processRows(prevRows, firstDataRow, offsets, newCells);
+
+        setCellBottoms(newCells, offsets);
+
+        cells.addAll(newCells);
+        setBottom(offsets[offsets.length - 1]);
+    }
+
+    private float[] initializeOffsets(int rows) {
+        float[] offsets = new float[rows];
+        float bottom = getBottom();  // Ensure getBottom() is correctly fetched
+        Arrays.fill(offsets, bottom);
+        return offsets;
+    }
+
+    private void processRows(int prevRows, int firstDataRow, float[] offsets, ArrayList<PdfCell> newCells) {
         int rowNumber = 0;
         int groupNumber = 0;
-        boolean groupChange;
-        int firstDataRow = table.getLastHeaderRow() + 1;
-        Cell cell;
-        PdfCell currentCell;
-        ArrayList<PdfCell> newCells = new ArrayList<>();
-        int rows = table.size() + 1;
-        float[] offsets = new float[rows];
-        for (int i = 0; i < rows; i++) {
-            offsets[i] = getBottom();
-        }
 
-        // loop over all the rows
-        for (Iterator<String> rowIterator = table.iterator(); rowIterator.hasNext(); ) {
-            row = (Row) rowIterator.next();
+        for (Iterator<?> rowIterator = table.iterator(); rowIterator.hasNext(); ) {
+            Row row = (Row) rowIterator.next();
+
             if (row.isEmpty()) {
-                if (rowNumber < rows - 1 && offsets[rowNumber + 1] > offsets[rowNumber]) {
-                    offsets[rowNumber + 1] = offsets[rowNumber];
-                }
+                handleEmptyRow(rowNumber, offsets);
             } else {
-                for (int i = 0; i < row.getColumns(); i++) {
-                    cell = (Cell) row.getCell(i);
-                    if (cell != null) {
-                        currentCell = new PdfCell(cell, rowNumber + prevRows, positions[i],
-                                positions[i + cell.getColspan()], offsets[rowNumber], cellspacing(), cellpadding());
-                        if (rowNumber < firstDataRow) {
-                            currentCell.setHeader();
-                            headercells.add(currentCell);
-                            if (!table.isNotAddedYet()) {
-                                continue;
-                            }
-                        }
-                        try {
-                            if (offsets[rowNumber] - currentCell.getHeight() - cellpadding() < offsets[rowNumber
-                                    + currentCell.rowspan()]) {
-                                offsets[rowNumber + currentCell.rowspan()] =
-                                        offsets[rowNumber] - currentCell.getHeight() - cellpadding();
-                            }
-                        } catch (ArrayIndexOutOfBoundsException aioobe) {
-                            if (offsets[rowNumber] - currentCell.getHeight() < offsets[rows - 1]) {
-                                offsets[rows - 1] = offsets[rowNumber] - currentCell.getHeight();
-                            }
-                        }
-                        currentCell.setGroupNumber(groupNumber);
-                        groupChange |= cell.getGroupChange();
-                        newCells.add(currentCell);
+                boolean groupChange = processRowCells(row, rowNumber, prevRows, firstDataRow, offsets, newCells);
+                if (groupChange) {
+                    groupNumber++;
+                }
+            }
+
+            rowNumber++;
+        }
+    }
+
+
+    private void handleEmptyRow(int rowNumber, float[] offsets) {
+        if (rowNumber < offsets.length - 1 && offsets[rowNumber + 1] > offsets[rowNumber]) {
+            offsets[rowNumber + 1] = offsets[rowNumber];
+        }
+    }
+
+    private boolean processRowCells(Row row, int rowNumber, int prevRows, int firstDataRow, float[] offsets, ArrayList<PdfCell> newCells) {
+        boolean groupChange = false;
+
+        for (int i = 0; i < row.getColumns(); i++) {
+            Cell cell = (Cell) row.getCell(i);
+            if (cell != null) {
+                PdfCell currentCell = createPdfCell(cell, rowNumber, prevRows, i, offsets);
+                if (rowNumber < firstDataRow) {
+                    currentCell.setHeader();
+                    headercells.add(currentCell);
+                    if (!table.isNotAddedYet()) {
+                        continue;
                     }
                 }
-            }
-            rowNumber++;
-            if (groupChange) {
-                groupNumber++;
+                updateOffsets(offsets, currentCell, rowNumber);
+                currentCell.setGroupNumber(groupNumber);
+                groupChange |= cell.getGroupChange();
+                newCells.add(currentCell);
             }
         }
 
-        // loop over all the cells
-        int n = newCells.size();
-        for (Object newCell : newCells) {
-            currentCell = (PdfCell) newCell;
-            try {
-                currentCell.setBottom(offsets[currentCell.rownumber() - prevRows + currentCell.rowspan()]);
-            } catch (ArrayIndexOutOfBoundsException aioobe) {
-                currentCell.setBottom(offsets[rows - 1]);
+        return groupChange;
+    }
+
+    private PdfCell createPdfCell(Cell cell, int rowNumber, int prevRows, int columnIndex, float[] offsets) {
+        return new PdfCell(cell, rowNumber + prevRows, positions[columnIndex], positions[columnIndex + cell.getColspan()],
+                offsets[rowNumber], cellspacing(), cellpadding());
+    }
+
+    private void updateOffsets(float[] offsets, PdfCell currentCell, int rowNumber) {
+        try {
+            if (offsets[rowNumber] - currentCell.getHeight() - cellpadding() < offsets[rowNumber + currentCell.rowspan()]) {
+                offsets[rowNumber + currentCell.rowspan()] = offsets[rowNumber] - currentCell.getHeight() - cellpadding();
+            }
+        } catch (ArrayIndexOutOfBoundsException aioobe) {
+            if (offsets[rowNumber] - currentCell.getHeight() < offsets[offsets.length - 1]) {
+                offsets[offsets.length - 1] = offsets[rowNumber] - currentCell.getHeight();
             }
         }
-        cells.addAll(newCells);
-        setBottom(offsets[rows - 1]);
     }
+
+    private void setCellBottoms(ArrayList<PdfCell> newCells, float[] offsets) {
+        for (PdfCell newCell : newCells) {
+            try {
+                int rowIndex = newCell.rownumber() - rows() + newCell.rowspan();
+                if (rowIndex >= offsets.length) {
+                    rowIndex = offsets.length - 1;
+                }
+                newCell.setBottom(offsets[rowIndex]);
+            } catch (ArrayIndexOutOfBoundsException aioobe) {
+                newCell.setBottom(offsets[offsets.length - 1]);
+            }
+        }
+    }
+
 
     /**
      * Get the number of rows

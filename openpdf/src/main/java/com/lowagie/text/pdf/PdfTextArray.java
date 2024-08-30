@@ -91,33 +91,48 @@ public class PdfTextArray {
     }
 
     public void add(float number) {
-        if (number != 0) {
-            if (lastNum != null) {
-                lastNum = number + lastNum;
-                if (lastNum != 0) {
-                    replaceLast(lastNum);
-                } else {
-                    arrayList.remove(isRTL ? 0 : arrayList.size() - 1);
-                }
-            } else {
-                lastNum = number;
-                if (isRTL) {
-                    arrayList.add(0, lastNum);
-                } else {
-                    arrayList.add(lastNum);
-                }
-            }
-
-            lastStr = null;
+        if (number == 0) {
+            return; // No need to modify the array list if the number is 0
         }
-        // adding zero doesn't modify the TextArray at all
+
+        if (lastNum != null) {
+            handleNonNullLastNum(number);
+        } else {
+            handleNullLastNum(number);
+        }
+
+        lastStr = null; // Reset lastStr regardless of the state
     }
+
+    private void handleNonNullLastNum(float number) {
+        lastNum = number + lastNum;
+        if (lastNum != 0) {
+            replaceLast(lastNum);
+        } else {
+            removeLast();
+        }
+    }
+
+    private void handleNullLastNum(float number) {
+        lastNum = number;
+        if (isRTL) {
+            arrayList.add(0, lastNum);
+        } else {
+            arrayList.add(lastNum);
+        }
+    }
+
+    private void removeLast() {
+        int index = isRTL ? 0 : arrayList.size() - 1;
+        arrayList.remove(index);
+    }
+
 
     public void add(String str) {
         if (isRTL) {
             str = new StringBuffer(str).reverse().toString();
         }
-        if (str.length() > 0) {
+        if (!str.isEmpty()) {
             if (lastStr != null) {
                 if (isRTL) {
                     lastStr = str + lastStr;
