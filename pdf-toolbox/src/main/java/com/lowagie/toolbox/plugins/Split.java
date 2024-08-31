@@ -110,109 +110,118 @@ public class Split extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
+        try {
+            validateInputFiles();
+            int pagenumber = Integer.parseInt((String) getValue("pagenumber"));
+            File src = (File) getValue(SRCFILE);
+            File file1 = (File) getValue(DESTFILE_1);
+            File file2 = (File) getValue(DESTFILE_2);
+
+            splitPdf(src, file1, file2, pagenumber);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void validateInputFiles() throws InstantiationException {
+        if (getValue(SRCFILE) == null) {
+            throw new InstantiationException("You need to choose a sourcefile");
+        }
+        if (getValue(DESTFILE_1) == null) {
+            throw new InstantiationException("You need to choose a destination file for the first part of the PDF");
+        }
+        if (getValue(DESTFILE_2) == null) {
+            throw new InstantiationException("You need to choose a destination file for the second part of the PDF");
+        }
+    }
+
+    private void splitPdf(File src, File file1, File file2, int pagenumber) throws IOException, DocumentException {
         PdfReader reader = null;
         Document document1 = null;
         Document document2 = null;
-        String stringToLog;
+
         try {
-            if (getValue(SRCFILE) == null) {
-                throw new InstantiationException("You need to choose a sourcefile");
-            }
-            File src = (File) getValue(SRCFILE);
-            if (getValue(DESTFILE_1) == null) {
-                throw new InstantiationException("You need to choose a destination file for the first part of the PDF");
-            }
-            File file1 = (File) getValue(DESTFILE_1);
-            if (getValue(DESTFILE_2) == null) {
-                throw new InstantiationException(
-                        "You need to choose a destination file for the second part of the PDF");
-            }
-            File file2 = (File) getValue(DESTFILE_2);
-            int pagenumber = Integer.parseInt((String) getValue("pagenumber"));
+            reader = new PdfReader(src.getAbsolutePath());
+            int totalPages = reader.getNumberOfPages();
+            logPageCount(totalPages);
 
-            // we create a reader for a certain document
-            /* PdfReader reader = */
-            try{
-                reader = new PdfReader(src.getAbsolutePath());
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-            // we retrieve the total number of pages
-            int n = reader.getNumberOfPages();
-            stringToLog = "There are " + n + " pages in the original file.";
-            logger.info(stringToLog);
-
-            if (pagenumber < 2 || pagenumber > n) {
+            if (pagenumber < 2 || pagenumber > totalPages) {
                 throw new DocumentException(
                         "You can't split this document at page " + pagenumber + "; there is no such page.");
             }
 
-            // step 1: creation of a document-object
-            /* Document document1 = */ document1 = new Document(reader.getPageSizeWithRotation(1));
-            /* Document document2 = */ document2 = new Document(reader.getPageSizeWithRotation(pagenumber));
-            // step 2: we create a writer that listens to the document
+            document1 = new Document(reader.getPageSizeWithRotation(1));
+            document2 = new Document(reader.getPageSizeWithRotation(pagenumber));
+
             PdfWriter writer1 = PdfWriter.getInstance(document1, new FileOutputStream(file1));
             PdfWriter writer2 = PdfWriter.getInstance(document2, new FileOutputStream(file2));
-            // step 3: we open the document
+
             document1.open();
-            PdfContentByte cb1 = writer1.getDirectContent();
             document2.open();
+
+            PdfContentByte cb1 = writer1.getDirectContent();
             PdfContentByte cb2 = writer2.getDirectContent();
-            PdfImportedPage page;
-            int rotation;
-            int i = 0;
-            // step 4: we add content
-            while (i < pagenumber - 1) {
-                i++;
-                document1.setPageSize(reader.getPageSizeWithRotation(i));
-                document1.newPage();
-                page = writer1.getImportedPage(reader, i);
-                rotation = reader.getPageRotation(i);
-                if (rotation == 90 || rotation == 270) {
-                    cb1.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(i).getHeight());
-                } else {
-                    cb1.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
-                }
-            }
-            while (i < n) {
-                i++;
-                document2.setPageSize(reader.getPageSizeWithRotation(i));
-                document2.newPage();
-                page = writer2.getImportedPage(reader, i);
-                rotation = reader.getPageRotation(i);
-                if (rotation == 90 || rotation == 270) {
-                    cb2.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(i).getHeight());
-                } else {
-                    cb2.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
-                }
-            }
-            // step 5: we close the document
+
+            copyPages(reader, pagenumber, totalPages, document1, cb1, writer1, 1);
+            copyPages(reader, pagenumber, totalPages, document2, cb2, writer2, pagenumber);
+
             document1.close();
             document2.close();
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
-            if (reader != null && document1 != null && document2 != null) {
-                try {
-                    reader.close();
-                    document1.close();
-                    document2.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            closeResources(reader, document1, document2);
+        }
+    }
+
+    private void logPageCount(int totalPages) {
+        String stringToLog = "There are " + totalPages + " pages in the original file.";
+        logger.info(stringToLog);
+    }
+
+    private void copyPages(PdfReader reader, int pagenumber, int totalPages, Document document, PdfContentByte cb, PdfWriter writer, int startPage) throws DocumentException {
+        for (int i = startPage; i <= totalPages && i < pagenumber + startPage - 1; i++) {
+            document.setPageSize(reader.getPageSizeWithRotation(i));
+            document.newPage();
+            PdfImportedPage page = writer.getImportedPage(reader, i);
+            int rotation = reader.getPageRotation(i);
+            if (rotation == 90 || rotation == 270) {
+                cb.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(i).getHeight());
+            } else {
+                cb.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
             }
         }
     }
+
+    private void closeResources(PdfReader reader, Document document1, Document document2) {
+        try {
+            if (reader != null) {
+                reader.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            if (document1 != null) {
+                document1.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            if (document2 != null) {
+                document2.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * @param arg StringArgument
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
+        // if the internal frame is null, the tool was called from the command line
         // represent the changes of the argument in the internal frame
     }
 

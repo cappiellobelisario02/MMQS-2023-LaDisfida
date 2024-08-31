@@ -53,6 +53,7 @@ import com.lowagie.text.xml.XMLUtil;
 import com.lowagie.text.xml.simpleparser.IanaEncodings;
 import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
 import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
+import org.apache.fop.fo.pagination.bookmarks.Bookmark;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,7 +69,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 /**
@@ -125,121 +125,150 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
     private SimpleBookmark() {
     }
 
-    private static List<Map<String, Object>> bookmarkDepth(PdfDictionary outline,
-            IntHashtable pages) {
+    private static List<Map<String, Object>> bookmarkDepth(PdfDictionary outline, IntHashtable pages) {
         List<Map<String, Object>> list = new ArrayList<>();
         while (outline != null) {
             Map<String, Object> map = new HashMap<>();
-            PdfString title = (PdfString) PdfReader.getPdfObjectRelease(outline.get(PdfName.TITLE));
-            map.put(TITLE, ((title != null) ? title.toUnicodeString() : ""));
-            PdfArray color = (PdfArray) PdfReader.getPdfObjectRelease(outline.get(PdfName.C));
-            if (color != null && color.size() == 3) {
-                ByteBuffer out = new ByteBuffer();
-                out.append(color.getAsNumber(0).floatValue()).append(' ');
-                out.append(color.getAsNumber(1).floatValue()).append(' ');
-                out.append(color.getAsNumber(2).floatValue());
-                map.put("Color", PdfEncodings.convertToString(out.toByteArray(), null));
-            }
-            PdfNumber style = (PdfNumber) PdfReader.getPdfObjectRelease(outline.get(PdfName.F));
-            if (style != null) {
-                int f = style.intValue();
-                String s = "";
-                if ((f & 1) != 0) {
-                    s += "italic ";
-                }
-                if ((f & 2) != 0) {
-                    s += "bold ";
-                }
-                s = s.trim();
-                if (s.length() != 0) {
-                    map.put("Style", s);
-                }
-            }
-            PdfNumber count = (PdfNumber) PdfReader.getPdfObjectRelease(outline.get(PdfName.COUNT));
-            if (count != null && count.intValue() < 0) {
-                map.put("Open", FALSE);
-            }
-            try {
-                PdfObject dest = PdfReader.getPdfObjectRelease(outline.get(PdfName.DEST));
-                if (dest != null) {
-                    mapGotoBookmark(map, dest, pages); //changed by ujihara 2004-06-13
-                } else {
-                    PdfDictionary action = (PdfDictionary) PdfReader.getPdfObjectRelease(outline.get(PdfName.A));
-                    if (action != null) {
-                        if (PdfName.GOTO.equals(PdfReader.getPdfObjectRelease(action.get(PdfName.S)))) {
-                            dest = PdfReader.getPdfObjectRelease(action.get(PdfName.D));
-                            if (dest != null) {
-                                mapGotoBookmark(map, dest, pages);
-                            }
-                        } else if (PdfName.URI.equals(PdfReader.getPdfObjectRelease(action.get(PdfName.S)))) {
-                            map.put(ACTION, "URI");
-                            map.put("URI", ((PdfString) PdfReader.getPdfObjectRelease(
-                                    action.get(PdfName.URI))).toUnicodeString());
-                        } else if (PdfName.GOTOR.equals(PdfReader.getPdfObjectRelease(action.get(PdfName.S)))) {
-                            dest = PdfReader.getPdfObjectRelease(action.get(PdfName.D));
-                            if (dest != null) {
-                                if (dest.isString()) {
-                                    map.put(NAMED, dest.toString());
-                                } else if (dest.isName()) {
-                                    map.put(NAMED_N, PdfName.decodeName(dest.toString()));
-                                } else if (dest.isArray()) {
-                                    PdfArray arr = (PdfArray) dest;
-                                    StringBuilder s = new StringBuilder();
-                                    s.append(arr.getPdfObject(0).toString());
-                                    s.append(' ').append(arr.getPdfObject(1).toString());
-                                    for (int k = 2; k < arr.size(); ++k) {
-                                        s.append(' ').append(arr.getPdfObject(k).toString());
-                                    }
-                                    map.put("Page", s.toString());
-                                }
-                            }
-                            map.put(ACTION, "GoToR");
-                            PdfObject file = PdfReader.getPdfObjectRelease(action.get(PdfName.F));
-                            if (file != null) {
-                                if (file.isString()) {
-                                    map.put("File", ((PdfString) file).toUnicodeString());
-                                } else if (file.isDictionary()) {
-                                    file = PdfReader.getPdfObject(((PdfDictionary) file).get(PdfName.F));
-                                    if (file.isString()) {
-                                        map.put("File", ((PdfString) file).toUnicodeString());
-                                    }
-                                }
-                            }
-                            PdfObject newWindow = PdfReader.getPdfObjectRelease(action.get(PdfName.NEWWINDOW));
-                            if (newWindow != null) {
-                                map.put("NewWindow", newWindow.toString());
-                            }
-                        } else if (PdfName.LAUNCH.equals(PdfReader.getPdfObjectRelease(action.get(PdfName.S)))) {
-                            map.put(ACTION, "Launch");
-                            PdfObject file = PdfReader.getPdfObjectRelease(action.get(PdfName.F));
-                            if (file == null) {
-                                file = PdfReader.getPdfObjectRelease(action.get(PdfName.WIN));
-                            }
-                            if (file != null) {
-                                if (file.isString()) {
-                                    map.put("File", ((PdfString) file).toUnicodeString());
-                                } else if (file.isDictionary()) {
-                                    file = PdfReader.getPdfObjectRelease(((PdfDictionary) file).get(PdfName.F));
-                                    if (file.isString()) {
-                                        map.put("File", ((PdfString) file).toUnicodeString());
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                //empty on purpose
-            }
-            PdfDictionary first = (PdfDictionary) PdfReader.getPdfObjectRelease(outline.get(PdfName.FIRST));
-            if (first != null) {
-                map.put("Kids", bookmarkDepth(first, pages));
-            }
+            processTitle(outline, map);
+            processColor(outline, map);
+            processStyle(outline, map);
+            processCount(outline, map);
+            processDestinationAndAction(outline, map, pages);
+            processFirstChild(outline, map, pages);
             list.add(map);
             outline = (PdfDictionary) PdfReader.getPdfObjectRelease(outline.get(PdfName.NEXT));
         }
         return list;
     }
+
+    private static void processTitle(PdfDictionary outline, Map<String, Object> map) {
+        PdfString title = (PdfString) PdfReader.getPdfObjectRelease(outline.get(PdfName.TITLE));
+        map.put(TITLE, (title != null) ? title.toUnicodeString() : "");
+    }
+
+    private static void processColor(PdfDictionary outline, Map<String, Object> map) {
+        PdfArray color = (PdfArray) PdfReader.getPdfObjectRelease(outline.get(PdfName.C));
+        if (color != null && color.size() == 3) {
+            String colorStr = String.format("%f %f %f",
+                    color.getAsNumber(0).floatValue(),
+                    color.getAsNumber(1).floatValue(),
+                    color.getAsNumber(2).floatValue());
+            map.put("Color", colorStr);
+        }
+    }
+
+    private static void processStyle(PdfDictionary outline, Map<String, Object> map) {
+        PdfNumber style = (PdfNumber) PdfReader.getPdfObjectRelease(outline.get(PdfName.F));
+        if (style != null) {
+            int f = style.intValue();
+            StringBuilder s = new StringBuilder();
+            if ((f & 1) != 0) s.append("italic ");
+            if ((f & 2) != 0) s.append("bold ");
+            if (s.length() > 0) map.put("Style", s.toString().trim());
+        }
+    }
+
+    private static void processCount(PdfDictionary outline, Map<String, Object> map) {
+        PdfNumber count = (PdfNumber) PdfReader.getPdfObjectRelease(outline.get(PdfName.COUNT));
+        if (count != null && count.intValue() < 0) {
+            map.put("Open", FALSE); // Assuming FALSE is a string "false"
+        }
+    }
+
+    private static void processDestinationAndAction(PdfDictionary outline, Map<String, Object> map, IntHashtable pages) {
+        try {
+            PdfObject dest = PdfReader.getPdfObjectRelease(outline.get(PdfName.DEST));
+            if (dest != null) {
+                mapGotoBookmark(map, dest, pages);
+            } else {
+                PdfDictionary action = (PdfDictionary) PdfReader.getPdfObjectRelease(outline.get(PdfName.A));
+                if (action != null) {
+                    processAction(action, map, pages);
+                }
+            }
+        } catch (Exception e) {
+            // Log or handle exception if necessary
+        }
+    }
+
+    private static void processAction(PdfDictionary action, Map<String, Object> map, IntHashtable pages) {
+        PdfName actionType = (PdfName) PdfReader.getPdfObjectRelease(action.get(PdfName.S));
+        if (PdfName.GOTO.equals(actionType)) {
+            PdfObject dest = PdfReader.getPdfObjectRelease(action.get(PdfName.D));
+            if (dest != null) mapGotoBookmark(map, dest, pages);
+        } else if (PdfName.URI.equals(actionType)) {
+            map.put(ACTION, "URI");
+            PdfString uri = (PdfString) PdfReader.getPdfObjectRelease(action.get(PdfName.URI));
+            if (uri != null) map.put("URI", uri.toUnicodeString());
+        } else if (PdfName.GOTOR.equals(actionType)) {
+            processGoToR(action, map);
+        } else if (PdfName.LAUNCH.equals(actionType)) {
+            processLaunch(action, map);
+        }
+    }
+
+    private static void processGoToR(PdfDictionary action, Map<String, Object> map) {
+        PdfObject dest = PdfReader.getPdfObjectRelease(action.get(PdfName.D));
+        if (dest != null) {
+            if (dest.isString()) {
+                map.put(NAMED, dest.toString());
+            } else if (dest.isName()) {
+                map.put(NAMED_N, PdfName.decodeName(dest.toString()));
+            } else if (dest.isArray()) {
+                map.put("Page", convertArrayToString((PdfArray) dest));
+            }
+        }
+        map.put(ACTION, "GoToR");
+        processFile(action, map);
+        processNewWindow(action, map);
+    }
+
+    private static String convertArrayToString(PdfArray arr) {
+        StringBuilder s = new StringBuilder();
+        s.append(arr.getPdfObject(0).toString());
+        s.append(' ').append(arr.getPdfObject(1).toString());
+        for (int k = 2; k < arr.size(); ++k) {
+            s.append(' ').append(arr.getPdfObject(k).toString());
+        }
+        return s.toString();
+    }
+
+    private static void processLaunch(PdfDictionary action, Map<String, Object> map) {
+        map.put(ACTION, "Launch");
+        processFile(action, map);
+    }
+
+    private static void processFile(PdfDictionary action, Map<String, Object> map) {
+        PdfObject file = PdfReader.getPdfObjectRelease(action.get(PdfName.F));
+        if (file == null) {
+            file = PdfReader.getPdfObjectRelease(action.get(PdfName.WIN));
+        }
+        if (file != null) {
+            if (file.isString()) {
+                map.put("File", ((PdfString) file).toUnicodeString());
+            } else if (file.isDictionary()) {
+                file = PdfReader.getPdfObjectRelease(((PdfDictionary) file).get(PdfName.F));
+                if (file.isString()) {
+                    map.put("File", ((PdfString) file).toUnicodeString());
+                }
+            }
+        }
+    }
+
+    private static void processNewWindow(PdfDictionary action, Map<String, Object> map) {
+        PdfObject newWindow = PdfReader.getPdfObjectRelease(action.get(PdfName.NEWWINDOW));
+        if (newWindow != null) {
+            map.put("NewWindow", newWindow.toString());
+        }
+    }
+
+    private static void processFirstChild(PdfDictionary outline, Map<String, Object> map, IntHashtable pages) {
+        PdfDictionary first = (PdfDictionary) PdfReader.getPdfObjectRelease(outline.get(PdfName.FIRST));
+        if (first != null) {
+            map.put("Kids", bookmarkDepth(first, pages));
+        }
+    }
+
 
     private static void mapGotoBookmark(Map<String, Object> map, PdfObject dest, IntHashtable pages) {
         if (dest.isString()) {
@@ -321,207 +350,187 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
         if (list == null) {
             return;
         }
-        for (Iterator<Map<String, Object>> it = list.listIterator(); it.hasNext(); ) {
+
+        Iterator<Map<String, Object>> it = list.listIterator();
+        while (it.hasNext()) {
             Map<String, Object> map = it.next();
-            boolean hit = false;
-            if ("GoTo".equals(map.get(ACTION))) {
-                String page = (String) map.get("Page");
-                if (page != null) {
-                    page = page.trim();
-                    int idx = page.indexOf(' ');
-                    int pageNum;
-                    if (idx < 0) {
-                        pageNum = Integer.parseInt(page);
-                    } else {
-                        pageNum = Integer.parseInt(page.substring(0, idx));
-                    }
-                    int len = pageRange.length & 0xfffffffe;
-                    for (int k = 0; k < len; k += 2) {
-                        if (pageNum >= pageRange[k] && pageNum <= pageRange[k + 1]) {
-                            hit = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> kids = (List<Map<String, Object>>) map.get("Kids");
-            if (kids != null) {
-                eliminatePages(kids, pageRange);
-                if (kids.isEmpty()) {
-                    map.remove("Kids");
-                    kids = null;
-                }
-            }
+            boolean hit = shouldEliminatePage(map, pageRange);
+
+            handleKids(map, pageRange);
+
             if (hit) {
-                if (kids == null) {
-                    it.remove();
-                } else {
-                    map.remove(ACTION);
-                    map.remove("Page");
-                    map.remove(NAMED);
-                }
+                removeOrCleanMap(it, map);
             }
         }
     }
 
-    /**
-     * For the pages in range add the <CODE>pageShift</CODE> to the page number. The page ranges consists of a number of
-     * pairs with the start/end page range. The page numbers are inclusive.
-     *
-     * @param list      the bookmarks
-     * @param pageShift the number to add to the pages in range
-     * @param pageRange the page ranges, always in pairs. It can be <CODE>null</CODE> to include all the pages
-     */
-    public static void shiftPageNumbersInRange(List<Map<String, Object>> list, int pageShift, int[] pageRange) {
-        if (list == null) {
-            return;
+    private static boolean shouldEliminatePage(Map<String, Object> map, int[] pageRange) {
+        if (!"GoTo".equals(map.get(ACTION))) {
+            return false;
         }
-        for (Map<String, Object> map : list) {
-            if ("GoTo".equals(map.get(ACTION))) {
-                String page = (String) map.get("Page");
-                if (page != null) {
-                    page = page.trim();
-                    int idx = page.indexOf(' ');
-                    int pageNum;
-                    if (idx < 0) {
-                        pageNum = Integer.parseInt(page);
-                    } else {
-                        pageNum = Integer.parseInt(page.substring(0, idx));
-                    }
-                    boolean hit = false;
-                    if (pageRange == null) {
-                        hit = true;
-                    } else {
-                        int len = pageRange.length & 0xfffffffe;
-                        for (int k = 0; k < len; k += 2) {
-                            if (pageNum >= pageRange[k] && pageNum <= pageRange[k + 1]) {
-                                hit = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (hit) {
-                        if (idx < 0) {
-                            page = Integer.toString(pageNum + pageShift);
-                        } else {
-                            page = (pageNum + pageShift) + page.substring(idx);
-                        }
-                    }
-                    map.put("Page", page);
-                }
+
+        String page = (String) map.get("Page");
+        if (page == null) {
+            return false;
+        }
+
+        int pageNum = extractPageNumber(page.trim());
+        return isPageInRange(pageNum, pageRange);
+    }
+
+    private static int extractPageNumber(String page) {
+        int idx = page.indexOf(' ');
+        return idx < 0 ? Integer.parseInt(page) : Integer.parseInt(page.substring(0, idx));
+    }
+
+    private static boolean isPageInRange(int pageNum, int[] pageRange) {
+        int len = pageRange.length & 0xfffffffe;
+        for (int k = 0; k < len; k += 2) {
+            if (pageNum >= pageRange[k] && pageNum <= pageRange[k + 1]) {
+                return true;
             }
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> kids = (List<Map<String, Object>>) map.get("Kids");
-            if (kids != null) {
-                shiftPageNumbersInRange(kids, pageShift, pageRange);
+        }
+        return false;
+    }
+
+    private static void handleKids(Map<String, Object> map, int[] pageRange) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> kids = (List<Map<String, Object>>) map.get("Kids");
+        if (kids != null) {
+            eliminatePages(kids, pageRange);
+            if (kids.isEmpty()) {
+                map.remove("Kids");
             }
         }
     }
 
-    static void createOutlineAction(PdfDictionary outline, Map<String, Object> map,
-            PdfWriter writer, boolean namedAsNames) {
+    private static void removeOrCleanMap(Iterator<Map<String, Object>> it, Map<String, Object> map) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> kids = (List<Map<String, Object>>) map.get("Kids");
+        if (kids == null) {
+            it.remove();
+        } else {
+            map.remove(ACTION);
+            map.remove("Page");
+            map.remove(NAMED);
+        }
+    }
+
+
+    static void createOutlineAction(PdfDictionary outline, Map<String, Object> map, PdfWriter writer, boolean namedAsNames) {
         try {
             String action = (String) map.get(ACTION);
-            if ("GoTo".equals(action)) {
-                String p;
-                if ((p = (String) map.get(NAMED)) != null) {
-                    if (namedAsNames) {
-                        outline.put(PdfName.DEST, new PdfName(p));
-                    } else {
-                        outline.put(PdfName.DEST, new PdfString(p, null));
-                    }
-                } else if ((p = (String) map.get("Page")) != null) {
-                    PdfArray ar = new PdfArray();
-                    StringTokenizer tk = new StringTokenizer(p);
-                    int n = Integer.parseInt(tk.nextToken());
-                    ar.add(writer.getPageReference(n));
-                    if (!tk.hasMoreTokens()) {
-                        ar.add(PdfName.XYZ);
-                        ar.add(new float[]{0, 10000, 0});
-                    } else {
-                        String fn = tk.nextToken();
-                        if (fn.startsWith("/")) {
-                            fn = fn.substring(1);
-                        }
-                        ar.add(new PdfName(fn));
-                        for (int k = 0; k < 4 && tk.hasMoreTokens(); ++k) {
-                            fn = tk.nextToken();
-                            if (fn.equals("null")) {
-                                ar.add(PdfNull.PDFNULL);
-                            } else {
-                                ar.add(new PdfNumber(fn));
-                            }
-                        }
-                    }
-                    outline.put(PdfName.DEST, ar);
-                }
-            } else if ("GoToR".equals(action)) {
-                String p;
-                PdfDictionary dic = new PdfDictionary();
-                if ((p = (String) map.get(NAMED)) != null) {
-                    dic.put(PdfName.D, new PdfString(p, null));
-                } else if ((p = (String) map.get(NAMED_N)) != null) {
-                    dic.put(PdfName.D, new PdfName(p));
-                } else if ((p = (String) map.get("Page")) != null) {
-                    PdfArray ar = new PdfArray();
-                    StringTokenizer tk = new StringTokenizer(p);
-                    ar.add(new PdfNumber(tk.nextToken()));
-                    if (!tk.hasMoreTokens()) {
-                        ar.add(PdfName.XYZ);
-                        ar.add(new float[]{0, 10000, 0});
-                    } else {
-                        String fn = tk.nextToken();
-                        if (fn.startsWith("/")) {
-                            fn = fn.substring(1);
-                        }
-                        ar.add(new PdfName(fn));
-                        for (int k = 0; k < 4 && tk.hasMoreTokens(); ++k) {
-                            fn = tk.nextToken();
-                            if (fn.equals("null")) {
-                                ar.add(PdfNull.PDFNULL);
-                            } else {
-                                ar.add(new PdfNumber(fn));
-                            }
-                        }
-                    }
-                    dic.put(PdfName.D, ar);
-                }
-                String file = (String) map.get("File");
-                if (dic.size() > 0 && file != null) {
-                    dic.put(PdfName.S, PdfName.GOTOR);
-                    dic.put(PdfName.F, new PdfString(file));
-                    String nw = (String) map.get("NewWindow");
-                    if (nw != null) {
-                        if (nw.equals("true")) {
-                            dic.put(PdfName.NEWWINDOW, PdfBoolean.PDFTRUE);
-                        } else if (nw.equals(FALSE)) {
-                            dic.put(PdfName.NEWWINDOW, PdfBoolean.PDFFALSE);
-                        }
-                    }
-                    outline.put(PdfName.A, dic);
-                }
-            } else if ("URI".equals(action)) {
-                String uri = (String) map.get("URI");
-                if (uri != null) {
-                    PdfDictionary dic = new PdfDictionary();
-                    dic.put(PdfName.S, PdfName.URI);
-                    dic.put(PdfName.URI, new PdfString(uri));
-                    outline.put(PdfName.A, dic);
-                }
-            } else if ("Launch".equals(action)) {
-                String file = (String) map.get("File");
-                if (file != null) {
-                    PdfDictionary dic = new PdfDictionary();
-                    dic.put(PdfName.S, PdfName.LAUNCH);
-                    dic.put(PdfName.F, new PdfString(file));
-                    outline.put(PdfName.A, dic);
-                }
+
+            switch (action) {
+                case "GoTo":
+                    handleGoToAction(outline, map, writer, namedAsNames);
+                    break;
+                case "GoToR":
+                    handleGoToRAction(outline, map, writer);
+                    break;
+                case "URI":
+                    handleUriAction(outline, map);
+                    break;
+                case "Launch":
+                    handleLaunchAction(outline, map);
+                    break;
+                default:
+                    // Handle unknown actions or do nothing
+                    break;
             }
         } catch (Exception e) {
             // empty on purpose
         }
     }
+
+    private static void handleGoToAction(PdfDictionary outline, Map<String, Object> map, PdfWriter writer, boolean namedAsNames) {
+        String p = (String) map.get(NAMED);
+        if (p != null) {
+            outline.put(PdfName.DEST, namedAsNames ? new PdfName(p) : new PdfString(p, null));
+            return;
+        }
+
+        p = (String) map.get("Page");
+        if (p != null) {
+            PdfArray ar = createPageDestinationArray(p, writer);
+            outline.put(PdfName.DEST, ar);
+        }
+    }
+
+    private static void handleGoToRAction(PdfDictionary outline, Map<String, Object> map, PdfWriter writer) {
+        PdfDictionary dic = new PdfDictionary();
+
+        String p = (String) map.get(NAMED);
+        if (p != null) {
+            dic.put(PdfName.D, new PdfString(p, null));
+        } else {
+            p = (String) map.get(NAMED_N);
+            if (p != null) {
+                dic.put(PdfName.D, new PdfName(p));
+            } else {
+                p = (String) map.get("Page");
+                if (p != null) {
+                    PdfArray ar = createPageDestinationArray(p, writer);
+                    dic.put(PdfName.D, ar);
+                }
+            }
+        }
+
+        String file = (String) map.get("File");
+        if (dic.size() > 0 && file != null) {
+            dic.put(PdfName.S, PdfName.GOTOR);
+            dic.put(PdfName.F, new PdfString(file));
+            String nw = (String) map.get("NewWindow");
+            if (nw != null) {
+                dic.put(PdfName.NEWWINDOW, "true".equals(nw) ? PdfBoolean.PDFTRUE : PdfBoolean.PDFFALSE);
+            }
+            outline.put(PdfName.A, dic);
+        }
+    }
+
+    private static void handleUriAction(PdfDictionary outline, Map<String, Object> map) {
+        String uri = (String) map.get("URI");
+        if (uri != null) {
+            PdfDictionary dic = new PdfDictionary();
+            dic.put(PdfName.S, PdfName.URI);
+            dic.put(PdfName.URI, new PdfString(uri));
+            outline.put(PdfName.A, dic);
+        }
+    }
+
+    private static void handleLaunchAction(PdfDictionary outline, Map<String, Object> map) {
+        String file = (String) map.get("File");
+        if (file != null) {
+            PdfDictionary dic = new PdfDictionary();
+            dic.put(PdfName.S, PdfName.LAUNCH);
+            dic.put(PdfName.F, new PdfString(file));
+            outline.put(PdfName.A, dic);
+        }
+    }
+
+    private static PdfArray createPageDestinationArray(String p, PdfWriter writer) {
+        PdfArray ar = new PdfArray();
+        StringTokenizer tk = new StringTokenizer(p);
+        ar.add(writer.getPageReference(Integer.parseInt(tk.nextToken())));
+
+        if (!tk.hasMoreTokens()) {
+            ar.add(PdfName.XYZ);
+            ar.add(new float[]{0, 10000, 0});
+        } else {
+            String fn = tk.nextToken();
+            if (fn.startsWith("/")) {
+                fn = fn.substring(1);
+            }
+            ar.add(new PdfName(fn));
+            for (int k = 0; k < 4 && tk.hasMoreTokens(); ++k) {
+                fn = tk.nextToken();
+                ar.add("null".equals(fn) ? PdfNull.PDFNULL : new PdfNumber(fn));
+            }
+        }
+
+        return ar;
+    }
+
 
     public static Object[] iterateOutlines(PdfWriter writer, PdfIndirectReference parent,
             List<Map<String, Object>> kids, boolean namedAsNames) throws IOException {
@@ -539,66 +548,86 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
             if (subKid != null && !subKid.isEmpty()) {
                 lower = iterateOutlines(writer, refs[ptr], subKid, namedAsNames);
             }
-            PdfDictionary outline = new PdfDictionary();
-            ++count;
-            if (lower != null) {
-                outline.put(PdfName.FIRST, (PdfIndirectReference) lower[0]);
-                outline.put(PdfName.LAST, (PdfIndirectReference) lower[1]);
-                int n = (Integer) lower[2];
-                if (FALSE.equals(map.get("Open"))) {
-                    outline.put(PdfName.COUNT, new PdfNumber(-n));
-                } else {
-                    outline.put(PdfName.COUNT, new PdfNumber(n));
-                    count += n;
-                }
-            }
-            outline.put(PdfName.PARENT, parent);
-            if (ptr > 0) {
-                outline.put(PdfName.PREV, refs[ptr - 1]);
-            }
-            if (ptr < refs.length - 1) {
-                outline.put(PdfName.NEXT, refs[ptr + 1]);
-            }
-            outline.put(PdfName.TITLE, new PdfString((String) map.get(TITLE), PdfObject.TEXT_UNICODE));
-            String color = (String) map.get("Color");
-            if (color != null) {
-                try {
-                    PdfArray arr = new PdfArray();
-                    StringTokenizer tk = new StringTokenizer(color);
-                    for (int k = 0; k < 3; ++k) {
-                        float f = Float.parseFloat(tk.nextToken());
-                        if (f < 0) {
-                            f = 0;
-                        }
-                        if (f > 1) {
-                            f = 1;
-                        }
-                        arr.add(new PdfNumber(f));
-                    }
-                    outline.put(PdfName.C, arr);
-                } catch (Exception ignored) {
-                    //in case it's malformed
-                }
-            }
-            String style = (String) map.get("Style");
-            if (style != null) {
-                style = style.toLowerCase();
-                int bits = 0;
-                if (style.contains("italic")) {
-                    bits |= 1;
-                }
-                if (style.contains("bold")) {
-                    bits |= 2;
-                }
-                if (bits != 0) {
-                    outline.put(PdfName.F, new PdfNumber(bits));
-                }
-            }
-            createOutlineAction(outline, map, writer, namedAsNames);
+            PdfDictionary outline = createOutline(writer, parent, refs, ptr, map, lower);
             writer.addToBody(outline, refs[ptr]);
+            count += extractCount(lower, map);
         }
         return new Object[]{refs[0], refs[refs.length - 1], count};
     }
+
+    private static PdfDictionary createOutline(PdfWriter writer, PdfIndirectReference parent,
+            PdfIndirectReference[] refs, int ptr, Map<String, Object> map, Object[] lower) {
+        PdfDictionary outline = new PdfDictionary();
+        if (lower != null) {
+            outline.put(PdfName.FIRST, (PdfIndirectReference) lower[0]);
+            outline.put(PdfName.LAST, (PdfIndirectReference) lower[1]);
+        }
+        outline.put(PdfName.PARENT, parent);
+        if (ptr > 0) {
+            outline.put(PdfName.PREV, refs[ptr - 1]);
+        }
+        if (ptr < refs.length - 1) {
+            outline.put(PdfName.NEXT, refs[ptr + 1]);
+        }
+        outline.put(PdfName.TITLE, new PdfString((String) map.get(TITLE), PdfObject.TEXT_UNICODE));
+        addColor(outline, map);
+        addStyle(outline, map);
+        createOutlineAction(outline, map, writer, false); // Assuming `namedAsNames` is `false` by default
+        return outline;
+    }
+
+    private static void addColor(PdfDictionary outline, Map<String, Object> map) {
+        String color = (String) map.get("Color");
+        if (color != null) {
+            try {
+                PdfArray arr = parseColor(color);
+                outline.put(PdfName.C, arr);
+            } catch (Exception ignored) {
+                // In case it's malformed
+            }
+        }
+    }
+
+    private static PdfArray parseColor(String color) {
+        PdfArray arr = new PdfArray();
+        StringTokenizer tk = new StringTokenizer(color);
+        for (int k = 0; k < 3; ++k) {
+            float f = Float.parseFloat(tk.nextToken());
+            f = Math.max(0, Math.min(1, f)); // Clamp the value between 0 and 1
+            arr.add(new PdfNumber(f));
+        }
+        return arr;
+    }
+
+    private static void addStyle(PdfDictionary outline, Map<String, Object> map) {
+        String style = (String) map.get("Style");
+        if (style != null) {
+            style = style.toLowerCase();
+            int bits = 0;
+            if (style.contains("italic")) {
+                bits |= 1;
+            }
+            if (style.contains("bold")) {
+                bits |= 2;
+            }
+            if (bits != 0) {
+                outline.put(PdfName.F, new PdfNumber(bits));
+            }
+        }
+    }
+
+    private static int extractCount(Object[] lower, Map<String, Object> map) {
+        if (lower != null) {
+            int n = (Integer) lower[2];
+            if (FALSE.equals(map.get("Open"))) {
+                return -n;
+            } else {
+                return n;
+            }
+        }
+        return 0;
+    }
+
 
     /**
      * Exports the bookmarks to XML. Only of use if the generation is to be include in some other XML document.
@@ -610,47 +639,72 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
      *                  encoding
      * @throws IOException on error
      */
-    public static void exportToXMLNode(List<?> list, Writer out, int indent, boolean onlyASCII) throws IOException {
-        StringBuilder dep = new StringBuilder();
-        for (int k = 0; k < indent; ++k) {
-            dep.append("  ");
-        }
-        for (Object o1 : list) {
-            Map<?,?> map = (Map<?,?>) o1;
-            String title = null;
-            out.write(dep.toString());
-            out.write("<Title ");
-            List<?> kids = null;
-            for (Entry<?,?> o : map.entrySet()) {
-                String key = (String) o.getKey();
-                if (key.equals(TITLE)) {
-                    title = (String) o.getValue();
-                } else if (key.equals("Kids")) {
-                    kids = (List) o.getValue();
-                } else {
-                    out.write(key);
-                    out.write("=\"");
-                    String value = (String) o.getValue();
-                    if (key.equals(NAMED) || key.equals(NAMED_N)) {
-                        value = SimpleNamedDestination.escapeBinaryString(value);
-                    }
-                    out.write(XMLUtil.escapeXML(value, onlyASCII));
-                    out.write("\" ");
-                }
-            }
-            out.write(">");
-            if (title == null) {
-                title = "";
-            }
-            out.write(XMLUtil.escapeXML(title, onlyASCII));
-            if (kids != null) {
-                out.write("\n");
-                exportToXMLNode(kids, out, indent + 1, onlyASCII);
-                out.write(dep.toString());
-            }
-            out.write("</Title>\n");
+    public static void exportToXMLNode(List<Bookmark> list, Writer out, int indent, boolean onlyASCII) throws IOException {
+        String indentation = createIndentation(indent);
+        for (Bookmark item : list) {
+            Map<?, ?> map = (Map<?, ?>) item;
+            List<?> kids = processMapEntries(map, out, indentation, onlyASCII);
+            writeTitleAndChildren(out, map, indentation, kids, indent, onlyASCII);
         }
     }
+
+    private static String createIndentation(int indent) {
+        return "  ".repeat(Math.max(0, indent));
+    }
+
+    private static List<?> processMapEntries(Map<?, ?> map, Writer out, String indentation, boolean onlyASCII) throws IOException {
+        String title = null;
+        List<?> kids = null;
+
+        out.write(indentation);
+        out.write("<Title ");
+
+        for (Entry<?, ?> entry : map.entrySet()) {
+            String key = (String) entry.getKey();
+            String value = (String) entry.getValue();
+
+            switch (key) {
+                case TITLE:
+                    title = value;
+                    break;
+                case "Kids":
+                    kids = (List<?>) value;
+                    break;
+                default:
+                    writeAttribute(out, key, value, onlyASCII);
+                    break;
+            }
+        }
+
+        out.write(">");
+        return kids;
+    }
+
+    private static void writeAttribute(Writer out, String key, String value, boolean onlyASCII) throws IOException {
+        out.write(key);
+        out.write("=\"");
+
+        if (key.equals(NAMED) || key.equals(NAMED_N)) {
+            value = SimpleNamedDestination.escapeBinaryString(value);
+        }
+
+        out.write(XMLUtil.escapeXML(value, onlyASCII));
+        out.write("\" ");
+    }
+
+    private static void writeTitleAndChildren(Writer out, Map<?, ?> map, String indentation, List<?> kids, int indent, boolean onlyASCII) throws IOException {
+        String title = (String) map.getOrDefault(TITLE, "");
+        out.write(XMLUtil.escapeXML(title, onlyASCII));
+
+        if (kids != null) {
+            out.write("\n");
+            exportToXMLNode(kids, out, indent + 1, onlyASCII);
+            out.write(indentation);
+        }
+
+        out.write("</Title>\n");
+    }
+
 
     /**
      * Exports the bookmarks to XML. The DTD for this XML is:

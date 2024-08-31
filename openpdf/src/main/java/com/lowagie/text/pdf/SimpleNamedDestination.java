@@ -260,42 +260,65 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
 
     public static String unEscapeBinaryString(String s) {
         StringBuilder buf = new StringBuilder();
-        char[] cc = s.toCharArray();
-        int len = cc.length;
-        int k = 0;
+        char[] chars = s.toCharArray();
+        int length = chars.length;
+        int index = 0;
 
-        while (k < len) {
-            char c = cc[k];
-            if (c == '\\') {
-                if (++k >= len) {
-                    buf.append('\\');
-                    break;
-                }
-                c = cc[k];
-                if (c >= '0' && c <= '7') {
-                    int n = c - '0';
-                    ++k;
-                    for (int j = 0; j < 2 && k < len; ++j) {
-                        c = cc[k];
-                        if (c >= '0' && c <= '7') {
-                            ++k;
-                            n = n * 8 + c - '0';
-                        } else {
-                            break;
-                        }
+        while (index < length) {
+            char currentChar = chars[index];
+            if (currentChar == '\\') {
+                index++;
+                if (index < length) {
+                    char nextChar = chars[index];
+                    if (isOctalDigit(nextChar)) {
+                        buf.append(handleOctalEscape(chars, length, index));
+                        // Skip the characters processed in handleOctalEscape
+                        index += getOctalEscapeLength(chars, length, index) - 1;
+                    } else {
+                        buf.append(nextChar);
                     }
-                    --k;
-                    buf.append((char) n);
                 } else {
-                    buf.append(c);
+                    buf.append('\\');
                 }
             } else {
-                buf.append(c);
+                buf.append(currentChar);
             }
-            k++;
+            index++;
         }
         return buf.toString();
     }
+
+    private static boolean isOctalDigit(char c) {
+        return c >= '0' && c <= '7';
+    }
+
+    private static char handleOctalEscape(char[] chars, int length, int index) {
+        int value = chars[index] - '0';
+        index++;
+        for (int i = 0; i < 2 && index < length; i++) {
+            char c = chars[index];
+            if (isOctalDigit(c)) {
+                value = value * 8 + c - '0';
+                index++;
+            } else {
+                break;
+            }
+        }
+        return (char) value;
+    }
+
+    private static int getOctalEscapeLength(char[] chars, int length, int index) {
+        int count = 0;
+        for (int i = 0; i < 2 && index + i < length; i++) {
+            if (isOctalDigit(chars[index + i])) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        return count + 1; // Including the first octal digit
+    }
+
 
     public void endDocument() {
         //empty on purpose (for now)

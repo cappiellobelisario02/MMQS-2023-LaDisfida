@@ -47,6 +47,7 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Objects;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
@@ -108,92 +109,95 @@ public class RemoveLaunchApplication
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        PdfReader reader = null;
-        FileOutputStream fouts = null;
-        String stringToLog = null;
         try {
-            if (getValue(SRCFILE) == null) {
-                throw new InstantiationException("You need to choose a sourcefile");
-            }
-            File src = (File) getValue(SRCFILE);
-            if (getValue(DESTFILE) == null) {
-                throw new InstantiationException(
-                        "You need to choose a destination file");
-            }
-            File dest = (File) getValue(DESTFILE);
-
-            // we create a reader for a certain document
-            /*PdfReader reader*/
-            try{
-                reader = new PdfReader(src.getAbsolutePath());
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-            PdfObject o;
-            PdfDictionary d;
-            PdfDictionary l;
-            PdfName n;
-            for (int i = 1; i < reader.getXrefSize(); i++) {
-                o = reader.getPdfObject(i);
-                if (o instanceof PdfDictionary) {
-                    d = (PdfDictionary) o;
-                    o = d.get(PdfName.A);
-                    if (o == null) {
-                        continue;
-                    }
-                    if (o instanceof PdfDictionary) {
-                        l = (PdfDictionary) o;
-                    } else {
-                        PRIndirectReference r = (PRIndirectReference) o;
-                        l = (PdfDictionary) reader.getPdfObject(r.getNumber());
-                    }
-                    n = (PdfName) l.get(PdfName.S);
-                    if (PdfName.LAUNCH.equals(n)) {
-                        if (l.get(PdfName.F) != null) {
-                            stringToLog = "Removed: " + l.get(PdfName.F);
-                            logger.info(stringToLog);
-                            l.remove(PdfName.F);
-                        }
-                        if (l.get(PdfName.WIN) != null) {
-                            stringToLog = "Removed: " + l.get(PdfName.WIN);
-                            logger.info(stringToLog);
-                            l.remove(PdfName.WIN);
-                        }
-                        l.put(PdfName.S, PdfName.JAVASCRIPT);
-                        l.put(PdfName.JS, new PdfString("app.alert('Launch Application Action removed by iText');\r"));
-                    }
-                }
-            }
-            try{
-                fouts = new FileOutputStream(dest);
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-            PdfStamper stamper = new PdfStamper(reader, fouts);
-            stamper.close();
+            validateFiles();
+            processPdf();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void validateFiles() throws InstantiationException {
+        if (getValue(SRCFILE) == null) {
+            throw new InstantiationException("You need to choose a source file");
+        }
+        if (getValue(DESTFILE) == null) {
+            throw new InstantiationException("You need to choose a destination file");
+        }
+    }
+
+    private void processPdf() throws IOException {
+        PdfReader reader = null;
+        FileOutputStream fouts = null;
+        try {
+            File src = (File) getValue(SRCFILE);
+            File dest = (File) getValue(DESTFILE);
+
+            reader = new PdfReader(src.getAbsolutePath());
+            removeLaunchActions(reader);
+
+            fouts = new FileOutputStream(dest);
+            PdfStamper stamper = new PdfStamper(reader, fouts);
+            stamper.close();
         } finally {
-            if (reader != null && fouts != null) {
-                try {
-                    reader.close();
-                    fouts.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+            closeResources(reader, fouts);
+        }
+    }
+
+    private void removeLaunchActions(PdfReader reader) {
+        for (int i = 1; i < Objects.requireNonNull(reader).getXrefSize(); i++) {
+            PdfObject o = reader.getPdfObject(i);
+            if (o instanceof PdfDictionary) {
+                PdfDictionary d = (PdfDictionary) o;
+                o = d.get(PdfName.A);
+                if (o == null) {
+                    continue;
+                }
+                PdfDictionary l = (o instanceof PdfDictionary) ? (PdfDictionary) o : (PdfDictionary) reader.getPdfObject(((PRIndirectReference) o).getNumber());
+                PdfName n = (PdfName) l.get(PdfName.S);
+                if (PdfName.LAUNCH.equals(n)) {
+                    logAndRemoveLaunchAction(l);
+                    l.put(PdfName.S, PdfName.JAVASCRIPT);
+                    l.put(PdfName.JS, new PdfString("app.alert('Launch Application Action removed by iText');\r"));
                 }
             }
         }
     }
+
+    private void logAndRemoveLaunchAction(PdfDictionary l) {
+        String stringToLog;
+        if (l.get(PdfName.F) != null) {
+            stringToLog = "Removed: " + l.get(PdfName.F);
+            logger.info(stringToLog);
+            l.remove(PdfName.F);
+        }
+        if (l.get(PdfName.WIN) != null) {
+            stringToLog = "Removed: " + l.get(PdfName.WIN);
+            logger.info(stringToLog);
+            l.remove(PdfName.WIN);
+        }
+    }
+
+    private void closeResources(PdfReader reader, FileOutputStream fouts) {
+        try {
+            if (reader != null) {
+                reader.close();
+            }
+            if (fouts != null) {
+                fouts.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * @param arg StringArgument
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
+        // if the internal frame is null, the tool was called from the command line
         // represent the changes of the argument in the internal frame
     }
 

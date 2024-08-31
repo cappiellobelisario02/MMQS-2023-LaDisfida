@@ -65,8 +65,10 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import com.lowagie.tools.Executable;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -81,6 +83,10 @@ import javax.swing.JOptionPane;
  */
 public class HtmlBookmarks extends AbstractTool {
 
+    public static final String SRCFILE = "srcfile";
+    public static final String OWNERPASSWORD = "ownerpassword";
+    public static final String TITLE = "Title";
+
     static {
         addVersion("$Id: HtmlBookmarks.java 3373 2008-05-12 16:21:24Z xlv $");
     }
@@ -91,8 +97,8 @@ public class HtmlBookmarks extends AbstractTool {
      * Constructs an HtmlBookmarks object.
      */
     public HtmlBookmarks() {
-        arguments.add(new FileArgument(this, "srcfile", "The file you want to inspect", false, new PdfFilter()));
-        arguments.add(new StringArgument(this, "ownerpassword", "The owner password if the file is encrypt"));
+        arguments.add(new FileArgument(this, SRCFILE, "The file you want to inspect", false, new PdfFilter()));
+        arguments.add(new StringArgument(this, OWNERPASSWORD, "The owner password if the file is encrypt"));
         arguments.add(new StringArgument(this, "css", "The path to a CSS file"));
     }
 
@@ -126,8 +132,8 @@ public class HtmlBookmarks extends AbstractTool {
      */
     private static Section createBookmark(String pdf, Section section, Map<String, Object> bookmark) {
         Section s;
-        Paragraph title = new Paragraph((String) bookmark.get("Title"));
-        logger.info((String) bookmark.get("Title"));
+        Paragraph title = new Paragraph((String) bookmark.get(TITLE));
+        logger.info(bookmark.get(TITLE).toString());
         String action = (String) bookmark.get("Action");
         if ("GoTo".equals(action)) {
             if (bookmark.get("Page") != null) {
@@ -197,99 +203,123 @@ public class HtmlBookmarks extends AbstractTool {
      */
     public void execute() {
         PdfReader reader = null;
-        try {
-            if (getValue("srcfile") == null) {
-                throw new InstantiationException("You need to choose a sourcefile");
-            }
-            File src = (File) getValue("srcfile");
-            
-            if (getValue("ownerpassword") == null) {
-                reader = new PdfReader(src.getAbsolutePath());
-            } else {
-                reader = new PdfReader(src.getAbsolutePath(), ((String) getValue("ownerpassword")).getBytes());
-            }
-            File directory = src.getParentFile();
-            String name = src.getName();
-            name = name.substring(0, name.lastIndexOf('.'));
-            File html = new File(directory, name + "_index.html");
-            Document document = new Document();
+        try (Document document = new Document()) {
+            validateSourceFile();
+            File src = (File) getValue(SRCFILE);
+            reader = initializePdfReader(src);
+            File html = prepareHtmlFile(src);
             HtmlWriter.getInstance(document, new FileOutputStream(html));
-            Object css = getValue("css");
-            if (css != null) {
-                document.add(new Header(HtmlTags.STYLESHEET, css.toString()));
-            }
-            Object title = reader.getInfo().get("Title");
-            if (title == null) {
-                document.addTitle("Index for " + src.getName());
-            } else {
-                document.addKeywords("Index for '" + title + "'");
-            }
-            String keywords = reader.getInfo().get("Keywords");
-            if (keywords != null) {
-                document.addKeywords(keywords);
-            }
-            String description = reader.getInfo().get("Subject");
-            if (keywords != null) {
-                document.addSubject(description);
-            }
+            addStylesheet(document);
+            addDocumentMetadata(document, reader, src);
             document.open();
-            Paragraph t;
-            if (title == null) {
-                t = new Paragraph("Index for " + src.getName());
-            } else {
-                t = new Paragraph("Index for '" + title + "'");
-            }
-            document.add(t);
-            if (description != null) {
-                Paragraph d = new Paragraph(description);
-                document.add(d);
-            }
-            List<Map<String, Object>> mapList = SimpleBookmark.getBookmarkList(reader);
-            if (mapList == null) {
-                document.add(new Paragraph("This document has no bookmarks."));
-            } else {
-                for (Map<String, Object> map : mapList) {
-                    Chapter chapter = (Chapter) createBookmark(src.getName(), null, map);
-                    // As long as the Definition of mapList and kids is recursive, we have to work with unchecked casts
-                    @SuppressWarnings("unchecked")
-                    List<Map<String, Object>> kids = (List<Map<String, Object>>) map.get("Kids");
-                    if (kids != null) {
-                        for (Map<String, Object> kid : kids) {
-                            addBookmark(src.getName(), chapter, kid);
-                        }
-                    }
-                    document.add(chapter);
-                }
-            }
-            document.close();
+            addContent(document, reader, src);
             Executable.launchBrowser(html.getAbsolutePath());
         } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(internalFrame,
-                    e.getMessage(),
-                    e.getClass().getName(),
-                    JOptionPane.ERROR_MESSAGE);
-            logger.info(e.getMessage());
-        } finally{
-            if (reader != null) {
-                try {
-                   reader.close(); 
-                } catch (Exception e) {
-                    e.printStackTrace();
+            handleException(e);
+        } finally {
+            closeReader(reader);
+        }
+    }
+
+    private void validateSourceFile() throws InstantiationException {
+        if (getValue(SRCFILE) == null) {
+            throw new InstantiationException("You need to choose a sourcefile");
+        }
+    }
+
+    private PdfReader initializePdfReader(File src)
+            throws InstantiationException, IOException, PDFFilterException {
+        PdfReader result;
+        if (getValue(OWNERPASSWORD) == null) {
+            result = new PdfReader(src.getAbsolutePath());
+        } else {
+            result = new PdfReader(src.getAbsolutePath(), ((String) getValue(OWNERPASSWORD)).getBytes());
+        }
+        return result;
+    }
+
+    private File prepareHtmlFile(File src) {
+        File directory = src.getParentFile();
+        String name = src.getName();
+        name = name.substring(0, name.lastIndexOf('.'));
+        return new File(directory, name + "_index.html");
+    }
+
+    private void addStylesheet(Document document) throws InstantiationException {
+        Object css = getValue("css");
+        if (css != null) {
+            document.add(new Header(HtmlTags.STYLESHEET, css.toString()));
+        }
+    }
+
+    private void addDocumentMetadata(Document document, PdfReader reader, File src) {
+        String title = reader.getInfo().get(TITLE);
+        if (title == null) {
+            document.addTitle("Index for " + src.getName());
+        } else {
+            document.addKeywords("Index for '" + title + "'");
+        }
+        String keywords = reader.getInfo().get("Keywords");
+        if (keywords != null) {
+            document.addKeywords(keywords);
+        }
+        String description = reader.getInfo().get("Subject");
+        if (description != null) {
+            document.addSubject(description);
+        }
+    }
+
+    private void addContent(Document document, PdfReader reader, File src) {
+        String title = reader.getInfo().get(TITLE);
+        Paragraph titleParagraph = new Paragraph(title == null ? "Index for " + src.getName() : "Index for '" + title + "'");
+        document.add(titleParagraph);
+
+        String description = reader.getInfo().get("Subject");
+        if (description != null) {
+            document.add(new Paragraph(description));
+        }
+
+        List<Map<String, Object>> mapList = SimpleBookmark.getBookmarkList(reader);
+        if (mapList == null) {
+            document.add(new Paragraph("This document has no bookmarks."));
+        } else {
+            for (Map<String, Object> map : mapList) {
+                Chapter chapter = (Chapter) createBookmark(src.getName(), null, map);
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> kids = (List<Map<String, Object>>) map.get("Kids");
+                if (kids != null) {
+                    for (Map<String, Object> kid : kids) {
+                        addBookmark(src.getName(), chapter, kid);
+                    }
                 }
+                document.add(chapter);
             }
         }
     }
+
+    private void handleException(Exception e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
+        logger.info(e.getMessage());
+    }
+
+    private void closeReader(PdfReader reader) {
+        if (reader != null) {
+            try {
+                reader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     /**
      * @param arg StringArgument
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
+        // if the internal frame is null, the tool was called from the command line
         // represent the changes of the argument in the internal frame
     }
 

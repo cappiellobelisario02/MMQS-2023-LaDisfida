@@ -48,7 +48,6 @@ package com.lowagie.text.pdf;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * This class expands a string into a list of numbers. The main use is to select a range of pages.
@@ -101,72 +100,93 @@ public class SequenceList {
     public static List<Integer> expand(String ranges, int maxNumber) {
         SequenceList parse = new SequenceList(ranges);
         List<Integer> list = new LinkedList<>();
-        boolean sair = false;
-        while (!sair) {
-            sair = parse.getAttributes();
-            if (parse.low == -1 && parse.high == -1 && !parse.even && !parse.odd) {
-                continue;
-            }
-            if (parse.low < 1) {
-                parse.low = 1;
-            }
-            if (parse.high < 1 || parse.high > maxNumber) {
-                parse.high = maxNumber;
-            }
-            if (parse.low > maxNumber) {
-                parse.low = maxNumber;
-            }
 
-            int inc = 1;
+        while (parse.getAttributes()) {
+            adjustRange(parse, maxNumber);
+
             if (parse.inverse) {
-                if (parse.low > parse.high) {
-                    int t = parse.low;
-                    parse.low = parse.high;
-                    parse.high = t;
-                }
-                for (ListIterator<Integer> it = list.listIterator(); it.hasNext(); ) {
-                    int n = it.next();
-                    if (parse.even && (n & 1) == 1) {
-                        continue;
-                    }
-                    if (parse.odd && (n & 1) == 0) {
-                        continue;
-                    }
-                    if (n >= parse.low && n <= parse.high) {
-                        it.remove();
-                    }
-                }
+                removeRangeFromList(list, parse);
             } else {
-                if (parse.low > parse.high) {
-                    inc = -1;
-                    if (parse.odd || parse.even) {
-                        --inc;
-                        if (parse.even) {
-                            parse.low &= ~1;
-                        } else {
-                            parse.low -= ((parse.low & 1) == 1 ? 0 : 1);
-                        }
-                    }
-                    for (int k = parse.low; k >= parse.high; k += inc) {
-                        list.add(k);
-                    }
-                } else {
-                    if (parse.odd || parse.even) {
-                        ++inc;
-                        if (parse.odd) {
-                            parse.low |= 1;
-                        } else {
-                            parse.low += ((parse.low & 1) == 1 ? 1 : 0);
-                        }
-                    }
-                    for (int k = parse.low; k <= parse.high; k += inc) {
-                        list.add(k);
-                    }
-                }
+                addRangeToList(list, parse);
             }
         }
+
         return list;
     }
+
+    private static void adjustRange(SequenceList parse, int maxNumber) {
+        if (parse.low < 1) {
+            parse.low = 1;
+        }
+        if (parse.high < 1 || parse.high > maxNumber) {
+            parse.high = maxNumber;
+        }
+        if (parse.low > maxNumber) {
+            parse.low = maxNumber;
+        }
+    }
+
+    private static void removeRangeFromList(List<Integer> list, SequenceList parse) {
+        if (parse.low > parse.high) {
+            swapLowAndHigh(parse);
+        }
+
+        list.removeIf(n -> shouldRemove(parse, n));
+    }
+
+    private static boolean shouldRemove(SequenceList parse, int n) {
+        return (parse.even && (n & 1) == 1) ||
+                (parse.odd && (n & 1) == 0) ||
+                (n >= parse.low && n <= parse.high);
+    }
+
+    private static void addRangeToList(List<Integer> list, SequenceList parse) {
+        int inc = determineIncrement(parse);
+
+        if (parse.low > parse.high) {
+            addDescendingRange(list, parse, inc);
+        } else {
+            addAscendingRange(list, parse, inc);
+        }
+    }
+
+    private static int determineIncrement(SequenceList parse) {
+        int inc = 1;
+        if (parse.odd || parse.even) {
+            inc = 2;
+            if (parse.odd) {
+                parse.low |= 1;
+            } else {
+                parse.low += (parse.low & 1) == 1 ? 1 : 0;
+            }
+        }
+        return inc;
+    }
+
+    private static void addDescendingRange(List<Integer> list, SequenceList parse, int inc) {
+        inc = inc > 0 ? -1 : inc - 1;
+        if (parse.even) {
+            parse.low &= ~1;
+        } else {
+            parse.low -= (parse.low & 1) == 1 ? 0 : 1;
+        }
+        for (int k = parse.low; k <= parse.high; k += inc) {
+            list.add(k);
+        }
+    }
+
+    private static void addAscendingRange(List<Integer> list, SequenceList parse, int inc) {
+        for (int k = parse.low; k <= parse.high; k += inc) {
+            list.add(k);
+        }
+    }
+
+    private static void swapLowAndHigh(SequenceList parse) {
+        int temp = parse.low;
+        parse.low = parse.high;
+        parse.high = temp;
+    }
+
 
     protected char nextChar() {
         while (true) {
@@ -190,62 +210,88 @@ public class SequenceList {
     protected int getType() {
         StringBuilder buf = new StringBuilder();
         int state = FIRST;
+
         while (true) {
             char c = nextChar();
+
             if (c == EOT) {
-                if (state == DIGIT) {
-                    other = buf.toString();
-                    number = Integer.parseInt(other);
-                    return NUMBER_CONST;
-                } else if (state == OTHER_CONST) {
-                    other = buf.toString().toLowerCase();
-                    return TEXT_CONST;
-                }
-                return END;
+                return handleEndOfText(state, buf);
             }
+
             switch (state) {
                 case FIRST:
-                    switch (c) {
-                        case '!':
-                            return NOT;
-                        case '-':
-                            return MINUS;
-                        case ',':
-                            return COMMA;
-                        default:
-                            break;
-                    }
-                    buf.append(c);
-                    if (c >= '0' && c <= '9') {
-                        state = DIGIT;
-                    } else {
-                        state = OTHER_CONST;
+                    state = handleFirstState(c, buf);
+                    if (state == NOT || state == MINUS || state == COMMA) {
+                        return state;
                     }
                     break;
                 case DIGIT:
-                    if (c >= '0' && c <= '9') {
-                        buf.append(c);
-                    } else {
-                        putBack();
-                        other = buf.toString();
-                        number = Integer.parseInt(other);
-                        return NUMBER_CONST;
-                    }
+                    if (handleDigitState(c, buf)) return NUMBER_CONST;
                     break;
+
                 case OTHER_CONST:
-                    if (NOT_OTHER.indexOf(c) < 0) {
-                        buf.append(c);
-                    } else {
-                        putBack();
-                        other = buf.toString().toLowerCase();
-                        return TEXT_CONST;
-                    }
+                    if (handleOtherConstState(c, buf)) return TEXT_CONST;
                     break;
+
                 default:
                     throw new IllegalArgumentException("Illegal character: " + c);
             }
         }
     }
+
+    private int handleEndOfText(int state, StringBuilder buf) {
+        if (state == DIGIT) {
+            other = buf.toString();
+            number = Integer.parseInt(other);
+            return NUMBER_CONST;
+        } else if (state == OTHER_CONST) {
+            other = buf.toString().toLowerCase();
+            return TEXT_CONST;
+        }
+        return END;
+    }
+
+    private int handleFirstState(char c, StringBuilder buf) {
+        switch (c) {
+            case '!':
+                return NOT;
+            case '-':
+                return MINUS;
+            case ',':
+                return COMMA;
+            default:
+                buf.append(c);
+                if (c >= '0' && c <= '9') {
+                    return DIGIT;
+                } else {
+                    return OTHER_CONST;
+                }
+        }
+    }
+
+    private boolean handleDigitState(char c, StringBuilder buf) {
+        if (c >= '0' && c <= '9') {
+            buf.append(c);
+        } else {
+            putBack();
+            other = buf.toString();
+            number = Integer.parseInt(other);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleOtherConstState(char c, StringBuilder buf) {
+        if (NOT_OTHER.indexOf(c) < 0) {
+            buf.append(c);
+        } else {
+            putBack();
+            other = buf.toString().toLowerCase();
+            return true;
+        }
+        return false;
+    }
+
 
     private void otherProc() {
         if (other.equals("odd") || other.equals("o")) {
@@ -258,75 +304,94 @@ public class SequenceList {
     }
 
     protected boolean getAttributes() {
+        initializeAttributes();
+        int state = OTHER_CONST;
+
+        while (true) {
+            int type = getType();
+
+            if (isEndOrComma(type, state)) {
+                return type == END;
+            }
+
+            state = processState(type, state);
+        }
+    }
+
+    private void initializeAttributes() {
         low = -1;
         high = -1;
         odd = even = inverse = false;
-        int state = OTHER_CONST;
-        while (true) {
-            int type = getType();
-            if (type == END || type == COMMA) {
-                if (state == DIGIT) {
-                    high = low;
+    }
+
+    private boolean isEndOrComma(int type, int state) {
+        if (type == END || type == COMMA) {
+            if (state == DIGIT) {
+                high = low;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private int processState(int type, int state) {
+        return switch (state) {
+            case OTHER_CONST -> handleOtherConst(type);
+            case DIGIT -> handleDigit(type);
+            case DIGIT2 -> handleDigit2(type);
+            default -> throw new IllegalArgumentException("Illegal state: " + state);
+        };
+    }
+
+    private int handleOtherConst(int type) {
+        switch (type) {
+            case NOT:
+                inverse = true;
+                return OTHER_CONST;
+            case MINUS:
+                return DIGIT2;
+            default:
+                if (type == NUMBER_CONST) {
+                    low = number;
+                    return DIGIT;
+                } else {
+                    otherProc();
+                    return OTHER_CONST;
                 }
-                return (type == END);
-            }
-            switch (state) {
-                case OTHER_CONST:
-                    switch (type) {
-                        case NOT:
-                            inverse = true;
-                            break;
-                        case MINUS:
-                            state = DIGIT2;
-                            break;
-                        default:
-                            if (type == NUMBER_CONST) {
-                                low = number;
-                                state = DIGIT;
-                            } else {
-                                otherProc();
-                            }
-                            break;
-                    }
-                    break;
-                case DIGIT:
-                    switch (type) {
-                        case NOT:
-                            inverse = true;
-                            state = OTHER_CONST;
-                            high = low;
-                            break;
-                        case MINUS:
-                            state = DIGIT2;
-                            break;
-                        default:
-                            high = low;
-                            state = OTHER_CONST;
-                            otherProc();
-                            break;
-                    }
-                    break;
-                case DIGIT2:
-                    switch (type) {
-                        case NOT:
-                            inverse = true;
-                            state = OTHER_CONST;
-                            break;
-                        case MINUS:
-                            break;
-                        case NUMBER_CONST:
-                            high = number;
-                            state = OTHER_CONST;
-                            break;
-                        default:
-                            state = OTHER_CONST;
-                            otherProc();
-                            break;
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException("Illegal state: " + state);
-            }
         }
     }
+
+    private int handleDigit(int type) {
+        switch (type) {
+            case NOT:
+                inverse = true;
+                high = low;
+                return OTHER_CONST;
+            case MINUS:
+                return DIGIT2;
+            default:
+                high = low;
+                otherProc();
+                return OTHER_CONST;
+        }
+    }
+
+    private int handleDigit2(int type) {
+        return switch (type) {
+            case NOT -> {
+                inverse = true;
+                yield OTHER_CONST;
+            }
+            case MINUS -> DIGIT2;
+            case NUMBER_CONST -> {
+                high = number;
+                yield OTHER_CONST;
+            }
+            default -> {
+                otherProc();
+                yield OTHER_CONST;
+            }
+        };
+    }
+
 }

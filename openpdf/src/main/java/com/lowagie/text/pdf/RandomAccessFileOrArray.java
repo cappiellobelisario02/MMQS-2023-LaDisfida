@@ -93,47 +93,83 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
     public RandomAccessFileOrArray(String filename, boolean forceRead, boolean plainRandomAccess) throws IOException {
         this.plainRandomAccess = plainRandomAccess;
         File file = new File(filename);
-        if (!file.exists() && FontFactory.isRegistered(filename)) {
-            filename = (String) FontFactory.getFontImp().getFontPath(filename);
+
+        if (!file.exists()) {
+            filename = tryResolveFilename(filename);
             file = new File(filename);
         }
+
         if (!file.canRead()) {
-            if (filename.startsWith("file:/") || filename.startsWith("http://")
-                    || filename.startsWith("https://") || filename.startsWith("jar:") || filename.startsWith(
-                    "wsjar:")) {
-                try (InputStream is = new URL(filename).openStream()) {
-                    this.arrayIn = InputStreamToArray(is);
-                    return;
-                }
-            } else {
-                InputStream is = null;
-                if ("-".equals(filename)) {
-                    is = System.in;
-                } else {
-                    is = BaseFont.getResourceStream(filename);
-                }
-                if (is == null) {
-                    throw new IOException(
-                            MessageLocalization.getComposedMessage("1.not.found.as.file.or.resource", filename));
-                }
-                try {
-                    this.arrayIn = InputStreamToArray(is);
-                    return;
-                } finally {
-                    try {
-                        is.close();
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                    }
-                }
-            }
+            handleUnreadableFile(filename);
         } else if (forceRead) {
-            try (InputStream s = new FileInputStream(file)) {
-                this.arrayIn = InputStreamToArray(s);
-            }
-            return;
+            readFileToArray(file);
+        } else {
+            this.filename = filename;
+            openRandomAccessFile(filename, plainRandomAccess);
         }
-        this.filename = filename;
+    }
+
+    private String tryResolveFilename(String filename) {
+        if (FontFactory.isRegistered(filename)) {
+            return (String) FontFactory.getFontImp().getFontPath(filename);
+        }
+        return filename;
+    }
+
+    private void handleUnreadableFile(String filename) throws IOException {
+        if (isRemoteResource(filename)) {
+            try (InputStream is = new URL(filename).openStream()) {
+                this.arrayIn = inputStreamToArray(is);
+            }
+        } else {
+            readFromInputStream(filename);
+        }
+    }
+
+    private boolean isRemoteResource(String filename) {
+        return filename.startsWith("file:/") || filename.startsWith("http://") ||
+                filename.startsWith("https://") || filename.startsWith("jar:") ||
+                filename.startsWith("wsjar:");
+    }
+
+    private void readFromInputStream(String filename) throws IOException {
+        InputStream is = getResourceStream(filename);
+        if (is == null) {
+            throw new IOException(
+                    MessageLocalization.getComposedMessage("1.not.found.as.file.or.resource", filename));
+        }
+        try {
+            this.arrayIn = inputStreamToArray(is);
+        } finally {
+            closeStream(is);
+        }
+    }
+
+    private InputStream getResourceStream(String filename) {
+        if ("-".equals(filename)) {
+            return System.in;
+        } else {
+            return BaseFont.getResourceStream(filename);
+        }
+    }
+
+    private void closeStream(InputStream is) {
+        try {
+            if (is != null) {
+                is.close();
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
+    private void readFileToArray(File file) throws IOException {
+        try (InputStream s = new FileInputStream(file)) {
+            this.arrayIn = inputStreamToArray(s);
+        }
+    }
+
+    private void openRandomAccessFile(String filename, boolean plainRandomAccess) throws IOException {
         if (plainRandomAccess) {
             trf = new RandomAccessFile(filename, "r");
         } else {
@@ -141,14 +177,15 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         }
     }
 
+
     public RandomAccessFileOrArray(URL url) throws IOException {
         try (InputStream is = url.openStream()) {
-            this.arrayIn = InputStreamToArray(is);
+            this.arrayIn = inputStreamToArray(is);
         }
     }
 
     public RandomAccessFileOrArray(InputStream is) throws IOException {
-        this.arrayIn = InputStreamToArray(is);
+        this.arrayIn = inputStreamToArray(is);
     }
 
     public RandomAccessFileOrArray(byte[] arrayIn) {
@@ -162,7 +199,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         plainRandomAccess = file.plainRandomAccess;
     }
 
-    public static byte[] InputStreamToArray(InputStream is) throws IOException {
+    public static byte[] inputStreamToArray(InputStream is) throws IOException {
         byte[] b = new byte[8192];
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         while (true) {
@@ -408,7 +445,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         if ((ch1 | ch2) < 0) {
             throw new EOFException();
         }
-        return (short) ((ch2 << 8) + (ch1 << 0));
+        return (short) ((ch2 << 8) + (ch1));
     }
 
     public int readUnsignedShort() throws IOException {
@@ -442,7 +479,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         if ((ch1 | ch2) < 0) {
             throw new EOFException();
         }
-        return (ch2 << 8) + (ch1 << 0);
+        return (ch2 << 8) + (ch1);
     }
 
     public char readChar() throws IOException {
@@ -476,7 +513,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         if ((ch1 | ch2) < 0) {
             throw new EOFException();
         }
-        return (char) ((ch2 << 8) + (ch1 << 0));
+        return (char) ((ch2 << 8) + (ch1));
     }
 
     public int readInt() throws IOException {
@@ -515,7 +552,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         if ((ch1 | ch2 | ch3 | ch4) < 0) {
             throw new EOFException();
         }
-        return ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0));
+        return ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1));
     }
 
     /**
@@ -543,7 +580,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         if ((ch1 | ch2 | ch3 | ch4) < 0) {
             throw new EOFException();
         }
-        return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
+        return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4));
     }
 
     public final long readUnsignedIntLE() throws IOException {
@@ -554,7 +591,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         if ((ch1 | ch2 | ch3 | ch4) < 0) {
             throw new EOFException();
         }
-        return ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0));
+        return ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1));
     }
 
     public long readLong() throws IOException {
@@ -591,8 +628,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         while (!eol) {
             c = read();
             switch (c) {
-                case -1:
-                case '\n':
+                case -1, '\n':
                     eol = true;
                     break;
                 case '\r':

@@ -77,89 +77,138 @@ public class HandoutPdf {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        String stringToLog;
         if (args.length != 3) {
             logger.severe("arguments: srcfile destfile pages");
-        } else {
-            try {
-                int pages = Integer.parseInt(args[2]);
-                if (pages < 2 || pages > 8) {
-                    throw new DocumentException(MessageLocalization
-                            .getComposedMessage("you.can.t.have.1.pages.on.one.page.minimum.2.maximum.8", pages));
-                }
+            return;
+        }
 
-                float x1 = 30f;
-                float x2 = 280f;
-                float x3 = 320f;
-                float x4 = 565f;
+        try {
+            int pages = validatePages(args[2]);
 
-                float[] y1 = new float[pages];
-                float[] y2 = new float[pages];
+            float[] xCoordinates = {30f, 280f, 320f, 565f};
+            float[][] yCoordinates = calculateYCoordinates(pages);
 
-                float height = (778f - (20f * (pages - 1))) / pages;
-                y1[0] = 812f;
-                y2[0] = 812f - height;
-
-                for (int i = 1; i < pages; i++) {
-                    y1[i] = y2[i - 1] - 20f;
-                    y2[i] = y1[i] - height;
-                }
-
-                // we create a reader for a certain document
-                PdfReader reader = new PdfReader(args[0]);
-                // we retrieve the total number of pages
-                int n = reader.getNumberOfPages();
-                stringToLog = "There are " + n + " pages in the original file.";
-                logger.info(stringToLog);
-
-                // step 1: creation of a document-object
-                Document document = new Document(PageSize.A4);
-                // step 2: we create a writer that listens to the document
-                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(args[1]));
-                // step 3: we open the document
-                document.open();
-                PdfContentByte cb = writer.getDirectContent();
-                PdfImportedPage page;
-                int rotation;
-                int i = 0;
-                int p = 0;
-                // step 4: we add content
-                while (i < n) {
-                    i++;
-                    Rectangle rect = reader.getPageSizeWithRotation(i);
-                    float factorx = (x2 - x1) / rect.getWidth();
-                    float factory = (y1[p] - y2[p]) / rect.getHeight();
-                    float factor = (Math.min(factorx, factory));
-                    float dx = (factorx == factor ? 0f : ((x2 - x1) - rect.getWidth() * factor) / 2f);
-                    float dy = (factory == factor ? 0f : ((y1[p] - y2[p]) - rect.getHeight() * factor) / 2f);
-                    page = writer.getImportedPage(reader, i);
-                    rotation = reader.getPageRotation(i);
-                    if (rotation == 90 || rotation == 270) {
-                        cb.addTemplate(page, 0, -factor, factor, 0, x1 + dx, y2[p] + dy + rect.getHeight() * factor);
-                    } else {
-                        cb.addTemplate(page, factor, 0, 0, factor, x1 + dx, y2[p] + dy);
-                    }
-                    cb.setRGBColorStroke(0xC0, 0xC0, 0xC0);
-                    cb.rectangle(x3 - 5f, y2[p] - 5f, x4 - x3 + 10f, y1[p] - y2[p] + 10f);
-                    for (float l = y1[p] - 19; l > y2[p]; l -= 16) {
-                        cb.moveTo(x3, l);
-                        cb.lineTo(x4, l);
-                    }
-                    cb.rectangle(x1 + dx, y2[p] + dy, rect.getWidth() * factor, rect.getHeight() * factor);
-                    cb.stroke();
-                    stringToLog = "Processed page " + i;
-                    logger.info(stringToLog);
-                    p++;
-                    if (p == pages) {
-                        p = 0;
-                        document.newPage();
-                    }
-                }
-                // step 5: we close the document
-                document.close();
-            } catch (Exception e) {
-                logger.severe(e.getClass().getName() + ": " + e.getMessage());
-            }
+            processDocument(args[0], args[1], pages, xCoordinates, yCoordinates);
+        } catch (Exception e) {
+            logger.severe(e.getClass().getName() + ": " + e.getMessage());
         }
     }
+
+    private static int validatePages(String pagesArg) throws DocumentException {
+        int pages = Integer.parseInt(pagesArg);
+        if (pages < 2 || pages > 8) {
+            throw new DocumentException(MessageLocalization.getComposedMessage(
+                    "you.can.t.have.1.pages.on.one.page.minimum.2.maximum.8", pages));
+        }
+        return pages;
+    }
+
+    private static float[][] calculateYCoordinates(int pages) {
+        float height = (778f - (20f * (pages - 1))) / pages;
+        float[] y1 = new float[pages];
+        float[] y2 = new float[pages];
+
+        y1[0] = 812f;
+        y2[0] = 812f - height;
+
+        for (int i = 1; i < pages; i++) {
+            y1[i] = y2[i - 1] - 20f;
+            y2[i] = y1[i] - height;
+        }
+
+        return new float[][] {y1, y2};
+    }
+
+    private static void processDocument(String srcFile, String destFile, int pages,
+            float[] xCoordinates, float[][] yCoordinates)
+            throws DocumentException{
+        try(PdfReader reader = new PdfReader(srcFile);
+                Document document = new Document(PageSize.A4);
+                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destFile))
+        ){
+            int totalPages = reader.getNumberOfPages();
+            String stringToLog = "There are " + totalPages + " pages in the original file.";
+            logger.info(stringToLog);
+            document.open();
+            PdfContentByte cb = writer.getDirectContent();
+
+            int p = 0;
+            for (int i = 1; i <= totalPages; i++) {
+                processPage(reader, writer, cb, i, p, xCoordinates, yCoordinates);
+                p++;
+                if (p == pages) {
+                    p = 0;
+                    document.newPage();
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private static void processPage(PdfReader reader, PdfWriter writer, PdfContentByte cb,
+            int pageIndex, int p, float[] xCoordinates, float[][] yCoordinates) throws DocumentException {
+        Rectangle rect = reader.getPageSizeWithRotation(pageIndex);
+        float factor = calculateScaleFactor(rect, xCoordinates, yCoordinates, p);
+        float dx = calculateDx(rect, xCoordinates, factor);
+        float dy = calculateDy(rect, yCoordinates, p, factor);
+
+        PdfImportedPage page = writer.getImportedPage(reader, pageIndex);
+        int rotation = reader.getPageRotation(pageIndex);
+
+        float[] rotationAndFactor = {rotation, factor};
+        float[] coordinates = {dx, dy, xCoordinates[0], xCoordinates[2]}; // includes xCoordinates[0] and xCoordinates[2]
+
+        placePage(cb, page, rotationAndFactor, coordinates, yCoordinates, p);
+        drawRectangles(cb, coordinates, yCoordinates, p, rect, new float[]{factor, dx, dy});
+
+        String stringToLog = "Processed page " + pageIndex;
+        logger.info(stringToLog);
+    }
+
+
+    private static float calculateScaleFactor(Rectangle rect, float[] xCoordinates, float[][] yCoordinates, int p) {
+        float factorx = (xCoordinates[1] - xCoordinates[0]) / rect.getWidth();
+        float factory = (yCoordinates[0][p] - yCoordinates[1][p]) / rect.getHeight();
+        return Math.min(factorx, factory);
+    }
+
+    private static float calculateDx(Rectangle rect, float[] xCoordinates, float factor) {
+        return (xCoordinates[1] - xCoordinates[0] - rect.getWidth() * factor) / 2f;
+    }
+
+    private static float calculateDy(Rectangle rect, float[][] yCoordinates, int p, float factor) {
+        return (yCoordinates[0][p] - yCoordinates[1][p] - rect.getHeight() * factor) / 2f;
+    }
+
+    private static void placePage(PdfContentByte cb, PdfImportedPage page, float[] rotationAndFactor,
+            float[] coordinates, float[][] yCoordinates, int p) {
+        float rotation = rotationAndFactor[0];
+        float factor = rotationAndFactor[1];
+        float dx = coordinates[0];
+        float dy = coordinates[1];
+
+        if (rotation == 90 || rotation == 270) {
+            cb.addTemplate(page, 0, -factor, factor, 0, coordinates[2] + dx, yCoordinates[1][p] + dy + page.getWidth() * factor);
+        } else {
+            cb.addTemplate(page, factor, 0, 0, factor, coordinates[2] + dx, yCoordinates[1][p] + dy);
+        }
+    }
+
+    private static void drawRectangles(PdfContentByte cb, float[] coordinates,
+            float[][] yCoordinates, int p, Rectangle rect, float[] factorAndOffset) {
+        float factor = factorAndOffset[0];
+        float dx = factorAndOffset[1];
+        float dy = factorAndOffset[2];
+
+        cb.setRGBColorStroke(0xC0, 0xC0, 0xC0);
+        cb.rectangle(coordinates[2] - 5f, yCoordinates[1][p] - 5f, coordinates[3] - coordinates[2] + 10f, yCoordinates[0][p] - yCoordinates[1][p] + 10f);
+        for (float l = yCoordinates[0][p] - 19; l > yCoordinates[1][p]; l -= 16) {
+            cb.moveTo(coordinates[2], l);
+            cb.lineTo(coordinates[3], l);
+        }
+        cb.rectangle(coordinates[0] + dx, yCoordinates[1][p] + dy, rect.getWidth() * factor, rect.getHeight() * factor);
+        cb.stroke();
+    }
+
 }

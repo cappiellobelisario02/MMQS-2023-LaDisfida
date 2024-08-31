@@ -52,6 +52,7 @@ package com.lowagie.tools;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
@@ -66,7 +67,7 @@ import java.util.logging.Logger;
  * @author Bruno Lowagie
  * @since 2.1.1 (renamed to follow Java naming conventions)
  */
-public class SplitPdf extends java.lang.Object {
+public class SplitPdf{
 
     public static final Logger logger = Logger.getLogger(SplitPdf.class.getName());
 
@@ -76,72 +77,86 @@ public class SplitPdf extends java.lang.Object {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        String stringToLog;
         if (args.length != 4) {
             logger.severe("arguments: srcfile destfile1 destfile2 pagenumber");
-        } else {
-            // we create a reader for a certain document
-            try (PdfReader reader = new PdfReader(args[0]);){
-                int pagenumber = Integer.parseInt(args[3]);
+            return;
+        }
 
-                // we retrieve the total number of pages
-                int n = reader.getNumberOfPages();
-                stringToLog = "There are " + n + " pages in the original file.";
-                logger.info(stringToLog);
+        String srcFile = args[0];
+        String destFile1 = args[1];
+        String destFile2 = args[2];
+        int pageNumber = Integer.parseInt(args[3]);
 
-                if (pagenumber < 2 || pagenumber > n) {
-                    throw new DocumentException(MessageLocalization.getComposedMessage(
-                            "you.can.t.split.this.document.at.page.1.there.is.no.such.page", pagenumber));
-                }
-
-                // step 1: creation of a document-object
+        try (PdfReader reader = new PdfReader(srcFile);
                 Document document1 = new Document(reader.getPageSizeWithRotation(1));
-                Document document2 = new Document(reader.getPageSizeWithRotation(pagenumber));
-                // step 2: we create a writer that listens to the document
-                PdfWriter writer1 = PdfWriter.getInstance(document1, new FileOutputStream(args[1]));
-                PdfWriter writer2 = PdfWriter.getInstance(document2, new FileOutputStream(args[2]));
-                // step 3: we open the document
+                Document document2 = new Document(reader.getPageSizeWithRotation(pageNumber))) {
+            validatePageNumber(reader, pageNumber);
+            logTotalPages(reader);
+            try (FileOutputStream fos1 = new FileOutputStream(destFile1);
+                    FileOutputStream fos2 = new FileOutputStream(destFile2);
+                    PdfWriter writer1 = PdfWriter.getInstance(document1, fos1);
+                    PdfWriter writer2 = PdfWriter.getInstance(document2, fos2)) {
+
                 document1.open();
-                PdfContentByte cb1 = writer1.getDirectContent();
                 document2.open();
-                PdfContentByte cb2 = writer2.getDirectContent();
-                PdfImportedPage page;
-                int rotation;
-                int i = 0;
-                // step 4: we add content
-                while (i < pagenumber - 1) {
-                    i++;
-                    document1.setPageSize(reader.getPageSizeWithRotation(i));
-                    document1.newPage();
-                    page = writer1.getImportedPage(reader, i);
-                    rotation = reader.getPageRotation(i);
-                    if (rotation == 90 || rotation == 270) {
-                        cb1.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(i).getHeight());
-                    } else {
-                        cb1.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
-                    }
-                }
-                while (i < n) {
-                    i++;
-                    document2.setPageSize(reader.getPageSizeWithRotation(i));
-                    document2.newPage();
-                    page = writer2.getImportedPage(reader, i);
-                    rotation = reader.getPageRotation(i);
-                    if (rotation == 90 || rotation == 270) {
-                        cb2.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(i).getHeight());
-                    } else {
-                        cb2.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
-                    }
-                    stringToLog = "Processed page " + i;
-                    logger.info(stringToLog);
-                }
-                // step 5: we close the document
-                document1.close();
-                document2.close();
-            } catch (Exception e) {
-                e.printStackTrace();
+
+                splitDocument(reader, writer1, writer2, document1, document2, pageNumber);
             }
+        } catch (Exception e) {
+            logger.severe("Error occurred: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+
+    private static void validatePageNumber(PdfReader reader, int pageNumber) throws DocumentException {
+        int n = reader.getNumberOfPages();
+        if (pageNumber < 2 || pageNumber > n) {
+            throw new DocumentException(MessageLocalization.getComposedMessage(
+                    "you.can.t.split.this.document.at.page.1.there.is.no.such.page", pageNumber));
+        }
+    }
+
+    private static void logTotalPages(PdfReader reader) {
+        int n = reader.getNumberOfPages();
+        String stringToLog = "There are " + n + " pages in the original file.";
+        logger.info(stringToLog);
+    }
+
+    private static void splitDocument(PdfReader reader, PdfWriter writer1, PdfWriter writer2,
+            Document document1, Document document2, int pageNumber) throws DocumentException {
+        PdfContentByte cb1 = writer1.getDirectContent();
+        PdfContentByte cb2 = writer2.getDirectContent();
+        PdfImportedPage page;
+        int rotation;
+        String stringToLog;
+
+        for (int i = 1; i <= pageNumber - 1; i++) {
+            document1.setPageSize(reader.getPageSizeWithRotation(i));
+            document1.newPage();
+            page = writer1.getImportedPage(reader, i);
+            rotation = reader.getPageRotation(i);
+            addPage(cb1, page, rotation, reader.getPageSizeWithRotation(i));
+        }
+
+        int totalPages = reader.getNumberOfPages();
+        for (int i = pageNumber; i <= totalPages; i++) {
+            document2.setPageSize(reader.getPageSizeWithRotation(i));
+            document2.newPage();
+            page = writer2.getImportedPage(reader, i);
+            rotation = reader.getPageRotation(i);
+            addPage(cb2, page, rotation, reader.getPageSizeWithRotation(i));
+            stringToLog = "Processed page " + i;
+            logger.info(stringToLog);
+        }
+    }
+
+    private static void addPage(PdfContentByte cb, PdfImportedPage page, int rotation, Rectangle pageSize) {
+        if (rotation == 90 || rotation == 270) {
+            cb.addTemplate(page, 0, -1f, 1f, 0, 0, pageSize.getHeight());
+        } else {
+            cb.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
+        }
+    }
+
 }
 

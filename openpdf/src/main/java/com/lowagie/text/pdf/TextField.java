@@ -278,155 +278,213 @@ public class TextField extends BaseField {
      * @throws DocumentException on error
      */
     public PdfAppearance getAppearance() throws IOException, DocumentException {
-        PdfAppearance app = getBorderAppearance(super.writer, super.box, super.rotation, super.backgroundColor,
-                super.borderStyle, super.borderWidth, super.borderColor, super.options, super.maxCharacterLength);
-        app.beginVariableText();
-        if (text == null || text.length() == 0) {
+        PdfAppearance app = initializeAppearance();
+        if (isTextEmpty()) {
             app.endVariableText();
             return app;
         }
 
-        boolean borderExtra =
-                borderStyle == PdfBorderDictionary.STYLE_BEVELED || borderStyle == PdfBorderDictionary.STYLE_INSET;
-        float h = box.getHeight() - borderWidth * 2 - extraMarginTop;
-        float bw2 = borderWidth;
-        if (borderExtra) {
-            h -= borderWidth * 2;
-            bw2 *= 2;
-        }
+        configureAppearanceForBorder(app);
+        prepareText(app);
+
+        app.restoreState();
+        app.endVariableText();
+        return app;
+    }
+
+    private PdfAppearance initializeAppearance() throws IOException, DocumentException {
+        return getBorderAppearance(super.writer, super.box, super.rotation, super.backgroundColor,
+                super.borderStyle, super.borderWidth, super.borderColor, super.options, super.maxCharacterLength);
+    }
+
+    private boolean isTextEmpty() {
+        return text == null || text.isEmpty();
+    }
+
+    private void configureAppearanceForBorder(PdfAppearance app) {
+        boolean borderExtra = isBorderExtra();
+        //float h = calculateHeight(borderExtra
+        float bw2 = calculateBorderWidth(borderExtra);
         float offsetX = Math.max(bw2, 1);
         float offX = Math.min(bw2, offsetX);
+
         app.saveState();
         app.rectangle(offX, offX, box.getWidth() - 2 * offX, box.getHeight() - 2 * offX);
         app.clip();
         app.newPath();
-        String ptext;
-        if ((options & PASSWORD) != 0) {
-            ptext = obfuscatePassword(text);
-        } else if ((options & MULTILINE) == 0) {
-            ptext = removeCRLF(text);
-        } else {
-            ptext = text; //fixed by Kazuya Ujihara (ujihara.jp)
+    }
+
+    private boolean isBorderExtra() {
+        return borderStyle == PdfBorderDictionary.STYLE_BEVELED || borderStyle == PdfBorderDictionary.STYLE_INSET;
+    }
+
+    private float calculateBorderWidth(boolean borderExtra) {
+        float bw2 = borderWidth;
+        if (borderExtra) {
+            bw2 *= 2;
         }
+        return bw2;
+    }
+
+    private void prepareText(PdfAppearance app) throws DocumentException, IOException {
+        String ptext = prepareTextContent();
         BaseFont ufont = getRealFont();
         Color fcolor = (textColor == null) ? GrayColor.GRAYBLACK : textColor;
         int rtl = textRunDirection(ptext);
         float usize = fontSize;
         Phrase phrase = composePhrase(ptext, ufont, fcolor, usize);
+
         if ((options & MULTILINE) != 0) {
-            float width = box.getWidth() - 4 * offsetX - extraMarginLeft;
-            float factor = ufont.getFontDescriptor(BaseFont.BBOXURY, 1) - ufont.getFontDescriptor(BaseFont.BBOXLLY, 1);
-            ColumnText ct = new ColumnText(null);
-            if (usize == 0) {
-                usize = h / factor;
-                if (usize > 4) {
-                    if (usize > 12) {
-                        usize = 12;
-                    }
-                    float step = Math.max((usize - 4) / 10, 0.2f);
-                    ct.setSimpleColumn(0, -h, width, 0);
-                    ct.setAlignment(getTextAlignment(rtl));
-                    ct.setRunDirection(rtl);
-                    for (; usize > 4; usize -= step) {
-                        ct.setYLine(0);
-                        changeFontSize(phrase, usize);
-                        ct.setText(phrase);
-                        ct.setLeading(factor * usize);
-                        int status = ct.go(true);
-                        if ((status & ColumnText.NO_MORE_COLUMN) == 0) {
-                            break;
-                        }
-                    }
-                }
-                if (usize < 4) {
-                    usize = 4;
-                }
-            }
-            changeFontSize(phrase, usize);
-            ct.setCanvas(app);
-            float leading = usize * factor;
-            float offsetY = offsetX + h - ufont.getFontDescriptor(BaseFont.BBOXURY, usize);
-            ct.setSimpleColumn(extraMarginLeft + 2 * offsetX, -20000, box.getWidth() - 2 * offsetX, offsetY + leading);
-            ct.setLeading(leading);
-            ct.setAlignment(getTextAlignment(rtl));
-            ct.setRunDirection(rtl);
-            ct.setText(phrase);
-            ct.go();
+            handleMultilineText(app, ufont, rtl, phrase);
         } else {
-            if (usize == 0) {
-                float maxCalculatedSize =
-                        h / (ufont.getFontDescriptor(BaseFont.BBOXURX, 1) - ufont.getFontDescriptor(BaseFont.BBOXLLY,
-                                1));
-                changeFontSize(phrase, 1);
-                float wd = ColumnText.getWidth(phrase, rtl, 0);
-                if (wd == 0) {
-                    usize = maxCalculatedSize;
-                } else {
-                    usize = Math.min(maxCalculatedSize, (box.getWidth() - extraMarginLeft - 4 * offsetX) / wd);
-                }
-                if (usize < 4) {
-                    usize = 4;
-                }
-            }
-            changeFontSize(phrase, usize);
-            float offsetY = offX + ((box.getHeight() - 2 * offX) - ufont.getFontDescriptor(BaseFont.ASCENT, usize)) / 2;
-            if (offsetY < offX) {
-                offsetY = offX;
-            }
-            if (offsetY - offX < -ufont.getFontDescriptor(BaseFont.DESCENT, usize)) {
-                float ny = -ufont.getFontDescriptor(BaseFont.DESCENT, usize) + offX;
-                float dy = box.getHeight() - offX - ufont.getFontDescriptor(BaseFont.ASCENT, usize);
-                offsetY = Math.min(ny, Math.max(offsetY, dy));
-            }
-            if ((options & COMB) != 0 && maxCharacterLength > 0) {
-                int textLen = Math.min(maxCharacterLength, ptext.length());
-                int position = 0;
-                if (alignment == Element.ALIGN_RIGHT) {
-                    position = maxCharacterLength - textLen;
-                } else if (alignment == Element.ALIGN_CENTER) {
-                    position = (maxCharacterLength - textLen) / 2;
-                }
-                float step = (box.getWidth() - extraMarginLeft) / maxCharacterLength;
-                float start = step / 2 + position * step;
-                if (textColor == null) {
-                    app.setGrayFill(0);
-                } else {
-                    app.setColorFill(textColor);
-                }
-                app.beginText();
-                for (Object o : phrase) {
-                    Chunk ck = (Chunk) o;
-                    BaseFont bf = ck.getFont().getBaseFont();
-                    app.setFontAndSize(bf, usize);
-                    StringBuilder sb = ck.append("");
-                    for (int j = 0; j < sb.length(); ++j) {
-                        String c = sb.substring(j, j + 1);
-                        float wd = bf.getWidthPoint(c, usize);
-                        app.setTextMatrix(extraMarginLeft + start - wd / 2, offsetY - extraMarginTop);
-                        app.showText(c);
-                        start += step;
+            handleSingleLineText(app, ufont, rtl, phrase, usize);
+        }
+    }
+
+    private String prepareTextContent() {
+        if ((options & PASSWORD) != 0) {
+            return obfuscatePassword(text);
+        } else if ((options & MULTILINE) == 0) {
+            return removeCRLF(text);
+        } else {
+            return text;
+        }
+    }
+
+    private void handleMultilineText(PdfAppearance app, BaseFont ufont, int rtl, Phrase phrase) throws DocumentException {
+        //float width = box.getWidth() - 4 * offsetX - extraMarginLeft
+        float factor = ufont.getFontDescriptor(BaseFont.BBOXURY, 1) - ufont.getFontDescriptor(BaseFont.BBOXLLY, 1);
+        ColumnText ct = new ColumnText(null);
+        float usize = calculateOptimalFontSizeForMultiline(factor, ct, phrase);
+        ct.setCanvas(app);
+        float leading = usize * factor;
+        float offsetY = offsetX + h - ufont.getFontDescriptor(BaseFont.BBOXURY, usize);
+        ct.setSimpleColumn(extraMarginLeft + 2 * offsetX, -20000, box.getWidth() - 2 * offsetX, offsetY + leading);
+        ct.setLeading(leading);
+        ct.setAlignment(getTextAlignment(rtl));
+        ct.setRunDirection(rtl);
+        ct.setText(phrase);
+        ct.go();
+    }
+
+    private float calculateOptimalFontSizeForMultiline(float factor, ColumnText ct, Phrase phrase) throws DocumentException {
+        float usize = fontSize;
+        if (usize == 0) {
+            usize = h / factor;
+            if (usize > 4) {
+                usize = Math.min(12, usize);
+                float step = Math.max((usize - 4) / 10, 0.2f);
+                ct.setSimpleColumn(0, -h, width, 0);
+                ct.setAlignment(getTextAlignment(rtl));
+                ct.setRunDirection(rtl);
+                for (; usize > 4; usize -= step) {
+                    ct.setYLine(0);
+                    changeFontSize(phrase, usize);
+                    ct.setText(phrase);
+                    ct.setLeading(factor * usize);
+                    int status = ct.go(true);
+                    if ((status & ColumnText.NO_MORE_COLUMN) == 0) {
+                        break;
                     }
                 }
-                app.endText();
-            } else {
-                float x;
-                switch (alignment) {
-                    case Element.ALIGN_RIGHT:
-                        x = extraMarginLeft + box.getWidth() - (2 * offsetX);
-                        break;
-                    case Element.ALIGN_CENTER:
-                        x = extraMarginLeft + (box.getWidth() / 2);
-                        break;
-                    default:
-                        x = extraMarginLeft + (2 * offsetX);
-                }
-                ColumnText.showTextAligned(app, alignment, phrase, x, offsetY - extraMarginTop, 0, rtl, 0);
+            }
+            if (usize < 4) {
+                usize = 4;
             }
         }
-        app.restoreState();
-        app.endVariableText();
-        return app;
+        return usize;
     }
+
+    private void handleSingleLineText(PdfAppearance app, BaseFont ufont, int rtl, Phrase phrase, float usize) throws DocumentException {
+        if (usize == 0) {
+            usize = calculateOptimalFontSizeForSingleLine(ufont);
+        }
+        changeFontSize(phrase, usize);
+        float offsetY = calculateOffsetY(ufont, usize);
+        if ((options & COMB) != 0 && maxCharacterLength > 0) {
+            handleCombText(app, phrase, usize, offsetY);
+        } else {
+            handleAlignedText(app, phrase, offsetY, rtl);
+        }
+    }
+
+    private float calculateOptimalFontSizeForSingleLine(BaseFont ufont) {
+        float maxCalculatedSize = h / (ufont.getFontDescriptor(BaseFont.BBOXURX, 1) - ufont.getFontDescriptor(BaseFont.BBOXLLY, 1));
+        changeFontSize(phrase, 1);
+        float wd = ColumnText.getWidth(phrase, rtl, 0);
+        float usize = (wd == 0) ? maxCalculatedSize : Math.min(maxCalculatedSize, (box.getWidth() - extraMarginLeft - 4 * offsetX) / wd);
+        return Math.max(usize, 4);
+    }
+
+    private float calculateOffsetY(BaseFont ufont, float usize) {
+        float offsetY = offX + ((box.getHeight() - 2 * offX) - ufont.getFontDescriptor(BaseFont.ASCENT, usize)) / 2;
+        if (offsetY < offX) {
+            offsetY = offX;
+        }
+        if (offsetY - offX < -ufont.getFontDescriptor(BaseFont.DESCENT, usize)) {
+            float ny = -ufont.getFontDescriptor(BaseFont.DESCENT, usize) + offX;
+            float dy = box.getHeight() - offX - ufont.getFontDescriptor(BaseFont.ASCENT, usize);
+            offsetY = Math.min(ny, Math.max(offsetY, dy));
+        }
+        return offsetY;
+    }
+
+    private void handleCombText(PdfAppearance app, Phrase phrase, float usize, float offsetY) {
+        int textLen = Math.min(maxCharacterLength, ptext.length());
+        int position = calculateCombTextPosition(textLen);
+        float step = (box.getWidth() - extraMarginLeft) / maxCharacterLength;
+        float start = step / 2 + position * step;
+        setTextColor(app);
+        app.beginText();
+        for (Object o : phrase) {
+            Chunk ck = (Chunk) o;
+            BaseFont bf = ck.getFont().getBaseFont();
+            app.setFontAndSize(bf, usize);
+            StringBuilder sb = ck.append("");
+            for (int j = 0; j < sb.length(); ++j) {
+                drawCharacter(app, bf, usize, start, offsetY, sb.substring(j, j + 1));
+                start += step;
+            }
+        }
+        app.endText();
+    }
+
+    private int calculateCombTextPosition(int textLen) {
+        if (alignment == Element.ALIGN_RIGHT) {
+            return maxCharacterLength - textLen;
+        } else if (alignment == Element.ALIGN_CENTER) {
+            return (maxCharacterLength - textLen) / 2;
+        }
+        return 0;
+    }
+
+    private void setTextColor(PdfAppearance app) {
+        if (textColor == null) {
+            app.setGrayFill(0);
+        } else {
+            app.setColorFill(textColor);
+        }
+    }
+
+    private void drawCharacter(PdfAppearance app, BaseFont bf, float usize, float start, float offsetY, String c) {
+        float wd = bf.getWidthPoint(c, usize);
+        app.setTextMatrix(extraMarginLeft + start - wd / 2, offsetY - extraMarginTop);
+        app.showText(c);
+    }
+
+    private void handleAlignedText(PdfAppearance app, Phrase phrase, float offsetY, int rtl) {
+        float x = calculateAlignedTextX();
+        ColumnText.showTextAligned(app, alignment, phrase, x, offsetY - extraMarginTop, 0, rtl, 0);
+    }
+
+    private float calculateAlignedTextX() {
+        return switch (alignment) {
+            case Element.ALIGN_RIGHT -> extraMarginLeft + box.getWidth() - (2 * offsetX);
+            case Element.ALIGN_CENTER -> extraMarginLeft + (box.getWidth() / 2);
+            default -> extraMarginLeft + (2 * offsetX);
+        };
+    }
+
 
     /**
      * Get the <code>PdfAppearance</code> of a list field
@@ -513,14 +571,49 @@ public class TextField extends BaseField {
      * @throws DocumentException on error
      */
     public PdfFormField getTextField() throws IOException, DocumentException {
+        // Update options based on conditions
+        updateOptions();
+
+        // Create the form field
+        PdfFormField field = createTextField();
+
+        // Set alignment
+        setAlignment(field);
+
+        // Set rotation if needed
+        if (rotation != 0) {
+            field.setMKRotation(rotation);
+        }
+
+        // Set field name, value, and default value
+        setFieldAttributes(field);
+
+        // Set border style
+        field.setBorderStyle(new PdfBorderDictionary(borderWidth, borderStyle, new PdfDashPattern(3)));
+
+        // Set appearance
+        setAppearance(field);
+
+        // Set visibility
+        setVisibility(field);
+
+        return field;
+    }
+
+    private void updateOptions() {
         if (maxCharacterLength <= 0) {
             options &= ~COMB;
         }
         if ((options & COMB) != 0) {
             options &= ~MULTILINE;
         }
-        PdfFormField field = PdfFormField.createTextField(writer, false, false, maxCharacterLength);
-        field.setWidget(box, PdfAnnotation.HIGHLIGHT_INVERT);
+    }
+
+    private PdfFormField createTextField() throws DocumentException {
+        return PdfFormField.createTextField(writer, false, false, maxCharacterLength);
+    }
+
+    private void setAlignment(PdfFormField field) {
         switch (alignment) {
             case Element.ALIGN_CENTER:
                 field.setQuadding(PdfFormField.Q_CENTER);
@@ -532,9 +625,9 @@ public class TextField extends BaseField {
                 field.setQuadding(PdfFormField.Q_LEFT);
                 break;
         }
-        if (rotation != 0) {
-            field.setMKRotation(rotation);
-        }
+    }
+
+    private void setFieldAttributes(PdfFormField field) {
         if (fieldName != null) {
             field.setFieldName(fieldName);
             if (!"".equals(text)) {
@@ -543,32 +636,38 @@ public class TextField extends BaseField {
             if (defaultText != null) {
                 field.setDefaultValueAsString(defaultText);
             }
-            if ((options & READ_ONLY) != 0) {
-                field.setFieldFlags(PdfFormField.FF_READ_ONLY);
-            }
-            if ((options & REQUIRED) != 0) {
-                field.setFieldFlags(PdfFormField.FF_REQUIRED);
-            }
-            if ((options & MULTILINE) != 0) {
-                field.setFieldFlags(PdfFormField.FF_MULTILINE);
-            }
-            if ((options & DO_NOT_SCROLL) != 0) {
-                field.setFieldFlags(PdfFormField.FF_DONOTSCROLL);
-            }
-            if ((options & PASSWORD) != 0) {
-                field.setFieldFlags(PdfFormField.FF_PASSWORD);
-            }
-            if ((options & FILE_SELECTION) != 0) {
-                field.setFieldFlags(PdfFormField.FF_FILESELECT);
-            }
-            if ((options & DO_NOT_SPELL_CHECK) != 0) {
-                field.setFieldFlags(PdfFormField.FF_DONOTSPELLCHECK);
-            }
-            if ((options & COMB) != 0) {
-                field.setFieldFlags(PdfFormField.FF_COMB);
-            }
+            setFieldFlags(field);
         }
-        field.setBorderStyle(new PdfBorderDictionary(borderWidth, borderStyle, new PdfDashPattern(3)));
+    }
+
+    private void setFieldFlags(PdfFormField field) {
+        if ((options & READ_ONLY) != 0) {
+            field.setFieldFlags(PdfFormField.FF_READ_ONLY);
+        }
+        if ((options & REQUIRED) != 0) {
+            field.setFieldFlags(PdfFormField.FF_REQUIRED);
+        }
+        if ((options & MULTILINE) != 0) {
+            field.setFieldFlags(PdfFormField.FF_MULTILINE);
+        }
+        if ((options & DO_NOT_SCROLL) != 0) {
+            field.setFieldFlags(PdfFormField.FF_DONOTSCROLL);
+        }
+        if ((options & PASSWORD) != 0) {
+            field.setFieldFlags(PdfFormField.FF_PASSWORD);
+        }
+        if ((options & FILE_SELECTION) != 0) {
+            field.setFieldFlags(PdfFormField.FF_FILESELECT);
+        }
+        if ((options & DO_NOT_SPELL_CHECK) != 0) {
+            field.setFieldFlags(PdfFormField.FF_DONOTSPELLCHECK);
+        }
+        if ((options & COMB) != 0) {
+            field.setFieldFlags(PdfFormField.FF_COMB);
+        }
+    }
+
+    private void setAppearance(PdfFormField field) throws IOException {
         PdfAppearance tp = getAppearance();
         field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, tp);
         PdfAppearance da = (PdfAppearance) tp.getDuplicate();
@@ -585,6 +684,9 @@ public class TextField extends BaseField {
         if (backgroundColor != null) {
             field.setMKBackgroundColor(backgroundColor);
         }
+    }
+
+    private void setVisibility(PdfFormField field) {
         switch (visibility) {
             case HIDDEN:
                 field.setFlags(PdfAnnotation.FLAGS_PRINT | PdfAnnotation.FLAGS_HIDDEN);
@@ -598,8 +700,8 @@ public class TextField extends BaseField {
                 field.setFlags(PdfAnnotation.FLAGS_PRINT);
                 break;
         }
-        return field;
     }
+
 
     /**
      * Gets a new combo field.
@@ -659,10 +761,6 @@ public class TextField extends BaseField {
         setFieldAppearance(field, isList);
 
         return field;
-    }
-
-    private String[] getChoicesField() {
-        return choices != null ? choices : new String[0];
     }
 
     private void initializeText(String[] uchoices, int topChoice) {

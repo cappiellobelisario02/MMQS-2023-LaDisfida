@@ -533,44 +533,63 @@ public class RadioCheckField extends BaseField {
      * @throws DocumentException on error
      */
     protected PdfFormField getField(boolean isKid) throws IOException, DocumentException {
-        PdfFormField field = null;
-        if (isKid) {
-            field = PdfFormField.createEmpty(writer);
-        } else {
-            field = PdfFormField.createCheckBox(writer);
-        }
+        PdfFormField field = createField(isKid);
+        configureField(field, isKid);
+        setFieldAppearance(field);
+        applyFieldVisibility(field);
+        return field;
+    }
+
+    private PdfFormField createField(boolean isKid) throws DocumentException {
+        return isKid ? PdfFormField.createEmpty(writer) : PdfFormField.createCheckBox(writer);
+    }
+
+    private void configureField(PdfFormField field, boolean isKid) throws DocumentException {
         field.setWidget(box, PdfAnnotation.HIGHLIGHT_INVERT);
+
         if (!isKid) {
             field.setFieldName(fieldName);
             field.setUserName(super.alternateFieldName);
             field.setMappingName(super.mappingName);
-
-            if ((options & READ_ONLY) != 0) {
-                field.setFieldFlags(PdfFormField.FF_READ_ONLY);
-            }
-            if ((options & REQUIRED) != 0) {
-                field.setFieldFlags(PdfFormField.FF_REQUIRED);
-            }
-
+            applyFieldOptions(field);
             field.setValueAsName(checked ? onValue : "Off");
-            //bugfixed as setting the type wasn't working (also mentioned on the mailinglist on 5th may 2011)
             setCheckType(checkType);
         }
+
         if (text != null) {
             field.setMKNormalCaption(text);
         }
+
         if (rotation != 0) {
             field.setMKRotation(rotation);
         }
+
         field.setBorderStyle(new PdfBorderDictionary(borderWidth, borderStyle, new PdfDashPattern(3)));
+    }
+
+    private void applyFieldOptions(PdfFormField field) {
+        if ((options & READ_ONLY) != 0) {
+            field.setFieldFlags(PdfFormField.FF_READ_ONLY);
+        }
+        if ((options & REQUIRED) != 0) {
+            field.setFieldFlags(PdfFormField.FF_REQUIRED);
+        }
+    }
+
+    private void setFieldAppearance(PdfFormField field) throws IOException, DocumentException {
         BorderSettings borderSettings = new BorderSettings(super.borderStyle, super.borderWidth, super.borderColor);
-        RadioCheckFieldAppearanceSettings appearanceSettings = new RadioCheckFieldAppearanceSettings(this.checkType, super.rotation, super.box,
-                super.fontSize, super.text, super.textColor, super.backgroundColor, super.getRealFont());
+        RadioCheckFieldAppearanceSettings appearanceSettings = new RadioCheckFieldAppearanceSettings(
+                this.checkType, super.rotation, super.box, super.fontSize, super.text, super.textColor,
+                super.backgroundColor, super.getRealFont()
+        );
+
         PdfAppearance tpon = getAppearance(true, super.writer, borderSettings, appearanceSettings);
         PdfAppearance tpoff = getAppearance(false, super.writer, borderSettings, appearanceSettings);
+
         field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, onValue, tpon);
         field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, "Off", tpoff);
         field.setAppearanceState(checked ? onValue : "Off");
+
         PdfAppearance da = (PdfAppearance) tpon.getDuplicate();
         da.setFontAndSize(getRealFont(), fontSize);
         if (textColor == null) {
@@ -578,13 +597,18 @@ public class RadioCheckField extends BaseField {
         } else {
             da.setColorFill(textColor);
         }
+
         field.setDefaultAppearanceString(da);
+
         if (borderColor != null) {
             field.setMKBorderColor(borderColor);
         }
         if (backgroundColor != null) {
             field.setMKBackgroundColor(backgroundColor);
         }
+    }
+
+    private void applyFieldVisibility(PdfFormField field) {
         switch (visibility) {
             case HIDDEN:
                 field.setFlags(PdfAnnotation.FLAGS_PRINT | PdfAnnotation.FLAGS_HIDDEN);
@@ -611,7 +635,6 @@ public class RadioCheckField extends BaseField {
         if ((visibility & LOCKED) != 0) {
             field.addFlags(PdfAnnotation.FLAGS_LOCKED);
         }
-
-        return field;
     }
+
 }
