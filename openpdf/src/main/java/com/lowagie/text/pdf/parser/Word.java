@@ -84,9 +84,11 @@ public class Word extends ParsedTextImpl {
     }
 
     private static String escapeHTML(String s) {
-        return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;");
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
+
 
     /**
      * accept a visitor that is assembling text
