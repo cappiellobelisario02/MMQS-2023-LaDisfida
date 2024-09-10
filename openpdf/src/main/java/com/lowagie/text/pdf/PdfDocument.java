@@ -56,6 +56,7 @@ import com.lowagie.text.Anchor;
 import com.lowagie.text.Annotation;
 import com.lowagie.text.BadElementException;
 import com.lowagie.text.Chunk;
+import com.lowagie.text.DocListener;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -77,6 +78,7 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.ActionException;
 import com.lowagie.text.pdf.collection.PdfCollection;
 import com.lowagie.text.pdf.draw.DrawInterface;
+import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
 import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
 import com.lowagie.text.pdf.internal.PdfViewerPreferencesImp;
 import java.awt.Color;
@@ -87,6 +89,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -99,8 +102,8 @@ import java.util.logging.Logger;
  * A <CODE>PdfDocument</CODE> always listens to a <CODE>Document</CODE> and adds the Pdf representation of every
  * <CODE>Element</CODE> that is added to the <CODE>Document</CODE>.
  *
- * @see com.lowagie.text.Document
- * @see com.lowagie.text.DocListener
+ * @see Document
+ * @see DocListener
  * @see PdfWriter
  * @since 2.0.8 (class was package-private before)
  */
@@ -574,10 +577,10 @@ public class PdfDocument extends Document {
     }
 
     private boolean handleMarkedElement(MarkedObject mo) {
-        MarkedObject title = ((MarkedSection) mo).getTitle();
-        if (title != null) {
-            title.process(this);
-        }
+            MarkedObject title = ((MarkedSection) mo).getTitle();
+            if (title != null) {
+                title.process(this);
+            }
         mo.process(this);
         return true;
     }
@@ -719,7 +722,7 @@ public class PdfDocument extends Document {
 
     private PdfPage createPage() {
         PdfDictionary resources = preparePageResources();
-        PdfPage page = new PdfPage(new PdfRectangle(pageSize, pageSize.getRotation()), thisBoxSize, resources, pageSize.getRotation());
+        PdfPage page = new PdfPage(new PdfRectangle(pageSize, pageSize.getRotationPdfPCell()), thisBoxSize, resources, pageSize.getRotationPdfPCell());
         page.put(PdfName.TABS, writer.getTabs());
         return page;
     }
@@ -855,7 +858,7 @@ public class PdfDocument extends Document {
     }
 
     /**
-     * @see com.lowagie.text.DocListener#setMarginMirroring(boolean)
+     * @see DocListener#setMarginMirroring(boolean)
      */
     @Override
     public boolean setMarginMirroring(boolean marginMirroring) {
@@ -866,7 +869,7 @@ public class PdfDocument extends Document {
     }
 
     /**
-     * @see com.lowagie.text.DocListener#setMarginMirroring(boolean)
+     * @see DocListener#setMarginMirroring(boolean)
      * @since 2.1.6
      */
     @Override
@@ -1176,281 +1179,39 @@ public class PdfDocument extends Document {
         PdfFont currentFont = (PdfFont) (currentValues[0]);
         float lastBaseFactor = (Float) (currentValues[1]);
         PdfChunk chunk;
-        int numberOfSpaces;
-        int lineLen;
-        boolean isJustified;
-        float hangingCorrection = 0;
-        float hScale;
-        float lastHScale = Float.NaN;
+        float glueWidth = 0;
         float baseWordSpacing = 0;
         float baseCharacterSpacing = 0;
-        float glueWidth = 0;
-
-        numberOfSpaces = line.numberOfSpaces();
-        lineLen = line.getLineLengthUtf32();
-        // does the line need to be justified?
-        isJustified = line.hasToBeJustified() && (numberOfSpaces != 0 || lineLen > 1);
-        int separatorCount = line.getSeparatorCount();
-        if (separatorCount > 0) {
-            glueWidth = line.widthLeft() / separatorCount;
-        } else if (isJustified) {
-            if (line.isNewlineSplit() && line.widthLeft() >= (lastBaseFactor * (ratio * numberOfSpaces + lineLen
-                    - 1))) {
-                if (line.isRTL() || (LayoutProcessor.isEnabled() && LayoutProcessor.isSet(LAYOUT_RIGHT_TO_LEFT))) {
-                    text.moveText(line.widthLeft() - lastBaseFactor * (ratio * numberOfSpaces + lineLen - 1), 0);
-                }
-                baseWordSpacing = ratio * lastBaseFactor;
-                baseCharacterSpacing = lastBaseFactor;
-            } else {
-                float width = line.widthLeft();
-                PdfChunk last = line.getChunk(line.size() - 1);
-                if (last != null) {
-                    String s = last.toString();
-                    char c = s.charAt(s.length() - 1);
-                    if (!s.isEmpty() && HANGING_PUNCTUATION.indexOf(c) >= 0) {
-                        float oldWidth = width;
-                        width += last.font().width(c) * 0.4f;
-                        hangingCorrection = width - oldWidth;
-                    }
-                }
-                // if there's a single word on the line and we are using NO_SPACE_CHAR_RATIO,
-                // we don't want any character spacing
-                float baseFactor = (numberOfSpaces == 0 && ratio == PdfWriter.NO_SPACE_CHAR_RATIO)
-                        ? 0f : width / (ratio * numberOfSpaces + lineLen - 1);
-                baseWordSpacing = ratio * baseFactor;
-                baseCharacterSpacing = baseFactor;
-                lastBaseFactor = baseFactor;
-            }
-        }
-
-        int lastChunkStroke = line.getLastStrokeChunk();
-        int chunkStrokeIdx = 0;
-        float xMarker = text.getXTLM();
-        float baseXMarker = xMarker;
-        float yMarker = text.getYTLM();
-        boolean adjustMatrix = false;
+        float hangingCorrection = 0;
+        boolean isJustified = false;
+        int numberOfSpaces = 0;
         float tabPosition = 0;
+        float hScale = 0;
+        float lastHScale = Float.NaN;
+        float xMarker = 0;
+        float baseXMarker = 0;
+        float yMarker = 0;
+        int lastChunkStroke = 0;
+        Color color = null;
+
+        LineLayoutParams lineLayoutParams = new LineLayoutParams(isJustified, baseCharacterSpacing,
+                baseWordSpacing, glueWidth, hangingCorrection, hScale, numberOfSpaces);
+
+        ChunkAttributes attributes = new ChunkAttributes(xMarker, baseXMarker, yMarker, tabPosition, lastChunkStroke,
+                color);
+
+        lastBaseFactor = adjustLayoutParams(line, lastBaseFactor, ratio, lineLayoutParams);
+
+        boolean adjustMatrix = false;
 
         // looping over all the chunks in 1 line
         for (Iterator<PdfChunk> j = line.iterator(); j.hasNext(); ) {
             chunk = j.next();
-            Color color = chunk.color();
+            attributes.setColor(chunk.color());
             hScale = 1;
 
-            if (chunkStrokeIdx <= lastChunkStroke) {
-                float width;
-                if (isJustified) {
-                    width = chunk.getWidthCorrected(baseCharacterSpacing, baseWordSpacing);
-                } else {
-                    width = chunk.width();
-                }
-                if (chunk.isStroked()) {
-                    PdfChunk nextChunk = line.getChunk(chunkStrokeIdx + 1);
-                    if (chunk.isSeparator()) {
-                        width = glueWidth;
-                        Object[] sep = (Object[]) chunk.getAttribute(Chunk.SEPARATOR);
-                        DrawInterface di = (DrawInterface) sep[0];
-                        Boolean vertical = (Boolean) sep[1];
-                        float fontSize = chunk.font().size();
-                        float ascender = chunk.font().getFont().getFontDescriptor(BaseFont.ASCENT, fontSize);
-                        float descender = chunk.font().getFont().getFontDescriptor(BaseFont.DESCENT, fontSize);
-                        if (vertical) {
-                            di.draw(graphics, baseXMarker, yMarker + descender, baseXMarker + line.getOriginalWidth(),
-                                    ascender - descender, yMarker);
-                        } else {
-                            di.draw(graphics, xMarker, yMarker + descender, xMarker + width, ascender - descender,
-                                    yMarker);
-                        }
-                    }
-                    if (chunk.isTab()) {
-                        Object[] tab = (Object[]) chunk.getAttribute(Chunk.TAB);
-                        DrawInterface di = (DrawInterface) tab[0];
-                        tabPosition = (Float) tab[1] + (Float) tab[3];
-                        float fontSize = chunk.font().size();
-                        float ascender = chunk.font().getFont().getFontDescriptor(BaseFont.ASCENT, fontSize);
-                        float descender = chunk.font().getFont().getFontDescriptor(BaseFont.DESCENT, fontSize);
-                        if (tabPosition > xMarker) {
-                            di.draw(graphics, xMarker, yMarker + descender, tabPosition, ascender - descender, yMarker);
-                        }
-                        float tmp = xMarker;
-                        xMarker = tabPosition;
-                        tabPosition = tmp;
-                    }
-                    if (chunk.isAttribute(Chunk.BACKGROUND)) {
-                        graphics.saveState();
-
-                        float subtract = lastBaseFactor;
-                        if (nextChunk != null && nextChunk.isAttribute(Chunk.BACKGROUND)) {
-                            subtract = 0;
-                        }
-                        if (nextChunk == null) {
-                            subtract += hangingCorrection;
-                        }
-                        float fontSize = chunk.font().size();
-                        float ascender = chunk.font().getFont().getFontDescriptor(BaseFont.ASCENT, fontSize);
-                        float descender = chunk.font().getFont().getFontDescriptor(BaseFont.DESCENT, fontSize);
-                        Object[] bgr = (Object[]) chunk.getAttribute(Chunk.BACKGROUND);
-
-                        graphics.setColorFill((Color) bgr[0]);
-
-                        float[] extra = (float[]) bgr[1];
-                        graphics.rectangle(xMarker - extra[0],
-                                yMarker + descender - extra[1] + chunk.getTextRise(),
-                                width - subtract + extra[0] + extra[2],
-                                ascender - descender + extra[1] + extra[3]);
-                        graphics.fill();
-                        graphics.setGrayFill(0);
-
-                        graphics.restoreState();
-                    }
-                    if (chunk.isAttribute(Chunk.UNDERLINE)) {
-                        float subtract = lastBaseFactor;
-                        if (nextChunk != null && nextChunk.isAttribute(Chunk.UNDERLINE)) {
-                            subtract = 0;
-                        }
-                        if (nextChunk == null) {
-                            subtract += hangingCorrection;
-                        }
-                        Object[][] unders = (Object[][]) chunk.getAttribute(Chunk.UNDERLINE);
-                        Color scolor;
-                        for (Object[] obj : unders) {
-                            scolor = (Color) obj[0];
-                            float[] ps = (float[]) obj[1];
-                            if (scolor == null) {
-                                scolor = color;
-                            }
-                            if (scolor != null) {
-                                graphics.setColorStroke(scolor);
-                            }
-                            float fsize = chunk.font().size();
-                            graphics.setLineWidth(ps[0] + fsize * ps[1]);
-                            float shift = ps[2] + fsize * ps[3];
-                            int cap2 = (int) ps[4];
-                            if (cap2 != 0) {
-                                graphics.setLineCap(cap2);
-                            }
-                            graphics.moveTo(xMarker, yMarker + shift);
-                            graphics.lineTo(xMarker + width - subtract, yMarker + shift);
-                            graphics.stroke();
-                            if (scolor != null) {
-                                graphics.resetGrayStroke();
-                            }
-                            if (cap2 != 0) {
-                                graphics.setLineCap(0);
-                            }
-                        }
-                        graphics.setLineWidth(1);
-                    }
-                    if (chunk.isAttribute(Chunk.ACTION)) {
-                        float subtract = lastBaseFactor;
-                        if (nextChunk != null && nextChunk.isAttribute(Chunk.ACTION)) {
-                            subtract = 0;
-                        }
-                        if (nextChunk == null) {
-                            subtract += hangingCorrection;
-                        }
-                        PdfAnnotation annotation = new PdfAnnotation(writer, xMarker, yMarker,
-                                xMarker + width - subtract, yMarker + chunk.font().size(),
-                                (PdfAction) chunk.getAttribute(Chunk.ACTION));
-                        annotation.setFlags(PdfAnnotation.FLAGS_PRINT);
-                        text.addAnnotation(annotation);
-                    }
-                    if (chunk.isAttribute(Chunk.REMOTEGOTO)) {
-                        float subtract = lastBaseFactor;
-                        if (nextChunk != null && nextChunk.isAttribute(Chunk.REMOTEGOTO)) {
-                            subtract = 0;
-                        }
-                        if (nextChunk == null) {
-                            subtract += hangingCorrection;
-                        }
-                        Object[] obj = (Object[]) chunk.getAttribute(Chunk.REMOTEGOTO);
-                        String filename = (String) obj[0];
-                        if (obj[1] instanceof String) {
-                            remoteGoto(filename, (String) obj[1], xMarker, yMarker, xMarker + width - subtract,
-                                    yMarker + chunk.font().size());
-                        } else {
-                            remoteGoto(filename, (Integer) obj[1], xMarker, yMarker, xMarker + width - subtract,
-                                    yMarker + chunk.font().size());
-                        }
-                    }
-                    if (chunk.isAttribute(Chunk.LOCALGOTO)) {
-                        float subtract = lastBaseFactor;
-                        if (nextChunk != null && nextChunk.isAttribute(Chunk.LOCALGOTO)) {
-                            subtract = 0;
-                        }
-                        if (nextChunk == null) {
-                            subtract += hangingCorrection;
-                        }
-                        localGoto((String) chunk.getAttribute(Chunk.LOCALGOTO), xMarker, yMarker,
-                                xMarker + width - subtract, yMarker + chunk.font().size());
-                    }
-                    if (chunk.isAttribute(Chunk.LOCALDESTINATION)) {
-                        localDestination((String) chunk.getAttribute(Chunk.LOCALDESTINATION),
-                                new PdfDestination(PdfDestination.XYZ, xMarker, yMarker + chunk.font().size(), 0));
-                    }
-                    if (chunk.isAttribute(Chunk.GENERICTAG)) {
-                        float subtract = lastBaseFactor;
-                        if (nextChunk != null && nextChunk.isAttribute(Chunk.GENERICTAG)) {
-                            subtract = 0;
-                        }
-                        if (nextChunk == null) {
-                            subtract += hangingCorrection;
-                        }
-                        Rectangle rect = new Rectangle(xMarker, yMarker, xMarker + width - subtract,
-                                yMarker + chunk.font().size());
-                        PdfPageEvent pev = writer.getPageEvent();
-                        if (pev != null) {
-                            pev.onGenericTag(writer, this, rect, (String) chunk.getAttribute(Chunk.GENERICTAG));
-                        }
-                    }
-                    if (chunk.isAttribute(Chunk.PDFANNOTATION)) {
-                        float subtract = lastBaseFactor;
-                        if (nextChunk != null && nextChunk.isAttribute(Chunk.PDFANNOTATION)) {
-                            subtract = 0;
-                        }
-                        if (nextChunk == null) {
-                            subtract += hangingCorrection;
-                        }
-                        float fontSize = chunk.font().size();
-                        float ascender = chunk.font().getFont().getFontDescriptor(BaseFont.ASCENT, fontSize);
-                        float descender = chunk.font().getFont().getFontDescriptor(BaseFont.DESCENT, fontSize);
-                        PdfAnnotation annot = PdfFormField.shallowDuplicate(
-                                (PdfAnnotation) chunk.getAttribute(Chunk.PDFANNOTATION));
-                        annot.put(PdfName.RECT,
-                                new PdfRectangle(xMarker, yMarker + descender, xMarker + width - subtract,
-                                        yMarker + ascender));
-                        text.addAnnotation(annot);
-                    }
-                    float[] params = (float[]) chunk.getAttribute(Chunk.SKEW);
-                    Float hs = (Float) chunk.getAttribute(Chunk.HSCALE);
-                    if (params != null || hs != null) {
-                        float b = 0;
-                        float c = 0;
-                        if (params != null) {
-                            b = params[0];
-                            c = params[1];
-                        }
-                        if (hs != null) {
-                            hScale = hs;
-                        }
-                        text.setTextMatrix(hScale, b, c, 1, xMarker, yMarker);
-                    }
-                    if (chunk.isAttribute(Chunk.CHAR_SPACING)) {
-                        Float cs = (Float) chunk.getAttribute(Chunk.CHAR_SPACING);
-                        text.setCharacterSpacing(cs);
-                    }
-                    if (chunk.isImage()) {
-                        Image image = chunk.getImage();
-                        float[] matrix = image.matrix();
-                        matrix[Image.CX] = xMarker + chunk.getImageOffsetX() - matrix[Image.CX];
-                        matrix[Image.CY] = yMarker + chunk.getImageOffsetY() - matrix[Image.CY];
-                        graphics.addImage(image, matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-                        text.moveText(xMarker + lastBaseFactor + image.getScaledWidth() - text.getXTLM(), 0);
-                    }
-                }
-                xMarker += width;
-                ++chunkStrokeIdx;
-            }
+            handleChunkAttributes(chunk, text, graphics, lastBaseFactor, line,
+                    lineLayoutParams, attributes);
 
             if (chunk.font().compareTo(currentFont) != 0) {
                 currentFont = chunk.font();
@@ -1474,7 +1235,7 @@ public class PdfDocument extends Document {
                     }
                     strokeColor = (Color) textRender[2];
                     if (strokeColor == null) {
-                        strokeColor = color;
+                        strokeColor = attributes.getColor();
                     }
                     if (strokeColor != null) {
                         text.setColorStroke(strokeColor);
@@ -1575,6 +1336,286 @@ public class PdfDocument extends Document {
         }
         currentValues[0] = currentFont;
         currentValues[1] = lastBaseFactor;
+    }
+
+    private float adjustLayoutParams(PdfLine line, float lastBaseFactor, float ratio,
+            LineLayoutParams params){
+        int separatorCount = line.getSeparatorCount();
+        int lineLen = line.getLineLengthUtf32();
+        params.setNumberOfSpaces(line.numberOfSpaces());
+        params.setJustified(line.hasToBeJustified() && (params.getNumberOfSpaces() != 0 || lineLen > 1));
+
+        if (separatorCount > 0) {
+            params.setGlueWidth(line.widthLeft() / separatorCount);
+        } else if (params.getJustified()) {
+            if (line.isNewlineSplit() && line.widthLeft() >= (lastBaseFactor * (ratio * params.getNumberOfSpaces() + lineLen
+                    - 1))) {
+                if (line.isRTL() || (LayoutProcessor.isEnabled() && LayoutProcessor.isSet(LAYOUT_RIGHT_TO_LEFT))) {
+                    text.moveText(line.widthLeft() - lastBaseFactor * (ratio * params.getNumberOfSpaces() + lineLen - 1), 0);
+                }
+                params.setBaseWordSpacing(ratio * lastBaseFactor);
+                params.setBaseCharacterSpacing(lastBaseFactor);
+            } else {
+                float width = line.widthLeft();
+                PdfChunk last = line.getChunk(line.size() - 1);
+                if (last != null) {
+                    String s = last.toString();
+                    char c = s.charAt(s.length() - 1);
+                    if (!s.isEmpty() && HANGING_PUNCTUATION.indexOf(c) >= 0) {
+                        float oldWidth = width;
+                        width += last.font().width(c) * 0.4f;
+                        params.setHangingCorrection(width - oldWidth);
+                    }
+                }
+                // if there's a single word on the line and we are using NO_SPACE_CHAR_RATIO,
+                // we don't want any character spacing
+                float baseFactor = (params.getNumberOfSpaces() == 0 && ratio == PdfWriter.NO_SPACE_CHAR_RATIO)
+                        ? 0f : width / (ratio * params.getNumberOfSpaces() + lineLen - 1);
+                params.setBaseWordSpacing(ratio * baseFactor);
+                params.setBaseCharacterSpacing(baseFactor);
+                lastBaseFactor = baseFactor;
+            }
+        }
+
+        return lastBaseFactor;
+    }
+
+    private void handleChunkAttributes(PdfChunk chunk, PdfContentByte text, PdfContentByte graphics,
+            float lastBaseFactor, PdfLine line, LineLayoutParams params, ChunkAttributes attributes){
+        int chunkStrokeIdx = 0;
+        attributes.setLastChunkStroke(line.getLastStrokeChunk());
+        if (chunkStrokeIdx <= attributes.getLastChunkStroke()) {
+            attributes.setxMarker(text.getXTLM());
+            attributes.setBaseXMarker(attributes.getxMarker());
+            attributes.setyMarker(text.getYTLM());
+
+            float width;
+            if (params.getJustified()) {
+                width = chunk.getWidthCorrected(params.getBaseCharacterSpacing(), params.getBaseWordSpacing());
+            } else {
+                width = chunk.width();
+            }
+            if (chunk.isStroked()) {
+                PdfChunk nextChunk = line.getChunk(chunkStrokeIdx + 1);
+                if (chunk.isSeparator()) {
+                    width = params.getGlueWidth();
+                    Object[] sep = (Object[]) chunk.getAttribute(Chunk.SEPARATOR);
+                    DrawInterface di = (DrawInterface) sep[0];
+                    Boolean vertical = (Boolean) sep[1];
+                    float fontSize = chunk.font().size();
+                    float ascender = chunk.font().getFont().getFontDescriptor(BaseFont.ASCENT, fontSize);
+                    float descender = chunk.font().getFont().getFontDescriptor(BaseFont.DESCENT, fontSize);
+                    if (vertical) {
+                        di.draw(graphics, attributes.getBaseXMarker(), attributes.getyMarker() + descender,
+                                attributes.getBaseXMarker() + line.getOriginalWidth(),
+                                ascender - descender, attributes.getyMarker());
+                    } else {
+                        di.draw(graphics, attributes.getxMarker(), attributes.getyMarker() + descender,
+                                attributes.getxMarker() + width, ascender - descender,
+                                attributes.getyMarker());
+                    }
+                }
+                if (chunk.isTab()) {
+                    Object[] tab = (Object[]) chunk.getAttribute(Chunk.TAB);
+                    DrawInterface di = (DrawInterface) tab[0];
+                    attributes.setTabPosition((Float) tab[1] + (Float) tab[3]);
+                    float fontSize = chunk.font().size();
+                    float ascender = chunk.font().getFont().getFontDescriptor(BaseFont.ASCENT, fontSize);
+                    float descender = chunk.font().getFont().getFontDescriptor(BaseFont.DESCENT, fontSize);
+                    if (attributes.getTabPosition() > attributes.getxMarker()) {
+                        di.draw(graphics, attributes.getxMarker(), attributes.getyMarker() + descender,
+                                attributes.getTabPosition(), ascender - descender,
+                                attributes.getyMarker());
+                    }
+                    float tmp = attributes.getxMarker();
+                    attributes.setxMarker(attributes.getTabPosition());
+                    attributes.setTabPosition(tmp);
+                }
+                if (chunk.isAttribute(Chunk.BACKGROUND)) {
+                    graphics.saveState();
+
+                    float subtract = lastBaseFactor;
+                    if (nextChunk != null && nextChunk.isAttribute(Chunk.BACKGROUND)) {
+                        subtract = 0;
+                    }
+                    if (nextChunk == null) {
+                        subtract += params.getHangingCorrection();
+                    }
+                    float fontSize = chunk.font().size();
+                    float ascender = chunk.font().getFont().getFontDescriptor(BaseFont.ASCENT, fontSize);
+                    float descender = chunk.font().getFont().getFontDescriptor(BaseFont.DESCENT, fontSize);
+                    Object[] bgr = (Object[]) chunk.getAttribute(Chunk.BACKGROUND);
+
+                    graphics.setColorFill((Color) bgr[0]);
+
+                    float[] extra = (float[]) bgr[1];
+                    graphics.rectangle(attributes.getxMarker() - extra[0],
+                            attributes.getyMarker() + descender - extra[1] + chunk.getTextRise(),
+                            width - subtract + extra[0] + extra[2],
+                            ascender - descender + extra[1] + extra[3]);
+                    graphics.fill();
+                    graphics.setGrayFill(0);
+
+                    graphics.restoreState();
+                }
+                if (chunk.isAttribute(Chunk.UNDERLINE)) {
+                    float subtract = lastBaseFactor;
+                    if (nextChunk != null && nextChunk.isAttribute(Chunk.UNDERLINE)) {
+                        subtract = 0;
+                    }
+                    if (nextChunk == null) {
+                        subtract += params.getHangingCorrection();
+                    }
+                    Object[][] unders = (Object[][]) chunk.getAttribute(Chunk.UNDERLINE);
+                    Color scolor;
+                    for (Object[] obj : unders) {
+                        scolor = (Color) obj[0];
+                        float[] ps = (float[]) obj[1];
+                        if (scolor == null) {
+                            scolor = attributes.getColor();
+                        }
+                        if (scolor != null) {
+                            graphics.setColorStroke(scolor);
+                        }
+                        float fsize = chunk.font().size();
+                        graphics.setLineWidth(ps[0] + fsize * ps[1]);
+                        float shift = ps[2] + fsize * ps[3];
+                        int cap2 = (int) ps[4];
+                        if (cap2 != 0) {
+                            graphics.setLineCap(cap2);
+                        }
+                        graphics.moveTo(attributes.getxMarker(), attributes.getyMarker() + shift);
+                        graphics.lineTo(attributes.getxMarker() + width - subtract,
+                                attributes.getyMarker() + shift);
+                        graphics.stroke();
+                        if (scolor != null) {
+                            graphics.resetGrayStroke();
+                        }
+                        if (cap2 != 0) {
+                            graphics.setLineCap(0);
+                        }
+                    }
+                    graphics.setLineWidth(1);
+                }
+                if (chunk.isAttribute(Chunk.ACTION)) {
+                    float subtract = lastBaseFactor;
+                    if (nextChunk != null && nextChunk.isAttribute(Chunk.ACTION)) {
+                        subtract = 0;
+                    }
+                    if (nextChunk == null) {
+                        subtract += params.getHangingCorrection();
+                    }
+                    PdfAnnotation annotation = new PdfAnnotation(writer, attributes.getxMarker(),
+                            attributes.getyMarker(), attributes.getxMarker() + width - subtract,
+                            attributes.getyMarker() + chunk.font().size(),
+                            (PdfAction) chunk.getAttribute(Chunk.ACTION));
+                    annotation.setFlags(FLAGS_PRINT);
+                    text.addAnnotation(annotation);
+                }
+                if (chunk.isAttribute(Chunk.REMOTEGOTO)) {
+                    float subtract = lastBaseFactor;
+                    if (nextChunk != null && nextChunk.isAttribute(Chunk.REMOTEGOTO)) {
+                        subtract = 0;
+                    }
+                    if (nextChunk == null) {
+                        subtract += params.getHangingCorrection();
+                    }
+                    Object[] obj = (Object[]) chunk.getAttribute(Chunk.REMOTEGOTO);
+                    String filename = (String) obj[0];
+                    if (obj[1] instanceof String) {
+                        remoteGoto(filename, (String) obj[1], attributes.getxMarker(), attributes.getyMarker(),
+                                attributes.getxMarker() + width - subtract,
+                                attributes.getyMarker() + chunk.font().size());
+                    } else {
+                        remoteGoto(filename, (Integer) obj[1], attributes.getxMarker(), attributes.getyMarker(),
+                                attributes.getxMarker() + width - subtract,
+                                attributes.getyMarker() + chunk.font().size());
+                    }
+                }
+                if (chunk.isAttribute(Chunk.LOCALGOTO)) {
+                    float subtract = lastBaseFactor;
+                    if (nextChunk != null && nextChunk.isAttribute(Chunk.LOCALGOTO)) {
+                        subtract = 0;
+                    }
+                    if (nextChunk == null) {
+                        subtract += params.getHangingCorrection();
+                    }
+                    localGoto((String) chunk.getAttribute(Chunk.LOCALGOTO), attributes.getxMarker(),
+                            attributes.getyMarker(),
+                            attributes.getxMarker() + width - subtract,
+                            attributes.getyMarker() + chunk.font().size());
+                }
+                if (chunk.isAttribute(Chunk.LOCALDESTINATION)) {
+                    localDestination((String) chunk.getAttribute(Chunk.LOCALDESTINATION),
+                            new PdfDestination(PdfDestination.XYZ, attributes.getxMarker(),
+                                    attributes.getyMarker() + chunk.font().size(), 0));
+                }
+                if (chunk.isAttribute(Chunk.GENERICTAG)) {
+                    float subtract = lastBaseFactor;
+                    if (nextChunk != null && nextChunk.isAttribute(Chunk.GENERICTAG)) {
+                        subtract = 0;
+                    }
+                    if (nextChunk == null) {
+                        subtract += params.getHangingCorrection();
+                    }
+                    Rectangle rect = new Rectangle(attributes.getxMarker(), attributes.getyMarker(),
+                            attributes.getxMarker() + width - subtract,
+                            attributes.getyMarker() + chunk.font().size());
+                    PdfPageEvent pev = writer.getPageEvent();
+                    if (pev != null) {
+                        pev.onGenericTag(writer, this, rect, (String) chunk.getAttribute(Chunk.GENERICTAG));
+                    }
+                }
+                if (chunk.isAttribute(Chunk.PDFANNOTATION)) {
+                    float subtract = lastBaseFactor;
+                    if (nextChunk != null && nextChunk.isAttribute(Chunk.PDFANNOTATION)) {
+                        subtract = 0;
+                    }
+                    if (nextChunk == null) {
+                        subtract += params.getHangingCorrection();
+                    }
+                    float fontSize = chunk.font().size();
+                    float ascender = chunk.font().getFont().getFontDescriptor(BaseFont.ASCENT, fontSize);
+                    float descender = chunk.font().getFont().getFontDescriptor(BaseFont.DESCENT, fontSize);
+                    PdfAnnotation annot = PdfFormField.shallowDuplicate(
+                            (PdfAnnotation) chunk.getAttribute(Chunk.PDFANNOTATION));
+                    annot.put(PdfName.RECT,
+                            new PdfRectangle(attributes.getxMarker(), attributes.getyMarker() + descender,
+                                    attributes.getxMarker() + width - subtract,
+                                    attributes.getyMarker() + ascender));
+                    text.addAnnotation(annot);
+                }
+                float[] parameters = (float[]) chunk.getAttribute(Chunk.SKEW);
+                Float hs = (Float) chunk.getAttribute(Chunk.HSCALE);
+                if (parameters != null || hs != null) {
+                    float b = 0;
+                    float c = 0;
+                    if (parameters != null) {
+                        b = parameters[0];
+                        c = parameters[1];
+                    }
+                    if (hs != null) {
+                        params.setHScale(hs);
+                    }
+                    text.setTextMatrix(params.getHScale(), b, c, 1, attributes.getxMarker(), attributes.getyMarker());
+                }
+                if (chunk.isAttribute(Chunk.CHAR_SPACING)) {
+                    Float cs = (Float) chunk.getAttribute(Chunk.CHAR_SPACING);
+                    text.setCharacterSpacing(cs);
+                }
+                if (chunk.isImage()) {
+                    Image image = chunk.getImage();
+                    float[] matrix = image.matrix();
+                    matrix[Image.CX] = attributes.getxMarker() + chunk.getImageOffsetX() - matrix[Image.CX];
+                    matrix[Image.CY] = attributes.getyMarker() + chunk.getImageOffsetY() - matrix[Image.CY];
+                    graphics.addImage(image, matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+                    text.moveText(attributes.getxMarker() + lastBaseFactor + image.getScaledWidth() - text.getXTLM(),
+                            0);
+                }
+            }
+            attributes.setxMarker(attributes.getxMarker() + width);
+            ++chunkStrokeIdx;
+        }
     }
 
     /**
@@ -1817,15 +1858,15 @@ public class PdfDocument extends Document {
     }
 
     /**
-     * @see com.lowagie.text.pdf.interfaces.PdfViewerPreferences#setViewerPreferences(int)
+     * @see PdfViewerPreferences#setViewerPreferences(int)
      */
     void setViewerPreferences(int preferences) {
         this.viewerPreferences.setViewerPreferences(preferences);
     }
 
     /**
-     * @see com.lowagie.text.pdf.interfaces.PdfViewerPreferences#addViewerPreference(com.lowagie.text.pdf.PdfName,
-     * com.lowagie.text.pdf.PdfObject)
+     * @see PdfViewerPreferences#addViewerPreference(PdfName,
+     * PdfObject)
      */
     void addViewerPreference(PdfName key, PdfObject value) {
         this.viewerPreferences.addViewerPreference(key, value);
@@ -2342,10 +2383,10 @@ public class PdfDocument extends Document {
         for (Element element : footer.getSpecialContent()) {
             switch (element.type()) {
                 case Element.JPEG,
-                     Element.JPEG2000,
-                     Element.JBIG2,
-                     Element.IMGRAW,
-                     Element.IMGTEMPLATE:
+                Element.JPEG2000,
+                Element.JBIG2,
+                Element.IMGRAW,
+                Element.IMGTEMPLATE:
                     processImage((Image) element);
                     break;
                 case Element.PTABLE:
@@ -2827,7 +2868,7 @@ public class PdfDocument extends Document {
                 PdfDictionary names = new PdfDictionary();
                 if (!localDestinations.isEmpty()) {
                     PdfArray ar = new PdfArray();
-                    for (Map.Entry<String, Object[]> entry : localDestinations.entrySet()) {
+                    for (Entry<String, Object[]> entry : localDestinations.entrySet()) {
                         String name = entry.getKey();
                         Object[] obj = entry.getValue();
                         if (obj[2] == null) {
