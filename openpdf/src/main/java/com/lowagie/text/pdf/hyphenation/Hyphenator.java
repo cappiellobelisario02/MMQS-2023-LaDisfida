@@ -19,7 +19,8 @@ public class Hyphenator {
 
     static Logger logger = Logger.getLogger(Hyphenator.class.getName());
 
-    private static final String defaultHyphLocation = "com/lowagie/text/pdf/hyphenation/hyph/";
+    private static final String DEFAULT_HYPH_LOCATION = "com/lowagie/text/pdf/hyphenation/hyph/";
+
     /**
      * TODO: Don't use statics
      */
@@ -82,9 +83,9 @@ public class Hyphenator {
      */
     public static HyphenationTree getResourceHyphenationTree(String key) {
         try {
-            InputStream stream = BaseFont.getResourceStream(defaultHyphLocation + key + ".xml");
+            InputStream stream = BaseFont.getResourceStream(DEFAULT_HYPH_LOCATION + key + ".xml");
             if (stream == null && key.length() > 2) {
-                stream = BaseFont.getResourceStream(defaultHyphLocation + key.substring(0, 2) + ".xml");
+                stream = BaseFont.getResourceStream(DEFAULT_HYPH_LOCATION + key.substring(0, 2) + ".xml");
             }
             if (stream == null) {
                 return null;
