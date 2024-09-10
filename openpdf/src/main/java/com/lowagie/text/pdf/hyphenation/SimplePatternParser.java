@@ -211,6 +211,8 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
                 case ELEM_HYPHEN:
                     // nothing to do
                     break;
+                default:
+                    break;
             }
             if (currElement != ELEM_HYPHEN) {
                 token.setLength(0);
@@ -254,6 +256,8 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
                 exception.add(new Hyphen(h.get("pre"), h.get("no"), h.get("post")));
                 currElement = ELEM_HYPHEN;
                 break;
+            default:
+                break;
         }
         token.setLength(0);
     }
@@ -277,6 +281,8 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
                 case ELEM_PATTERNS:
                     consumer.addPattern(getPattern(word),
                             getInterletterValues(word));
+                    break;
+                default:
                     break;
             }
         }
