@@ -116,6 +116,31 @@ public class PdfWriter extends DocWriter implements
         PdfAnnotations {
 
     private static final String NOT_OPEN_DOCUMENT_KEY = "the.document.is.not.open";
+    public static int PageLayoutSinglePage;
+    public static int PageLayoutOneColumn;
+    public static int PageLayoutTwoColumnLeft;
+    public static int PageLayoutTwoColumnRight;
+    public static int PageLayoutTwoPageLeft;
+    public static int PageLayoutTwoPageRight;
+    public static int PageModeUseNone;
+    public static int PageModeUseOutlines;
+    public static int PageModeUseThumbs;
+    public static int PageModeFullScreen;
+    public static int PageModeUseOC;
+    public static int PageModeUseAttachments;
+    public static int HideToolbar;
+    public static int HideMenubar;
+    public static int HideWindowUI;
+    public static int FitWindow;
+    public static int CenterWindow;
+    public static int DisplayDocTitle;
+    public static int NonFullScreenPageModeUseNone;
+    public static int NonFullScreenPageModeUseOutlines;
+    public static int NonFullScreenPageModeUseThumbs;
+    public static int NonFullScreenPageModeUseOC;
+    public static int DirectionL2R;
+    public static int DirectionR2L;
+    public static int PrintScalingNone;
 
     static Logger logger = Logger.getLogger(PdfWriter.class.getName());
 
