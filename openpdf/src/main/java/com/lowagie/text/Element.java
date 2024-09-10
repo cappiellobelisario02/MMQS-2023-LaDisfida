@@ -403,4 +403,12 @@ public interface Element {
 
     @Override
     String toString();
+
+    float llx();
+
+    float lly();
+
+    float urx();
+
+    float ury();
 }

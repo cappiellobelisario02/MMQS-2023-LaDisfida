@@ -134,8 +134,8 @@ public class PdfAnnotationsImp {
                                 (String) annot.getAttributes().get(Annotation.DEFAULTDIR)));
             default:
                 return new PdfAnnotation(writer, defaultRect.getLeft(), defaultRect.getBottom(), defaultRect.getRight(),
-                        defaultRect.getTop(), new PdfString(annot.title(), PdfObject.TEXT_UNICODE),
-                        new PdfString(annot.content(), PdfObject.TEXT_UNICODE));
+                        defaultRect.getTop(), new PdfString(PdfObject.TEXT_UNICODE),
+                        new PdfString(PdfObject.TEXT_UNICODE));
         }
     }
 
@@ -203,65 +203,90 @@ public class PdfAnnotationsImp {
         PdfArray array = new PdfArray();
         int rotation = pageSize.getRotation() % 360;
         int currentPage = writer.getCurrentPageNumber();
+
         for (Object annotation : annotations) {
             PdfAnnotation dic = (PdfAnnotation) annotation;
-            int page = dic.getPlaceInPage();
-            if (page > currentPage) {
-                delayedAnnotations.add(dic);
+            if (shouldDelayAnnotation(dic, currentPage)) {
                 continue;
             }
+
             if (dic.isForm()) {
-                if (!dic.isUsed()) {
-                    Map<PdfTemplate, Object> templates = dic.getTemplates();
-                    if (templates != null) {
-                        acroForm.addFieldTemplates(templates);
-                    }
-                }
-                PdfFormField field = (PdfFormField) dic;
-                if (field.getParent() == null) {
-                    acroForm.addDocumentField(field.getIndirectReference());
-                }
+                handleFormAnnotation(dic);
             }
+
             if (dic.isAnnotation()) {
                 array.add(dic.getIndirectReference());
-                if (!dic.isUsed()) {
-                    PdfRectangle rect = (PdfRectangle) dic.get(PdfName.RECT);
-                    if (rect != null) {
-                        switch (rotation) {
-                            case 90:
-                                dic.put(PdfName.RECT, new PdfRectangle(
-                                        pageSize.getTop() - rect.bottom(),
-                                        rect.left(),
-                                        pageSize.getTop() - rect.top(),
-                                        rect.right()));
-                                break;
-                            case 180:
-                                dic.put(PdfName.RECT, new PdfRectangle(
-                                        pageSize.getRight() - rect.left(),
-                                        pageSize.getTop() - rect.bottom(),
-                                        pageSize.getRight() - rect.right(),
-                                        pageSize.getTop() - rect.top()));
-                                break;
-                            case 270:
-                                dic.put(PdfName.RECT, new PdfRectangle(
-                                        rect.bottom(),
-                                        pageSize.getRight() - rect.left(),
-                                        rect.top(),
-                                        pageSize.getRight() - rect.right()));
-                                break;
-                        }
-                    }
-                }
+                handleRotation(dic, pageSize, rotation);
             }
+
             if (!dic.isUsed()) {
                 dic.setUsed();
-                try {
-                    writer.addToBody(dic, dic.getIndirectReference());
-                } catch (IOException e) {
-                    throw new ExceptionConverter(e);
-                }
+                addToWriter(writer, dic);
             }
         }
         return array;
     }
-}
+
+    private boolean shouldDelayAnnotation(PdfAnnotation dic, int currentPage) {
+        int page = dic.getPlaceInPage();
+        if (page > currentPage) {
+            delayedAnnotations.add(dic);
+            return true;
+        }
+        return false;
+    }
+
+    private void handleFormAnnotation(PdfAnnotation dic) {
+        if (!dic.isUsed()) {
+            Map<PdfTemplate, Object> templates = dic.getTemplates();
+            if (templates != null) {
+                acroForm.addFieldTemplates(templates);
+            }
+        }
+        PdfFormField field = (PdfFormField) dic;
+        if (field.getParent() == null) {
+            acroForm.addDocumentField(field.getIndirectReference());
+        }
+    }
+
+    private void handleRotation(PdfAnnotation dic, Rectangle pageSize, int rotation) {
+        if (!dic.isUsed()) {
+            PdfRectangle rect = (PdfRectangle) dic.get(PdfName.RECT);
+            if (rect != null) {
+                dic.put(PdfName.RECT, rotateRectangle(rect, pageSize, rotation));
+            }
+        }
+    }
+
+    private PdfRectangle rotateRectangle(PdfRectangle rect, Rectangle pageSize, int rotation) {
+        switch (rotation) {
+            case 90:
+                return new PdfRectangle(
+                        pageSize.getTop() - rect.bottom(),
+                        rect.left(),
+                        pageSize.getTop() - rect.top(),
+                        rect.right());
+            case 180:
+                return new PdfRectangle(
+                        pageSize.getRight() - rect.left(),
+                        pageSize.getTop() - rect.bottom(),
+                        pageSize.getRight() - rect.right(),
+                        pageSize.getTop() - rect.top());
+            case 270:
+                return new PdfRectangle(
+                        rect.bottom(),
+                        pageSize.getRight() - rect.left(),
+                        rect.top(),
+                        pageSize.getRight() - rect.right());
+            default:
+                return rect;
+        }
+    }
+
+    private void addToWriter(PdfWriter writer, PdfAnnotation dic) {
+        try {
+            writer.addToBody(dic, dic.getIndirectReference());
+        } catch (IOException e) {
+            throw new ExceptionConverter(e);
+        }
+    }}
