@@ -206,73 +206,85 @@ public class TernaryTree implements Serializable {
      */
     private char insert(char p, char[] key, int start, char val) {
         int len = strlen(key, start);
+
         if (p == 0) {
-            // this means there is no branch, this node will start a new branch.
-            // Instead of doing that, we store the key somewhere else and create
-            // only one node with a pointer to the key
-            p = freenode++;
-            eq[p] = val;           // holds data
-            length++;
-            hi[p] = 0;
-            if (len > 0) {
-                sc[p] = 0xFFFF;    // indicates branch is compressed
-                lo[p] = (char) kv.alloc(len
-                        + 1);    // use 'lo' to hold pointer to key
-                strcpy(kv.getArray(), lo[p], key, start);
-            } else {
-                sc[p] = 0;
-                lo[p] = 0;
-            }
-            return p;
+            return createNewNode(p, key, start, val, len);
         }
 
         if (sc[p] == 0xFFFF) {
-            // branch is compressed: need to decompress
-            // this will generate garbage in the external key array
-            // but we can do some garbage collection later
-            char pp = freenode++;
-            lo[pp] = lo[p];    // previous pointer to key
-            eq[pp] = eq[p];    // previous pointer to data
-            lo[p] = 0;
-            if (len > 0) {
-                sc[p] = kv.get(lo[pp]);
-                eq[p] = pp;
-                lo[pp]++;
-                if (kv.get(lo[pp]) == 0) {
-                    // key completely decompressed leaving garbage in key array
-                    lo[pp] = 0;
-                    sc[pp] = 0;
-                    hi[pp] = 0;
-                } else {
-                    // we only got first char of key, rest is still there
-                    sc[pp] = 0xFFFF;
-                }
-            } else {
-                // In this case we can save a node by swapping the new node
-                // with the compressed node
-                sc[pp] = 0xFFFF;
-                hi[p] = pp;
-                sc[p] = 0;
-                eq[p] = val;
-                length++;
+            p = decompressBranch(p, key, start, val, len);
+            if (len == 0) {
                 return p;
             }
         }
+
         char s = key[start];
         if (s < sc[p]) {
             lo[p] = insert(lo[p], key, start, val);
         } else if (s == sc[p]) {
-            if (s != 0) {
-                eq[p] = insert(eq[p], key, start + 1, val);
-            } else {
-                // key already in tree, overwrite data
-                eq[p] = val;
-            }
+            p = handleEqualCharacter(p, key, start, val);
         } else {
             hi[p] = insert(hi[p], key, start, val);
         }
+
         return p;
     }
+
+    private char createNewNode(char p, char[] key, int start, char val, int len) {
+        p = freenode++;
+        eq[p] = val;
+        length++;
+        hi[p] = 0;
+
+        if (len > 0) {
+            sc[p] = 0xFFFF;  // indicates branch is compressed
+            lo[p] = (char) kv.alloc(len + 1);  // use 'lo' to hold pointer to key
+            strcpy(kv.getArray(), lo[p], key, start);
+        } else {
+            sc[p] = 0;
+            lo[p] = 0;
+        }
+        return p;
+    }
+
+    private char decompressBranch(char p, char[] key, int start, char val, int len) {
+        char pp = freenode++;
+        lo[pp] = lo[p];  // previous pointer to key
+        eq[pp] = eq[p];  // previous pointer to data
+        lo[p] = 0;
+
+        if (len > 0) {
+            sc[p] = kv.get(lo[pp]);
+            eq[p] = pp;
+            lo[pp]++;
+            if (kv.get(lo[pp]) == 0) {
+                lo[pp] = 0;
+                sc[pp] = 0;
+                hi[pp] = 0;
+            } else {
+                sc[pp] = 0xFFFF;
+            }
+        } else {
+            // Save a node by swapping
+            sc[pp] = 0xFFFF;
+            hi[p] = pp;
+            sc[p] = 0;
+            eq[p] = val;
+            length++;
+        }
+
+        return p;
+    }
+
+    private char handleEqualCharacter(char p, char[] key, int start, char val) {
+        if (key[start] != 0) {
+            eq[p] = insert(eq[p], key, start + 1, val);
+        } else {
+            eq[p] = val;  // Key already in tree, overwrite data
+        }
+        return p;
+    }
+
 
     public int find(String key) {
         int len = key.length();
@@ -344,7 +356,7 @@ public class TernaryTree implements Serializable {
         this.hi = original.hi.clone();
         this.eq = original.eq.clone();
         this.sc = original.sc.clone();
-        this.kv = (CharVector) original.kv.clone();
+        this.kv = (CharVector) original.kv;
         this.root = original.root;
         this.freenode = original.freenode;
         this.length = original.length;
@@ -507,9 +519,6 @@ public class TernaryTree implements Serializable {
          * traverse upwards
          */
         private int up() {
-            Item i = new Item();
-            int res = 0;
-
             if (ns.isEmpty()) {
                 return -1;
             }
@@ -518,22 +527,23 @@ public class TernaryTree implements Serializable {
                 return lo[cur];
             }
 
+            int res = 0;
             boolean climb = true;
 
-            while (climb) {
-                i = ns.pop();
+            while (climb && !ns.isEmpty()) {
+                Item i = ns.pop();
                 i.child++;
+
                 switch (i.child) {
                     case 1:
                         if (sc[i.parent] != 0) {
                             res = eq[i.parent];
-                            ns.push(new Item(i));  // Usa il costruttore di copia
                             ks.append(sc[i.parent]);
                         } else {
                             i.child++;
-                            ns.push(new Item(i));  // Usa il costruttore di copia
                             res = hi[i.parent];
                         }
+                        ns.push(new Item(i));  // Usa il costruttore di copia
                         climb = false;
                         break;
 
@@ -547,15 +557,14 @@ public class TernaryTree implements Serializable {
                         break;
 
                     default:
-                        if (ns.isEmpty()) {
-                            return -1;
-                        }
-                        climb = true;
+                        climb = !ns.isEmpty();
                         break;
                 }
             }
-            return res;
+
+            return climb ? -1 : res;
         }
+
 
         /**
          * traverse the tree to find next key
@@ -565,42 +574,52 @@ public class TernaryTree implements Serializable {
                 return -1;
             }
 
-            boolean leaf = false;
             while (true) {
-                // first go down on low branch until leaf or compressed branch
-                while (cur != 0) {
-                    if (sc[cur] == 0xFFFF) {
-                        leaf = true;
-                        break;
-                    }
-                    ns.push(new Item((char) cur, '\u0000'));
-                    if (sc[cur] == 0) {
-                        leaf = true;
-                        break;
-                    }
-                    cur = lo[cur];
-                }
-                if (leaf) {
+                if (exploreLowBranch()) {
                     break;
                 }
-                // nothing found, go up one node and try again
+                // If no leaf is found, go up one node
                 cur = up();
                 if (cur == -1) {
                     return -1;
                 }
             }
-            // The current node should be a data node and
-            // the key should be in the key stack (at least partially)
+
+            constructCurrentKey();
+            return 0;
+        }
+
+        private boolean exploreLowBranch() {
+            // Traverse down the low branch until a leaf or compressed branch is found
+            while (cur != 0) {
+                if (isCompressedBranch() || isLeafNode()) {
+                    return true;
+                }
+                ns.push(new Item((char) cur, '\u0000'));
+                cur = lo[cur];
+            }
+            return false;
+        }
+
+        private boolean isCompressedBranch() {
+            return sc[cur] == 0xFFFF;
+        }
+
+        private boolean isLeafNode() {
+            return sc[cur] == 0;
+        }
+
+        private void constructCurrentKey() {
             StringBuilder buf = new StringBuilder(ks.toString());
-            if (sc[cur] == 0xFFFF) {
+            if (isCompressedBranch()) {
                 int p = lo[cur];
                 while (kv.get(p) != 0) {
                     buf.append(kv.get(p++));
                 }
             }
             curkey = buf.toString();
-            return 0;
         }
+
 
         private class Item {
 
