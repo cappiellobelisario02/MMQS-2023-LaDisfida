@@ -41,11 +41,11 @@ public class PdfObjectTreeNode extends IconTreeNode {
     /**
      * the PDF object corresponding with this node.
      */
-    protected PdfObject object;
+    protected transient PdfObject object;
     /**
      * the key if the parent of this node is a dictionary.
      */
-    protected PdfName key = null;
+    protected transient PdfName key = null;
     /**
      * if the object is indirect, the number of the PDF object.
      */
@@ -95,6 +95,8 @@ public class PdfObjectTreeNode extends IconTreeNode {
             case PdfObject.STRING:
                 icon = IconFetcher.getIcon("string.png");
                 return;
+            default:
+                break;
         }
     }
 
@@ -175,6 +177,8 @@ public class PdfObjectTreeNode extends IconTreeNode {
                 return "Stream";
             case PdfObject.STRING:
                 return ((PdfString) object).toUnicodeString();
+            default:
+                break;
         }
         return object.toString();
     }
