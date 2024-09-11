@@ -110,147 +110,145 @@ public class XmlDomWriter {
      * @param node the Node to write
      */
     public void write(Node node) {
-
-        // is there anything to do?
         if (node == null) {
             return;
         }
 
-        short type = node.getNodeType();
-        switch (type) {
-            case Node.DOCUMENT_NODE: {
-                Document document = (Document) node;
-                fXML11 = false; //"1.1".equals(getVersion(document))
-                if (!fCanonical) {
-                    if (fXML11) {
-                        fOut.println("<?xml version=\"1.1\" encoding=\"UTF-8\"?>");
-                    } else {
-                        fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                    }
-                    fOut.flush();
-                    write(document.getDoctype());
-                }
-                write(document.getDocumentElement());
+        switch (node.getNodeType()) {
+            case Node.DOCUMENT_NODE:
+                writeDocumentNode((Document) node);
                 break;
-            }
 
-            case Node.DOCUMENT_TYPE_NODE: {
-                DocumentType doctype = (DocumentType) node;
-                fOut.print("<!DOCTYPE ");
-                fOut.print(doctype.getName());
-                String publicId = doctype.getPublicId();
-                String systemId = doctype.getSystemId();
-                if (publicId != null) {
-                    fOut.print(" PUBLIC '");
-                    fOut.print(publicId);
-                    fOut.print("' '");
-                    fOut.print(systemId);
-                    fOut.print('\'');
-                } else if (systemId != null) {
-                    fOut.print(" SYSTEM '");
-                    fOut.print(systemId);
-                    fOut.print('\'');
-                }
-                String internalSubset = doctype.getInternalSubset();
-                if (internalSubset != null) {
-                    fOut.println(" [");
-                    fOut.print(internalSubset);
-                    fOut.print(']');
-                }
-                fOut.println('>');
+            case Node.DOCUMENT_TYPE_NODE:
+                writeDocumentTypeNode((DocumentType) node);
                 break;
-            }
 
-            case Node.ELEMENT_NODE: {
-                fOut.print('<');
-                fOut.print(node.getNodeName());
-                Attr[] attrs = sortAttributes(node.getAttributes());
-                for (Attr attr : attrs) {
-                    fOut.print(' ');
-                    fOut.print(attr.getNodeName());
-                    fOut.print("=\"");
-                    normalizeAndPrint(attr.getNodeValue(), true);
-                    fOut.print('"');
-                }
-                fOut.print('>');
-                fOut.flush();
-
-                Node child = node.getFirstChild();
-                while (child != null) {
-                    write(child);
-                    child = child.getNextSibling();
-                }
+            case Node.ELEMENT_NODE:
+                writeElementNode(node);
                 break;
-            }
 
-            case Node.ENTITY_REFERENCE_NODE: {
-                if (fCanonical) {
-                    Node child = node.getFirstChild();
-                    while (child != null) {
-                        write(child);
-                        child = child.getNextSibling();
-                    }
-                } else {
-                    fOut.print('&');
-                    fOut.print(node.getNodeName());
-                    fOut.print(';');
-                    fOut.flush();
-                }
+            case Node.ENTITY_REFERENCE_NODE:
+                writeEntityReferenceNode(node);
                 break;
-            }
 
-            case Node.CDATA_SECTION_NODE: {
-                if (fCanonical) {
-                    normalizeAndPrint(node.getNodeValue(), false);
-                } else {
-                    fOut.print("<![CDATA[");
-                    fOut.print(node.getNodeValue());
-                    fOut.print("]]>");
-                }
-                fOut.flush();
+            case Node.CDATA_SECTION_NODE:
+                writeCDATASectionNode(node);
                 break;
-            }
 
-            case Node.TEXT_NODE: {
-                normalizeAndPrint(node.getNodeValue(), false);
-                fOut.flush();
+            case Node.TEXT_NODE:
+                writeTextNode(node);
                 break;
-            }
 
-            case Node.PROCESSING_INSTRUCTION_NODE: {
-                fOut.print("<?");
-                fOut.print(node.getNodeName());
-                String data = node.getNodeValue();
-                if (data != null && data.length() > 0) {
-                    fOut.print(' ');
-                    fOut.print(data);
-                }
-                fOut.print("?>");
-                fOut.flush();
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                writeProcessingInstructionNode(node);
                 break;
-            }
 
-            case Node.COMMENT_NODE: {
-                if (!fCanonical) {
-                    fOut.print("<!--");
-                    String comment = node.getNodeValue();
-                    if (comment != null && comment.length() > 0) {
-                        fOut.print(comment);
-                    }
-                    fOut.print("-->");
-                    fOut.flush();
-                }
-            }
+            case Node.COMMENT_NODE:
+                writeCommentNode(node);
+                break;
+
+            default:
+                // handle other node types if needed
+                break;
         }
 
-        if (type == Node.ELEMENT_NODE) {
-            fOut.print("</");
-            fOut.print(node.getNodeName());
-            fOut.print('>');
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            closeElementNode(node);
+        }
+    }
+
+// Helper methods for each node type
+
+    private void writeDocumentNode(Document document) {
+        fXML11 = false; // "1.1".equals(getVersion(document))
+        if (!fCanonical) {
+            if (fXML11) {
+                fOut.println("<?xml version=\"1.1\" encoding=\"UTF-8\"?>");
+            } else {
+                fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            }
             fOut.flush();
+            write(document.getDoctype());
         }
+        write(document.getDocumentElement());
+    }
 
-    } // write(Node)
+    private void writeDocumentTypeNode(DocumentType doctype) {
+        fOut.print("<!DOCTYPE ");
+        fOut.print(doctype.getName());
+        if (doctype.getPublicId() != null) {
+            fOut.print(" PUBLIC '").append(doctype.getPublicId()).append("' '").append(doctype.getSystemId()).append("'");
+        } else if (doctype.getSystemId() != null) {
+            fOut.print(" SYSTEM '").append(doctype.getSystemId()).append("'");
+        }
+        if (doctype.getInternalSubset() != null) {
+            fOut.println(" [").print(doctype.getInternalSubset()).print(']');
+        }
+        fOut.println('>');
+    }
+
+    private void writeElementNode(Node node) {
+        fOut.print('<').print(node.getNodeName());
+        Attr[] attrs = sortAttributes(node.getAttributes());
+        for (Attr attr : attrs) {
+            fOut.print(' ').print(attr.getNodeName()).print("=\"");
+            normalizeAndPrint(attr.getNodeValue(), true);
+            fOut.print('"');
+        }
+        fOut.print('>').flush();
+        writeChildNodes(node);
+    }
+
+    private void writeEntityReferenceNode(Node node) {
+        if (fCanonical) {
+            writeChildNodes(node);
+        } else {
+            fOut.print('&').print(node.getNodeName()).print(';').flush();
+        }
+    }
+
+    private void writeCDATASectionNode(Node node) {
+        if (fCanonical) {
+            normalizeAndPrint(node.getNodeValue(), false);
+        } else {
+            fOut.print("<![CDATA[").print(node.getNodeValue()).print("]]>");
+        }
+        fOut.flush();
+    }
+
+    private void writeTextNode(Node node) {
+        normalizeAndPrint(node.getNodeValue(), false);
+        fOut.flush();
+    }
+
+    private void writeProcessingInstructionNode(Node node) {
+        fOut.print("<?").print(node.getNodeName());
+        String data = node.getNodeValue();
+        if (data != null && data.length() > 0) {
+            fOut.print(' ').print(data);
+        }
+        fOut.print("?>").flush();
+    }
+
+    private void writeCommentNode(Node node) {
+        if (!fCanonical) {
+            fOut.print("<!--").print(node.getNodeValue()).print("-->").flush();
+        }
+    }
+
+    private void closeElementNode(Node node) {
+        fOut.print("</").print(node.getNodeName()).print('>').flush();
+    }
+
+    // Helper method to write child nodes
+    private void writeChildNodes(Node node) {
+        Node child = node.getFirstChild();
+        while (child != null) {
+            write(child);
+            child = child.getNextSibling();
+        }
+    }
+
 
     /**
      * Returns a sorted list of attributes.
