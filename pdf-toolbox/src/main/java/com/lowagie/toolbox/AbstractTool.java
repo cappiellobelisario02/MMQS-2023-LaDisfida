@@ -297,55 +297,79 @@ public abstract class AbstractTool implements ActionListener {
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
     public void actionPerformed(ActionEvent evt) {
-        if (ToolMenuItems.CLOSE.equals(evt.getActionCommand())) {
-            logger.info("=== " + getInternalFrame().getTitle() +
-                    " CLOSED ===");
-            internalFrame.dispose();
-        }
-        if (ToolMenuItems.USAGE.equals(evt.getActionCommand())) {
-            JOptionPane.showMessageDialog(internalFrame, getUsage());
-        }
-        if (ToolMenuItems.ARGUMENTS.equals(evt.getActionCommand())) {
-            JOptionPane.showMessageDialog(internalFrame, getArgs());
-        }
-        if (ToolMenuItems.EXECUTE.equals(evt.getActionCommand())) {
-            this.execute();
-        }
-        if (ToolMenuItems.EXECUTESHOW.equals(evt.getActionCommand())) {
-            this.execute();
-            try {
-                if (awtdesktop != null &&
-                        awtdesktop.isSupported(Desktop.Action.OPEN)) {
-                    awtdesktop.open(getDestPathPDF());
-                } else {
-                    Executable.openDocument(getDestPathPDF());
-                }
-            } catch (Exception e) {
-                logger.info(e.getMessage());
-            }
-        }
-        if (ToolMenuItems.EXECUTEPRINT.equals(evt.getActionCommand())) {
-            this.execute();
-            try {
-                if (awtdesktop != null &&
-                        awtdesktop.isSupported(Desktop.Action.PRINT)) {
-                    awtdesktop.print(getDestPathPDF());
-                } else {
-                    Executable.printDocument(getDestPathPDF());
-                }
-            } catch (Exception e) {
-                logger.info(e.getMessage());
-            }
-        }
-        if (ToolMenuItems.EXECUTEPRINTSILENT.equals(evt.getActionCommand())) {
-            this.execute();
-            try {
-                Executable.printDocumentSilent(getDestPathPDF());
-            } catch (Exception e) {
-                logger.info(e.getMessage());
-            }
+        String actionCommand = evt.getActionCommand();
+
+        switch (actionCommand) {
+            case ToolMenuItems.CLOSE:
+                handleClose();
+                break;
+            case ToolMenuItems.USAGE:
+                showUsage();
+                break;
+            case ToolMenuItems.ARGUMENTS:
+                showArguments();
+                break;
+            case ToolMenuItems.EXECUTE:
+                executeAndHandleException(() -> this.execute());
+                break;
+            case ToolMenuItems.EXECUTESHOW:
+                executeAndHandleException(() -> {
+                    this.execute();
+                    openDocument();
+                });
+                break;
+            case ToolMenuItems.EXECUTEPRINT:
+                executeAndHandleException(() -> {
+                    this.execute();
+                    printDocument();
+                });
+                break;
+            case ToolMenuItems.EXECUTEPRINTSILENT:
+                executeAndHandleException(() -> Executable.printDocumentSilent(getDestPathPDF()));
+                break;
+            default:
+                logger.warning("Unhandled action command: " + actionCommand);
+                break;
         }
     }
+
+    private void handleClose() {
+        logger.info("=== " + getInternalFrame().getTitle() + " CLOSED ===");
+        internalFrame.dispose();
+    }
+
+    private void showUsage() {
+        JOptionPane.showMessageDialog(internalFrame, getUsage());
+    }
+
+    private void showArguments() {
+        JOptionPane.showMessageDialog(internalFrame, getArgs());
+    }
+
+    private void executeAndHandleException(Runnable action) {
+        try {
+            action.run();
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
+    }
+
+    private void openDocument() throws Exception {
+        if (awtdesktop != null && awtdesktop.isSupported(Desktop.Action.OPEN)) {
+            awtdesktop.open(getDestPathPDF());
+        } else {
+            Executable.openDocument(getDestPathPDF());
+        }
+    }
+
+    private void printDocument() throws Exception {
+        if (awtdesktop != null && awtdesktop.isSupported(Desktop.Action.PRINT)) {
+            awtdesktop.print(getDestPathPDF());
+        } else {
+            Executable.printDocument(getDestPathPDF());
+        }
+    }
+
 
     /**
      * Gets the PDF file that should be generated (or null if the output isn't a PDF file).
