@@ -60,14 +60,17 @@ public class CompressDecompressPageContent extends AbstractTool {
     /**
      * Constructs a Burst object.
      */
+    private static final String SRCFILE_ARG = "srcfile";
+    private static final String DEST = "destfile";
+    private static final String COMP = "compress";
     public CompressDecompressPageContent() {
-        FileArgument f = new FileArgument(this, "srcfile", "The file you want to compress/decompress", false,
+        FileArgument f = new FileArgument(this, SRCFILE_ARG, "The file you want to compress/decompress", false,
                 new PdfFilter());
         f.setLabel(new PdfInformationPanel());
         arguments.add(f);
-        arguments.add(new FileArgument(this, "destfile",
+        arguments.add(new FileArgument(this, DEST,
                 "The file to which the compressed/decompressed PDF has to be written", true, new PdfFilter()));
-        OptionArgument oa = new OptionArgument(this, "compress", "compress");
+        OptionArgument oa = new OptionArgument(this, COMP, COMP);
         oa.addOption("Compress page content", "true");
         oa.addOption("Decompress page content", "false");
         arguments.add(oa);
@@ -115,23 +118,23 @@ public class CompressDecompressPageContent extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DEST);
     }
 
     /**
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        try (PdfReader reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath());
+        try (PdfReader reader = new PdfReader(((File) getValue(SRCFILE_ARG)).getAbsolutePath());
              FileOutputStream fos = new FileOutputStream(getDestPathPDF());
              PdfStamper stamper = new PdfStamper(reader, fos); ){
-            if (getValue("srcfile") == null) {
+            if (getValue(SRCFILE_ARG) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            if (getValue("destfile") == null) {
+            if (getValue(DEST) == null) {
                 throw new InstantiationException("You need to choose a destination file");
             }
-            boolean compress = "true".equals(getValue("compress"));
+            boolean compress = "true".equals(getValue(COMP));
             synchronized (arguments) {
                 Document.compress = compress;
                 int total = reader.getNumberOfPages() + 1;

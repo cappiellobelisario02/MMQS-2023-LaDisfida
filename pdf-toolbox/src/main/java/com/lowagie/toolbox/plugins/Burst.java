@@ -59,6 +59,7 @@ import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
@@ -78,8 +79,9 @@ public class Burst extends AbstractTool {
     /**
      * Constructs a Burst object.
      */
+    private static final String SRCFILE_ARG = "srcfile";
     public Burst() {
-        FileArgument f = new FileArgument(this, "srcfile", "The file you want to split", false, new PdfFilter());
+        FileArgument f = new FileArgument(this, SRCFILE_ARG, "The file you want to split", false, new PdfFilter());
         f.setLabel(new PdfInformationPanel());
         arguments.add(f);
     }
@@ -109,56 +111,58 @@ public class Burst extends AbstractTool {
     }
 
     /**
-     * @see com.lowagie.toolbox.AbstractTool#execute()
+     * @see AbstractTool#execute()
      */
     public void execute() {
         PdfReader reader = null;
         Document document = null;
-        try{
-            if (getValue("srcfile") == null) {
+        try {
+            if (getValue(SRCFILE_ARG) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            File src = (File) getValue("srcfile");
+
+            File src = (File) getValue(SRCFILE_ARG);
             File directory = src.getParentFile();
             String name = src.getName();
             name = name.substring(0, name.lastIndexOf('.'));
-            // we create a reader for a certain document
 
-            // we retrieve the total number of pages
+            // We create a reader for a certain document
             int n = reader.getNumberOfPages();
             int digits = 1 + (n / 10);
             String stringToLog = "There are " + n + " pages in the original file.";
             logger.info(stringToLog);
-            int pagenumber;
-            String filename;
+
             for (int i = 0; i < n; i++) {
-                pagenumber = i + 1;
-                filename = String.valueOf(pagenumber);
-                while (filename.length() < digits) {
-                    filename = "0" + filename;
+                int pagenumber = i + 1;
+                String filename = String.format("_%0" + digits + "d.pdf", pagenumber);
+
+                // Create a document-object and a writer that listens to the document
+                File outputFile = new File(directory, name + filename);
+                try (FileOutputStream fos = new FileOutputStream(outputFile);
+                        PdfWriter writer = PdfWriter.getInstance(document, fos)) {
+
+                    // Create and open the document
+                    Document document = new Document(reader.getPageSizeWithRotation(pagenumber));
+                    try {
+                        document.open();
+                        PdfContentByte cb = writer.getDirectContent();
+                        PdfImportedPage page = writer.getImportedPage(reader, pagenumber);
+                        int rotation = reader.getPageRotation(pagenumber);
+                        if (rotation == 90 || rotation == 270) {
+                            cb.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(pagenumber).getHeight());
+                        } else {
+                            cb.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
+                        }
+                    } finally {
+                        // Ensure the document is closed
+                        document.close();
+                    }
                 }
-                filename = "_" + filename + ".pdf";
-                // step 1: creation of a document-object
-                document = new Document(reader.getPageSizeWithRotation(pagenumber));
-                // step 2: we create a writer that listens to the document
-                PdfWriter writer = PdfWriter.getInstance(document,
-                        new FileOutputStream(new File(directory, name + filename)));
-                // step 3: we open the document
-                document.open();
-                PdfContentByte cb = writer.getDirectContent();
-                PdfImportedPage page = writer.getImportedPage(reader, pagenumber);
-                int rotation = reader.getPageRotation(pagenumber);
-                if (rotation == 90 || rotation == 270) {
-                    cb.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(pagenumber).getHeight());
-                } else {
-                    cb.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
-                }
-                // step 5: we close the document
-                document.close();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
+        } catch (InstantiationException | IOException e) {
+            logger.log("An error occurred", e);
+        }
+        finally {
             if (reader != null) {
                 try{
                     reader.close();
