@@ -35,7 +35,7 @@ public class PdfArrayTableModel extends AbstractTableModel {
     /**
      * The PDF array.
      */
-    protected PdfArray array;
+    protected transient PdfArray array;
 
     /**
      * Creates the TableModel.
