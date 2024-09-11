@@ -10,11 +10,11 @@ import org.junit.jupiter.api.Test;
 
 public class SimpleXMLParserTest {
 
-    static final String bom = "\uFEFF";
-    static final String euro = "\u20AC";
-    static final String xmlRaw = "<?xml version='1.0'?><a>" + euro + "</a>";
-    static final String xmlBOM = bom + xmlRaw;
-    static final String xmlI15 = "<?xml version='1.0' encoding='ISO-8859-15'?><a>" + euro + "</a>";
+    static final String BOM = "\uFEFF";
+    static final String EURO = "\u20AC";
+    static final String RAW_XML = "<?xml version='1.0'?><a>" + EURO + "</a>";
+    static final String XMLBOM = BOM + RAW_XML;
+    static final String I15 = "<?xml version='1.0' encoding='ISO-8859-15'?><a>" + EURO + "</a>";
 
     static void testCharset(String xml, Charset charset) throws IOException {
         try (
@@ -27,18 +27,18 @@ public class SimpleXMLParserTest {
 
     @Test
     void testDetectUnicode() throws IOException {
-        testCharset(xmlRaw, StandardCharsets.UTF_8);
-        testCharset(xmlBOM, StandardCharsets.UTF_8);
-        testCharset(xmlBOM, StandardCharsets.UTF_16BE);
-        testCharset(xmlBOM, StandardCharsets.UTF_16LE);
-        testCharset(xmlBOM, Charset.forName("UTF-32BE"));
-        testCharset(xmlBOM, Charset.forName("UTF-32LE"));
-        testCharset(xmlI15, Charset.forName("ISO-8859-15"));
+        testCharset(RAW_XML, StandardCharsets.UTF_8);
+        testCharset(XMLBOM, StandardCharsets.UTF_8);
+        testCharset(XMLBOM, StandardCharsets.UTF_16BE);
+        testCharset(XMLBOM, StandardCharsets.UTF_16LE);
+        testCharset(XMLBOM, Charset.forName("UTF-32BE"));
+        testCharset(XMLBOM, Charset.forName("UTF-32LE"));
+        testCharset(I15, Charset.forName("ISO-8859-15"));
     }
 
     @Test
     void testDetectedOverDeclared() throws IOException {
-        String xml = bom + xmlI15;
+        String xml = BOM + I15;
         testCharset(xml, StandardCharsets.UTF_8);
         testCharset(xml, StandardCharsets.UTF_16BE);
         testCharset(xml, StandardCharsets.UTF_16LE);
@@ -58,23 +58,27 @@ public class SimpleXMLParserTest {
 
         @Override
         public void startElement(String tag, Map<String, String> h) {
+            throw new UnsupportedOperationException("startElement() method is not implemented.");
         }
 
         @Override
         public void endElement(String tag) {
+            throw new UnsupportedOperationException("startElement() method is not implemented.");
         }
 
         @Override
         public void startDocument() {
+            throw new UnsupportedOperationException("startElement() method is not implemented.");
         }
 
         @Override
         public void endDocument() {
+            throw new UnsupportedOperationException("startElement() method is not implemented.");
         }
 
         @Override
         public void text(String str) {
-            Assertions.assertEquals(euro, str, "text content in " + charset);
+            Assertions.assertEquals(EURO, str, "text content in " + charset);
             called = true;
         }
 
