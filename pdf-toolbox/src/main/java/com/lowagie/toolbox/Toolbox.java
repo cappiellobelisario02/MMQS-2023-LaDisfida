@@ -345,58 +345,86 @@ public class Toolbox extends JFrame implements ActionListener {
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
     public void actionPerformed(ActionEvent evt) {
-        if (ToolMenuItems.CLOSE.equals(evt.getActionCommand())) {
-            logger.info("The Toolbox is closed.");
-            System.exit(0);
-        } else if (ToolMenuItems.ABOUT.equals(evt.getActionCommand())) {
-            logger.info("The iText Toolbox is part of iText, a Free Java-PDF Library.\nVisit http://itexttoolbox.sourceforge.net/ for more info.");
-            try {
-                Executable
-                        .launchBrowser("http://itexttoolbox.sourceforge.net/");
-            } catch (IOException ioe) {
-                JOptionPane
-                        .showMessageDialog(
-                                this,
-                                "The iText Toolbox is part of iText, a Free Java-PDF Library.\nVisit http://itexttoolbox.sourceforge.net/ for more info.");
-            }
-        } else if (ToolMenuItems.RESET.equals(evt.getActionCommand())) {
-            JInternalFrame[] framearray = desktop.getAllFrames();
-            int xx = 0;
-            int yy = 0;
-            for (JInternalFrame jInternalFrame : framearray) {
-                if (!jInternalFrame.isIcon()) {
-                    try {
-                        int frameDistance = jInternalFrame.getHeight() -
-                                jInternalFrame.getContentPane().getHeight();
-                        jInternalFrame.setMaximum(false);
-                        int fwidth = jInternalFrame.getWidth();
-                        int fheight = jInternalFrame.getHeight();
-                        jInternalFrame.reshape(xx, yy, fwidth, fheight);
-                        xx += frameDistance;
-                        yy += frameDistance;
-                        if (xx + fwidth > desktop.getWidth()) {
-                            xx = 0;
-                        }
-                        if (yy + fheight > desktop.getHeight()) {
-                            yy = 0;
-                        }
-                    } catch (PropertyVetoException e) {
-                        e.printStackTrace();
-                    }
+        String actionCommand = evt.getActionCommand();
+
+        switch (actionCommand) {
+            case ToolMenuItems.CLOSE:
+                handleClose();
+                break;
+            case ToolMenuItems.ABOUT:
+                handleAbout();
+                break;
+            case ToolMenuItems.RESET:
+                handleReset();
+                break;
+            case ToolMenuItems.VERSION:
+                handleVersion();
+                break;
+            default:
+                handleDefault(actionCommand);
+                break;
+        }
+    }
+
+    private void handleClose() {
+        logger.info("The Toolbox is closed.");
+        System.exit(0);
+    }
+
+    private void handleAbout() {
+        logger.info("The iText Toolbox is part of iText, a Free Java-PDF Library.\nVisit http://itexttoolbox.sourceforge.net/ for more info.");
+        try {
+            Executable.launchBrowser("http://itexttoolbox.sourceforge.net/");
+        } catch (IOException ioe) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "The iText Toolbox is part of iText, a Free Java-PDF Library.\nVisit http://itexttoolbox.sourceforge.net/ for more info."
+            );
+        }
+    }
+
+    private void handleReset() {
+        JInternalFrame[] frameArray = desktop.getAllFrames();
+        int x = 0;
+        int y = 0;
+        for (JInternalFrame jInternalFrame : frameArray) {
+            if (!jInternalFrame.isIcon()) {
+                resetFramePosition(jInternalFrame, x, y);
+                x += jInternalFrame.getHeight() - jInternalFrame.getContentPane().getHeight();
+                y += jInternalFrame.getHeight() - jInternalFrame.getContentPane().getHeight();
+                if (x + jInternalFrame.getWidth() > desktop.getWidth()) {
+                    x = 0;
                 }
-            }
-        } else if (ToolMenuItems.VERSION.equals(evt.getActionCommand())) {
-            JFrame f = new Versions();
-            centerFrame(f);
-            f.setVisible(true);
-        } else {
-            try {
-                createFrame(evt.getActionCommand());
-            } catch (Exception e) {
-                e.printStackTrace();
+                if (y + jInternalFrame.getHeight() > desktop.getHeight()) {
+                    y = 0;
+                }
             }
         }
     }
+
+    private void resetFramePosition(JInternalFrame frame, int x, int y) {
+        try {
+            frame.setMaximum(false);
+            frame.reshape(x, y, frame.getWidth(), frame.getHeight());
+        } catch (PropertyVetoException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleVersion() {
+        JFrame f = new Versions();
+        centerFrame(f);
+        f.setVisible(true);
+    }
+
+    private void handleDefault(String actionCommand) {
+        try {
+            createFrame(actionCommand);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public ArrayList<String> getMenulist() {
         return menulist;
