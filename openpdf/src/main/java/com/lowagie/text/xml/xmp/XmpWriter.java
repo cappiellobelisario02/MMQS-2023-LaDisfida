@@ -86,7 +86,7 @@ public class XmpWriter implements AutoCloseable {
     /**
      * String used to fill the extra space.
      */
-    public static final String extraspace = "\n";
+    public static final String EXTRAPACE = "\n";
     /**
      * Processing Instruction required at the start of an XMP stream
      *
@@ -105,10 +105,11 @@ public class XmpWriter implements AutoCloseable {
      * @since iText 2.1.6
      */
     public static final String XPACKET_PI_END_R = "<?xpacket end=\"r\"?>";
+
+    private final int extraS;
     /**
      * You can add some extra space in the XMP packet; 1 unit in this variable represents 100 spaces and a newline.
      */
-    protected int extraspace;
     /**
      * The writer to which you can write bytes for the XMP stream.
      */
@@ -131,7 +132,7 @@ public class XmpWriter implements AutoCloseable {
      * @throws IOException on error
      */
     public XmpWriter(OutputStream os, String utfEncoding, int extraSpace) throws IOException {
-        this.extraSpace = extraSpace;
+        this.extraS = extraSpace;
         writer = new OutputStreamWriter(os, utfEncoding);
         writer.write(XPACKET_PI_BEGIN);
         writer.write("<x:xmpmeta xmlns:x=\"adobe:ns:meta/\">\n");
@@ -159,61 +160,69 @@ public class XmpWriter implements AutoCloseable {
     public XmpWriter(OutputStream os, PdfDictionary info, int PdfXConformance) throws IOException {
         this(os);
         if (info != null) {
-            DublinCoreSchema dc = new DublinCoreSchema();
-            PdfSchema p = new PdfSchema();
-            XmpBasicSchema basic = new XmpBasicSchema();
-            PdfName key;
-            PdfObject obj;
-            for (PdfName pdfName : info.getKeys()) {
-                key = pdfName;
-                obj = info.get(key);
-                if (obj == null) {
-                    continue;
-                }
-                if (PdfName.TITLE.equals(key)) {
-                    dc.addTitle(((PdfString) obj).toUnicodeString());
-                }
-                if (PdfName.AUTHOR.equals(key)) {
-                    dc.addAuthor(((PdfString) obj).toUnicodeString());
-                }
-                if (PdfName.SUBJECT.equals(key)) {
-                    dc.addSubject(((PdfString) obj).toUnicodeString());
-                    dc.addDescription(((PdfString) obj).toUnicodeString());
-                }
-                if (PdfName.KEYWORDS.equals(key)) {
-                    p.addKeywords(((PdfString) obj).toUnicodeString());
-                }
-                if (PdfName.CREATOR.equals(key)) {
-                    basic.addCreatorTool(((PdfString) obj).toUnicodeString());
-                }
-                if (PdfName.PRODUCER.equals(key)) {
-                    p.addProducer(((PdfString) obj).toUnicodeString());
-                }
-                if (PdfName.CREATIONDATE.equals(key)) {
-                    basic.addCreateDate(((PdfDate) obj).getW3CDate());
-                }
-                if (PdfName.MODDATE.equals(key)) {
-                    basic.addModDate(((PdfDate) obj).getW3CDate());
-                }
+            processInfo(info);
+            handlePdfXConformance(PdfXConformance);
+        }
+    }
+
+    private void processInfo(PdfDictionary info) throws IOException {
+        DublinCoreSchema dc = new DublinCoreSchema();
+        PdfSchema p = new PdfSchema();
+        XmpBasicSchema basic = new XmpBasicSchema();
+
+        for (PdfName key : info.getKeys()) {
+            PdfObject obj = info.get(key);
+            if (obj != null) {
+                processEntry(key, obj, dc, p, basic);
             }
-            if (dc.size() > 0) {
-                addRdfDescription(dc);
+        }
+
+        addNonEmptySchemas(dc, p, basic);
+    }
+
+    private void processEntry(PdfName key, PdfObject obj, DublinCoreSchema dc, PdfSchema p, XmpBasicSchema basic) throws IOException {
+        if (PdfName.TITLE.equals(key)) {
+            dc.addTitle(((PdfString) obj).toUnicodeString());
+        } else if (PdfName.AUTHOR.equals(key)) {
+            dc.addAuthor(((PdfString) obj).toUnicodeString());
+        } else if (PdfName.SUBJECT.equals(key)) {
+            String subject = ((PdfString) obj).toUnicodeString();
+            dc.addSubject(subject);
+            dc.addDescription(subject);
+        } else if (PdfName.KEYWORDS.equals(key)) {
+            p.addKeywords(((PdfString) obj).toUnicodeString());
+        } else if (PdfName.CREATOR.equals(key)) {
+            basic.addCreatorTool(((PdfString) obj).toUnicodeString());
+        } else if (PdfName.PRODUCER.equals(key)) {
+            p.addProducer(((PdfString) obj).toUnicodeString());
+        } else if (PdfName.CREATIONDATE.equals(key)) {
+            basic.addCreateDate(((PdfDate) obj).getW3CDate());
+        } else if (PdfName.MODDATE.equals(key)) {
+            basic.addModDate(((PdfDate) obj).getW3CDate());
+        }
+    }
+
+    private void addNonEmptySchemas(DublinCoreSchema dc, PdfSchema p, XmpBasicSchema basic) throws IOException {
+        if (dc.size() > 0) {
+            addRdfDescription(dc);
+        }
+        if (p.size() > 0) {
+            addRdfDescription(p);
+        }
+        if (basic.size() > 0) {
+            addRdfDescription(basic);
+        }
+    }
+
+    private void handlePdfXConformance(int PdfXConformance) throws IOException {
+        if (PdfXConformance == PdfWriter.PDFA1A || PdfXConformance == PdfWriter.PDFA1B) {
+            PdfA1Schema a1 = new PdfA1Schema();
+            if (PdfXConformance == PdfWriter.PDFA1A) {
+                a1.addConformance("A");
+            } else {
+                a1.addConformance("B");
             }
-            if (p.size() > 0) {
-                addRdfDescription(p);
-            }
-            if (basic.size() > 0) {
-                addRdfDescription(basic);
-            }
-            if (PdfXConformance == PdfWriter.PDFA1A || PdfXConformance == PdfWriter.PDFA1B) {
-                PdfA1Schema a1 = new PdfA1Schema();
-                if (PdfXConformance == PdfWriter.PDFA1A) {
-                    a1.addConformance("A");
-                } else {
-                    a1.addConformance("B");
-                }
-                addRdfDescription(a1);
-            }
+            addRdfDescription(a1);
         }
     }
 
@@ -225,55 +234,46 @@ public class XmpWriter implements AutoCloseable {
     public XmpWriter(OutputStream os, Map<?, ?> info) throws IOException {
         this(os);
         if (info != null) {
-            DublinCoreSchema dc = new DublinCoreSchema();
-            PdfSchema p = new PdfSchema();
-            XmpBasicSchema basic = new XmpBasicSchema();
-            String key;
-            String value;
-            for (Object o : info.entrySet()) {
-                Map.Entry<?, ?> entry = (Map.Entry<?, ?>) o;
-                key = (String) entry.getKey();
-                value = (String) entry.getValue();
-                if (value == null) {
-                    continue;
-                }
-                if ("Title".equals(key)) {
-                    dc.addTitle(value);
-                }
-                if ("Author".equals(key)) {
-                    dc.addAuthor(value);
-                }
-                if ("Subject".equals(key)) {
-                    dc.addSubject(value);
-                    dc.addDescription(value);
-                }
-                if ("Keywords".equals(key)) {
-                    p.addKeywords(value);
-                }
-                if ("Creator".equals(key)) {
-                    basic.addCreatorTool(value);
-                }
-                if ("Producer".equals(key)) {
-                    p.addProducer(value);
-                }
-                if ("CreationDate".equals(key)) {
-                    basic.addCreateDate(PdfDate.getW3CDate(value));
-                }
-                if ("ModDate".equals(key)) {
-                    basic.addModDate(PdfDate.getW3CDate(value));
-                }
-            }
-            if (dc.size() > 0) {
-                addRdfDescription(dc);
-            }
-            if (p.size() > 0) {
-                addRdfDescription(p);
-            }
-            if (basic.size() > 0) {
-                addRdfDescription(basic);
-            }
+            processInfo(info);
         }
     }
+
+    private void processInfo(Map<?, ?> info) throws IOException {
+        DublinCoreSchema dc = new DublinCoreSchema();
+        PdfSchema p = new PdfSchema();
+        XmpBasicSchema basic = new XmpBasicSchema();
+
+        for (Map.Entry<?, ?> entry : info.entrySet()) {
+            processEntry(entry, dc, p, basic);
+        }
+
+        addNonEmptySchemas(dc, p, basic);
+    }
+
+    private void processEntry(Map.Entry<?, ?> entry, DublinCoreSchema dc, PdfSchema p, XmpBasicSchema basic) throws IOException {
+        String key = (String) entry.getKey();
+        String value = (String) entry.getValue();
+
+        if (value == null) {
+            return;
+        }
+
+        switch (key) {
+            case "Title" -> dc.addTitle(value);
+            case "Author" -> dc.addAuthor(value);
+            case "Subject" -> {
+                dc.addSubject(value);
+                dc.addDescription(value);
+            }
+            case "Keywords" -> p.addKeywords(value);
+            case "Creator" -> basic.addCreatorTool(value);
+            case "Producer" -> p.addProducer(value);
+            case "CreationDate" -> basic.addCreateDate(PdfDate.getW3CDate(value));
+            case "ModDate" -> basic.addModDate(PdfDate.getW3CDate(value));
+            default -> throw new IllegalStateException("Unexpected state: ");
+        }
+    }
+
 
     /**
      * Sets the XMP to read-only
@@ -330,8 +330,8 @@ public class XmpWriter implements AutoCloseable {
     public void close() throws IOException {
         writer.write("</rdf:RDF>");
         writer.write("</x:xmpmeta>\n");
-        for (int i = 0; i < extraSpace; i++) {
-            writer.write(EXTRASPACE);
+        for (int i = 0; i < extraS; i++) {
+            writer.write(EXTRAPACE);
         }
         writer.write(end == 'r' ? XPACKET_PI_END_R : XPACKET_PI_END_W);
         writer.flush();
