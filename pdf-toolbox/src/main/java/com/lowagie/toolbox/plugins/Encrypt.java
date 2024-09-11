@@ -87,12 +87,16 @@ public class Encrypt extends AbstractTool {
     /**
      * Constructs an Encrypt object.
      */
+    private static final String SRCFILE_A = "srcfile";
+    private static final String DESTFILE = "destfile";
+    private static final String ONEP = "ownerpassword";
+
     public Encrypt() {
-        arguments.add(new FileArgument(this, "srcfile", "The file you want to encrypt", false, new PdfFilter()));
-        arguments.add(new FileArgument(this, "destfile", "The file to which the encrypted PDF has to be written", true,
+        arguments.add(new FileArgument(this, SRCFILE_A, "The file you want to encrypt", false, new PdfFilter()));
+        arguments.add(new FileArgument(this, DESTFILE, "The file to which the encrypted PDF has to be written", true,
                 new PdfFilter()));
-        arguments.add(new StringArgument(this, "ownerpassword", "The ownerpassword you want to add to the PDF file"));
-        arguments.add(new StringArgument(this, "userpassword", "The userpassword you want to add to the PDF file"));
+        arguments.add(new StringArgument(this, ONEP, "The ownerpassword you want to add to the PDF file"));
+        arguments.add(new StringArgument(this, ONEP, "The userpassword you want to add to the PDF file"));
         arguments.add(new BitsetArgument(this, "permissions", "Permissions on the file", PERMISSION_OPTIONS));
         OptionArgument oa = new OptionArgument(this, "strength", "Strength of the encryption");
         oa.addOption("40 bit encryption", "40");
@@ -128,12 +132,12 @@ public class Encrypt extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        try (PdfReader reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath());
-             FileOutputStream fos = new FileOutputStream((File) getValue("destfile"));) {
-            if (getValue("srcfile") == null) {
+        try (PdfReader reader = new PdfReader(((File) getValue(SRCFILE_A)).getAbsolutePath());
+             FileOutputStream fos = new FileOutputStream((File) getValue(DESTFILE));) {
+            if (getValue(SRCFILE_A) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            if (getValue("destfile") == null) {
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException("You need to choose a destination file");
             }
             int permissions = 0;
@@ -148,8 +152,8 @@ public class Encrypt extends AbstractTool {
                 userpassword = ((String) getValue("userpassword")).getBytes();
             }
             byte[] ownerpassword = null;
-            if (getValue("ownerpassword") != null) {
-                ownerpassword = ((String) getValue("ownerpassword")).getBytes();
+            if (getValue(ONEP) != null) {
+                ownerpassword = ((String) getValue(ONEP)).getBytes();
             }
              
             PdfEncryptor.encrypt(
@@ -187,7 +191,7 @@ public class Encrypt extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 
 }
