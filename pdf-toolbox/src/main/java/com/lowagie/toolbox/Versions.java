@@ -56,6 +56,7 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
+import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -107,7 +108,7 @@ public class Versions
      */
     public static void main(String[] args) {
         Versions version = new Versions();
-        version.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        version.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         version.setVisible(true);
     }
 
@@ -195,6 +196,8 @@ public class Versions
                     case 3:
                         dummy = versionsarray.get(rowIndex);
                         return dummy.split(" ")[4];
+                    default:
+                        break;
 
                 }
                 return versionsarray;
