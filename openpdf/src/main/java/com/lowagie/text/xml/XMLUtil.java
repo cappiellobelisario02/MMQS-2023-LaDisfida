@@ -45,7 +45,7 @@ package com.lowagie.text.xml;
 
 public class XMLUtil {
 
-    private XMLUtil(){
+    private XMLUtil() {
         //empty on purpose
     }
 
@@ -58,38 +58,60 @@ public class XMLUtil {
      */
     public static String escapeXML(String s, boolean onlyASCII) {
         char[] cc = s.toCharArray();
-        int len = cc.length;
         StringBuilder sb = new StringBuilder();
+
         for (int c : cc) {
-            switch (c) {
-                case '<':
-                    sb.append("&lt;");
-                    break;
-                case '>':
-                    sb.append("&gt;");
-                    break;
-                case '&':
-                    sb.append("&amp;");
-                    break;
-                case '"':
-                    sb.append("&quot;");
-                    break;
-                case '\'':
-                    sb.append("&apos;");
-                    break;
-                default:
-                    if ((c == 0x9) || (c == 0xA) || (c == 0xD)
-                            || ((c >= 0x20) && (c <= 0xD7FF))
-                            || ((c >= 0xE000) && (c <= 0xFFFD))
-                            || ((c >= 0x10000) && (c <= 0x10FFFF))) {
-                        if (onlyASCII && c > 127) {
-                            sb.append("&#").append(c).append(';');
-                        } else {
-                            sb.append((char) c);
-                        }
-                    }
+            if (isSpecialChar(c)) {
+                appendSpecialChar(sb, c);
+            } else if (isValidXMLChar(c)) {
+                appendValidChar(sb, c, onlyASCII);
             }
         }
         return sb.toString();
+    }
+
+    // 1. Helper method to check if the character is a special XML character
+    private static boolean isSpecialChar(int c) {
+        return c == '<' || c == '>' || c == '&' || c == '"' || c == '\'';
+    }
+
+    // 2. Helper method to append special XML characters
+    private static void appendSpecialChar(StringBuilder sb, int c) {
+        switch (c) {
+            case '<':
+                sb.append("&lt;");
+                break;
+            case '>':
+                sb.append("&gt;");
+                break;
+            case '&':
+                sb.append("&amp;");
+                break;
+            case '"':
+                sb.append("&quot;");
+                break;
+            case '\'':
+                sb.append("&apos;");
+                break;
+            default:
+                break;
+        }
+    }
+
+    // 3. Helper method to check if the character is valid in XML
+    private static boolean isValidXMLChar(int c) {
+        return (c == 0x9) || (c == 0xA) || (c == 0xD)
+                || ((c >= 0x20) && (c <= 0xD7FF))
+                || ((c >= 0xE000) && (c <= 0xFFFD))
+                || ((c >= 0x10000) && (c <= 0x10FFFF));
+    }
+
+    // 4. Helper method to append valid XML characters or escape them if needed
+    private static void appendValidChar(StringBuilder sb, int c, boolean onlyASCII) {
+        if (onlyASCII && c > 127) {
+            sb.append("&#").append(c).append(';');
+        } else {
+            sb.append((char) c);
+        }
     }
 }
