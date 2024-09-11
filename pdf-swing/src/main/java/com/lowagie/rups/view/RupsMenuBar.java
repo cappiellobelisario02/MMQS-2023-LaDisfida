@@ -67,7 +67,7 @@ public class RupsMenuBar extends JMenuBar implements Observer {
     /**
      * The Observable object.
      */
-    protected Observable observable;
+    protected transient Observable observable;
     /**
      * The action needed to open a file.
      */

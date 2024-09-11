@@ -28,6 +28,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 
 /**
  * An informational dialog window showing the progress of a certain action.
@@ -60,7 +61,7 @@ public class ProgressDialog extends JDialog {
     public ProgressDialog(JFrame parent, String msg) {
         super();
         this.setTitle("Progress...");
-        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setSize(300, 100);
         this.setLocationRelativeTo(parent);
 

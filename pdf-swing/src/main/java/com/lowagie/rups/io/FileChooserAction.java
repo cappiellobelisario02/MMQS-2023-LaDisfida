@@ -39,11 +39,12 @@ public class FileChooserAction extends AbstractAction {
     /**
      * An object that is expecting the result of the file chooser action.
      */
-    protected Observable observable;
+
+    protected transient Observable observable;
     /**
      * A file filter to apply when browsing for a file.
      */
-    protected FileFilter filter;
+    protected transient FileFilter filter;
     /**
      * Indicates if you're browsing to create a new or an existing file.
      */
