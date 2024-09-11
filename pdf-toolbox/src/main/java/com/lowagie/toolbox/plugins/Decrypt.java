@@ -65,11 +65,14 @@ public class Decrypt extends AbstractTool {
     /**
      * Constructs a Decrypt object.
      */
+    private static final String SRCFILE_ARG = "srcfile";
+    private static final String DEST = "destfile";
+    private static final String OP = "ownerpassword";
     public Decrypt() {
-        arguments.add(new FileArgument(this, "srcfile", "The file you want to decrypt", false, new PdfFilter()));
-        arguments.add(new FileArgument(this, "destfile", "The file to which the decrypted PDF has to be written", true,
+        arguments.add(new FileArgument(this, SRCFILE_ARG, "The file you want to decrypt", false, new PdfFilter()));
+        arguments.add(new FileArgument(this, DEST, "The file to which the decrypted PDF has to be written", true,
                 new PdfFilter()));
-        arguments.add(new StringArgument(this, "ownerpassword", "The ownerpassword you want to add to the PDF file"));
+        arguments.add(new StringArgument(this, OP, "The ownerpassword you want to add to the PDF file"));
     }
 
     /**
@@ -103,24 +106,24 @@ public class Decrypt extends AbstractTool {
         PdfReader reader = null;
         FileOutputStream fos = null;
         try {
-            if (getValue("srcfile") == null) {
+            if (getValue(SRCFILE_ARG) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }
-            if (getValue("destfile") == null) {
+            if (getValue(DEST) == null) {
                 throw new InstantiationException("You need to choose a destination file");
             }
             byte[] ownerpassword = null;
-            if (getValue("ownerpassword") != null) {
-                ownerpassword = ((String) getValue("ownerpassword")).getBytes();
+            if (getValue(OP) != null) {
+                ownerpassword = ((String) getValue(OP)).getBytes();
             }
             try {
-                reader = new PdfReader(((File) getValue("srcfile")).getAbsolutePath(), ownerpassword);
+                reader = new PdfReader(((File) getValue(SRCFILE_ARG)).getAbsolutePath(), ownerpassword);
                 // Rest of your code here...
             } catch (Exception e) {
                 // Handle the exception here...
             }
             try{
-                fos = new FileOutputStream((File) getValue("destfile"));
+                fos = new FileOutputStream((File) getValue(DEST));
             } catch(Exception e){
                 e.printStackTrace();
             }
@@ -162,7 +165,7 @@ public class Decrypt extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DEST);
     }
 
 }
