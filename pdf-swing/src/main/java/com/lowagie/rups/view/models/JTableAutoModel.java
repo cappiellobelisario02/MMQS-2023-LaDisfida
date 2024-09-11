@@ -34,7 +34,7 @@ public class JTableAutoModel extends AbstractTableModel {
     /**
      * The table that knows how to model itself.
      */
-    protected JTableAutoModelInterface table;
+    protected transient JTableAutoModelInterface table;
 
     /**
      * Constructs an auto model for a JTable.
