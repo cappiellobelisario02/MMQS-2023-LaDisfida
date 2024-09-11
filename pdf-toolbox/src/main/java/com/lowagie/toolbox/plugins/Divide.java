@@ -65,11 +65,13 @@ public class Divide extends AbstractTool {
     /**
      * Constructs an Divide object.
      */
+    private static final String DESTFILE = "destfile";
+    private static final String SRCFILE_ARGUMENT_NAME = "srcfile";
     public Divide() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW;
-        arguments.add(new FileArgument(this, "srcfile",
+        arguments.add(new FileArgument(this, SRCFILE_ARGUMENT_NAME,
                 "The file you want to divide", false, new PdfFilter()));
-        arguments.add(new FileArgument(this, "destfile", "The resulting PDF",
+        arguments.add(new FileArgument(this, DESTFILE, "The resulting PDF",
                 true, new PdfFilter()));
     }
 
@@ -104,16 +106,16 @@ public class Divide extends AbstractTool {
         PdfReader reader = null;
         Document document = null;
         try {
-            if (getValue("srcfile") == null) {
+            if (getValue(SRCFILE_ARGUMENT_NAME) == null) {
                 throw new InstantiationException(
                         "You need to choose a sourcefile");
             }
-            File src = (File) getValue("srcfile");
-            if (getValue("destfile") == null) {
+            File src = (File) getValue(SRCFILE_ARGUMENT_NAME);
+            if (getValue(DESTFILE) == null) {
                 throw new InstantiationException(
                         "You need to choose a destination file");
             }
-            File dest = (File) getValue("destfile");
+            File dest = (File) getValue(DESTFILE);
 
             // we create a reader for a certain document
             /*PdfReader reader*/  
@@ -190,6 +192,6 @@ public class Divide extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 }
