@@ -216,265 +216,248 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
      */
 
     public void handleStartingTags(String name, Properties attributes) {
-        if (ignore || ElementTags.IGNORE.equals(name)) {
+        if (shouldIgnore(name)) {
             ignore = true;
             return;
         }
 
-        // maybe there is some meaningful data that wasn't between tags
+        processCurrentChunk();
+
+        switch (name) {
+            case ElementTags.CHUNK:
+                handleChunk(attributes);
+                break;
+            case ElementTags.ENTITY:
+                handleEntity(attributes);
+                break;
+            case ElementTags.PHRASE:
+            case ElementTags.ANCHOR:
+            case ElementTags.PARAGRAPH:
+            case ElementTags.TITLE:
+            case ElementTags.LIST:
+            case ElementTags.LISTITEM:
+            case ElementTags.CELL:
+            case ElementTags.SECTION:
+            case ElementTags.CHAPTER:
+                handleTextElement(name, attributes);
+                break;
+            case ElementTags.TABLE:
+                handleTable(attributes);
+                break;
+            case ElementTags.IMAGE:
+                handleImage(attributes);
+                break;
+            case ElementTags.ANNOTATION:
+                handleAnnotation(attributes);
+                break;
+            default:
+                handleSpecialTags(name);
+        }
+    }
+
+    private boolean shouldIgnore(String name) {
+        return ignore || ElementTags.IGNORE.equals(name);
+    }
+
+    private void processCurrentChunk() {
         if (currentChunk != null && isNotBlank(currentChunk.getContent())) {
-            TextElementArray current;
-            try {
-                current = (TextElementArray) stack.pop();
-            } catch (EmptyStackException ese) {
-                if (bf == null) {
-                    current = new Paragraph("", new Font());
-                } else {
-                    current = new Paragraph("", new Font(this.bf));
-                }
-            }
+            TextElementArray current = getCurrentElementFromStack();
             current.add(currentChunk);
             stack.push(current);
             currentChunk = null;
         }
+    }
 
-        // chunks
-        if (ElementTags.CHUNK.equals(name)) {
-            currentChunk = ElementFactory.getChunk(attributes);
-            if (bf != null) {
-                currentChunk.setFont(new Font(this.bf));
+    private TextElementArray getCurrentElementFromStack() {
+        try {
+            return (TextElementArray) stack.pop();
+        } catch (EmptyStackException ese) {
+            return new Paragraph("", bf == null ? new Font() : new Font(this.bf));
+        }
+    }
+
+    private void handleChunk(Properties attributes) {
+        currentChunk = ElementFactory.getChunk(attributes);
+        if (bf != null) {
+            currentChunk.setFont(new Font(this.bf));
+        }
+    }
+
+    private void handleEntity(Properties attributes) {
+        Font font = (currentChunk != null) ? currentChunk.getFont() : new Font();
+        if (currentChunk != null) {
+            handleEndingTags(ElementTags.CHUNK);
+        }
+        currentChunk = EntitiesToSymbol.get(attributes.getProperty(ElementTags.ID), font);
+    }
+
+    private void handleTextElement(String name, Properties attributes) {
+        stack.push(ElementFactory.getListItem(name, attributes));  // Abstracted element creation logic
+    }
+
+    private void handleTable(Properties attributes) {
+        Table table = ElementFactory.getTable(attributes);
+        setTableWidths(table);
+        stack.push(table);
+    }
+
+    private void setTableWidths(Table table) {
+        float[] widths = table.getProportionalWidths();
+        for (int i = 0; i < widths.length; i++) {
+            if (widths[i] == 0) {
+                widths[i] = 100.0f / widths.length;
             }
-            return;
         }
-
-        // symbols
-        if (ElementTags.ENTITY.equals(name)) {
-            Font f = new Font();
-            if (currentChunk != null) {
-                handleEndingTags(ElementTags.CHUNK);
-                f = currentChunk.getFont();
-            }
-            currentChunk = EntitiesToSymbol.get(attributes.getProperty(ElementTags.ID),
-                    f);
-            return;
+        try {
+            table.setWidths(widths);
+        } catch (BadElementException bee) {
+            throw new ExceptionConverter(bee);
         }
+    }
 
-        // phrases
-        if (ElementTags.PHRASE.equals(name)) {
-            stack.push(ElementFactory.getPhrase(attributes));
-            return;
+    private void handleImage(Properties attributes) {
+        try {
+            Image img = ElementFactory.getImage(attributes);
+            addingImage(img);
+        } catch (Exception e) {
+            throw new ExceptionConverter(e);
         }
+    }
 
-        // anchors
-        if (ElementTags.ANCHOR.equals(name)) {
-            stack.push(ElementFactory.getAnchor(attributes));
-            return;
+    private void handleAnnotation(Properties attributes) {
+        Annotation annotation = ElementFactory.getAnnotation(attributes);
+        try {
+            modifyTextElementArrayIntoStack(annotation);
+        } catch (DocumentException de) {
+            throw new ExceptionConverter(de);
         }
+    }
 
-        // paragraphs and titles
-        if (ElementTags.PARAGRAPH.equals(name) || ElementTags.TITLE.equals(name)) {
-            stack.push(ElementFactory.getParagraph(attributes));
-            return;
+    private void handleSpecialTags(String name) {
+        if (isNewline(name)) {
+            handleNewline();
+        } else if (isNewpage(name)) {
+            handleNewPage();
+        } else if (ElementTags.HORIZONTALRULE.equals(name)) {
+            handleHorizontalRule();
+        } else if (isDocumentRoot(name)) {
+            handleDocumentRoot(attributes);
         }
+    }
 
-        // lists
-        if (ElementTags.LIST.equals(name)) {
-            stack.push(ElementFactory.getList(attributes));
-            return;
+    private void handleNewline() {
+        TextElementArray current = getCurrentElementFromStack();
+        current.add(Chunk.NEWLINE);
+        stack.push(current);
+    }
+    private static final String ORIENTATION_LANDSCAPE = "landscape";
+    private void handleNewPage() {
+        TextElementArray current = getCurrentElementFromStack();
+        Chunk newPage = new Chunk("");
+        newPage.setNewPage();
+        if (bf != null) {
+            newPage.setFont(new Font(this.bf));
         }
+        current.add(newPage);
+        stack.push(current);
+    }
 
-        // listitems
-        if (ElementTags.LISTITEM.equals(name)) {
-            stack.push(ElementFactory.getListItem(attributes));
-            return;
-        }
-
-        // cells
-        if (ElementTags.CELL.equals(name)) {
-            stack.push(ElementFactory.getCell(attributes));
-            return;
-        }
-
-        // tables
-        if (ElementTags.TABLE.equals(name)) {
-            Table table = ElementFactory.getTable(attributes);
-            float[] widths = table.getProportionalWidths();
-            for (int i = 0; i < widths.length; i++) {
-                if (widths[i] == 0) {
-                    widths[i] = 100.0f / widths.length;
-                }
-            }
+    private void handleHorizontalRule() {
+        LineSeparator hr = new LineSeparator(1.0f, 100.0f, null, Element.ALIGN_CENTER, 0);
+        try {
+            TextElementArray current = (TextElementArray) stack.pop();
+            current.add(hr);
+            stack.push(current);
+        } catch (EmptyStackException ese) {
             try {
-                table.setWidths(widths);
-            } catch (BadElementException bee) {
-                // this shouldn't happen
-                throw new ExceptionConverter(bee);
-            }
-            stack.push(table);
-            return;
-        }
-
-        // sections
-        if (ElementTags.SECTION.equals(name)) {
-            Element previous = stack.pop();
-            Section section;
-            try {
-                section = ElementFactory.getSection((Section) previous, attributes);
-            } catch (ClassCastException cce) {
-                throw new ExceptionConverter(cce);
-            }
-            stack.push(previous);
-            stack.push(section);
-            return;
-        }
-
-        // chapters
-        if (ElementTags.CHAPTER.equals(name)) {
-            stack.push(ElementFactory.getChapter(attributes));
-            return;
-        }
-
-        // images
-        if (ElementTags.IMAGE.equals(name)) {
-            try {
-                Image img = ElementFactory.getImage(attributes);
-                addingImage(img);
-            } catch (Exception e) {
-                throw new ExceptionConverter(e);
-            }
-        }
-
-        // annotations
-        if (ElementTags.ANNOTATION.equals(name)) {
-            Annotation annotation = ElementFactory.getAnnotation(attributes);
-            try {
-                modifyTextElementArrayIntoStack(annotation);
-                return;
+                document.add(hr);
             } catch (DocumentException de) {
                 throw new ExceptionConverter(de);
             }
         }
+    }
 
-        // newlines
-        if (isNewline(name)) {
-            TextElementArray current;
-            try {
-                current = (TextElementArray) stack.pop();
-                current.add(Chunk.NEWLINE);
-                stack.push(current);
-            } catch (EmptyStackException ese) {
-                if (currentChunk == null) {
-                    try {
-                        document.add(Chunk.NEWLINE);
-                    } catch (DocumentException de) {
-                        throw new ExceptionConverter(de);
-                    }
-                } else {
-                    currentChunk.append("\n");
-                }
-            }
-            return;
+    private void handleDocumentRoot(Properties attributes) {
+        processDocumentAttributes(attributes);
+        if (controlOpenClose) {
+            document.open();
         }
+    }
 
-        // newpage
-        if (isNewpage(name)) {
-            TextElementArray current;
-            try {
-                current = (TextElementArray) stack.pop();
-                Chunk newPage = new Chunk("");
-                newPage.setNewPage();
-                if (bf != null) {
-                    newPage.setFont(new Font(this.bf));
-                }
-                current.add(newPage);
-                stack.push(current);
-            } catch (EmptyStackException ese) {
-                document.newPage();
-            }
-            return;
-        }
+    private void processDocumentAttributes(Properties attributes) {
+        Rectangle pageSize = null;
+        String orientation = null;
 
-        if (ElementTags.HORIZONTALRULE.equals(name)) {
-            TextElementArray current;
-            LineSeparator hr = new LineSeparator(1.0f, 100.0f, null, Element.ALIGN_CENTER, 0);
-            try {
-                current = (TextElementArray) stack.pop();
-                current.add(hr);
-                stack.push(current);
-            } catch (EmptyStackException ese) {
-                try {
-                    document.add(hr);
-                } catch (DocumentException de) {
-                    throw new ExceptionConverter(de);
-                }
-            }
-            return;
-        }
+        for (Object o : attributes.keySet()) {
+            String key = (String) o;
+            String value = attributes.getProperty(key);
 
-        // documentroot
-        if (isDocumentRoot(name)) {
-            String key;
-            String value;
-            // pagesize and orientation specific code suggested by Samuel Gabriel
-            // Updated by Ricardo Coutinho. Only use if set in html!
-            Rectangle pageSize = null;
-            String orientation = null;
-            for (Object o : attributes.keySet()) {
-                key = (String) o;
-                value = attributes.getProperty(key);
-                try {
-                    // margin specific code suggested by Reza Nasiri
-                    if (ElementTags.LEFT.equalsIgnoreCase(key)) {
-                        leftMargin = Float.parseFloat(value + "f");
-                    }
-                    if (ElementTags.RIGHT.equalsIgnoreCase(key)) {
-                        rightMargin = Float.parseFloat(value + "f");
-                    }
-                    if (ElementTags.TOP.equalsIgnoreCase(key)) {
-                        topMargin = Float.parseFloat(value + "f");
-                    }
-                    if (ElementTags.BOTTOM.equalsIgnoreCase(key)) {
-                        bottomMargin = Float.parseFloat(value + "f");
-                    }
-                } catch (Exception ex) {
-                    throw new ExceptionConverter(ex);
-                }
-                if (ElementTags.PAGE_SIZE.equals(key)) {
-                    try {
-                        Field pageSizeField = PageSize.class.getField(value);
-                        pageSize = (Rectangle) pageSizeField.get(null);
-                    } catch (Exception ex) {
-                        throw new ExceptionConverter(ex);
-                    }
-                } else if (ElementTags.ORIENTATION.equals(key)) {
-                    try {
-                        if ("landscape".equals(value)) {
-                            orientation = "landscape";
-                        }
-                    } catch (Exception ex) {
-                        throw new ExceptionConverter(ex);
-                    }
-                } else {
-                    try {
-                        document.add(new Meta(key, value));
-                    } catch (DocumentException de) {
-                        throw new ExceptionConverter(de);
-                    }
-                }
-            }
-            if (pageSize != null) {
-                if ("landscape".equals(orientation)) {
-                    pageSize = pageSize.rotate();
-                }
-                document.setPageSize(pageSize);
-            }
-            document.setMargins(leftMargin, rightMargin, topMargin, bottomMargin);
+            if (processMargins(key, value)) continue;
 
-            if (controlOpenClose) {
-                document.open();
+            switch (key) {
+                case ElementTags.PAGE_SIZE:
+                    pageSize = getPageSize(value);
+                    break;
+                case ElementTags.ORIENTATION:
+                    orientation = getOrientation(value);
+                    break;
+                default:
+                    addMeta(key, value);
             }
         }
 
+        if (pageSize != null) {
+            if (ORIENTATION_LANDSCAPE.equals(orientation)) {
+                pageSize = pageSize.rotate();
+            }
+            document.setPageSize(pageSize);
+        }
+        document.setMargins(leftMargin, rightMargin, topMargin, bottomMargin);
+    }
+
+    private boolean processMargins(String key, String value) {
+        try {
+            switch (key) {
+                case ElementTags.LEFT:
+                    leftMargin = Float.parseFloat(value + "f");
+                    return true;
+                case ElementTags.RIGHT:
+                    rightMargin = Float.parseFloat(value + "f");
+                    return true;
+                case ElementTags.TOP:
+                    topMargin = Float.parseFloat(value + "f");
+                    return true;
+                case ElementTags.BOTTOM:
+                    bottomMargin = Float.parseFloat(value + "f");
+                    return true;
+                default:
+                    break;
+            }
+        } catch (Exception ex) {
+            throw new ExceptionConverter(ex);
+        }
+        return false;
+    }
+
+    private Rectangle getPageSize(String value) {
+        try {
+            Field pageSizeField = PageSize.class.getField(value);
+            return (Rectangle) pageSizeField.get(null);
+        } catch (Exception ex) {
+            throw new ExceptionConverter(ex);
+        }
+    }
+
+    private String getOrientation(String value) {
+        return ORIENTATION_LANDSCAPE.equals(value) ? ORIENTATION_LANDSCAPE : null;
+    }
+
+    private void addMeta(String key, String value) {
+        try {
+            document.add(new Meta(key, value));
+        } catch (DocumentException de) {
+            throw new ExceptionConverter(de);
+        }
     }
 
     private void addingImage (Image img) {
@@ -534,48 +517,58 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             return;
         }
 
-        String content = new String(ch, start, length);
-        if (content.trim().isEmpty()) {
+        String content = new String(ch, start, length).trim();
+        if (content.isEmpty()) {
             return;
         }
 
-        StringBuilder buf = new StringBuilder();
-        int len = content.length();
-        char character;
-        boolean newline = false;
-        for (int i = 0; i < len; i++) {
-            character = content.charAt(i);
-            switch (character) {
-                case ' ':
-                    if (!newline) {
-                        buf.append(character);
-                    }
-                    break;
-                case '\n':
-                    if (i > 0) {
-                        newline = true;
-                        buf.append(' ');
-                    }
-                    break;
-                case '\r':
-                    break;
-                case '\t':
-                    break;
-                default:
-                    newline = false;
-                    buf.append(character);
-            }
-        }
+        String processedContent = processContent(content);
+
         if (currentChunk == null) {
-            if (bf == null) {
-                currentChunk = new Chunk(buf.toString());
-            } else {
-                currentChunk = new Chunk(buf.toString(), new Font(this.bf));
-            }
+            currentChunk = createChunk(processedContent);
         } else {
-            currentChunk.append(buf.toString());
+            currentChunk.append(processedContent);
         }
     }
+
+    private String processContent(String content) {
+        StringBuilder buf = new StringBuilder();
+        boolean newline = false;
+
+        for (char character : content.toCharArray()) {
+            newline = handleCharacter(buf, character, newline);
+        }
+
+        return buf.toString();
+    }
+
+    private boolean handleCharacter(StringBuilder buf, char character, boolean newline) {
+        switch (character) {
+            case ' ':
+                if (!newline) {
+                    buf.append(character);
+                }
+                break;
+            case '\n':
+                buf.append(' ');
+                return true;
+            case '\r':
+            case '\t':
+                break;
+            default:
+                buf.append(character);
+                newline = false;
+        }
+        return newline;
+    }
+
+    private Chunk createChunk(String content) {
+        if (bf == null) {
+            return new Chunk(content);
+        }
+        return new Chunk(content, new Font(this.bf));
+    }
+
 
     /**
      * Sets the font that has to be used.
@@ -606,164 +599,197 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
      */
 
     public void handleEndingTags(String name) {
-
-        if (ElementTags.IGNORE.equals(name)) {
-            ignore = false;
-            return;
-        }
-        if (ignore) {
-            return;
-        }
-        // tags that don't have any content
-        if (isNewpage(name) || ElementTags.ANNOTATION.equals(name) || ElementTags.IMAGE.equals(name)
-                || isNewline(name)) {
-            return;
-        }
-
         try {
-            // titles of sections and chapters
-            if (ElementTags.TITLE.equals(name)) {
-                Paragraph current = (Paragraph) stack.pop();
-                if (currentChunk != null) {
-                    current.add(currentChunk);
-                    currentChunk = null;
-                }
-                Section previous = (Section) stack.pop();
-                previous.setTitle(current);
-                stack.push(previous);
-                return;
-            }
+            if (shouldIgnoreTag(name)) return;
+            if (isSelfClosingTag(name)) return;
 
-            // all other endtags
-            if (currentChunk != null) {
-                TextElementArray current = updateTextElementArray();
-                current.add(currentChunk);
-                stack.push(current);
-                currentChunk = null;
-            }
+            handleTitleTag(name);
+            handleEndChunk(name);
+            handleEndTagWithTextElement(name);
+            handleListItem(name);
+            handleTable(name);
+            handleSection(name);
+            handleChapter(name);
+            handleDocumentRoot(name);
 
-            // chunks
-            if (ElementTags.CHUNK.equals(name)) {
-                return;
-            }
-
-            // phrases, anchors, lists, tables
-            if (ElementTags.PHRASE.equals(name) || ElementTags.ANCHOR.equals(name) || ElementTags.LIST.equals(name)
-                    || ElementTags.PARAGRAPH.equals(name)) {
-                Element current = stack.pop();
-                addTextElementArrayWithElementIntoStack(current);
-                return;
-            }
-
-            // listitems
-            if (ElementTags.LISTITEM.equals(name)) {
-                ListItem listItem = (ListItem) stack.pop();
-                List list = (List) stack.pop();
-                list.add(listItem);
-                stack.push(list);
-            }
-
-            // tables
-            if (ElementTags.TABLE.equals(name)) {
-                Table table = (Table) stack.pop();
-                addTextElementArrayWithTableIntoStack(table);
-                return;
-            }
-
-            // rows
-            if (ElementTags.ROW.equals(name)) {
-                java.util.List<Cell> cells = new ArrayList<>();
-                int columns = 0;
-                Table table;
-                Cell cell;
-                while (true) {
-                    Element element = stack.pop();
-                    if (element.type() == Element.CELL) {
-                        cell = (Cell) element;
-                        columns += cell.getColspan();
-                        cells.add(cell);
-                    } else {
-                        table = (Table) element;
-                        break;
-                    }
-                }
-                if (table.getColumns() < columns) {
-                    table.addColumns(columns - table.getColumns());
-                }
-                Collections.reverse(cells);
-                String width;
-                float[] cellWidths = new float[columns];
-                boolean[] cellNulls = new boolean[columns];
-                for (int i = 0; i < columns; i++) {
-                    cellWidths[i] = 0;
-                    cellNulls[i] = true;
-                }
-                float total = 0.0f;
-                int j = 0;
-                for (Cell value : cells) {
-                    cell = value;
-                    width = cell.getWidthAsString();
-                    if (cell.getWidth() == 0) {
-                        if (cell.getColspan() == 1 && cellWidths[j] == 0) {
-                            total = calculateTotalCellWidth(total, cellWidths, j, columns);
-                        } else if (cell.getColspan() == 1) {
-                            cellNulls[j] = false;
-                        }
-                    } else if (cell.getColspan() == 1 && width.endsWith("%")) {
-                        calculateTotalAndUpdateCellNulls(total, width, cellWidths, cellNulls, j);
-                    }
-                    j += cell.getColspan();
-                    table.addCell(cell);
-                }
-                float[] widths = table.getProportionalWidths();
-                if (widths.length == columns) {
-                    float left = 0.0f;
-                    for (int i = 0; i < columns; i++) {
-                        if (cellNulls[i] && widths[i] != 0) {
-                            left += widths[i];
-                            cellWidths[i] = widths[i];
-                        }
-                    }
-                    if (100.0 >= total) {
-                        for (int i = 0; i < widths.length; i++) {
-                            if (cellWidths[i] == 0 && widths[i] != 0) {
-                                cellWidths[i] = (widths[i] / left) * (100.0f - total);
-                            }
-                        }
-                    }
-                    table.setWidths(cellWidths);
-                }
-                stack.push(table);
-            }
-
-            // cells
-            if (ElementTags.CELL.equals(name)) {
-                return;
-            }
-
-            // sections
-            if (ElementTags.SECTION.equals(name)) {
-                stack.pop();
-                return;
-            }
-
-            // chapters
-            if (ElementTags.CHAPTER.equals(name)) {
-                document.add(stack.pop());
-                return;
-            }
-
-            // the documentroot
-            if (isDocumentRoot(name)) {
-                updateStackWithTextElementArraysAndElements();
-                if (controlOpenClose) {
-                    document.close();
-                }
-            }
         } catch (DocumentException de) {
             throw new ExceptionConverter(de);
         }
     }
+
+    // 1. Helper method to check if the tag should be ignored
+    private boolean shouldIgnoreTag(String name) {
+        if (ElementTags.IGNORE.equals(name)) {
+            ignore = false;
+            return true;
+        }
+        return ignore;
+    }
+
+    // 2. Handle self-closing tags (tags that don’t have content)
+    private boolean isSelfClosingTag(String name) {
+        return isNewpage(name) || ElementTags.ANNOTATION.equals(name) || ElementTags.IMAGE.equals(name) || isNewline(name);
+    }
+
+    // 3. Handle title tag
+    private void handleTitleTag(String name) throws DocumentException {
+        if (ElementTags.TITLE.equals(name)) {
+            Paragraph current = (Paragraph) stack.pop();
+            if (currentChunk != null) {
+                current.add(currentChunk);
+                currentChunk = null;
+            }
+            Section previous = (Section) stack.pop();
+            previous.setTitle(current);
+            stack.push(previous);
+        }
+    }
+
+    // 4. Handle end chunk
+    private void handleEndChunk() {
+        if (currentChunk != null) {
+            TextElementArray current = updateTextElementArray();
+            current.add(currentChunk);
+            stack.push(current);
+            currentChunk = null;
+        }
+    }
+
+    // 5. Handle end tag with text elements (e.g., paragraphs, anchors, lists, etc.)
+    private void handleEndTagWithTextElement(String name) throws DocumentException {
+        if (ElementTags.PHRASE.equals(name) || ElementTags.ANCHOR.equals(name) || ElementTags.LIST.equals(name)
+                || ElementTags.PARAGRAPH.equals(name)) {
+            Element current = stack.pop();
+            addTextElementArrayWithElementIntoStack(current);
+        }
+    }
+
+    // 6. Handle list items
+    private void handleListItem(String name) {
+        if (ElementTags.LISTITEM.equals(name)) {
+            ListItem listItem = (ListItem) stack.pop();
+            List list = (List) stack.pop();
+            list.add(listItem);
+            stack.push(list);
+        }
+    }
+
+    // 7. Handle table tags
+    private void handleTable(String name) throws DocumentException {
+        if (ElementTags.TABLE.equals(name)) {
+            Table table = (Table) stack.pop();
+            addTextElementArrayWithTableIntoStack(table);
+        } else if (ElementTags.ROW.equals(name)) {
+            handleTableRow();
+        }
+    }
+
+    // Handle table rows separately
+    private void handleTableRow() throws DocumentException {
+        java.util.List<Cell> cells = new ArrayList<>();
+        int columns = 0;
+        Table table;
+        Cell cell;
+
+        while (true) {
+            Element element = stack.pop();
+            if (element.type() == Element.CELL) {
+                cell = (Cell) element;
+                columns += cell.getColspan();
+                cells.add(cell);
+            } else {
+                table = (Table) element;
+                break;
+            }
+        }
+
+        if (table.getColumns() < columns) {
+            table.addColumns(columns - table.getColumns());
+        }
+
+        setCellWidthsAndAddToTable(cells, columns, table);
+        stack.push(table);
+    }
+
+    private void setCellWidthsAndAddToTable(List<Cell> cells, int columns, Table table) throws DocumentException {
+        Collections.reverse(cells);
+        float[] cellWidths = new float[columns];
+        boolean[] cellNulls = new boolean[columns];
+        Arrays.fill(cellNulls, true);
+
+        float total = 0.0f;
+        int j = 0;
+
+        for (Cell cell : cells) {
+            String width = cell.getWidthAsString();
+            if (cell.getWidth() == 0 && cell.getColspan() == 1 && cellWidths[j] == 0) {
+                total = calculateTotalCellWidth(total, cellWidths, j, columns);
+            } else if (cell.getColspan() == 1 && width.endsWith("%")) {
+                calculateTotalAndUpdateCellNulls(total, width, cellWidths, cellNulls, j);
+            }
+            j += cell.getColspan();
+            table.addCell(cell);
+        }
+
+        updateTableColumnWidths(table, cellWidths, cellNulls, columns, total);
+    }
+
+    private void updateTableColumnWidths(Table table, float[] cellWidths, boolean[] cellNulls, int columns, float total) throws DocumentException {
+        float[] widths = table.getProportionalWidths();
+        if (widths.length == columns) {
+            float left = calculateLeftWidth(widths, cellNulls, cellWidths);
+            if (100.0 >= total) {
+                updateCellWidths(cellWidths, widths, left, total);
+            }
+            table.setWidths(cellWidths);
+        }
+    }
+
+    // 1. Helper method to calculate the left width
+    private float calculateLeftWidth(float[] widths, boolean[] cellNulls, float[] cellWidths) {
+        float left = 0.0f;
+        for (int i = 0; i < widths.length; i++) {
+            if (cellNulls[i] && widths[i] != 0) {
+                left += widths[i];
+                cellWidths[i] = widths[i];
+            }
+        }
+        return left;
+    }
+
+    // 2. Helper method to update cell widths
+    private void updateCellWidths(float[] cellWidths, float[] widths, float left, float total) {
+        for (int i = 0; i < widths.length; i++) {
+            if (cellWidths[i] == 0 && widths[i] != 0) {
+                cellWidths[i] = (widths[i] / left) * (100.0f - total);
+            }
+        }
+    }
+
+    // 8. Handle section tag
+    private void handleSection(String name) {
+        if (ElementTags.SECTION.equals(name)) {
+            stack.pop();
+        }
+    }
+
+    // 9. Handle chapter tag
+    private void handleChapter(String name) throws DocumentException {
+        if (ElementTags.CHAPTER.equals(name)) {
+            document.add(stack.pop());
+        }
+    }
+
+    // 10. Handle document root
+    private void handleDocumentRoot(String name) throws DocumentException {
+        if (isDocumentRoot(name)) {
+            updateStackWithTextElementArraysAndElements();
+            if (controlOpenClose) {
+                document.close();
+            }
+        }
+    }
+
 
     private TextElementArray updateTextElementArray(){
         try {
