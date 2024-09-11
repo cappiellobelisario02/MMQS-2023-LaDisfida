@@ -19,6 +19,7 @@
  */
 
 package com.lowagie.rups;
+import javax.swing.WindowConstants;
 
 import com.lowagie.rups.controller.RupsController;
 import java.awt.Dimension;
@@ -63,7 +64,7 @@ public class Rups {
         frame.setResizable(true);
         // title bar
         frame.setTitle("iText RUPS");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         // the content
         RupsController controller = new RupsController(frame.getSize());
         frame.setJMenuBar(controller.getMenuBar());
