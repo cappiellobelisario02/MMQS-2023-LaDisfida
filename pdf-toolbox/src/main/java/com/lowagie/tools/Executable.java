@@ -322,8 +322,9 @@ public class Executable {
      *
      * @return true if the current os is Windows
      */
+    private static final String OS = "os.name";
     public static boolean isWindows() {
-        String os = System.getProperty("os.name").toLowerCase();
+        String os = System.getProperty(OS).toLowerCase();
         return os.contains("windows") || os.contains("nt");
     }
 
@@ -333,7 +334,7 @@ public class Executable {
      * @return true if the current os is Windows
      */
     public static boolean isWindows9X() {
-        String os = System.getProperty("os.name").toLowerCase();
+        String os = System.getProperty(OS).toLowerCase();
         return os.equals("windows 95") || os.equals("windows 98");
     }
 
@@ -343,7 +344,7 @@ public class Executable {
      * @return true if the current os is Apple
      */
     public static boolean isMac() {
-        String os = System.getProperty("os.name").toLowerCase();
+        String os = System.getProperty(OS).toLowerCase();
         return os.contains("mac");
     }
 
@@ -353,7 +354,7 @@ public class Executable {
      * @return true if the current os is Linux
      */
     public static boolean isLinux() {
-        String os = System.getProperty("os.name").toLowerCase();
+        String os = System.getProperty(OS).toLowerCase();
         return os.contains("linux");
     }
 }
