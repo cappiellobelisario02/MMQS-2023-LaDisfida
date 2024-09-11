@@ -53,11 +53,11 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
     /**
      * Nodes in the FormTree correspond with nodes in the main PdfTree.
      */
-    protected PdfReaderController controller;
+    protected transient PdfReaderController controller;
     /**
      * If the form is an XFA form, the XML file is stored in this object.
      */
-    protected XfaFile xfaFile;
+    protected transient XfaFile xfaFile;
     /**
      * Treeview of the XFA file.
      */
