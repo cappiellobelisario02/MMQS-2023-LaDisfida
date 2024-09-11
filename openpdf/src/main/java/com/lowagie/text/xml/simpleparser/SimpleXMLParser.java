@@ -157,7 +157,7 @@ public final class SimpleXMLParser {
     /**
      * The handler to which we are going to forward comments.
      */
-    SimpleXMLDocHandlerComment comment;
+    SimpleXMLDocHandlerComment comment1;
     /**
      * Keeps track of the number of tags that are open.
      */
@@ -180,7 +180,7 @@ public final class SimpleXMLParser {
      */
     private SimpleXMLParser(SimpleXMLDocHandler doc, SimpleXMLDocHandlerComment comment, boolean html) {
         this.doc = doc;
-        this.comment = comment;
+        this.comment1 = comment;
         this.html = html;
         stack = new ArrayDeque<>();
         state = html ? TEXT : UNKNOWN;
@@ -190,7 +190,7 @@ public final class SimpleXMLParser {
      * Parses the XML document firing the events to the handler.
      *
      * @param doc     the document handler
-     * @param comment {@link SimpleXMLParser#comment}
+     * @param comment {@link SimpleXMLParser#comment1}
      * @param r       the document. The encoding is already resolved. The reader is not closed
      * @param html    {@link SimpleXMLParser#html}
      * @throws IOException on error
@@ -205,39 +205,44 @@ public final class SimpleXMLParser {
      * Detect charset from BOM, as per <a href="https://unicode.org/faq/utf_bom.html#bom4">Unicode FAQ</a>.
      */
     private static Optional<Charset> detectCharsetFromBOM(byte[] bom) {
-        // 00 00 FE FF  UTF-32BE
-        // EF BB BF ..  UTF-8
-        // FE FF .. ..  UTF-16BE
-        // FF FE 00 00  UTF-32LE
-        // FF FE .. ..  UTF-16LE
-        switch (bom[0]) {
-            case (byte) 0x00:
-                if (bom[1] == (byte) 0x00 && bom[2] == (byte) 0xFE && bom[3] == (byte) 0xFF) {
-                    return Optional.of(Charset.forName("UTF-32BE"));
-                }
-                break;
-            case (byte) 0xEF:
-                if (bom[1] == (byte) 0xBB && bom[2] == (byte) 0xBF) {
-                    return Optional.of(StandardCharsets.UTF_8);
-                }
-                break;
-            case (byte) 0xFE:
-                if (bom[1] == (byte) 0xFF) {
-                    return Optional.of(StandardCharsets.UTF_16BE);
-                }
-                break;
-            case (byte) 0xFF:
-                if (bom[1] == (byte) 0xFE) {
-                    if (bom[2] == (byte) 0x00 && bom[3] == (byte) 0x00) {
-                        return Optional.of(Charset.forName("UTF-32LE"));
-                    } else {
-                        return Optional.of(StandardCharsets.UTF_16LE);
-                    }
-                }
-                break;
+        if (isUTF32BE(bom)) {
+            return Optional.of(Charset.forName("UTF-32BE"));
+        }
+        if (isUTF8(bom)) {
+            return Optional.of(StandardCharsets.UTF_8);
+        }
+        if (isUTF16BE(bom)) {
+            return Optional.of(StandardCharsets.UTF_16BE);
+        }
+        if (isUTF32LE(bom)) {
+            return Optional.of(Charset.forName("UTF-32LE"));
+        }
+        if (isUTF16LE(bom)) {
+            return Optional.of(StandardCharsets.UTF_16LE);
         }
         return Optional.empty();
     }
+
+    private static boolean isUTF32BE(byte[] bom) {
+        return bom.length >= 4 && bom[0] == (byte) 0x00 && bom[1] == (byte) 0x00 && bom[2] == (byte) 0xFE && bom[3] == (byte) 0xFF;
+    }
+
+    private static boolean isUTF8(byte[] bom) {
+        return bom.length >= 3 && bom[0] == (byte) 0xEF && bom[1] == (byte) 0xBB && bom[2] == (byte) 0xBF;
+    }
+
+    private static boolean isUTF16BE(byte[] bom) {
+        return bom.length >= 2 && bom[0] == (byte) 0xFE && bom[1] == (byte) 0xFF;
+    }
+
+    private static boolean isUTF32LE(byte[] bom) {
+        return bom.length >= 4 && bom[0] == (byte) 0xFF && bom[1] == (byte) 0xFE && bom[2] == (byte) 0x00 && bom[3] == (byte) 0x00;
+    }
+
+    private static boolean isUTF16LE(byte[] bom) {
+        return bom.length >= 2 && bom[0] == (byte) 0xFF && bom[1] == (byte) 0xFE;
+    }
+
 
     /**
      * Parses the XML document firing the events to the handler.
@@ -314,315 +319,303 @@ public final class SimpleXMLParser {
      * Does the actual parsing. Perform this immediately after creating the parser object.
      */
     private void go(Reader r) throws IOException {
-        BufferedReader reader;
-        if (r instanceof BufferedReader) {
-            reader = (BufferedReader) r;
-        } else {
-            reader = new BufferedReader(r);
-        }
+        BufferedReader reader = getBufferedReader(r);
         doc.startDocument();
-        while (true) {
-            // read a new character
-            if (previousCharacter == -1) {
-                character = reader.read();
-            } else {
-                // or re-examine the previous character
-                character = previousCharacter;
-                previousCharacter = -1;
-            }
+        processDocument(reader);
+    }
 
-            // the end of the file was reached
-            if (character == -1) {
-                if (html) {
-                    if (html && state == TEXT) {
-                        flush();
-                    }
-                    doc.endDocument();
-                } else {
-                    throwException(MessageLocalization.getComposedMessage("missing.end.tag"));
-                }
+    private BufferedReader getBufferedReader(Reader r) {
+        return (r instanceof BufferedReader) ? (BufferedReader) r : new BufferedReader(r);
+    }
+
+    private void processDocument(BufferedReader reader) throws IOException {
+        while (true) {
+            int character = getNextCharacter(reader);
+            if (isEndOfFile(character)) {
+                handleEndOfFile();
                 return;
             }
-
-            // dealing with  \n and \r
-            if (character == '\n' && eol) {
-                eol = false;
-                continue;
-            } else if (eol) {
-                eol = false;
-            } else if (character == '\n') {
-                lines++;
-                columns = 0;
-            } else if (character == '\r') {
-                eol = true;
-                character = '\n';
-                lines++;
-                columns = 0;
-            } else {
-                columns++;
-            }
-
-            switch (state) {
-                // we are in an unknown state before there's actual content
-                case UNKNOWN:
-                    if (character == '<') {
-                        saveState(TEXT);
-                        state = TAG_ENCOUNTERED;
-                    }
-                    break;
-                // we can encounter any content
-                case TEXT:
-                    if (character == '<') {
-                        flush();
-                        saveState(state);
-                        state = TAG_ENCOUNTERED;
-                    } else if (character == '&') {
-                        saveState(state);
-                        entitySB.setLength(0);
-                        state = ENTITY;
-                        nowhite = true;
-                    } else if (Character.isWhitespace((char) character)) {
-                        if (nowhite) {
-                            textSB.append((char) character);
-                        }
-                        nowhite = false;
-                    } else {
-                        textSB.append((char) character);
-                        nowhite = true;
-                    }
-                    break;
-                // we have just seen a < and are wondering what we are looking at
-                // <foo>, </foo>, <!-- ... --->, etc.
-                case TAG_ENCOUNTERED:
-                    initTag();
-                    if (character == '/') {
-                        state = IN_CLOSETAG;
-                    } else if (character == '?') {
-                        restoreState();
-                        state = PI;
-                    } else {
-                        textSB.append((char) character);
-                        state = EXAMIN_TAG;
-                    }
-                    break;
-                // we are processing something like this <foo ... >.
-                // It could still be a <!-- ... --> or something.
-                case EXAMIN_TAG:
-                    if (character == '>') {
-                        doTag();
-                        processTag(true);
-                        initTag();
-                        state = restoreState();
-                    } else if (character == '/') {
-                        state = SINGLE_TAG;
-                    } else if (character == '-' && textSB.toString().equals("!-")) {
-                        flush();
-                        state = COMMENT;
-                    } else if (character == '[' && textSB.toString().equals("![CDATA")) {
-                        flush();
-                        state = CDATA;
-                    } else if (character == 'E' && textSB.toString().equals("!DOCTYP")) {
-                        flush();
-                        state = PI;
-                    } else if (Character.isWhitespace((char) character)) {
-                        doTag();
-                        state = TAG_EXAMINED;
-                    } else {
-                        textSB.append((char) character);
-                    }
-                    break;
-                // we know the name of the tag now.
-                case TAG_EXAMINED:
-                    if (character == '>') {
-                        processTag(true);
-                        initTag();
-                        state = restoreState();
-                    } else if (character == '/') {
-                        state = SINGLE_TAG;
-                    } else if (Character.isWhitespace((char) character)) {
-                        // empty
-                    } else {
-                        textSB.append((char) character);
-                        state = ATTRIBUTE_KEY;
-                    }
-                    break;
-
-                // we are processing a closing tag: e.g. </foo>
-                case IN_CLOSETAG:
-                    if (character == '>') {
-                        doTag();
-                        processTag(false);
-                        if (!html && nested == 0) {
-                            return;
-                        }
-                        state = restoreState();
-                    } else {
-                        if (!Character.isWhitespace((char) character)) {
-                            textSB.append((char) character);
-                        }
-                    }
-                    break;
-
-                // we have just seen something like this: <foo a="b"/
-                // and are looking for the final >.
-                case SINGLE_TAG:
-                    if (character != '>') {
-                        throwException(MessageLocalization.getComposedMessage("expected.gt.for.tag.lt.1.gt", tag));
-                    }
-                    doTag();
-                    processTag(true);
-                    processTag(false);
-                    initTag();
-                    if (!html && nested == 0) {
-                        doc.endDocument();
-                        return;
-                    }
-                    state = restoreState();
-                    break;
-
-                // we are processing CDATA
-                case CDATA:
-                    if (character == '>'
-                            && textSB.toString().endsWith("]]")) {
-                        textSB.setLength(textSB.length() - 2);
-                        flush();
-                        state = restoreState();
-                    } else {
-                        textSB.append((char) character);
-                    }
-                    break;
-
-                // we are processing a comment.  We are inside
-                // the <!-- .... --> looking for the -->.
-                case COMMENT:
-                    if (character == '>'
-                            && textSB.toString().endsWith("--")) {
-                        textSB.setLength(textSB.length() - 2);
-                        flush();
-                        state = restoreState();
-                    } else {
-                        textSB.append((char) character);
-                    }
-                    break;
-
-                // We are inside one of these <? ... ?> or one of these <!DOCTYPE ... >
-                case PI:
-                    if (character == '>') {
-                        state = restoreState();
-                        if (state == TEXT) {
-                            state = UNKNOWN;
-                        }
-                    }
-                    break;
-
-                // we are processing an entity, e.g. &lt;, &#187;, etc.
-                case ENTITY:
-                    if (character == ';') {
-                        state = restoreState();
-                        String cent = entitySB.toString();
-                        entitySB.setLength(0);
-                        char ce = EntitiesToUnicode.decodeEntity(cent);
-                        if (ce == '\0') {
-                            textSB.append('&').append(cent).append(';');
-                        } else {
-                            textSB.append(ce);
-                        }
-                    } else if ((character != '#' && (character < '0' || character > '9') && (character < 'a'
-                            || character > 'z')
-                            && (character < 'A' || character > 'Z')) || entitySB.length() >= 7) {
-                        state = restoreState();
-                        previousCharacter = character;
-                        textSB.append('&').append(entitySB.toString());
-                        entitySB.setLength(0);
-                    } else {
-                        entitySB.append((char) character);
-                    }
-                    break;
-                // We are processing the quoted right-hand side of an element's attribute.
-                case QUOTE:
-                    if (html && quoteCharacter == ' ' && character == '>') {
-                        flush();
-                        processTag(true);
-                        initTag();
-                        state = restoreState();
-                    } else if (html && quoteCharacter == ' ' && Character.isWhitespace((char) character) 
-                            && character == quoteCharacter) {
-                        flush();
-                        state = TAG_EXAMINED;
-                    } else if (html && quoteCharacter == ' ') {
-                        textSB.append((char) character);
-                    } else if (" \r\n\t".indexOf(character) >= 0) {
-                        textSB.append(' ');
-                    } else if (character == '&') {
-                        saveState(state);
-                        state = ENTITY;
-                        entitySB.setLength(0);
-                    } else {
-                        textSB.append((char) character);
-                    }
-                    break;
-
-                case ATTRIBUTE_KEY:
-                    if (Character.isWhitespace((char) character)) {
-                        flush();
-                        state = ATTRIBUTE_EQUAL;
-                    } else if (character == '=') {
-                        flush();
-                        state = ATTRIBUTE_VALUE;
-                    } else if (html && character == '>') {
-                        textSB.setLength(0);
-                        processTag(true);
-                        initTag();
-                        state = restoreState();
-                    } else {
-                        textSB.append((char) character);
-                    }
-                    break;
-
-                case ATTRIBUTE_EQUAL:
-                    if (character == '=') {
-                        state = ATTRIBUTE_VALUE;
-                    } else if (Character.isWhitespace((char) character)) {
-                        // empty
-                    } else if (html && character == '>') {
-                        textSB.setLength(0);
-                        processTag(true);
-                        initTag();
-                        state = restoreState();
-                    } else if (html && character == '/') {
-                        flush();
-                        state = SINGLE_TAG;
-                    } else if (html) {
-                        flush();
-                        textSB.append((char) character);
-                        state = ATTRIBUTE_KEY;
-                    } else {
-                        throwException(MessageLocalization.getComposedMessage("error.in.attribute.processing"));
-                    }
-                    break;
-
-                case ATTRIBUTE_VALUE:
-                    if (character == '"' || character == '\'') {
-                        quoteCharacter = character;
-                        state = QUOTE;
-                    } else if (Character.isWhitespace((char) character)) {
-                        // empty
-                    } else if (html && character == '>') {
-                        flush();
-                        processTag(true);
-                        initTag();
-                        state = restoreState();
-                    } else if (html) {
-                        textSB.append((char) character);
-                        quoteCharacter = ' ';
-                        state = QUOTE;
-                    } else {
-                        throwException(MessageLocalization.getComposedMessage("error.in.attribute.processing"));
-                    }
-                    break;
-            }
+            updateLineAndColumn(character);
+            processCharacter(reader, character);
         }
     }
+
+    private int getNextCharacter(BufferedReader reader) throws IOException {
+        if (previousCharacter == -1) {
+            return reader.read();
+        } else {
+            int character = previousCharacter;
+            previousCharacter = -1;
+            return character;
+        }
+    }
+
+    private boolean isEndOfFile(int character) {
+        return character == -1;
+    }
+
+    private void handleEndOfFile() throws IOException {
+        if (html) {
+            if (state == TEXT) flush();
+            doc.endDocument();
+        } else {
+            throwException("missing.end.tag");
+        }
+    }
+
+    private void updateLineAndColumn(int character) {
+        if (character == '\n' && eol) {
+            eol = false;
+        } else if (eol) {
+            eol = false;
+        } else if (character == '\n' || character == '\r') {
+            handleNewLine(character);
+        } else {
+            columns++;
+        }
+    }
+
+    private void handleNewLine(int character) {
+        eol = (character == '\r');
+        lines++;
+        columns = 0;
+    }
+
+    private void processCharacter(BufferedReader reader, int character) throws IOException {
+        switch (state) {
+            case UNKNOWN -> handleUnknown(character);
+            case TEXT -> handleText(character);
+            case TAG_ENCOUNTERED -> handleTagEncountered(character);
+            case EXAMIN_TAG -> handleExamineTag(character);
+            case TAG_EXAMINED -> handleTagExamined(character);
+            case IN_CLOSETAG -> handleCloseTag(character);
+            case SINGLE_TAG -> handleSingleTag(character);
+            case CDATA -> handleCdata(character);
+            case COMMENT -> handleComment(character);
+            case PI -> handlePI(character);
+            case ENTITY -> handleEntity(character);
+            case QUOTE -> handleQuote(character);
+            case ATTRIBUTE_KEY -> handleAttributeKey(character);
+            case ATTRIBUTE_EQUAL -> handleAttributeEqual(character);
+            case ATTRIBUTE_VALUE -> handleAttributeValue(character);
+            default -> throw new IllegalStateException("Unexpected state: " + state);
+        }
+    }
+
+    private void handleUnknown(int character) {
+        if (character == '<') {
+            saveState(TEXT);
+            state = TAG_ENCOUNTERED;
+        }
+    }
+
+    private void handleText(int character) {
+        if (character == '<') {
+            flush();
+            saveState(state);
+            state = TAG_ENCOUNTERED;
+        } else if (character == '&') {
+            saveState(state);
+            entitySB.setLength(0);
+            state = ENTITY;
+            nowhite = true;
+        } else if (Character.isWhitespace((char) character)) {
+            if (nowhite) textSB.append((char) character);
+            nowhite = false;
+        } else {
+            textSB.append((char) character);
+            nowhite = true;
+        }
+    }
+
+    private void handleTagEncountered(int character) {
+        initTag();
+        if (character == '/') {
+            state = IN_CLOSETAG;
+        } else if (character == '?') {
+            restoreState();
+            state = PI;
+        } else {
+            textSB.append((char) character);
+            state = EXAMIN_TAG;
+        }
+    }
+
+    private void handleExamineTag(int character) throws IOException {
+        if (character == '>') {
+            processTagEnd();
+        } else if (character == '/') {
+            state = SINGLE_TAG;
+        } else if (character == '-' && textSB.toString().equals("!-")) {
+            flush();
+            state = COMMENT;
+        } else if (character == '[' && textSB.toString().equals("![CDATA")) {
+            flush();
+            state = CDATA;
+        } else if (character == 'E' && textSB.toString().equals("!DOCTYP")) {
+            flush();
+            state = PI;
+        } else if (Character.isWhitespace((char) character)) {
+            doTag();
+            state = TAG_EXAMINED;
+        } else {
+            textSB.append((char) character);
+        }
+    }
+
+    private void handleTagExamined(int character) throws IOException {
+        if (character == '>') {
+            processTag(true);
+            initTag();
+            state = restoreState();
+        } else if (character == '/') {
+            state = SINGLE_TAG;
+        }
+    }
+
+    private void handleCloseTag(int character) throws IOException {
+        if (character == '>') {
+            processTag(false);
+            if (!html && nested == 0) return;
+            state = restoreState();
+        } else if (!Character.isWhitespace((char) character)) {
+            textSB.append((char) character);
+        }
+    }
+
+    private void handleSingleTag(int character) throws IOException {
+        if (character != '>') {
+            throwException("expected.gt.for.tag.lt.1.gt", tag);
+        }
+        processTag(true);
+        processTag(false);
+        initTag();
+        if (!html && nested == 0) {
+            doc.endDocument();
+        } else {
+            state = restoreState();
+        }
+    }
+
+    private void handleCdata(int character) {
+        if (character == '>' && textSB.toString().endsWith("]]")) {
+            textSB.setLength(textSB.length() - 2);
+            flush();
+            state = restoreState();
+        } else {
+            textSB.append((char) character);
+        }
+    }
+
+    private void handleComment(int character) {
+        if (character == '>' && textSB.toString().endsWith("--")) {
+            textSB.setLength(textSB.length() - 2);
+            flush();
+            state = restoreState();
+        } else {
+            textSB.append((char) character);
+        }
+    }
+
+    private void handlePI(int character) {
+        if (character == '>') state = restoreState();
+    }
+
+    private void handleEntity(int character) throws IOException {
+        if (character == ';') {
+            processEntity();
+        } else if (!isValidEntityCharacter(character)) {
+            handleInvalidEntity(character);
+        } else {
+            entitySB.append((char) character);
+        }
+    }
+
+    private void processEntity() {
+        state = restoreState();
+        String entity = entitySB.toString();
+        entitySB.setLength(0);
+        char decodedEntity = EntitiesToUnicode.decodeEntity(entity);
+        if (decodedEntity == '\0') {
+            textSB.append('&').append(entity).append(';');
+        } else {
+            textSB.append(decodedEntity);
+        }
+    }
+
+    private boolean isValidEntityCharacter(int character) {
+        return (character == '#' || isAlphanumeric(character)) && entitySB.length() < 7;
+    }
+
+    private void handleInvalidEntity(int character) {
+        state = restoreState();
+        previousCharacter = character;
+        textSB.append('&').append(entitySB.toString());
+        entitySB.setLength(0);
+    }
+
+    private boolean isAlphanumeric(int character) {
+        return (character >= '0' && character <= '9') ||
+                (character >= 'a' && character <= 'z') ||
+                (character >= 'A' && character <= 'Z');
+    }
+
+    private void handleQuote(int character) throws IOException {
+        if (quoteCharacter == ' ' && character == '>') {
+            flush();
+            processTag(true);
+            initTag();
+            state = restoreState();
+        } else if (quoteCharacter == ' ' && Character.isWhitespace((char) character)) {
+            flush();
+            state = TAG_EXAMINED;
+        } else if (quoteCharacter == ' ') {
+            textSB.append((char) character);
+        } else {
+            textSB.append(translateSpecialWhitespace(character));
+        }
+    }
+
+    private char translateSpecialWhitespace(int character) {
+        return " \r\n\t".indexOf(character) >= 0 ? ' ' : (char) character;
+    }
+
+    private void handleAttributeKey(int character) throws IOException {
+        if (Character.isWhitespace((char) character)) {
+            flush();
+            state = ATTRIBUTE_EQUAL;
+        } else if (character == '=') {
+            flush();
+            state = ATTRIBUTE_VALUE;
+        } else {
+            textSB.append((char) character);
+        }
+    }
+
+    private void handleAttributeEqual(int character) throws IOException {
+        if (character == '=') {
+            state = ATTRIBUTE_VALUE;
+        }
+    }
+
+    private void handleAttributeValue(int character) throws IOException {
+        if (character == '"' || character == '\'') {
+            quoteCharacter = character;
+            state = QUOTE;
+        } else {
+            textSB.append((char) character);
+            quoteCharacter = ' ';
+            state = QUOTE;
+        }
+    }
+
+    private void processTagEnd() throws IOException {
+        doTag();
+        processTag(true);
+        initTag();
+        state = restoreState();
+    }
+
 
     /**
      * Gets a state from the stack
@@ -659,8 +652,8 @@ public final class SimpleXMLParser {
                 }
                 break;
             case COMMENT:
-                if (comment != null) {
-                    comment.comment(textSB.toString());
+                if (comment1 != null) {
+                    comment1.comment(textSB.toString());
                 }
                 break;
             case ATTRIBUTE_KEY:
