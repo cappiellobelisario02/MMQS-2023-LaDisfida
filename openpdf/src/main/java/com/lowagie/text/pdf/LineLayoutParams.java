@@ -7,6 +7,7 @@ public class LineLayoutParams {
     private float glueWidth;
     private float hangingCorrection;
     private float hScale;
+    private float lastHScale;
     private int numberOfSpaces;
 
     public LineLayoutParams(boolean isJustified, float baseCharacterSpacing, float baseWordSpacing,
@@ -18,6 +19,15 @@ public class LineLayoutParams {
         this.hangingCorrection = hangingCorrection;
         this.hScale = hScale;
         this.numberOfSpaces = numberOfSpaces;
+        this.lastHScale = 0;
+    }
+
+    public float getLastHScale() {
+        return lastHScale;
+    }
+
+    public void setLastHScale(float lastHScale) {
+        this.lastHScale = lastHScale;
     }
 
     public void setJustified(boolean isJustified){
