@@ -177,25 +177,37 @@ public class XmlDomWriter {
         fOut.print("<!DOCTYPE ");
         fOut.print(doctype.getName());
         if (doctype.getPublicId() != null) {
-            fOut.print(" PUBLIC '").append(doctype.getPublicId()).append("' '").append(doctype.getSystemId()).append("'");
+            fOut.print(" PUBLIC '");
+            fOut.print(doctype.getPublicId());
+            fOut.print("' '");
+            fOut.print(doctype.getSystemId());
+            fOut.print("'");
         } else if (doctype.getSystemId() != null) {
-            fOut.print(" SYSTEM '").append(doctype.getSystemId()).append("'");
+            fOut.print(" SYSTEM '");
+            fOut.print(doctype.getSystemId());
+            fOut.print("'");
         }
         if (doctype.getInternalSubset() != null) {
-            fOut.println(" [").print(doctype.getInternalSubset()).print(']');
+            fOut.print(" [");
+            fOut.print(doctype.getInternalSubset());
+            fOut.print(']');
         }
         fOut.println('>');
     }
 
     private void writeElementNode(Node node) {
-        fOut.print('<').print(node.getNodeName());
+        fOut.print('<');
+        fOut.print(node.getNodeName());
         Attr[] attrs = sortAttributes(node.getAttributes());
         for (Attr attr : attrs) {
-            fOut.print(' ').print(attr.getNodeName()).print("=\"");
+            fOut.print(' ');
+            fOut.print(attr.getNodeName());
+            fOut.print("=\"");
             normalizeAndPrint(attr.getNodeValue(), true);
             fOut.print('"');
         }
-        fOut.print('>').flush();
+        fOut.print('>');
+        fOut.flush();
         writeChildNodes(node);
     }
 
@@ -203,7 +215,10 @@ public class XmlDomWriter {
         if (fCanonical) {
             writeChildNodes(node);
         } else {
-            fOut.print('&').print(node.getNodeName()).print(';').flush();
+            fOut.print('&');
+            fOut.print(node.getNodeName());
+            fOut.print(';');
+            fOut.flush();
         }
     }
 
@@ -211,7 +226,9 @@ public class XmlDomWriter {
         if (fCanonical) {
             normalizeAndPrint(node.getNodeValue(), false);
         } else {
-            fOut.print("<![CDATA[").print(node.getNodeValue()).print("]]>");
+            fOut.print("<![CDATA[");
+            fOut.print(node.getNodeValue());
+            fOut.print("]]>");
         }
         fOut.flush();
     }
@@ -222,22 +239,31 @@ public class XmlDomWriter {
     }
 
     private void writeProcessingInstructionNode(Node node) {
-        fOut.print("<?").print(node.getNodeName());
+        fOut.print("<?");
+        fOut.print(node.getNodeName());
         String data = node.getNodeValue();
         if (data != null && data.length() > 0) {
-            fOut.print(' ').print(data);
+            fOut.print(' ');
+            fOut.print(data);
         }
-        fOut.print("?>").flush();
+        fOut.print("?>");
+        fOut.flush();
     }
 
     private void writeCommentNode(Node node) {
         if (!fCanonical) {
-            fOut.print("<!--").print(node.getNodeValue()).print("-->").flush();
+            fOut.print("<!--");
+            fOut.print(node.getNodeValue());
+            fOut.print("-->");
+            fOut.flush();
         }
     }
 
     private void closeElementNode(Node node) {
-        fOut.print("</").print(node.getNodeName()).print('>').flush();
+        fOut.print("</");
+        fOut.print(node.getNodeName());
+        fOut.print('>');
+        fOut.flush();
     }
 
     // Helper method to write child nodes
