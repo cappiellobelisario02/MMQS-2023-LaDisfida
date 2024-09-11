@@ -56,9 +56,9 @@ public class PagesTable extends JTable implements JTableAutoModelInterface, Obse
     /**
      * Nodes in the FormTree correspond with nodes in the main PdfTree.
      */
-    protected PdfReaderController controller;
+    protected transient PdfReaderController controller;
     /***/
-    protected PageSelectionListener listener;
+    protected transient PageSelectionListener listener;
 
     /**
      * Constructs a PagesTable.
@@ -141,6 +141,8 @@ public class PagesTable extends JTable implements JTableAutoModelInterface, Obse
                 return "Object " + list.get(rowIndex).getNumber();
             case 1:
                 return list.get(rowIndex);
+            default:
+                break;
         }
         return null;
     }
