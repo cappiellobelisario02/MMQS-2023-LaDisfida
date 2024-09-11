@@ -38,6 +38,7 @@ package com.lowagie.toolbox.plugins;
 import com.lowagie.text.Document;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.BarcodeDatamatrix;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
@@ -69,9 +70,11 @@ public class Handouts extends AbstractTool {
     /**
      * Constructs a Handouts object.
      */
+    private static final String SRCFILE_ARGUMENT_NAME = "srcfile";
+    private static final String DESTFILE = "destfile";
     public Handouts() {
-        arguments.add(new FileArgument(this, "srcfile", "The file you want to convert", false, new PdfFilter()));
-        arguments.add(new FileArgument(this, "destfile", "The file to which the Handout has to be written", true,
+        arguments.add(new FileArgument(this, SRCFILE_ARGUMENT_NAME, "The file you want to convert", false, new PdfFilter()));
+        arguments.add(new FileArgument(this, DESTFILE, "The file to which the Handout has to be written", true,
                 new PdfFilter()));
         OptionArgument oa = new OptionArgument(this, "pages", "The number of pages you want on one handout page");
         oa.addOption("2 pages on 1", "2");
@@ -113,90 +116,141 @@ public class Handouts extends AbstractTool {
      */
     public void execute() {
         try {
-            if (getValue("srcfile") == null) {
-                throw new InstantiationException("You need to choose a sourcefile");
-            }
-            File src = (File) getValue("srcfile");
-            if (getValue("destfile") == null) {
-                throw new InstantiationException("You need to choose a destination file");
-            }
-            File dest = (File) getValue("destfile");
+            validateInputs();
+            File src = (File) getValue(SRCFILE_ARGUMENT_NAME);
+            File dest = (File) getValue(DESTFILE);
             int pages = tryParsingPagesNumber();
 
-            float x1 = 30f;
-            float x2 = 280f;
-            float x3 = 320f;
-            float x4 = 565f;
+            float[] y1 = initializeYValues(pages);
+            float[] y2 = calculateY2Values(pages, y1);
 
-            float[] y1 = new float[pages];
-            float[] y2 = new float[pages];
-
-            float height = (778f - (20f * (pages - 1))) / pages;
-            y1[0] = 812f;
-            y2[0] = 812f - height;
-
-            for (int i = 1; i < pages; i++) {
-                y1[i] = y2[i - 1] - 20f;
-                y2[i] = y1[i] - height;
-            }
-
-            // we create a reader for a certain document
-            PdfReader reader = new PdfReader(src.getAbsolutePath());
-            // we retrieve the total number of pages
-            int n = reader.getNumberOfPages();
-            logger.info("There are " + n + " pages in the original file.");
-
-            // step 1: creation of a document-object
-            Document document = new Document(PageSize.A4);
-            // step 2: we create a writer that listens to the document
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(dest));
-            // step 3: we open the document
-            document.open();
-            PdfContentByte cb = writer.getDirectContent();
-            PdfImportedPage page;
-            int rotation;
-            int i = 0;
-            int p = 0;
-            // step 4: we add content
-            while (i < n) {
-                i++;
-                Rectangle rect = reader.getPageSizeWithRotation(i);
-                float factorx = (x2 - x1) / rect.getWidth();
-                float factory = (y1[p] - y2[p]) / rect.getHeight();
-                float factor = (factorx < factory ? factorx : factory);
-                float dx = (factorx == factor ? 0f : ((x2 - x1) - rect.getWidth() * factor) / 2f);
-                float dy = (factory == factor ? 0f : ((y1[p] - y2[p]) - rect.getHeight() * factor) / 2f);
-                page = writer.getImportedPage(reader, i);
-                rotation = reader.getPageRotation(i);
-                if (rotation == 90 || rotation == 270) {
-                    cb.addTemplate(page, 0, -factor, factor, 0, x1 + dx, y2[p] + dy + rect.getHeight() * factor);
-                } else {
-                    cb.addTemplate(page, factor, 0, 0, factor, x1 + dx, y2[p] + dy);
-                }
-                cb.setRGBColorStroke(0xC0, 0xC0, 0xC0);
-                cb.rectangle(x3 - 5f, y2[p] - 5f, x4 - x3 + 10f, y1[p] - y2[p] + 10f);
-                for (float l = y1[p] - 19; l > y2[p]; l -= 16) {
-                    cb.moveTo(x3, l);
-                    cb.lineTo(x4, l);
-                }
-                cb.rectangle(x1 + dx, y2[p] + dy, rect.getWidth() * factor, rect.getHeight() * factor);
-                cb.stroke();
-                logger.info("Processed page " + i);
-                p++;
-                if (p == pages) {
-                    p = 0;
-                    document.newPage();
-                }
-            }
-            // step 5: we close the document
-            document.close();
+            processDocument(src, dest, pages, y1, y2);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(internalFrame,
-                    e.getMessage(),
-                    e.getClass().getName(),
-                    JOptionPane.ERROR_MESSAGE);
-            logger.info(e.getMessage());
+            showError(e);
         }
+    }
+
+    private void validateInputs() throws InstantiationException {
+        if (getValue(SRCFILE_ARGUMENT_NAME) == null) {
+            throw new InstantiationException("You need to choose a sourcefile");
+        }
+        if (getValue(DESTFILE) == null) {
+            throw new InstantiationException("You need to choose a destination file");
+        }
+    }
+
+    private float[] initializeYValues(int pages) {
+        float[] y1 = new float[pages];
+        float height = (778f - (20f * (pages - 1))) / pages;
+        y1[0] = 812f;
+        for (int i = 1; i < pages; i++) {
+            y1[i] = y1[i - 1] - height - 20f;
+        }
+        return y1;
+    }
+
+    private float[] calculateY2Values(int pages, float[] y1) {
+        float[] y2 = new float[pages];
+        float height = (778f - (20f * (pages - 1))) / pages;
+        y2[0] = 812f - height;
+        for (int i = 1; i < pages; i++) {
+            y2[i] = y1[i] - height;
+        }
+        return y2;
+    }
+
+    private void processDocument(File src, File dest, int pages, float[] y1, float[] y2) throws Exception {
+        PdfReader reader = new PdfReader(src.getAbsolutePath());
+        Document document = new Document(PageSize.A4);
+        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(dest));
+        document.open();
+        PdfContentByte cb = writer.getDirectContent();
+        int n = reader.getNumberOfPages();
+
+        logger.info("There are " + n + " pages in the original file.");
+
+        int i = 0;
+        int p = 0;
+        while (i < n) {
+            processPage(reader, writer, document, cb, i + 1, y1, y2, p);
+            i++;
+            p = (p + 1) % pages;
+            if (p == 0) {
+                document.newPage();
+            }
+        }
+
+        document.close();
+        reader.close();
+    }
+
+    private void processPage(PdfReader reader, PdfWriter writer, Document document, PdfContentByte cb, int pageIndex, float[] y1, float[] y2, int p) throws Exception {
+        Rectangle rect = reader.getPageSizeWithRotation(pageIndex);
+        float factor = calculateScalingFactor(rect, y1[p], y2[p]);
+        float dx = calculateOffsetX(rect, factor);
+        float dy = calculateOffsetY(rect, factor, y1[p], y2[p]);
+
+        PdfImportedPage page = writer.getImportedPage(reader, pageIndex);
+        int rotation = reader.getPageRotation(pageIndex);
+        float x1 = 0;
+        float x2 = 0;
+        float x3 = 0;
+        addPageTemplate(cb, page, rotation, factor, dx, dy, x1, y2[p], rect);
+        drawRectangle(cb, x1, y2[p], x2, x3, y1[p], y2[p]);
+        logger.info("Processed page " + pageIndex);
+    }
+
+    private float calculateScalingFactor(Rectangle rect, float y1, float y2) {
+        float x2 = 0;
+        float x1 = 0;
+        float factorx = (x2 - x1) / rect.getWidth();
+        float factory = (y1 - y2) / rect.getHeight();
+        return Math.min(factorx, factory);
+    }
+
+    private float calculateOffsetX(Rectangle rect, float factor) {
+        float factorx = 0;
+        float x2 = 0;
+        float x1 = 0;
+        return (factorx == factor ? 0f : ((x2 - x1) - rect.getWidth() * factor) / 2f);
+    }
+
+    private float calculateOffsetY(Rectangle rect, float factor, float y1, float y2) {
+        float factory = 0;
+        return (factory == factor ? 0f : ((y1 - y2) - rect.getHeight() * factor) / 2f);
+    }
+
+    private void addPageTemplate(PdfContentByte cb, PdfImportedPage page, int rotation, float factor, float dx, float dy, float x1, float y2, Rectangle rect) {
+        if (rotation == 90 || rotation == 270) {
+            cb.addTemplate(page, 0, -factor, factor, 0, x1 + dx, y2 + dy + rect.getHeight() * factor);
+        } else {
+            cb.addTemplate(page, factor, 0, 0, factor, x1 + dx, y2 + dy);
+        }
+    }
+
+    private void drawRectangle(PdfContentByte cb, float x1, float x3, float y1, float v, float v1, float v2) {
+        cb.setRGBColorStroke(0xC0, 0xC0, 0xC0);
+        float x4 = 0;
+        cb.rectangle(x3 - 5f, - 5f, x4 - x3 + 10f, y1  + 10f);
+        for (float l = y1 - 19; ; l -= 16) {
+            cb.moveTo(x3, l);
+            cb.lineTo(x4, l);
+        }
+        float dx = 0;
+        float dy = 0;
+
+        BarcodeDatamatrix rect;
+        int factor;
+        cb.rectangle(x1 + dx,  + dy, rect.getWidth() * factor, rect.getHeight() * factor);
+        cb.stroke();
+    }
+
+    private void showError(Exception e) {
+        JOptionPane.showMessageDialog(internalFrame,
+                e.getMessage(),
+                e.getClass().getName(),
+                JOptionPane.ERROR_MESSAGE);
+        logger.info(e.getMessage());
     }
 
     /**
@@ -217,7 +271,7 @@ public class Handouts extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
-        return (File) getValue("destfile");
+        return (File) getValue(DESTFILE);
     }
 
     private int tryParsingPagesNumber() {
