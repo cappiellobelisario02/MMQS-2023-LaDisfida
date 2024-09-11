@@ -35,7 +35,7 @@ public class IconTreeNode extends DefaultMutableTreeNode {
     /**
      * The icon that has to be used for this TreeNode.
      */
-    protected Icon icon;
+    protected transient Icon icon;
 
     /**
      * Constructs an IconTreeNode.
