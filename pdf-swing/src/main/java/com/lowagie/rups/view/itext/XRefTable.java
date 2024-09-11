@@ -45,11 +45,11 @@ public class XRefTable extends JTable implements JTableAutoModelInterface, Obser
     /**
      * The factory that can produce all the indirect objects.
      */
-    protected IndirectObjectFactory objects;
+    protected transient IndirectObjectFactory objects;
     /**
      * The renderer that will render an object when selected in the table.
      */
-    protected PdfReaderController controller;
+    protected transient PdfReaderController controller;
 
     /**
      * Creates a JTable visualizing xref table.
