@@ -37,11 +37,11 @@ public class DictionaryTableModel extends AbstractTableModel {
     /**
      * The PDF dictionary.
      */
-    protected PdfDictionary dictionary;
+    protected transient PdfDictionary dictionary;
     /**
      * An ArrayList with the dictionary keys.
      */
-    protected ArrayList<PdfName> keys = new ArrayList<>();
+    protected transient ArrayList<PdfName> keys = new ArrayList<>();
 
     /**
      * Creates the TableModel.
