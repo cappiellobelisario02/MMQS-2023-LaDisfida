@@ -71,8 +71,9 @@ public class ExtractAttachments extends AbstractTool {
     /**
      * Constructs a ExtractAttachements object.
      */
+    private static final String SRCFILE_ARGUMENT_NAME = "srcfile";
     public ExtractAttachments() {
-        FileArgument f = new FileArgument(this, "srcfile",
+        FileArgument f = new FileArgument(this, SRCFILE_ARGUMENT_NAME,
                 "The file you want to operate on", false, new PdfFilter());
         f.setLabel(new PdfInformationPanel());
         arguments.add(f);
@@ -95,11 +96,13 @@ public class ExtractAttachments extends AbstractTool {
     /**
      * Unpacks a file attachment.
      *
+     * @param reader
      * @param filespec The dictionary containing the file specifications
      * @param outPath  The path where the attachment has to be written
      * @throws IOException on error
      */
-    public static void unpackFile(PdfDictionary filespec,
+    @lombok.SneakyThrows
+    public static void unpackFile(PdfReader reader, PdfDictionary filespec,
             String outPath) throws IOException {
         if (filespec == null) {
             return;
@@ -151,62 +154,71 @@ public class ExtractAttachments extends AbstractTool {
     public void execute() {
         PdfReader reader = null;
         try {
-            if (getValue("srcfile") == null) {
-                throw new InstantiationException(
-                        "You need to choose a sourcefile");
-            }
-            File src = (File) getValue("srcfile");
-
-            // we create a reader for a certain document
-            /*PdfReader reader*/ reader = new PdfReader(src.getAbsolutePath());
-            final File parentFile = src.getParentFile();
-            final String outPath;
-            if (parentFile != null) {
-                outPath = parentFile.getAbsolutePath();
-            } else {
-                outPath = "";
-            }
-            PdfDictionary catalog = reader.getCatalog();
-            PdfDictionary names = catalog.getAsDict(PdfName.NAMES);
-            if (names != null) {
-                PdfDictionary embFiles = names.getAsDict(new PdfName("EmbeddedFiles"));
-                if (embFiles != null) {
-                    HashMap<String, PdfObject> embMap = PdfNameTree.readTree(embFiles);
-                    for (PdfObject pdfObject : embMap.values()) {
-                        PdfDictionary filespec = (PdfDictionary) PdfReader
-                                .getPdfObject(pdfObject);
-                        unpackFile(reader, filespec, outPath);
-                    }
-                }
-            }
-            for (int k = 1; k <= reader.getNumberOfPages(); ++k) {
-                PdfArray annots = reader.getPageN(k).getAsArray(PdfName.ANNOTS);
-                if (annots == null) {
-                    continue;
-                }
-                for (PdfObject pdfObject : annots.getElements()) {
-                    PdfDictionary annot = (PdfDictionary) PdfReader.getPdfObject(pdfObject);
-                    PdfName subType = annot.getAsName(PdfName.SUBTYPE);
-                    if (!PdfName.FILEATTACHMENT.equals(subType)) {
-                        continue;
-                    }
-                    PdfDictionary filespec = annot.getAsDict(PdfName.FS);
-                    unpackFile(reader, filespec, outPath);
-                }
-            }
-
+            validateSourceFile();
+            File src = (File) getValue(SRCFILE_ARGUMENT_NAME);
+            reader = new PdfReader(src.getAbsolutePath());
+            String outPath = getOutputPath(src);
+            processEmbeddedFiles(reader, outPath);
+            processAnnotations(reader, outPath);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally{
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+        } finally {
+            closeReader(reader);
+        }
+    }
+
+    private void validateSourceFile() throws InstantiationException {
+        if (getValue(SRCFILE_ARGUMENT_NAME) == null) {
+            throw new InstantiationException("You need to choose a sourcefile");
+        }
+    }
+
+    private String getOutputPath(File src) {
+        File parentFile = src.getParentFile();
+        return (parentFile != null) ? parentFile.getAbsolutePath() : "";
+    }
+
+    private void processEmbeddedFiles(PdfReader reader, String outPath) throws IOException {
+        PdfDictionary catalog = reader.getCatalog();
+        PdfDictionary names = catalog.getAsDict(PdfName.NAMES);
+        if (names != null) {
+            PdfDictionary embFiles = names.getAsDict(new PdfName("EmbeddedFiles"));
+            if (embFiles != null) {
+                HashMap<String, PdfObject> embMap = PdfNameTree.readTree(embFiles);
+                for (PdfObject pdfObject : embMap.values()) {
+                    PdfDictionary filespec = (PdfDictionary) PdfReader.getPdfObject(pdfObject);
+                    unpackFile(reader, filespec, outPath);
                 }
             }
         }
     }
+
+    private void processAnnotations(PdfReader reader, String outPath) throws IOException {
+        for (int k = 1; k <= reader.getNumberOfPages(); ++k) {
+            PdfArray annots = reader.getPageN(k).getAsArray(PdfName.ANNOTS);
+            if (annots == null) {
+                continue;
+            }
+            for (PdfObject pdfObject : annots.getElements()) {
+                PdfDictionary annot = (PdfDictionary) PdfReader.getPdfObject(pdfObject);
+                if (PdfName.FILEATTACHMENT.equals(annot.getAsName(PdfName.SUBTYPE))) {
+                    PdfDictionary filespec = annot.getAsDict(PdfName.FS);
+                    unpackFile(reader, filespec, outPath);
+                }
+            }
+        }
+    }
+
+    private void closeReader(PdfReader reader) {
+        if (reader != null) {
+            try {
+                reader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     /**
      * @param arg StringArgument
