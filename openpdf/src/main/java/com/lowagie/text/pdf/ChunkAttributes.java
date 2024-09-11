@@ -8,16 +8,26 @@ public class ChunkAttributes {
     private float yMarker;
     private float tabPosition;
     private int lastChunkStroke;
+    private int chunkStrokeIdx;
     private Color color;
 
     public ChunkAttributes(float xMarker, float baseXMarker, float yMarker, float tabPosition,
-            int lastChunkStroke, Color color) {
+            int lastChunkStroke, Color color, int chunkStrokeIdx) {
         this.xMarker = xMarker;
         this.baseXMarker = baseXMarker;
         this.yMarker = yMarker;
         this.tabPosition = tabPosition;
         this.lastChunkStroke = lastChunkStroke;
         this.color = color;
+        this.chunkStrokeIdx = chunkStrokeIdx;
+    }
+
+    public int getChunkStrokeIdx() {
+        return chunkStrokeIdx;
+    }
+
+    public void setChunkStrokeIdx(int chunkStrokeIdx) {
+        this.chunkStrokeIdx = chunkStrokeIdx;
     }
 
     public Color getColor() {
