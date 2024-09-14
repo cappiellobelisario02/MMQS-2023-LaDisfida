@@ -379,7 +379,7 @@ public class PRTokeniser implements AutoCloseable {
                 type = TK_END_ARRAY;
                 break;
             case '/': {
-                outBuf = new StringBuffer();
+                outBuf = new StringBuilder();
                 type = TK_NAME;
                 while (true) {
                     ch = file.read();
@@ -410,7 +410,7 @@ public class PRTokeniser implements AutoCloseable {
                     type = TK_START_DIC;
                     break;
                 }
-                outBuf = new StringBuffer();
+                outBuf = new StringBuilder();
                 type = TK_STRING;
                 hexString = true;
                 int v2 = 0;
@@ -454,7 +454,7 @@ public class PRTokeniser implements AutoCloseable {
                 } while (ch != -1 && ch != '\r' && ch != '\n');
                 break;
             case '(': {
-                outBuf = new StringBuffer();
+                outBuf = new StringBuilder();
                 type = TK_STRING;
                 hexString = false;
                 int nesting = 0;
@@ -550,7 +550,7 @@ public class PRTokeniser implements AutoCloseable {
                 break;
             }
             default: {
-                outBuf = new StringBuffer();
+                outBuf = new StringBuilder();
                 if (ch == '-' || ch == '+' || ch == '.' || (ch >= '0' && ch <= '9')) {
                     type = TK_NUMBER;
                     do {
@@ -618,7 +618,7 @@ public class PRTokeniser implements AutoCloseable {
         if (ptr >= len) {
             eol = false;
             while (!eol) {
-                c = read()
+                c = read();
                 switch (c) {
                     case -1:
                     case '\n':

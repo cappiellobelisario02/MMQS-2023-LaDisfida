@@ -52,6 +52,7 @@ import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.AnnotationException;
 import com.lowagie.text.pdf.collection.PdfCollection;
 import com.lowagie.text.pdf.interfaces.PdfEncryptionSettings;
 import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
@@ -193,12 +194,12 @@ public class PdfStamper
                 tempFile = Files.createTempFile(tempFile.toPath(), "pdf", null).toFile();
             }
             try (FileOutputStream fout = new FileOutputStream(tempFile)) {
-                stp = new PdfStamper(reader, fout, pdfVersion, append);
-                stp.sigApp = new PdfSignatureAppearance(stp.stamper);
-                stp.sigApp.setTempFile(tempFile);
+            stp = new PdfStamper(reader, fout, pdfVersion, append);
+            stp.sigApp = new PdfSignatureAppearance(stp.stamper);
+            stp.sigApp.setTempFile(tempFile);
 
             } catch (IOException e) {
-                // Exception handling
+            // Exception handling
             }
         }
         stp.sigApp.setOriginalout(os);
@@ -650,7 +651,8 @@ public class PdfStamper
      * @return a signature form field
      * @since 2.1.4
      */
-    public PdfFormField addSignature(String name, int page, float llx, float lly, float urx, float ury) {
+    public PdfFormField addSignature(String name, int page, float llx, float lly, float urx, float ury)
+            throws AnnotationException {
         PdfAcroForm acroForm = stamper.getAcroForm();
         PdfFormField signature = PdfFormField.createSignature(stamper);
         acroForm.setSignatureParams(signature, name, llx, lly, urx, ury);

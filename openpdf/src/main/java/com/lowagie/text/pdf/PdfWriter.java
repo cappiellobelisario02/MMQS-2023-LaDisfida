@@ -63,7 +63,6 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.InvalidColorTypeException;
 import com.lowagie.text.exceptions.InvalidPatternTemplateException;
 import com.lowagie.text.exceptions.InvalidRunDirectionException;
-import com.lowagie.text.pdf.TextDrawingConfig.PdfAcroForm;
 import com.lowagie.text.pdf.collection.PdfCollection;
 import com.lowagie.text.pdf.events.PdfPageEventForwarder;
 import com.lowagie.text.pdf.interfaces.PdfAnnotations;

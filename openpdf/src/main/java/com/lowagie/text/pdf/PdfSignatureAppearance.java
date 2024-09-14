@@ -1290,7 +1290,7 @@ public class PdfSignatureAppearance {
                 raf = new RandomAccessFile(tempFile, "rw");
                 long boutL = raf.length();
                 range[range.length - 1] = boutL - range[range.length - 2];
-                private ByteBuffer bf;
+                ByteBuffer bf;
                 bf = createByteBuffer();
                 bf.append('[');
                 for (long i : range) {

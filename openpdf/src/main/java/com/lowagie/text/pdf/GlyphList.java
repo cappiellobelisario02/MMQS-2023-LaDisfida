@@ -49,27 +49,13 @@
 
 package com.lowagie.text.pdf;
 
+import com.lowagie.text.exceptions.GlyphListNotFoundException;
 import com.lowagie.text.pdf.fonts.FontsResourceAnchor;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
-
-// File: GlyphListNotFoundException.java
-package com.lowagie.text.pdf.fonts;
-
-public class GlyphListNotFoundException extends RuntimeException {
-    // Constructor that accepts a message
-    public GlyphListNotFoundException(String message) {
-        super(message);
-    }
-
-    // Constructor that accepts a message and a cause
-    public GlyphListNotFoundException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
 
 
 public class GlyphList {
