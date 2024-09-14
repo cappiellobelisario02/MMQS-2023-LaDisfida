@@ -198,12 +198,6 @@ public class Chunk implements Element {
         NEXTPAGE.setNewPage();
     }
 
-    /**
-     * This is the content of this chunk of text.
-     */
-    protected StringBuilder content = null;
-
-
     // methods to retrieve information
     /**
      * This is the <CODE>Font</CODE> of this chunk of text.
@@ -218,7 +212,7 @@ public class Chunk implements Element {
      * Empty constructor.
      */
     public Chunk() {
-        this.content = new StringBuffer();
+        this.content = new StringBuilder();
         this.font = new Font();
     }
 
@@ -229,7 +223,7 @@ public class Chunk implements Element {
      */
     public Chunk(Chunk ck) {
         if (ck.content != null) {
-            content = new StringBuffer(ck.content.toString());
+            content = new StringBuilder(ck.content.toString());
         }
         if (ck.font != null) {
             font = new Font(ck.font);
@@ -246,7 +240,7 @@ public class Chunk implements Element {
      * @param font    the font
      */
     public Chunk(String content, Font font) {
-        this.content = new StringBuffer(content);
+        this.content = new StringBuilder(content);
         this.font = font;
     }
 
@@ -269,7 +263,7 @@ public class Chunk implements Element {
      * @param font the font
      */
     public Chunk(char c, Font font) {
-        this.content = new StringBuffer();
+        this.content = new StringBuilder();
         this.content.append(c);
         this.font = font;
     }
@@ -447,6 +441,26 @@ public class Chunk implements Element {
      */
     public String toString() {
         return getContent();
+    }
+
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
     }
 
     /**

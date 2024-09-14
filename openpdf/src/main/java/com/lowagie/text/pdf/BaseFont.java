@@ -60,6 +60,8 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.ibm.icu.util.ULocale.getBaseName;
+
 /**
  * Base class for the several font types supported
  *
@@ -407,7 +409,7 @@ public abstract class BaseFont {
     /**
      * Used to build a randomized prefix for a subset name
      */
-    protected SsecureRandom secureRandom;
+    protected SecureRandom secureRandom;
 
     /**
      * Indicates if a CIDSet stream should be included in the document.
@@ -647,9 +649,9 @@ public abstract class BaseFont {
      * @since 2.0.3
      */
     public static BaseFont createFont(String name, String encoding,
-            boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb) throws DocumentException, IOException {
-        return createFont(name, encoding, embedded, cached, ttfAfm, pfb, false,
-                false);
+            boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb, boolean noThrow) throws DocumentException,
+            IOException {
+        return createFont(name, encoding, embedded, cached, ttfAfm, pfb, noThrow);
     }
 
     /**
@@ -686,79 +688,13 @@ public abstract class BaseFont {
      * &quot;# full 'A' nottriangeqlleft 0041 'B' dividemultiply 0042 32 space 0020&quot;
      * </PRE>
      *
-     * @param name      the name of the font or its location on file
-     * @param encoding  the encoding to be applied to this font
-     * @param embedded  true if the font is to be embedded in the PDF
-     * @param cached    true if the font comes from the cache or is added to the cache if new, false if the font is
-     *                  always created new
-     * @param ttfAfm    the true type font or the afm in a byte array
-     * @param pfb       the pfb in a byte array
-     * @param noThrow   if true will not throw an exception if the font is not recognized and will return null, if false
-     *                  will throw an exception if the font is not recognized. Note that even if true an exception may
-     *                  be thrown in some circumstances. This parameter is useful for FontFactory that may have to check
-     *                  many invalid font names before finding the right one
-     * @param forceRead in some cases (TrueTypeFont, Type1Font), the full font file will be read and kept in memory if
-     *                  forceRead is true
+     * @param options font options
      * @return returns a new font. This font may come from the cache but only if cached is true, otherwise it will
      * always be created new
      * @throws DocumentException the font is invalid
      * @throws IOException       the font file could not be read
      * @since 2.1.5
      */
-    public class FontOptions {
-        private String name;
-        private String encoding;
-        private boolean embedded;
-        private boolean cached;
-        private byte[] ttfAfm;
-        private byte[] pfb;
-        private boolean noThrow;
-        private boolean forceRead;
-
-        // Constructors, getters, and setters
-        public FontOptions(String name, String encoding, boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb, boolean noThrow, boolean forceRead) {
-            this.name = name;
-            this.encoding = encoding;
-            this.embedded = embedded;
-            this.cached = cached;
-            this.ttfAfm = ttfAfm;
-            this.pfb = pfb;
-            this.noThrow = noThrow;
-            this.forceRead = forceRead;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getEncoding() {
-            return encoding;
-        }
-
-        public boolean isEmbedded() {
-            return embedded;
-        }
-
-        public boolean isCached() {
-            return cached;
-        }
-
-        public byte[] getTtfAfm() {
-            return ttfAfm;
-        }
-
-        public byte[] getPfb() {
-            return pfb;
-        }
-
-        public boolean isNoThrow() {
-            return noThrow;
-        }
-
-        public boolean isForceRead() {
-            return forceRead;
-        }
-    }
 
     public static BaseFont createFont(FontOptions options) throws DocumentException, IOException {
         String name = options.getName();
@@ -1520,7 +1456,7 @@ public abstract class BaseFont {
      */
     protected String createSubsetPrefix() {
         String s = "";
-        SsecureRandom secureRandom = getSecureRandom();
+        SecureRandom secureRandom = getSecureRandom();
         for (int k = 0; k < 6; ++k) {
             s += (char) (secureRandom.nextDouble() * 26 + 'A');
         }

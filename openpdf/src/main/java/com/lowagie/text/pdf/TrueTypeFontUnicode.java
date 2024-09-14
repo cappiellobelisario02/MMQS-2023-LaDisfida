@@ -61,6 +61,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.ibm.icu.util.ULocale.getBaseName;
+
 /**
  * Represents a True Type font with Unicode encoding. All the character in the font can be used directly by using the
  * encoding Identity-H or Identity-V. This is the only way to represent some character sets such as Thai.
@@ -90,48 +92,78 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
      * @throws DocumentException the font is invalid
      * @throws IOException       the font file could not be read
      */
-    TrueTypeFontUnicode(String ttFile, String enc, boolean emb, byte[] ttfAfm, boolean forceRead)
+    public TrueTypeFontUnicode(String ttFile, String enc, boolean emb, byte[] ttfAfm, boolean forceRead)
             throws DocumentException, IOException {
         String nameBase = getBaseName(ttFile);
         String ttcName = getTTCName(nameBase);
-        if (nameBase.length() < ttFile.length()) {
-            style = ttFile.substring(nameBase.length());
-        }
+        processFileName(nameBase, ttFile, ttcName);
+
         encoding = enc;
         embedded = emb;
         fileName = ttcName;
-        ttcIndex = "";
-        if (ttcName.length() < nameBase.length()) {
-            ttcIndex = nameBase.substring(ttcName.length() + 1);
-        }
+        ttcIndex = getTtcIndex(nameBase, ttcName);
         fontType = FONT_TYPE_TTUNI;
-        if ((fileName.toLowerCase().endsWith(".ttf") || fileName.toLowerCase().endsWith(".otf")
-                || fileName.toLowerCase().endsWith(".ttc")) && ((enc.equals(IDENTITY_H) || enc.equals(IDENTITY_V))
-                && emb)) {
+
+        if (isValidFontFile(fileName, enc, emb)) {
             process(ttfAfm, forceRead);
-            if (os_2.fsType == 2) {
-                throw new DocumentException(
-                        MessageLocalization.getComposedMessage("1.cannot.be.embedded.due.to.licensing.restrictions",
-                                fileName + style));
-            }
-            // Sivan
-            if ((cmap31 == null && !fontSpecific) || (cmap10 == null && fontSpecific)) {
-                directTextToByte = true;
-            }
-            if (fontSpecific) {
-                fontSpecific = false;
-                String tempEncoding = encoding;
-                encoding = "";
-                createEncoding();
-                encoding = tempEncoding;
-                fontSpecific = true;
-            }
+            checkEmbeddingRestrictions();
+            handleFontSpecificSettings();
         } else {
-            throw new DocumentException(
-                    MessageLocalization.getComposedMessage("1.2.is.not.a.ttf.font.file", fileName, style));
+            throwInvalidFontException();
         }
         vertical = enc.endsWith("V");
     }
+
+    private void processFileName(String nameBase, String ttFile, String ttcName) {
+        if (nameBase.length() < ttFile.length()) {
+            style = ttFile.substring(nameBase.length());
+        }
+    }
+
+    private String getTtcIndex(String nameBase, String ttcName) {
+        if (ttcName.length() < nameBase.length()) {
+            return nameBase.substring(ttcName.length() + 1);
+        }
+        return "";
+    }
+
+    private boolean isValidFontFile(String fileName, String enc, boolean emb) {
+        return (fileName.toLowerCase().endsWith(".ttf") || fileName.toLowerCase().endsWith(".otf")
+                || fileName.toLowerCase().endsWith(".ttc")) && ((enc.equals(IDENTITY_H) || enc.equals(IDENTITY_V))
+                && emb);
+    }
+
+    private void checkEmbeddingRestrictions() throws DocumentException {
+        if (os_2.fsType == 2) {
+            throw new DocumentException(
+                    MessageLocalization.getComposedMessage("1.cannot.be.embedded.due.to.licensing.restrictions",
+                            fileName + style));
+        }
+    }
+
+    private void handleFontSpecificSettings() {
+        if ((cmap31 == null && !fontSpecific) || (cmap10 == null && fontSpecific)) {
+            directTextToByte = true;
+        }
+        if (fontSpecific) {
+            updateEncodingForFontSpecific();
+        }
+    }
+
+    private void updateEncodingForFontSpecific() {
+        fontSpecific = false;
+        String tempEncoding = encoding;
+        encoding = "";
+        createEncoding();
+        encoding = tempEncoding;
+        fontSpecific = true;
+    }
+
+    private void throwInvalidFontException() throws DocumentException {
+        throw new DocumentException(
+                MessageLocalization.getComposedMessage("1.2.is.not.a.ttf.font.file", fileName, style));
+    }
+
 
     private static String toHex4(int n) {
         String s = "0000" + Integer.toHexString(n);
@@ -223,15 +255,13 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
             }
         } else {
             int len = text.length();
-            int k = 0;
-            while (k < len) {
+            for (int k = 0; k < len; ++k) {
                 if (Utilities.isSurrogatePair(text, k)) {
                     total += getRawWidth(Utilities.convertToUtf32(text, k), encoding);
                     ++k;
                 } else {
                     total += getRawWidth(text.charAt(k), encoding);
                 }
-                ++k;
             }
         }
         return total;
@@ -267,21 +297,19 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
             return null;
         }
         StringBuilder buf = new StringBuilder(
-                """
-                        /CIDInit /ProcSet findresource begin
-                        12 dict begin
-                        begincmap
-                        /CIDSystemInfo
-                        << /Registry (TTX+0)
-                        /Ordering (T42UV)
-                        /Supplement 0
-                        >> def
-                        /CMapName /TTX+0 def
-                        /CMapType 2 def
-                        1 begincodespacerange
-                        <0000><FFFF>
-                        endcodespacerange
-                        """);
+                "/CIDInit /ProcSet findresource begin\n" +
+                        "12 dict begin\n" +
+                        "begincmap\n" +
+                        "/CIDSystemInfo\n" +
+                        "<< /Registry (TTX+0)\n" +
+                        "/Ordering (T42UV)\n" +
+                        "/Supplement 0\n" +
+                        ">> def\n" +
+                        "/CMapName /TTX+0 def\n" +
+                        "/CMapType 2 def\n" +
+                        "1 begincodespacerange\n" +
+                        "<0000><FFFF>\n" +
+                        "endcodespacerange\n");
         int size = 0;
         for (int k = 0; k < metrics.length; ++k) {
             if (size == 0) {
@@ -297,12 +325,10 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
             buf.append(fromTo).append(fromTo).append(toHex(metric[2])).append('\n');
         }
         buf.append(
-                """
-                        endbfrange
-                        endcmap
-                        CMapName currentdict /CMap defineresource pop
-                        end end
-                        """);
+                "endbfrange\n" +
+                        "endcmap\n" +
+                        "CMapName currentdict /CMap defineresource pop\n" +
+                        "end end\n");
         String s = buf.toString();
         PdfStream stream = new PdfStream(PdfEncodings.convertToBytes(s, null));
         stream.flateCompress(compressionLevel);
@@ -341,52 +367,67 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
      * @return a stream
      */
     private PdfDictionary getCIDFontType2(PdfIndirectReference fontDescriptor, String subsetPrefix, int[][] metrics) {
+        PdfDictionary dic = createBaseFontDictionary(fontDescriptor, subsetPrefix);
+        addCIDSystemInfo(dic);
+
+        if (!vertical) {
+            addWidthArray(dic, metrics);
+        }
+
+        return dic;
+    }
+
+    private PdfDictionary createBaseFontDictionary(PdfIndirectReference fontDescriptor, String subsetPrefix) {
         PdfDictionary dic = new PdfDictionary(PdfName.FONT);
-        // sivan; cff
         if (cff) {
             dic.put(PdfName.SUBTYPE, PdfName.CIDFONTTYPE0);
             dic.put(PdfName.BASEFONT, new PdfName(subsetPrefix + fontName + "-" + encoding));
         } else {
             dic.put(PdfName.SUBTYPE, PdfName.CIDFONTTYPE2);
             dic.put(PdfName.BASEFONT, new PdfName(subsetPrefix + fontName));
-        }
-        dic.put(PdfName.FONTDESCRIPTOR, fontDescriptor);
-        if (!cff) {
             dic.put(PdfName.CIDTOGIDMAP, PdfName.IDENTITY);
         }
+        dic.put(PdfName.FONTDESCRIPTOR, fontDescriptor);
+        return dic;
+    }
+
+    private void addCIDSystemInfo(PdfDictionary dic) {
         PdfDictionary cdic = new PdfDictionary();
         cdic.put(PdfName.REGISTRY, new PdfString("Adobe"));
         cdic.put(PdfName.ORDERING, new PdfString("Identity"));
         cdic.put(PdfName.SUPPLEMENT, new PdfNumber(0));
         dic.put(PdfName.CIDSYSTEMINFO, cdic);
-        if (!vertical) {
-            dic.put(PdfName.DW, new PdfNumber(1000));
-            StringBuilder buf = new StringBuilder("[");
-            int lastNumber = -10;
-            boolean firstTime = true;
-            for (int[] metric : metrics) {
-                if (metric[1] == 1000) {
-                    continue;
-                }
-                int m = metric[0];
-                if (m == lastNumber + 1) {
-                    buf.append(' ').append(metric[1]);
-                } else {
-                    if (!firstTime) {
-                        buf.append(']');
-                    }
-                    firstTime = false;
-                    buf.append(m).append('[').append(metric[1]);
-                }
-                lastNumber = m;
-            }
-            if (buf.length() > 1) {
-                buf.append("]]");
-                dic.put(PdfName.W, new PdfLiteral(buf.toString()));
-            }
-        }
-        return dic;
     }
+
+    private void addWidthArray(PdfDictionary dic, int[][] metrics) {
+        dic.put(PdfName.DW, new PdfNumber(1000));
+        StringBuilder buf = new StringBuilder("[");
+        int lastNumber = -10;
+        boolean firstTime = true;
+
+        for (int[] metric : metrics) {
+            if (metric[1] == 1000) {
+                continue;
+            }
+            int m = metric[0];
+            if (m == lastNumber + 1) {
+                buf.append(' ').append(metric[1]);
+            } else {
+                if (!firstTime) {
+                    buf.append(']');
+                }
+                firstTime = false;
+                buf.append(m).append('[').append(metric[1]);
+            }
+            lastNumber = m;
+        }
+
+        if (buf.length() > 1) {
+            buf.append("]]");
+            dic.put(PdfName.W, new PdfLiteral(buf.toString()));
+        }
+    }
+
 
     /**
      * Generates the font dictionary.
@@ -439,80 +480,97 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
      */
     @Override
     @SuppressWarnings("unchecked")
-    void writeFont(PdfWriter writer, PdfIndirectReference ref, Object[] params) throws DocumentException, IOException {
+    public void writeFont(PdfWriter writer, PdfIndirectReference ref, Object[] params) throws DocumentException, IOException {
         HashMap<Integer, int[]> longTag = (HashMap<Integer, int[]>) params[0];
         Map<Integer, int[]> fillerCmap = (Map<Integer, int[]>) params[2];
+
         addRangeUni(longTag, true, subset);
+        int[][] metrics = prepareMetrics(longTag);
+
+        PdfIndirectReference cidset = createCidSetIfNeeded(writer, metrics);
+        PdfIndirectReference indFont = processFont(writer, longTag);
+
+        String subsetPrefix = subset ? createSubsetPrefix() : "";
+        PdfDictionary dic = getFontDescriptor(indFont, subsetPrefix, cidset);
+        PdfIndirectReference toUnicodeRef = addToUnicodeIfNeeded(writer, metrics, fillerCmap);
+
+        PdfObject baseType = getFontBaseType(indFont, subsetPrefix, toUnicodeRef);
+        writer.addToBody(baseType, ref);
+    }
+
+    private int[][] prepareMetrics(HashMap<Integer, int[]> longTag) {
         int[][] metrics = longTag.values().toArray(new int[0][]);
         Arrays.sort(metrics, this);
-        PdfIndirectReference indFont;
-        PdfObject pobj;
-        PdfIndirectObject obj;
-        PdfIndirectReference cidset = null;
+        return metrics;
+    }
+
+    private PdfIndirectReference createCidSetIfNeeded(PdfWriter writer, int[][] metrics) throws IOException, DocumentException {
         if (includeCidSet || writer.getPDFXConformance() == PdfWriter.PDFA1A
                 || writer.getPDFXConformance() == PdfWriter.PDFA1B) {
-            PdfStream stream;
-            if (metrics.length == 0) {
-                stream = new PdfStream(new byte[]{(byte) 0x80});
-            } else {
-                int top = metrics[metrics.length - 1][0];
-                byte[] bt = new byte[top / 8 + 1];
-                for (int[] metric : metrics) {
-                    int v = metric[0];
-                    bt[v / 8] |= rotbits[v % 8];
-                }
-                stream = new PdfStream(bt);
-                stream.flateCompress(compressionLevel);
-            }
-            cidset = writer.addToBody(stream).getIndirectReference();
+            PdfStream stream = createCidSetStream(metrics);
+            return writer.addToBody(stream).getIndirectReference();
         }
-        // sivan: cff
-        if (cff) {
-            byte[] b = readCffFont();
-            if (subset || subsetRanges != null) {
-                CFFFontSubset cff = new CFFFontSubset(new RandomAccessFileOrArray(b), longTag);
-                b = cff.Process(cff.getNames()[0]);
-            }
-            pobj = new StreamFont(b, "CIDFontType0C", compressionLevel);
-            obj = writer.addToBody(pobj);
-            indFont = obj.getIndirectReference();
-        } else {
-            byte[] b;
-            if (subset || directoryOffset != 0) {
-                TrueTypeFontSubSet sb = new TrueTypeFontSubSet(fileName, new RandomAccessFileOrArray(rf), longTag,
-                        directoryOffset, false, false);
-                b = sb.process();
-            } else {
-                b = getFullFont();
-            }
-            int[] lengths = new int[]{b.length};
-            pobj = new StreamFont(b, lengths, compressionLevel);
-            obj = writer.addToBody(pobj);
-            indFont = obj.getIndirectReference();
-        }
-        String subsetPrefix = "";
-        if (subset) {
-            subsetPrefix = createSubsetPrefix();
-        }
-        PdfDictionary dic = getFontDescriptor(indFont, subsetPrefix, cidset);
-        obj = writer.addToBody(dic);
-        indFont = obj.getIndirectReference();
-
-        pobj = getCIDFontType2(indFont, subsetPrefix, metrics);
-        obj = writer.addToBody(pobj);
-        indFont = obj.getIndirectReference();
-
-        pobj = getToUnicode(mergeMetricsAndFillerCmap(metrics, fillerCmap));
-        PdfIndirectReference toUnicodeRef = null;
-
-        if (pobj != null) {
-            obj = writer.addToBody(pobj);
-            toUnicodeRef = obj.getIndirectReference();
-        }
-
-        pobj = getFontBaseType(indFont, subsetPrefix, toUnicodeRef);
-        writer.addToBody(pobj, ref);
+        return null;
     }
+
+    private PdfStream createCidSetStream(int[][] metrics) throws IOException {
+        if (metrics.length == 0) {
+            return new PdfStream(new byte[]{(byte) 0x80});
+        } else {
+            int top = metrics[metrics.length - 1][0];
+            byte[] bt = new byte[top / 8 + 1];
+            for (int[] metric : metrics) {
+                int v = metric[0];
+                bt[v / 8] |= rotbits[v % 8];
+            }
+            PdfStream stream = new PdfStream(bt);
+            stream.flateCompress(compressionLevel);
+            return stream;
+        }
+    }
+
+    private PdfIndirectReference processFont(PdfWriter writer, HashMap<Integer, int[]> longTag) throws IOException, DocumentException {
+        if (cff) {
+            return processCffFont(writer, longTag);
+        } else {
+            return processTrueTypeFont(writer, longTag);
+        }
+    }
+
+    private PdfIndirectReference processCffFont(PdfWriter writer, HashMap<Integer, int[]> longTag) throws IOException, DocumentException {
+        byte[] b = readCffFont();
+        if (subset || subsetRanges != null) {
+            CFFFontSubset cff = new CFFFontSubset(new RandomAccessFileOrArray(b), longTag);
+            b = cff.process(cff.getNames()[0]);
+        }
+        PdfObject pobj = new StreamFont(b, "CIDFontType0C", compressionLevel);
+        PdfIndirectObject obj = writer.addToBody(pobj);
+        return obj.getIndirectReference();
+    }
+
+    private PdfIndirectReference processTrueTypeFont(PdfWriter writer, HashMap<Integer, int[]> longTag) throws IOException, DocumentException {
+        byte[] b = subset || directoryOffset != 0 ? createTrueTypeFontSubset(longTag) : getFullFont();
+        PdfObject pobj = new StreamFont(b, new int[]{b.length}, compressionLevel);
+        PdfIndirectObject obj = writer.addToBody(pobj);
+        return obj.getIndirectReference();
+    }
+
+    private byte[] createTrueTypeFontSubset(HashMap<Integer, int[]> longTag) throws IOException {
+        TrueTypeFontSubSet sb = new TrueTypeFontSubSet(fileName, new RandomAccessFileOrArray(rf), longTag,
+                directoryOffset, false, false);
+        return sb.process();
+    }
+
+    private PdfIndirectReference addToUnicodeIfNeeded(PdfWriter writer, int[][] metrics,
+            Map<Integer, int[]> fillerCmap) throws DocumentException, IOException {
+        PdfObject pobj = getToUnicode(mergeMetricsAndFillerCmap(metrics, fillerCmap));
+        if (pobj != null) {
+            PdfIndirectObject obj = writer.addToBody(pobj);
+            return obj.getIndirectReference();
+        }
+        return null;
+    }
+
 
     public int[][] mergeMetricsAndFillerCmap(int[][] metric, Map<Integer, int[]> fillerCmap) {
         Map<Integer, int[]> result = new HashMap<>();
