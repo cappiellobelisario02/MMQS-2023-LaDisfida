@@ -51,6 +51,7 @@ import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.RandomAccessFileOrArray;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -130,7 +131,7 @@ public class PdfContentReaderTool {
      * @since 2.1.5
      */
     public static void listContentStreamForPage(PdfReader reader, int pageNum, PrintWriter out)
-            throws IOException {
+            throws IOException, PDFFilterException {
         out.println("==============Page " + pageNum + "====================");
         out.println("- - - - - Dictionary - - - - - -");
         PdfDictionary pageDictionary = reader.getPageN(pageNum);
@@ -177,6 +178,8 @@ public class PdfContentReaderTool {
             for (int pageNum = 1; pageNum <= maxPageNum; pageNum++) {
                 listContentStreamForPage(reader, pageNum, out);
             }
+        } catch (PDFFilterException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -190,7 +193,7 @@ public class PdfContentReaderTool {
      * @since 2.1.5
      */
     public static void listContentStream(File pdfFile, int pageNum,
-            PrintWriter out) throws IOException {
+            PrintWriter out) throws IOException, PDFFilterException {
         PdfReader reader = new PdfReader(pdfFile.getCanonicalPath());
 
         listContentStreamForPage(reader, pageNum, out);
@@ -203,6 +206,7 @@ public class PdfContentReaderTool {
      */
     public static void main(String[] args) {
         try {
+            PrintWriter writer = new PrintWriter(System.out);
             if (args.length < 1 || args.length > 3) {
                 logger.info("Usage:  PdfContentReaderTool <pdf file> [<output file>|stdout] [<page num>]");
                 return;
@@ -259,14 +263,4 @@ public class PdfContentReaderTool {
             logger.info(e.getMessage());
         }
     }
-
-    private static void listContentStream(File file, PrintWriter writer) {
-        writer.println("Listing content stream of the entire file...");
-    }
-
-    private static void listContentStream(File file, int pageNum, PrintWriter writer) {
-        writer.println("Listing content stream of page " + pageNum + "...");
-    }
-}
-
 }

@@ -1,21 +1,23 @@
 package com.lowagie.text.pdf;
 
-import com.lowagie.text.ExceptionConverter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.fop.fonts.apps.TTFReader;
 import org.apache.fop.fonts.truetype.FontFileReader;
 import org.apache.fop.fonts.truetype.TTFFile;
+
+import com.lowagie.text.ExceptionConverter;
 
 /**
  * @author Gajendra kumar (raaz2.gajendra@gmail.com)
  */
 public class TTFCache {
 
-    private TFFCache(){
+    private void TFFCache(){
         //private constructor
     }
 

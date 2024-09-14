@@ -119,7 +119,7 @@ public class PolylineShape implements Shape {
      */
     private int[] rect() {
         if (np == 0) {
-            return new int[];
+            return new int[]{};
         }
         int xMin = x[0], yMin = y[0], xMax = x[0], yMax = y[0];
 
