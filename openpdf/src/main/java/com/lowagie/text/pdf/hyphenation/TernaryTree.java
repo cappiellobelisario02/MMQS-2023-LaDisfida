@@ -125,7 +125,9 @@ public class TernaryTree implements Serializable {
      * @return 0 if equals, otherwise the difference of the first different characters
      */
     public static int strcmp(String str, char[] a, int start) {
-        int i, d, len = str.length();
+        int i;
+        int d;
+        int len = str.length();
         for (i = 0; i < len; i++) {
             d = str.charAt(i) - a[start + i];
             if (d != 0) {
@@ -210,19 +212,14 @@ public class TernaryTree implements Serializable {
             return createNewNode(p, key, start, val, len);
         }
 
-        if (sc[p] == 0xFFFF) {
-            p = decompressBranch(p, key, start, val, len);
-            if (len == 0) {
+        if (sc[p] == 0xFFFF && len == 0) {
                 return p;
             }
-        }
 
         char s = key[start];
         if (s < sc[p]) {
             lo[p] = insert(lo[p], key, start, val);
-        } else if (s == sc[p]) {
-            p = handleEqualCharacter(p, key, start, val);
-        } else {
+        }else {
             hi[p] = insert(hi[p], key, start, val);
         }
 
@@ -245,45 +242,6 @@ public class TernaryTree implements Serializable {
         }
         return p;
     }
-
-    private char decompressBranch(char p, char[] key, int start, char val, int len) {
-        char pp = freenode++;
-        lo[pp] = lo[p];  // previous pointer to key
-        eq[pp] = eq[p];  // previous pointer to data
-        lo[p] = 0;
-
-        if (len > 0) {
-            sc[p] = kv.get(lo[pp]);
-            eq[p] = pp;
-            lo[pp]++;
-            if (kv.get(lo[pp]) == 0) {
-                lo[pp] = 0;
-                sc[pp] = 0;
-                hi[pp] = 0;
-            } else {
-                sc[pp] = 0xFFFF;
-            }
-        } else {
-            // Save a node by swapping
-            sc[pp] = 0xFFFF;
-            hi[p] = pp;
-            sc[p] = 0;
-            eq[p] = val;
-            length++;
-        }
-
-        return p;
-    }
-
-    private char handleEqualCharacter(char p, char[] key, int start, char val) {
-        if (key[start] != 0) {
-            eq[p] = insert(eq[p], key, start + 1, val);
-        } else {
-            eq[p] = val;  // Key already in tree, overwrite data
-        }
-        return p;
-    }
-
 
     public int find(String key) {
         int len = key.length();
@@ -355,7 +313,7 @@ public class TernaryTree implements Serializable {
         this.hi = original.hi.clone();
         this.eq = original.eq.clone();
         this.sc = original.sc.clone();
-        this.kv = (CharVector) original.kv;
+        this.kv = original.kv;
         this.root = original.root;
         this.freenode = original.freenode;
         this.length = original.length;
@@ -389,7 +347,8 @@ public class TernaryTree implements Serializable {
      */
     public void balance() {
 
-        int i = 0, n = length;
+        int i = 0;
+        int n = length;
         String[] k = new String[n];
         char[] v = new char[n];
         com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator iter = new com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator();
@@ -454,10 +413,14 @@ public class TernaryTree implements Serializable {
     }
 
     public void printStats() {
-        logger.info("Number of keys = " + length);
-        logger.info("Node count = " + freenode);
-        logger.info("Key Array length = "
-                + kv.length());
+        String stringToLog;
+        stringToLog = "Number of keys = " + length;
+        logger.info(stringToLog);
+        stringToLog = "Node count = " + freenode;
+        logger.info(stringToLog);
+        stringToLog = "Key Array length = "
+                + kv.length();
+        logger.info(stringToLog);
 
     }
 

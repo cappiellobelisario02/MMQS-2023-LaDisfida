@@ -276,7 +276,7 @@ public class HtmlTagMap extends HashMap<String, HtmlPeer> {
      * Checks if this is the title tag.
      *
      * @param tag a tagvalue
-     * @return true if tag is TITLE or title
+     * @return true if tag is titleMethod or title
      */
 
     public static boolean isTitle(String tag) {

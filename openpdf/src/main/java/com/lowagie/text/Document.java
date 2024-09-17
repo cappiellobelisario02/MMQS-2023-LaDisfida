@@ -563,7 +563,7 @@ public class Document implements DocListener {
      * In case of a HTML file this will be visible as the <CODE>title</CODE> <CODE>meta</CODE> tag in the
      * <CODE>HEAD</CODE> part of the file.
      * <p/>
-     * Shortcut method to call: <CODE>add(new Meta(Element.TITLE, title))</CODE>
+     * Shortcut method to call: <CODE>add(new Meta(Element.titleMethod, title))</CODE>
      *
      * @param title the title
      * @return <CODE>true</CODE> if successful, <CODE>false</CODE> otherwise

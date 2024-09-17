@@ -198,7 +198,7 @@ public class PdfArray extends PdfObject {
         return arrayList.toString();
     }
 
-    // ARRAY CONTENT METHODS
+    // ARRAY contentMethod METHODS
 
     /**
      * Overwrites a specified location of the array, returning the previous value

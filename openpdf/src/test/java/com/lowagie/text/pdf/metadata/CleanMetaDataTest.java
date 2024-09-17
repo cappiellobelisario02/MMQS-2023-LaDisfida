@@ -16,7 +16,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class CleanMetaDataTest {
+class CleanMetaDataTest {
 
     public CleanMetaDataTest() {
         super();
@@ -35,7 +35,7 @@ public class CleanMetaDataTest {
     }
 
     @Test
-    public void testProducer() throws Exception {
+    void testProducer() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Document document = new Document();
 
@@ -52,9 +52,9 @@ public class CleanMetaDataTest {
     }
 
     @Test
-    public void testAddedMetadata() throws Exception {
-        String AUTHOR_NAME = "Mr Bean";
-        String TITLE = "The title";
+    void testAddedMetadata() throws Exception {
+        String authorname = "Mr Bean";
+        String title = "The title";
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Document document = new Document();
@@ -63,8 +63,8 @@ public class CleanMetaDataTest {
 
         document.open();
         document.addProducer();
-        document.addAuthor(AUTHOR_NAME);
-        document.addTitle(TITLE);
+        document.addAuthor(authorname);
+        document.addTitle(title);
         document.add(new Paragraph("Hello World"));
         document.close();
 
@@ -73,15 +73,15 @@ public class CleanMetaDataTest {
         // Metadata generated only on demand
         Assertions.assertEquals(Document.getVersion(), r.getInfo().get("Producer"));
 
-        Assertions.assertEquals(AUTHOR_NAME, r.getInfo().get("Author"));
-        Assertions.assertEquals(TITLE, r.getInfo().get("Title"));
+        Assertions.assertEquals(authorname, r.getInfo().get("Author"));
+        Assertions.assertEquals(title, r.getInfo().get("Title"));
 
         r.close();
     }
 
 
     @Test
-    public void testStamperMetadata() throws Exception {
+    void testStamperMetadata() throws Exception {
         byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), false, createCleanerMoreInfo());
         PdfReader r = new PdfReader(data);
         Assertions.assertNull(r.getInfo().get("Producer"));
@@ -94,7 +94,7 @@ public class CleanMetaDataTest {
     }
 
     @Test
-    public void testStamperEncryptMetadata() throws Exception {
+    void testStamperEncryptMetadata() throws Exception {
         byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), true, createCleanerMoreInfo());
         PdfReader r = new PdfReader(data);
         Assertions.assertNull(r.getInfo().get("Producer"));
@@ -106,7 +106,7 @@ public class CleanMetaDataTest {
 
 
     @Test
-    public void testStamperExtraMetadata() throws Exception {
+    void testStamperExtraMetadata() throws Exception {
         HashMap<String, String> moreInfo = createCleanerMoreInfo();
         moreInfo.put("Producer", Document.getVersion());
         moreInfo.put("Author", "Author1");
@@ -122,7 +122,7 @@ public class CleanMetaDataTest {
     }
 
     @Test
-    public void testCleanMetadataMethodInStamper() throws Exception {
+    void testCleanMetadataMethodInStamper() throws Exception {
         byte[] data = cleanMetadata(new File("src/test/resources/HelloWorldMeta.pdf"));
         PdfReader r = new PdfReader(data);
         Assertions.assertNull(r.getInfo().get("Producer"));
@@ -135,7 +135,7 @@ public class CleanMetaDataTest {
     }
 
     @Test
-    public void skipMetaDataUpdateTest() throws Exception {
+    void skipMetaDataUpdateTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
         PdfStamper stamp = new PdfStamper(reader, baos, '\0', true);
@@ -148,7 +148,7 @@ public class CleanMetaDataTest {
     }
 
     @Test
-    public void skipMetaDataUpdateFirstRevisionTest() throws Exception {
+    void skipMetaDataUpdateFirstRevisionTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
         PdfStamper stamp = new PdfStamper(reader, baos, '\0', false);
@@ -161,7 +161,7 @@ public class CleanMetaDataTest {
     }
 
     @Test
-    public void skipInfoUpdateTest() throws Exception {
+    void skipInfoUpdateTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
         PdfStamper stamp = new PdfStamper(reader, baos, '\0', true);
@@ -185,7 +185,7 @@ public class CleanMetaDataTest {
     }
 
     @Test
-    public void skipInfoUpdateFirstRevisionTest() throws Exception {
+    void skipInfoUpdateFirstRevisionTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
         PdfStamper stamp = new PdfStamper(reader, baos, '\0', false);
@@ -209,7 +209,7 @@ public class CleanMetaDataTest {
     }
 
     @Test
-    public void testXMPMetadata() throws Exception {
+    void testXMPMetadata() throws Exception {
         File file = new File("src/test/resources/HelloWorldMeta.pdf");
         PdfReader reader = new PdfReader(file.getAbsolutePath());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -254,14 +254,14 @@ public class CleanMetaDataTest {
     }
 
     private byte[] addWatermark(File origin, boolean encrypt, HashMap<String, String> moreInfo) throws Exception {
-        int text_angle = 45;
-        int text1_pos_x = 300;
-        int text_1_pos_y = 430;
-        int text_2_pos_x = 330;
-        int text_2_pos_y = 410;
+        int textAngle = 45;
+        int text1PosX = 300;
+        int text1PosY = 430;
+        int text2PosX = 330;
+        int text2PosY = 410;
         String text1 = "NOT VALID";
         String text2 = "DRAFT";
-        int font_size = 32;
+        int fontSize = 32;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(origin.getAbsolutePath());
         int n = reader.getNumberOfPages();
@@ -279,9 +279,9 @@ public class CleanMetaDataTest {
             over = stamp.getOverContent(i);
             over.beginText();
             over.setRGBColorFill(255, 0, 0);
-            over.setFontAndSize(bf, font_size);
-            over.showTextAligned(Element.ALIGN_CENTER, text1, text1_pos_x, text_1_pos_y, text_angle);
-            over.showTextAligned(Element.ALIGN_CENTER, text2, text_2_pos_x, text_2_pos_y, text_angle);
+            over.setFontAndSize(bf, fontSize);
+            over.showTextAligned(Element.ALIGN_CENTER, text1, text1PosX, text1PosY, textAngle);
+            over.showTextAligned(Element.ALIGN_CENTER, text2, text2PosX, text2PosY, textAngle);
             over.endText();
         }
 

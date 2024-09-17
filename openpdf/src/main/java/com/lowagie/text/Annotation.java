@@ -456,20 +456,11 @@ public class Annotation implements Element {
     // methods to retrieve information
 
     /**
-     * Returns the lower left x-value.
-     *
-     * @return a value
-     */
-    public float LLX() {
-        return llx;
-    }
-
-    /**
      * Returns the lower left y-value.
      *
      * @return a value
      */
-    public float Low_Left_Y() {
+    public float lowLeftY() {
         return lly;
     }
 
@@ -478,17 +469,8 @@ public class Annotation implements Element {
      *
      * @return a value
      */
-    public float Up_Right_X() {
+    public float upRightX() {
         return urx;
-    }
-
-    /**
-     * Returns the upper right y-value.
-     *
-     * @return a value
-     */
-    public float URY() {
-        return ury;
     }
 
     /**
@@ -497,7 +479,7 @@ public class Annotation implements Element {
      * @param def the default value
      * @return a value
      */
-    public float LLX(float def) {
+    public float llx(float def) {
         if (Float.isNaN(llx)) {
             return def;
         }
@@ -510,7 +492,7 @@ public class Annotation implements Element {
      * @param def the default value
      * @return a value
      */
-    public float LLY(float def) {
+    public float llyMethod(float def) {
         if (Float.isNaN(lly)) {
             return def;
         }
@@ -523,7 +505,7 @@ public class Annotation implements Element {
      * @param def the default value
      * @return a value
      */
-    public float URX(float def) {
+    public float urxMethod(float def) {
         if (Float.isNaN(urx)) {
             return def;
         }
@@ -536,7 +518,7 @@ public class Annotation implements Element {
      * @param def the default value
      * @return a value
      */
-    public float URY(float def) {
+    public float uryMethod(float def) {
         if (Float.isNaN(ury)) {
             return def;
         }
@@ -557,7 +539,7 @@ public class Annotation implements Element {
      *
      * @return a name
      */
-    public String TITLE() {
+    public String titleMethod() {
         String s = (String) annotationAttributes.get(TITLE);
         if (s == null) {
             s = "";
@@ -570,7 +552,7 @@ public class Annotation implements Element {
      *
      * @return a reference
      */
-    public String CONTENT() {
+    public String contentMethod() {
         String s = (String) annotationAttributes.get(CONTENT);
         if (s == null) {
             s = "";

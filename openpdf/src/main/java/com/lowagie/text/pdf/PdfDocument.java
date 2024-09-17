@@ -538,10 +538,10 @@ public class PdfDocument extends Document {
         }
         Rectangle rect = new Rectangle(0, 0);
         if (line != null) {
-            rect = new Rectangle(annot.LLX(indentRight() - line.widthLeft()),
-                    annot.URY(indentTop() - currentHeight - 20),
-                    annot.URX(indentRight() - line.widthLeft() + 20),
-                    annot.LLY(indentTop() - currentHeight));
+            rect = new Rectangle(annot.llxMethod(indentRight() - line.widthLeft()),
+                    annot.uryMethod(indentTop() - currentHeight - 20),
+                    annot.urxMethod(indentRight() - line.widthLeft() + 20),
+                    annot.llyMethod(indentTop() - currentHeight));
         }
         PdfAnnotation an = PdfAnnotationsImp.convertAnnotation(writer, annot, rect);
         annotationsImp.addPlainAnnotation(an);

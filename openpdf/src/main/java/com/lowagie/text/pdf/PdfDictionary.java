@@ -180,7 +180,7 @@ public class PdfDictionary extends PdfObject {
         return "Dictionary of type: " + get(PdfName.TYPE);
     }
 
-    // DICTIONARY CONTENT METHODS
+    // DICTIONARY contentMethod METHODS
 
     /**
      * Associates the specified <CODE>PdfObject</CODE> as <VAR>value</VAR> with the specified <CODE>PdfName</CODE> as
