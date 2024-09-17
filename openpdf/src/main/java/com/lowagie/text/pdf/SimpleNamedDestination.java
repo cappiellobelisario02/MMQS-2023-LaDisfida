@@ -56,6 +56,7 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import com.lowagie.text.error_messages.MessageLocalization;
@@ -83,10 +84,10 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
         for (int k = 1; k <= numPages; ++k) {
             pages.put(reader.getPageOrigRef(k).getNumber(), k);
         }
-        HashMap<Object, Object> names = fromNames ? (HashMap<Object, Object>) reader.getNamedDestinationFromNames()
-                : (HashMap<Object, Object>) reader.getNamedDestinationFromStrings();
-        for (Iterator<Map.Entry<Object, Object>> it = names.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry<Object, Object> entry = it.next();
+        HashMap<?, ?> names = fromNames ? (HashMap<Object, Object>) reader.getNamedDestinationFromNames()
+                : (HashMap<String, PdfObject>) reader.getNamedDestinationFromStrings();
+        for (Iterator<? extends Entry<?, ?>> it = names.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<Object, Object> entry = (Entry<Object, Object>) it.next();
             PdfArray arr = (PdfArray) entry.getValue();
             StringBuilder s = new StringBuilder();
             try {
@@ -100,7 +101,7 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
                 it.remove();
             }
         }
-        return names;
+        return (HashMap<Object, Object>) names;
     }
 
     /**

@@ -50,6 +50,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.bouncycastle.BouncyCastleHelper;
+import com.lowagie.text.DocWriter;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
@@ -58,6 +59,7 @@ import com.lowagie.text.exceptions.BadPasswordException;
 import com.lowagie.text.exceptions.IllegalBarcode128CharacterException;
 import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.exceptions.UnsupportedPdfException;
+import com.lowagie.text.pdf.PdfAnnotation.PdfImportedLink;
 import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
 import com.lowagie.text.pdf.internal.PdfViewerPreferencesImp;
 import org.apache.fop.pdf.PDFFilterException;
@@ -81,6 +83,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.InflaterInputStream;
@@ -92,6 +96,13 @@ import java.util.zip.InflaterInputStream;
  * @author Kazuya Ujihara
  */
 public class PdfReader implements PdfViewerPreferences, Closeable {
+    private static final String FALSE_CONST = "false";
+    private static final String BAD_USER_PASSWORD_CONST = "bad.user.password";
+    private static final String ENDSTREAM_CONST = "endstream";
+    private static final String ILLEGAL_LENGTH_VALUE_CONST = "illegal.length.value";
+
+    int lengthValue;
+    int cryptoMode;
 
     private static final Logger logger = Logger.getLogger(PdfReader.class.getName());
 
@@ -99,7 +110,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             PdfName.ROTATE, PdfName.RESOURCES, PdfName.CROPBOX};
 
     private static final byte[] endstream = PdfEncodings
-            .convertToBytes("endstream", null);
+            .convertToBytes(ENDSTREAM_CONST, null);
     private static final byte[] endobj = PdfEncodings.convertToBytes("endobj", null);
     private final PdfViewerPreferencesImp viewerPreferences = new PdfViewerPreferencesImp();
     protected PRTokeniser tokens;
@@ -447,6 +458,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                         case PdfObject.NAME:
                             obj = new PdfName(obj.getBytes());
                             break;
+                        default:
+                            break;
                     }
                     obj.setIndRef(ref);
                 }
@@ -493,6 +506,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                         break;
                     case PdfObject.NAME:
                         obj = new PdfName(obj.getBytes());
+                        break;
+                    default:
                         break;
                 }
                 obj.setIndRef(ref);
@@ -560,10 +575,10 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param in the input data
      * @return the decoded data
      */
-    public static byte[] FlateDecode(byte[] in) {
-        byte[] b = FlateDecode(in, true);
+    public static byte[] flateDecode(byte[] in) {
+        byte[] b = flateDecode(in, true);
         if (b == null) {
-            return FlateDecode(in, false);
+            return flateDecode(in, false);
         }
         return b;
     }
@@ -578,114 +593,130 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return in;
         }
         PdfDictionary dic = (PdfDictionary) dicPar;
-        PdfObject obj = getPdfObject(dic.get(PdfName.PREDICTOR));
-        if (obj == null || !obj.isNumber()) {
-            return in;
-        }
-        int predictor = ((PdfNumber) obj).intValue();
+
+        int predictor = getPredictor(dic);
         if (predictor < 10) {
             return in;
         }
-        int width = 1;
-        obj = getPdfObject(dic.get(PdfName.COLUMNS));
-        if (obj != null && obj.isNumber()) {
-            width = ((PdfNumber) obj).intValue();
-        }
-        int colors = 1;
-        obj = getPdfObject(dic.get(PdfName.COLORS));
-        if (obj != null && obj.isNumber()) {
-            colors = ((PdfNumber) obj).intValue();
-        }
-        int bpc = 8;
-        obj = getPdfObject(dic.get(PdfName.BITSPERCOMPONENT));
-        if (obj != null && obj.isNumber()) {
-            bpc = ((PdfNumber) obj).intValue();
-        }
-        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(
-                in));
+
+        int width = getIntValue(dic, PdfName.COLUMNS, 1);
+        int colors = getIntValue(dic, PdfName.COLORS, 1);
+        int bpc = getIntValue(dic, PdfName.BITSPERCOMPONENT, 8);
+
+        return decodeImage(in, colors, width, bpc);
+    }
+
+    private static int getPredictor(PdfDictionary dic) {
+        PdfObject obj = getPdfObject(dic.get(PdfName.PREDICTOR));
+        return obj != null && obj.isNumber() ? ((PdfNumber) obj).intValue() : 1;
+    }
+
+    private static int getIntValue(PdfDictionary dic, PdfName key, int defaultValue) {
+        PdfObject obj = getPdfObject(dic.get(key));
+        return obj != null && obj.isNumber() ? ((PdfNumber) obj).intValue() : defaultValue;
+    }
+
+    private static byte[] decodeImage(byte[] in, int colors, int width, int bpc) throws PDFFilterException {
+        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(in));
         ByteArrayOutputStream fout = new ByteArrayOutputStream(in.length);
         int bytesPerPixel = colors * bpc / 8;
         int bytesPerRow = (colors * width * bpc + 7) / 8;
         byte[] curr = new byte[bytesPerRow];
         byte[] prior = new byte[bytesPerRow];
 
-        // Decode the (sub)image row-by-row
-        while (true) {
-            // Read the filter type byte and a row of data
-            int filter;
-            try {
-                filter = dataStream.read();
+        try {
+            while (true) {
+                int filter = dataStream.read();
                 if (filter < 0) {
-                    return fout.toByteArray();
+                    break;
                 }
                 dataStream.readFully(curr, 0, bytesPerRow);
-            } catch (Exception e) {
-                return fout.toByteArray();
-            }
 
-            switch (filter) {
-                case 0: // PNG_FILTER_NONE
-                    break;
-                case 1: // PNG_FILTER_SUB
-                    for (int i = bytesPerPixel; i < bytesPerRow; i++) {
-                        curr[i] += curr[i - bytesPerPixel];
-                    }
-                    break;
-                case 2: // PNG_FILTER_UP
-                    for (int i = 0; i < bytesPerRow; i++) {
-                        curr[i] += prior[i];
-                    }
-                    break;
-                case 3: // PNG_FILTER_AVERAGE
-                    for (int i = 0; i < bytesPerPixel; i++) {
-                        curr[i] += (byte) (prior[i] / (byte) 2);
-                    }
-                    for (int i = bytesPerPixel; i < bytesPerRow; i++) {
-                        curr[i] = (byte) ((curr[i] + (curr[i - bytesPerPixel] & 0xff) + (prior[i] & 0xff)) / 2);
-                    }
-                    break;
-                case 4: // PNG_FILTER_PAETH
-                    for (int i = 0; i < bytesPerPixel; i++) {
-                        curr[i] += prior[i];
-                    }
-
-                    for (int i = bytesPerPixel; i < bytesPerRow; i++) {
-                        int a = curr[i - bytesPerPixel] & 0xff;
-                        int b = prior[i] & 0xff;
-                        int c = prior[i - bytesPerPixel] & 0xff;
-
-                        int p = a + b - c;
-                        int pa = Math.abs(p - a);
-                        int pb = Math.abs(p - b);
-                        int pc = Math.abs(p - c);
-
-                        int ret;
-
-                        if ((pa <= pb) && (pa <= pc)) {
-                            ret = a;
-                        } else if (pb <= pc) {
-                            ret = b;
-                        } else {
-                            ret = c;
-                        }
-                        curr[i] += (byte) (ret);
-                    }
-                    break;
-                default:
-                    // Error -- unknown filter type
-                    throw new PDFFilterException(
-                            MessageLocalization.getComposedMessage("png.filter.unknown"));
-            }
-            try {
+                applyFilter(filter, curr, prior, bytesPerPixel, bytesPerRow);
                 fout.write(curr);
-            } catch (IOException ioe) {
-                // Never happens
+
+                // Swap curr and prior
+                byte[] tmp = prior;
+                prior = curr;
+                curr = tmp;
+            }
+        } catch (IOException e) {
+            throw new PDFFilterException("Error decoding image: " + e.getMessage());
+        }
+
+        return fout.toByteArray();
+    }
+
+    private static void applyFilter(int filter, byte[] curr, byte[] prior, int bytesPerPixel, int bytesPerRow) throws PDFFilterException {
+        switch (filter) {
+            case 0: // PNG_FILTER_NONE
+                break;
+            case 1: // PNG_FILTER_SUB
+                applySubFilter(curr, bytesPerPixel, bytesPerRow);
+                break;
+            case 2: // PNG_FILTER_UP
+                applyUpFilter(curr, prior, bytesPerRow);
+                break;
+            case 3: // PNG_FILTER_AVERAGE
+                applyAverageFilter(curr, prior, bytesPerPixel, bytesPerRow);
+                break;
+            case 4: // PNG_FILTER_PAETH
+                applyPaethFilter(curr, prior, bytesPerPixel, bytesPerRow);
+                break;
+            default:
+                throw new PDFFilterException("Unknown PNG filter: " + filter);
+        }
+    }
+
+    private static void applySubFilter(byte[] curr, int bytesPerPixel, int bytesPerRow) {
+        for (int i = bytesPerPixel; i < bytesPerRow; i++) {
+            curr[i] += curr[i - bytesPerPixel];
+        }
+    }
+
+    private static void applyUpFilter(byte[] curr, byte[] prior, int bytesPerRow) {
+        for (int i = 0; i < bytesPerRow; i++) {
+            curr[i] += prior[i];
+        }
+    }
+
+    private static void applyAverageFilter(byte[] curr, byte[] prior, int bytesPerPixel, int bytesPerRow) {
+        for (int i = 0; i < bytesPerPixel; i++) {
+            curr[i] += (byte) (prior[i] / 2);
+        }
+        for (int i = bytesPerPixel; i < bytesPerRow; i++) {
+            curr[i] = (byte) ((curr[i] + (curr[i - bytesPerPixel] & 0xff) + (prior[i] & 0xff)) / 2);
+        }
+    }
+
+    private static void applyPaethFilter(byte[] curr, byte[] prior, int bytesPerPixel, int bytesPerRow) {
+        for (int i = 0; i < bytesPerPixel; i++) {
+            curr[i] += prior[i];
+        }
+
+        for (int i = bytesPerPixel; i < bytesPerRow; i++) {
+            int a = curr[i - bytesPerPixel] & 0xff;
+            int b = prior[i] & 0xff;
+            int c = prior[i - bytesPerPixel] & 0xff;
+
+            int p = a + b - c;
+            int pa = Math.abs(p - a);
+            int pb = Math.abs(p - b);
+            int pc = Math.abs(p - c);
+
+            int ret;
+
+            if(pa <= pb && pa <= pc){
+                ret = a;
+            }
+            else if(pb <= pc){
+                ret = b;
+            }
+            else{
+                ret = c;
             }
 
-            // Swap curr and prior
-            byte[] tmp = prior;
-            prior = curr;
-            curr = tmp;
+            curr[i] += (byte) (ret);
         }
     }
 
@@ -697,7 +728,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *               try to read a corrupted stream
      * @return the decoded data
      */
-    public static byte[] FlateDecode(byte[] in, boolean strict) {
+    public static byte[] flateDecode(byte[] in, boolean strict) {
         ByteArrayInputStream stream = new ByteArrayInputStream(in);
         InflaterInputStream zip = new InflaterInputStream(stream);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -724,7 +755,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param in the input data
      * @return the decoded data
      */
-    public static byte[] ASCIIHexDecode(byte[] in) {
+    public static byte[] asciiHexDecode(byte[] in) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         boolean first = true;
         int n1 = 0;
@@ -770,17 +801,17 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             if (ch == '~') {
                 break;
             }
-            if (PRTokeniser.isWhitespace(ch)) {
+            else if (PRTokeniser.isWhitespace(ch)) {
                 continue;
             }
-            if (ch == 'z' && state == 0) {
+            else if (ch == 'z' && state == 0) {
                 out.write(0);
                 out.write(0);
                 out.write(0);
                 out.write(0);
                 continue;
             }
-            if (ch < '!' || ch > 'u') {
+            else if (ch < '!' || ch > 'u') {
                 throw new IllegalBarcode128CharacterException(
                         MessageLocalization
                                 .getComposedMessage("illegal.character.in.ascii85decode"));
@@ -802,25 +833,30 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         int r;
         // We'll ignore the next two lines for the sake of perpetuating broken
         // PDFs
-        
-        
-        
-        if (state == 2) {
-            r = chn[0] * 85 * 85 * 85 * 85 + chn[1] * 85 * 85 * 85 + 85 * 85 * 85
-                    + 85 * 85 + 85;
-            out.write((byte) (r >> 24));
-        } else if (state == 3) {
-            r = chn[0] * 85 * 85 * 85 * 85 + chn[1] * 85 * 85 * 85 + chn[2] * 85 * 85
-                    + 85 * 85 + 85;
-            out.write((byte) (r >> 24));
-            out.write((byte) (r >> 16));
-        } else if (state == 4) {
-            r = chn[0] * 85 * 85 * 85 * 85 + chn[1] * 85 * 85 * 85 + chn[2] * 85 * 85
-                    + chn[3] * 85 + 85;
-            out.write((byte) (r >> 24));
-            out.write((byte) (r >> 16));
-            out.write((byte) (r >> 8));
+
+        switch(state){
+            case 2:
+                r = chn[0] * 85 * 85 * 85 * 85 + chn[1] * 85 * 85 * 85 + 85 * 85 * 85
+                        + 85 * 85 + 85;
+                out.write((byte) (r >> 24));
+                break;
+            case 3:
+                r = chn[0] * 85 * 85 * 85 * 85 + chn[1] * 85 * 85 * 85 + chn[2] * 85 * 85
+                        + 85 * 85 + 85;
+                out.write((byte) (r >> 24));
+                out.write((byte) (r >> 16));
+                break;
+            case 4:
+                r = chn[0] * 85 * 85 * 85 * 85 + chn[1] * 85 * 85 * 85 + chn[2] * 85 * 85
+                        + chn[3] * 85 + 85;
+                out.write((byte) (r >> 24));
+                out.write((byte) (r >> 16));
+                out.write((byte) (r >> 8));
+                break;
+            default:
+                break;
         }
+
         return out.toByteArray();
     }
 
@@ -830,7 +866,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param in the input data
      * @return the decoded data
      */
-    public static byte[] LZWDecode(byte[] in) {
+    public static byte[] lzwDecode(byte[] in) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         LZWDecoder lzw = new LZWDecoder();
         lzw.decode(in, out);
@@ -850,9 +886,13 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         PdfObject filter = getPdfObjectRelease(stream.get(PdfName.FILTER));
         byte[] b = getStreamBytesRaw(stream, file);
 
-        List<PdfObject> filters = new ArrayList<>();
-        filters = addFilters(filters, filter);
+        List<PdfObject> filters = addFilters(new ArrayList<>(), filter);
+        List<PdfObject> dp = getDecodeParams(stream);
 
+        return applyFilters(b, filters, dp);
+    }
+
+    private static List<PdfObject> getDecodeParams(PRStream stream) {
         List<PdfObject> dp = new ArrayList<>();
         PdfObject dpo = getPdfObjectRelease(stream.get(PdfName.DECODEPARMS));
         if (dpo == null || (!dpo.isDictionary() && !dpo.isArray())) {
@@ -865,8 +905,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 dp = ((PdfArray) dpo).getElements();
             }
         }
+        return dp;
+    }
 
-        String name;
+    private static byte[] applyFilters(byte[] b, List<PdfObject> filters, List<PdfObject> dp)
+            throws PDFFilterException, IOException {
         for (int j = 0; j < filters.size(); ++j) {
             PdfObject filterObject = getPdfObjectRelease(filters.get(j));
             if (filterObject == null) {
@@ -875,42 +918,41 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 );
             }
 
-            name = filterObject.toString();
-            switch (name) {
-                case "/FlateDecode":
-                case "/Fl": {
-                    b = FlateDecode(b);
-                    PdfObject dicParam = (j < dp.size()) ? dp.get(j) : null;
-                    if (dicParam != null) {
-                        b = decodePredictor(b, dicParam);
-                    }
-                    break;
+            String name = filterObject.toString();
+            b = decodeStream(b, name, j < dp.size() ? dp.get(j) : null);
+        }
+        return b;
+    }
+
+    private static byte[] decodeStream(byte[] b, String filterName, PdfObject decodeParam)
+            throws PDFFilterException, IOException {
+        switch (filterName) {
+            case "/FlateDecode", "/Fl":
+                b = flateDecode(b);
+                if (decodeParam != null) {
+                    b = decodePredictor(b, decodeParam);
                 }
-                case "/ASCIIHexDecode":
-                case "/AHx":
-                    b = ASCIIHexDecode(b);
-                    break;
-                case "/ASCII85Decode":
-                case "/A85":
-                    b = ascii85Decode(b);
-                    break;
-                case "/LZWDecode": {
-                    b = LZWDecode(b);
-                    PdfObject dicParam = (j < dp.size()) ? dp.get(j) : null;
-                    if (dicParam != null) {
-                        b = decodePredictor(b, dicParam);
-                    }
-                    break;
+                break;
+            case "/ASCIIHexDecode", "/AHx":
+                b = asciiHexDecode(b);
+                break;
+            case "/ASCII85Decode", "/A85":
+                b = ascii85Decode(b);
+                break;
+            case "/LZWDecode":
+                b = lzwDecode(b);
+                if (decodeParam != null) {
+                    b = decodePredictor(b, decodeParam);
                 }
-                case "/Crypt":
-                    // Handle Crypt filter if necessary
-                    break;
-                default:
-                    throw new UnsupportedPdfException(
-                            MessageLocalization.getComposedMessage(
-                                    "the.filter.1.is.not.supported", name)
-                    );
-            }
+                break;
+            case "/Crypt":
+                // Handle Crypt filter if necessary
+                break;
+            default:
+                throw new UnsupportedPdfException(
+                        MessageLocalization.getComposedMessage(
+                                "the.filter.1.is.not.supported", filterName)
+                );
         }
         return b;
     }
@@ -1319,6 +1361,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             case "media":
                 box = (PdfArray) getPdfObjectRelease(page.get(PdfName.MEDIABOX));
                 break;
+            default:
+                break;
         }
         if (box == null) {
             return null;
@@ -1354,6 +1398,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     value = PdfName.decodeName(value);
                     break;
                 }
+                default:
+                    break;
             }
             map.put(PdfName.decodeName(key.toString()), value);
         }
@@ -1447,54 +1493,44 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     /**
      *
      */
-    private void readDecryptedDocObj() throws IOException {
-        if (encrypted) {
-            return;
-        }
-        if (trailer == null) {
-            return;
-        }
-        PdfObject encDic = trailer.get(PdfName.ENCRYPT);
-        if (encDic == null || encDic.toString().equals("null")) {
-            return;
-        }
-        encryptionError = true;
-        byte[] encryptionKey = null;
-        encrypted = true;
-        PdfDictionary enc = (PdfDictionary) getPdfObject(encDic);
 
+    private byte[] controlIfDocumentIDsAreNull(PdfArray documentIDs, byte[] documentID){
         String s;
         PdfObject o;
 
-        PdfArray documentIDs = trailer.getAsArray(PdfName.ID);
-        byte[] documentID = null;
         if (documentIDs != null) {
             o = documentIDs.getPdfObject(0);
             strings.remove(o);
             s = o.toString();
-            documentID = com.lowagie.text.DocWriter.getISOBytes(s);
+            documentID = DocWriter.getISOBytes(s);
             if (documentIDs.size() > 1) {
                 strings.remove(documentIDs.getPdfObject(1));
             }
+
+            return documentID;
         }
         // just in case we have a broken producer
         if (documentID == null) {
-            documentID = new byte[0];
+            return new byte[0];
         }
+
+        return new byte[0];
+    }
+
+    private Object[] controlIfIsFilterPdfNameStandard(PdfObject filter,
+            PdfDictionary enc) throws InvalidPdfException {
+        String s;
+        PdfObject o;
         byte[] uValue = null;
         byte[] oValue = null;
-        int cryptoMode = PdfWriter.STANDARD_ENCRYPTION_40;
-        int lengthValue = 0;
-
-        PdfObject filter = getPdfObjectRelease(enc.get(PdfName.FILTER));
 
         if (filter.equals(PdfName.STANDARD)) {
             s = enc.get(PdfName.U).toString();
             strings.remove(enc.get(PdfName.U));
-            uValue = com.lowagie.text.DocWriter.getISOBytes(s);
+            uValue = DocWriter.getISOBytes(s);
             s = enc.get(PdfName.O).toString();
             strings.remove(enc.get(PdfName.O));
-            oValue = com.lowagie.text.DocWriter.getISOBytes(s);
+            oValue = DocWriter.getISOBytes(s);
 
             o = enc.get(PdfName.P);
             if (!o.isNumber()) {
@@ -1510,247 +1546,272 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
             rValue = ((PdfNumber) o).intValue();
 
-            switch (rValue) {
-                case 2:
-                    cryptoMode = PdfWriter.STANDARD_ENCRYPTION_40;
-                    break;
-                case 3:
-                    o = enc.get(PdfName.PDF_NAME_LENGTH);
-                    if (!o.isNumber()) {
-                        throw new InvalidPdfException(
-                                MessageLocalization.getComposedMessage("illegal.length.value"));
-                    }
-                    lengthValue = ((PdfNumber) o).intValue();
-                    if (lengthValue > 128 || lengthValue < 40 || lengthValue % 8 != 0) {
-                        throw new InvalidPdfException(
-                                MessageLocalization.getComposedMessage("illegal.length.value"));
-                    }
-                    cryptoMode = PdfWriter.STANDARD_ENCRYPTION_128;
-                    break;
-                case 4:
-                    PdfDictionary dic = (PdfDictionary) enc.get(PdfName.CF);
-                    if (dic == null) {
-                        throw new InvalidPdfException(
-                                MessageLocalization.getComposedMessage("cf.not.found.encryption"));
-                    }
-                    dic = (PdfDictionary) dic.get(PdfName.STDCF);
-                    if (dic == null) {
-                        throw new InvalidPdfException(
-                                MessageLocalization
-                                        .getComposedMessage("stdcf.not.found.encryption"));
-                    }
-                    if (PdfName.V2.equals(dic.get(PdfName.CFM))) {
-                        cryptoMode = PdfWriter.STANDARD_ENCRYPTION_128;
-                    } else if (PdfName.AESV2.equals(dic.get(PdfName.CFM))) {
-                        cryptoMode = PdfWriter.ENCRYPTION_AES_128;
-                    } else {
-                        throw new UnsupportedPdfException(
-                                MessageLocalization
-                                        .getComposedMessage("no.compatible.encryption.found"));
-                    }
-                    PdfObject em = enc.get(PdfName.ENCRYPTMETADATA);
-                    if (em != null && em.toString().equals("false")) {
-                        cryptoMode |= PdfWriter.DO_NOT_ENCRYPT_METADATA;
-                    }
-                    break;
-                case 6:
-                    cryptoMode = PdfWriter.ENCRYPTION_AES_256_V3;
-                    em = enc.get(PdfName.ENCRYPTMETADATA);
-                    if (em != null && em.toString().equals("false")) {
-                        cryptoMode |= PdfWriter.DO_NOT_ENCRYPT_METADATA;
-                    }
-                    break;
-                default:
-                    throw new UnsupportedPdfException(
-                            MessageLocalization.getComposedMessage(
-                                    "unknown.encryption.type.r.eq.1", rValue));
-            }
-        } else if (filter.equals(PdfName.PUBSEC)) {
-            PdfArray recipients;
-
-            o = enc.get(PdfName.V);
-            if (!o.isNumber()) {
-                throw new InvalidPdfException(
-                        MessageLocalization.getComposedMessage("illegal.v.value"));
-            }
-            int vValue = ((PdfNumber) o).intValue();
-            switch (vValue) {
-                case 1:
-                    cryptoMode = PdfWriter.STANDARD_ENCRYPTION_40;
-                    lengthValue = 40;
-                    recipients = (PdfArray) enc.get(PdfName.RECIPIENTS);
-                    break;
-                case 2:
-                    o = enc.get(PdfName.PDF_NAME_LENGTH);
-                    if (!o.isNumber()) {
-                        throw new InvalidPdfException(
-                                MessageLocalization.getComposedMessage("illegal.length.value"));
-                    }
-                    lengthValue = ((PdfNumber) o).intValue();
-                    if (lengthValue > 128 || lengthValue < 40 || lengthValue % 8 != 0) {
-                        throw new InvalidPdfException(
-                                MessageLocalization.getComposedMessage("illegal.length.value"));
-                    }
-                    cryptoMode = PdfWriter.STANDARD_ENCRYPTION_128;
-                    recipients = (PdfArray) enc.get(PdfName.RECIPIENTS);
-                    break;
-                case 4:
-                    PdfDictionary dic = (PdfDictionary) enc.get(PdfName.CF);
-                    if (dic == null) {
-                        throw new InvalidPdfException(
-                                MessageLocalization.getComposedMessage("cf.not.found.encryption"));
-                    }
-                    dic = (PdfDictionary) dic.get(PdfName.DEFAULTCRYPTFILTER);
-                    if (dic == null) {
-                        throw new InvalidPdfException(
-                                MessageLocalization
-                                        .getComposedMessage("defaultcryptfilter.not.found.encryption"));
-                    }
-                    if (PdfName.V2.equals(dic.get(PdfName.CFM))) {
-                        cryptoMode = PdfWriter.STANDARD_ENCRYPTION_128;
-                        lengthValue = 128;
-                    } else if (PdfName.AESV2.equals(dic.get(PdfName.CFM))) {
-                        cryptoMode = PdfWriter.ENCRYPTION_AES_128;
-                        lengthValue = 128;
-                    } else {
-                        throw new UnsupportedPdfException(
-                                MessageLocalization
-                                        .getComposedMessage("no.compatible.encryption.found"));
-                    }
-                    PdfObject em = dic.get(PdfName.ENCRYPTMETADATA);
-                    if (em != null && em.toString().equals("false")) {
-                        cryptoMode |= PdfWriter.DO_NOT_ENCRYPT_METADATA;
-                    }
-
-                    recipients = (PdfArray) dic.get(PdfName.RECIPIENTS);
-                    break;
-                default:
-                    throw new UnsupportedPdfException(
-                            MessageLocalization.getComposedMessage(
-                                    "unknown.encryption.type.v.eq.1", rValue));
-            }
-            BouncyCastleHelper.checkCertificateEncodingOrThrowException(certificate);
-            byte[] envelopedData = BouncyCastleHelper.getEnvelopedData(recipients, strings, certificate, certificateKey,
-                    certificateKeyProvider);
-
-            if (envelopedData == null) {
-                throw new UnsupportedPdfException(
-                        MessageLocalization.getComposedMessage("bad.certificate.and.key"));
-            }
-
-            MessageDigest md;
-
-            try {
-                md = MessageDigest.getInstance("SHA-1");
-                md.update(envelopedData, 0, 20);
-                for (int i = 0; i < recipients.size(); i++) {
-                    byte[] encodedRecipient = recipients.getPdfObject(i).getBytes();
-                    md.update(encodedRecipient);
-                }
-                if ((cryptoMode & PdfWriter.DO_NOT_ENCRYPT_METADATA) != 0) {
-                    md.update(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255});
-                }
-                encryptionKey = md.digest();
-            } catch (Exception f) {
-                throw new ExceptionConverter(f);
-            }
+            enc = (PdfDictionary) Objects.requireNonNull(switchRValue(enc))[0];
+            cryptoMode = (int) Objects.requireNonNull(switchRValue(enc))[1];
+            lengthValue = (int) Objects.requireNonNull(switchRValue(enc))[2];
         }
 
-        decrypt = new PdfEncryption();
-        decrypt.setCryptoMode(cryptoMode, lengthValue);
+        return new Object[]{enc, cryptoMode, lengthValue, oValue, uValue};
+    }
 
-        if (filter.equals(PdfName.STANDARD)) {
-            if (rValue < 6) {
-                // check by owner password
-                decrypt.setupByOwnerPassword(documentID, password, oValue, pValue);
-                if (!equalsArray(uValue, decrypt.userKey,
-                        (rValue == 3 || rValue == 4) ? 16 : 32)) {
-                    // check by user password
-                    decrypt.setupByUserPassword(documentID, password, uValue, pValue);
-                    if (!equalsArray(uValue, decrypt.userKey,
-                            (rValue == 3 || rValue == 4) ? 16 : 32)) {
-                        throw new BadPasswordException(
-                                MessageLocalization.getComposedMessage("bad.user.password"));
-                    }
-                } else {
-                    ownerPasswordUsed = true;
-                }
-            } else {
-                /* implements Algorithm 2.A: Retrieving the file encryption key from an encrypted document in order to
-                 decrypt it (revision 6 and later) - ISO 32000-2 section 7.6.4.3.3 */
-                s = enc.get(PdfName.UE).toString();
-                strings.remove(enc.get(PdfName.UE));
-                byte[] ueValue = com.lowagie.text.DocWriter.getISOBytes(s);
-                s = enc.get(PdfName.OE).toString();
-                strings.remove(enc.get(PdfName.OE));
-                byte[] oeValue = com.lowagie.text.DocWriter.getISOBytes(s);
-                s = enc.get(PdfName.PERMS).toString();
-                strings.remove(enc.get(PdfName.PERMS));
-                byte[] permsValue = com.lowagie.text.DocWriter.getISOBytes(s);
+    private void readDecryptedDocObj() throws IOException {
+        if (encrypted || trailer == null) {
+            return;
+        }
+        PdfObject encDic = trailer.get(PdfName.ENCRYPT);
+        if (encDic == null || encDic.toString().equals("null")) {
+            return;
+        }
+        encryptionError = true;
+        encrypted = true;
 
-                // step b of Algorithm 2.A
-                //byte[] passwordByteThis = this.password
-//                if passwordByteThis == null
-//                    passwordByteThis = new byte[0
-//                 else if passwordByteThis.length > 127
-//                    passwordByteThis = Arrays.copyOf(passwordByteThis, 127
-//
+        PdfDictionary enc = (PdfDictionary) getPdfObject(encDic);
+        byte[] documentID = getDocumentIDMethod();
+        PdfObject filter = getPdfObjectRelease(enc.get(PdfName.FILTER));
 
-                // According to ISO 32000-2 the uValue is expected to be 48 bytes in length.
-                // Actual documents from the wild tend to have the uValue filled with zeroes
-                // to a 127 bytes length. As input to computeHash for owner password related
-                // operations, though, we must only use the 48 bytes.
-                if (uValue != null && uValue.length > 48) {
-                    uValue = Arrays.copyOf(uValue, 48);
-                }
+        Object[] result = processFilter(enc, filter);
+        enc = (PdfDictionary) result[0];
+        cryptoMode = (int) result[1];
+        lengthValue = (int) result[2];
+        byte[] oValue = (byte[]) result[3];
+        byte[] uValue = (byte[]) result[4];
 
-                try {
-                    // step c of Algorithm 2.A
-                    byte[] hashAlg2B = decrypt.hashAlg2B(password, Arrays.copyOfRange(oValue, 32, 40), uValue);
-                    if (equalsArray(hashAlg2B, oValue, 32)) {
-                        // step d of Algorithm 2.A
-                        decrypt.setupByOwnerPassword(documentID, password, oValue, pValue);
-                        // step f of Algorithm 2.A
-                        if (decrypt.decryptAndCheckPerms(permsValue)) {
-                            ownerPasswordUsed = true;
-                        }
-                    }
-
-                    if (!ownerPasswordUsed) {
-                        // analog of step c of Algorithm 2.A for user password
-                        hashAlg2B = decrypt.hashAlg2B(password, Arrays.copyOfRange(uValue, 32, 40), null);
-                        if (!equalsArray(hashAlg2B, uValue, 32)) {
-                            throw new BadPasswordException(MessageLocalization.getComposedMessage("bad.user.password"));
-                        }
-                        // step e of Algorithm 2.A
-                        decrypt.setupByUserPassword(documentID, password, uValue, pValue);
-                        // step f of Algorithm 2.A
-                        if (!decrypt.decryptAndCheckPerms(permsValue)) {
-                            throw new BadPasswordException(MessageLocalization.getComposedMessage("bad.user.password"));
-                        }
-                    }
-                    pValue = decrypt.permissions;
-                } catch (IOException e) {
-                    throw e;
-                } catch (Exception e) {
-                    throw new IOException(e);
-                }
-            }
-        } else if (filter.equals(PdfName.PUBSEC)) {
-            decrypt.setupByEncryptionKey(encryptionKey, lengthValue);
-            ownerPasswordUsed = true;
+        if (filter.equals(PdfName.PUBSEC)) {
+            handlePublicSecurity(enc);
+        } else if (filter.equals(PdfName.STANDARD)) {
+            handleStandardEncryption(enc, oValue, uValue, documentID);
         }
 
-        for (Object string : strings) {
-            PdfString str = (PdfString) string;
-            str.decrypt(this);
-        }
+        finalizeDecryption(encDic);
+    }
 
+    private byte[] getDocumentIDMethod() {
+        PdfArray documentIDs = trailer.getAsArray(PdfName.ID);
+        byte[] documentID = null;
+        return controlIfDocumentIDsAreNull(documentIDs, documentID);
+    }
+
+    private Object[] processFilter(PdfDictionary enc, PdfObject filter) throws InvalidPdfException {
+        cryptoMode = PdfWriter.STANDARD_ENCRYPTION_40;
+        lengthValue = 0;
+        return controlIfIsFilterPdfNameStandard(filter, enc);
+    }
+
+    private void handlePublicSecurity(PdfDictionary enc) throws IOException {
+        PdfArray recipients = getRecipients(enc);
+        byte[] encryptionKey = getEnvelopedData(recipients);
+        decrypt.setCryptoMode(PdfWriter.ENCRYPTION_AES_256_V3, lengthValue);
+        decrypt.setupByEncryptionKey(encryptionKey, lengthValue);
+        ownerPasswordUsed = true;
+    }
+
+    private void handleStandardEncryption(PdfDictionary enc, byte[] oValue,
+            byte[] uValue, byte[] documentID) throws IOException {
+        if (rValue < 6) {
+            setupByPassword(oValue, uValue, documentID);
+        } else {
+            handleAdvancedEncryption(enc, oValue, uValue, documentID);
+        }
+    }
+
+    private void finalizeDecryption(PdfObject encDic) {
+        decryptAllStrings();
         if (encDic.isIndirect()) {
             cryptoRef = (PRIndirectReference) encDic;
             xrefObj.set(cryptoRef.getNumber(), null);
         }
         encryptionError = false;
+    }
+
+    private PdfArray getRecipients(PdfDictionary enc) throws InvalidPdfException {
+        PdfObject o = enc.get(PdfName.V);
+        if (!o.isNumber()) {
+            throw new InvalidPdfException(MessageLocalization.getComposedMessage("illegal.v.value"));
+        }
+        int vValue = ((PdfNumber) o).intValue();
+
+        return switch (vValue) {
+            case 1 -> (PdfArray) enc.get(PdfName.RECIPIENTS);
+            case 2 -> {
+                validateLengthValue(enc);
+                yield (PdfArray) enc.get(PdfName.RECIPIENTS);
+            }
+            case 4 -> processDefaultCryptFilter(enc);
+            default -> throw new UnsupportedPdfException(
+                    MessageLocalization.getComposedMessage("unknown.encryption.type.v.eq.1", vValue));
+        };
+    }
+
+    private PdfArray processDefaultCryptFilter(PdfDictionary enc) throws InvalidPdfException {
+        PdfDictionary dic = (PdfDictionary) enc.get(PdfName.CF);
+        if (dic == null) {
+            throw new InvalidPdfException(MessageLocalization.getComposedMessage("cf.not.found.encryption"));
+        }
+        dic = (PdfDictionary) dic.get(PdfName.DEFAULTCRYPTFILTER);
+        if (dic == null) {
+            throw new InvalidPdfException(MessageLocalization.getComposedMessage("defaultcryptfilter.not.found.encryption"));
+        }
+
+        if (PdfName.V2.equals(dic.get(PdfName.CFM))) {
+            lengthValue = 128;
+        } else if (PdfName.AESV2.equals(dic.get(PdfName.CFM))) {
+            lengthValue = 128;
+        } else {
+            throw new UnsupportedPdfException(MessageLocalization.getComposedMessage("no.compatible.encryption.found"));
+        }
+
+        PdfObject em = dic.get(PdfName.ENCRYPTMETADATA);
+        if (em != null && em.toString().equals(FALSE_CONST)) {
+            cryptoMode |= PdfWriter.DO_NOT_ENCRYPT_METADATA;
+        }
+
+        return (PdfArray) dic.get(PdfName.RECIPIENTS);
+    }
+
+    private byte[] getEnvelopedData(PdfArray recipients) throws IOException {
+        BouncyCastleHelper.checkCertificateEncodingOrThrowException(certificate);
+        byte[] envelopedData = BouncyCastleHelper.getEnvelopedData(recipients, strings, certificate, certificateKey, certificateKeyProvider);
+
+        if (envelopedData == null) {
+            throw new UnsupportedPdfException(MessageLocalization.getComposedMessage("bad.certificate.and.key"));
+        }
+
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("SHA-1");
+            md.update(envelopedData, 0, 20);
+            for (int i = 0; i < recipients.size(); i++) {
+                byte[] encodedRecipient = recipients.getPdfObject(i).getBytes();
+                md.update(encodedRecipient);
+            }
+            if ((cryptoMode & PdfWriter.DO_NOT_ENCRYPT_METADATA) != 0) {
+                md.update(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+            }
+            return md.digest();
+        } catch (Exception e) {
+            throw new ExceptionConverter(e);
+        }
+    }
+
+    private void setupByPassword(byte[] oValue, byte[] uValue, byte[] documentID) throws IOException {
+        decrypt.setupByOwnerPassword(documentID, password, oValue, pValue);
+        if (!equalsArray(uValue, decrypt.userKey, (rValue == 3 || rValue == 4) ? 16 : 32)) {
+            decrypt.setupByUserPassword(documentID, password, uValue, pValue);
+            if (!equalsArray(uValue, decrypt.userKey, (rValue == 3 || rValue == 4) ? 16 : 32)) {
+                throw new BadPasswordException(MessageLocalization.getComposedMessage(BAD_USER_PASSWORD_CONST));
+            }
+        } else {
+            ownerPasswordUsed = true;
+        }
+    }
+
+    private void handleAdvancedEncryption(PdfDictionary enc, byte[] oValue, byte[] uValue, byte[] documentID) throws IOException {
+        strings.remove(enc.get(PdfName.UE));
+        strings.remove(enc.get(PdfName.OE));
+        strings.remove(enc.get(PdfName.PERMS));
+
+        byte[] permsValue = DocWriter.getISOBytes(enc.get(PdfName.PERMS).toString());
+
+        if (uValue != null && uValue.length > 48) {
+            uValue = Arrays.copyOf(uValue, 48);
+        }
+
+        try {
+            byte[] hashAlg2B = decrypt.hashAlg2B(password, Arrays.copyOfRange(oValue, 32, 40), uValue);
+            if (equalsArray(hashAlg2B, oValue, 32)) {
+                decrypt.setupByOwnerPassword(documentID, password, oValue, pValue);
+                if (decrypt.decryptAndCheckPerms(permsValue)) {
+                    ownerPasswordUsed = true;
+                }
+            }
+
+            if (!ownerPasswordUsed) {
+                hashAlg2B = decrypt.hashAlg2B(password, Arrays.copyOfRange(uValue, 32, 40), null);
+                if (!equalsArray(hashAlg2B, uValue, 32)) {
+                    throw new BadPasswordException(MessageLocalization.getComposedMessage(BAD_USER_PASSWORD_CONST));
+                }
+                decrypt.setupByUserPassword(documentID, password, uValue, pValue);
+                if (!decrypt.decryptAndCheckPerms(permsValue)) {
+                    throw new BadPasswordException(MessageLocalization.getComposedMessage(BAD_USER_PASSWORD_CONST));
+                }
+            }
+            pValue = decrypt.permissions;
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+    }
+
+    private void decryptAllStrings() {
+        for (Object string : strings) {
+            PdfString str = (PdfString) string;
+            str.decrypt(this);
+        }
+    }
+
+    private Object[] switchRValue(PdfDictionary enc) throws InvalidPdfException {
+        switch (rValue) {
+            case 2:
+                cryptoMode = PdfWriter.STANDARD_ENCRYPTION_40;
+                break;
+            case 3:
+                lengthValue = validateLengthValue(enc);
+                cryptoMode = PdfWriter.STANDARD_ENCRYPTION_128;
+                break;
+            case 4:
+                cryptoMode = processCFDictionary(enc);
+                break;
+            case 6:
+                cryptoMode = PdfWriter.ENCRYPTION_AES_256_V3;
+                validateEncryptMetadata(enc);
+                break;
+            default:
+                throwUnsupportedEncryptionType();
+                return new Object[0]; // per evitare avvisi di non ritorno
+        }
+        return new Object[]{enc, cryptoMode, lengthValue};
+    }
+
+    private int validateLengthValue(PdfDictionary enc) throws InvalidPdfException {
+        PdfObject o = enc.get(PdfName.PDF_NAME_LENGTH);
+        if (!o.isNumber()) {
+            throw new InvalidPdfException(MessageLocalization.getComposedMessage(ILLEGAL_LENGTH_VALUE_CONST));
+        }
+        lengthValue = ((PdfNumber) o).intValue();
+        if (lengthValue > 128 || lengthValue < 40 || lengthValue % 8 != 0) {
+            throw new InvalidPdfException(MessageLocalization.getComposedMessage(ILLEGAL_LENGTH_VALUE_CONST));
+        }
+        return lengthValue;
+    }
+
+    private int processCFDictionary(PdfDictionary enc) throws InvalidPdfException {
+        PdfDictionary dic = (PdfDictionary) enc.get(PdfName.CF);
+        if (dic == null) {
+            throw new InvalidPdfException(MessageLocalization.getComposedMessage("cf.not.found.encryption"));
+        }
+        dic = (PdfDictionary) dic.get(PdfName.STDCF);
+        if (dic == null) {
+            throw new InvalidPdfException(MessageLocalization.getComposedMessage("stdcf.not.found.encryption"));
+        }
+        if (PdfName.V2.equals(dic.get(PdfName.CFM))) {
+            return PdfWriter.STANDARD_ENCRYPTION_128;
+        } else if (PdfName.AESV2.equals(dic.get(PdfName.CFM))) {
+            return PdfWriter.ENCRYPTION_AES_128;
+        } else {
+            throw new UnsupportedPdfException(MessageLocalization.getComposedMessage("no.compatible.encryption.found"));
+        }
+    }
+
+    private void validateEncryptMetadata(PdfDictionary enc) {
+        PdfObject em = enc.get(PdfName.ENCRYPTMETADATA);
+        if (em != null && em.toString().equals(FALSE_CONST)) {
+            cryptoMode |= PdfWriter.DO_NOT_ENCRYPT_METADATA;
+        }
+    }
+
+    private void throwUnsupportedEncryptionType() throws UnsupportedPdfException {
+        throw new UnsupportedPdfException(MessageLocalization.getComposedMessage("unknown.encryption.type.r.eq.1", rValue));
     }
 
     /**
@@ -1824,7 +1885,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         return new PRIndirectReference(this, xrefObj.size() - 1);
     }
 
-    protected void readPages() throws IOException {
+    protected void readPages(){
         catalog = trailer.getAsDict(PdfName.ROOT);
         rootPages = catalog.getAsDict(PdfName.PAGES);
         pageRefs = new PageRefs(this);
@@ -1991,7 +2052,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         readDecryptedDocObj();
         if (objStmMark != null) {
             for (Object o : objStmMark.entrySet()) {
-                Map.Entry<?,?> entry = (Map.Entry<?,?>) o;
+                Entry<?,?> entry = (Entry<?,?>) o;
                 int n = (Integer) entry.getKey();
                 IntHashtable h = (IntHashtable) entry.getValue();
                 readObjStm((PRStream) xrefObj.get(n), h);
@@ -2017,7 +2078,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 String line = tokens.readString(20);
                 if (!line.startsWith("\nendstream")
                         && !line.startsWith("\r\nendstream")
-                        && !line.startsWith("\rendstream") && !line.startsWith("endstream")) {
+                        && !line.startsWith("\rendstream") && !line.startsWith(ENDSTREAM_CONST)) {
                     calc = true;
                 }
             }
@@ -2039,7 +2100,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 if (equalsn(tline, endobj)) {
                     tokens.seek(pos - 16);
                     String s = tokens.readString(16);
-                    int index = s.indexOf("endstream");
+                    int index = s.indexOf(ENDSTREAM_CONST);
                     if (index >= 0) {
                         pos = pos - 16 + index;
                     }
@@ -2159,71 +2220,104 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     protected PdfDictionary readXrefSection() throws IOException, PDFFilterException {
-        tokens.nextValidToken();
-        if (!tokens.getStringValue().equals("xref")) {
-            tokens.throwError(MessageLocalization
-                    .getComposedMessage("xref.subsection.not.found"));
-        }
-        int start;
-        int end;
-        int pos;
-        int gen;
+        validateXrefHeader();
+
         while (true) {
             tokens.nextValidToken();
             if (tokens.getStringValue().equals("trailer")) {
                 break;
             }
-            if (tokens.getTokenType() != PRTokeniser.TK_NUMBER) {
-                tokens
-                        .throwError(MessageLocalization
-                                .getComposedMessage(
-                                        "object.number.of.the.first.object.in.this.xref.subsection.not.found"));
-            }
-            start = tokens.intValue();
-            tokens.nextValidToken();
-            if (tokens.getTokenType() != PRTokeniser.TK_NUMBER) {
-                tokens
-                        .throwError(MessageLocalization
-                                .getComposedMessage("number.of.entries.in.this.xref.subsection.not.found"));
-            }
-            end = tokens.intValue() + start;
-            if (start == 1) { // fix incorrect start number
-                int back = tokens.getFilePointer();
-                tokens.nextValidToken();
-                pos = tokens.intValue();
-                tokens.nextValidToken();
-                gen = tokens.intValue();
-                if (pos == 0 && gen == PdfWriter.GENERATION_MAX) {
-                    --start;
-                    --end;
-                }
-                tokens.seek(back);
-            }
-            ensureXrefSize(end * 2);
-            for (int k = start; k < end; ++k) {
-                tokens.nextValidToken();
-                pos = tokens.intValue();
-                tokens.nextValidToken();
-                tokens.nextValidToken();
-                int p = k * 2;
-                if (tokens.getStringValue().equals("n")) {
-                    if (xref[p] == 0 && xref[p + 1] == 0) {
-                        xref[p] = pos;
-                    }
-                } else if (tokens.getStringValue().equals("f")) {
-                    if (xref[p] == 0 && xref[p + 1] == 0) {
-                        xref[p] = -1;
-                    }
-                } else {
-                    tokens
-                            .throwError(MessageLocalization
-                                    .getComposedMessage("invalid.cross.reference.entry.in.this.xref.subsection"));
-                }
-            }
+            processXrefSubsection();
         }
+
+        PdfDictionary trailerRead = readTrailer();
+        handleXrefStm(trailerRead);
+
+        return trailer;
+    }
+
+    private void validateXrefHeader() throws IOException {
+        tokens.nextValidToken();
+        if (!tokens.getStringValue().equals("xref")) {
+            tokens.throwError(MessageLocalization.getComposedMessage("xref.subsection.not.found"));
+        }
+    }
+
+    private void processXrefSubsection() throws IOException {
+        int start = readSubsectionStart();
+        int end = readSubsectionEnd(start);
+
+        if (start == 1) {
+            start = (int) fixIncorrectStartNumber(start, end)[0];
+            end = (int) fixIncorrectStartNumber(start, end)[1];
+        }
+
+        ensureXrefSize(end * 2);
+        processXrefEntries(start, end);
+    }
+
+    private int readSubsectionStart() throws IOException {
+        if (tokens.getTokenType() != PRTokeniser.TK_NUMBER) {
+            tokens.throwError(MessageLocalization.getComposedMessage("object.number.of.the.first.object.in.this.xref.subsection.not.found"));
+        }
+        return tokens.intValue();
+    }
+
+    private int readSubsectionEnd(int start) throws IOException {
+        tokens.nextValidToken();
+        if (tokens.getTokenType() != PRTokeniser.TK_NUMBER) {
+            tokens.throwError(MessageLocalization.getComposedMessage("number.of.entries.in.this.xref.subsection.not.found"));
+        }
+        return tokens.intValue() + start;
+    }
+
+    private Object[] fixIncorrectStartNumber(int start, int end) throws IOException {
+        int back = tokens.getFilePointer();
+        tokens.nextValidToken();
+        int pos = tokens.intValue();
+        tokens.nextValidToken();
+        int gen = tokens.intValue();
+        if (pos == 0 && gen == PdfWriter.GENERATION_MAX) {
+            --start;
+            --end;
+        }
+        tokens.seek(back);
+        return new Object[]{start, end};
+    }
+
+    private void processXrefEntries(int start, int end) throws IOException {
+        for (int k = start; k < end; ++k) {
+            tokens.nextValidToken();
+            int pos = tokens.intValue();
+            tokens.nextValidToken();  // Skip generation number
+            tokens.nextValidToken();
+            updateXrefEntry(k, pos);
+        }
+    }
+
+    private void updateXrefEntry(int k, int pos) throws IOException {
+        int p = k * 2;
+        if (tokens.getStringValue().equals("n")) {
+            if (xref[p] == 0 && xref[p + 1] == 0) {
+                xref[p] = pos;
+            }
+        } else if (tokens.getStringValue().equals("f")) {
+            if (xref[p] == 0 && xref[p + 1] == 0) {
+                xref[p] = -1;
+            }
+        } else {
+            tokens.throwError(MessageLocalization.getComposedMessage("invalid.cross.reference.entry.in.this.xref.subsection"));
+        }
+    }
+
+    private PdfDictionary readTrailer() throws IOException {
         PdfDictionary trailerRead = (PdfDictionary) readPRObject();
         PdfNumber xrefSize = (PdfNumber) trailerRead.get(PdfName.SIZE);
         ensureXrefSize(xrefSize.intValue() * 2);
+        return trailerRead;
+    }
+
+    private void handleXrefStm(PdfDictionary trailerRead) throws IOException, PDFFilterException {
         PdfObject xrs = trailerRead.get(PdfName.XREFSTM);
         if (xrs != null && xrs.isNumber()) {
             int loc = ((PdfNumber) xrs).intValue();
@@ -2231,135 +2325,177 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 readXRefStream(loc);
                 newXrefType = true;
                 hybridXref = true;
-            } catch (IOException e) {
+            } catch (IOException | PDFFilterException e) {
                 xref = null;
                 throw e;
-            } catch (PDFFilterException e) {
-                throw new PDFFilterException(e.getMessage());
             }
         }
-        return trailer;
     }
 
     protected boolean readXRefStream(int ptr) throws IOException, PDFFilterException {
         tokens.seek(ptr);
-        int thisStream;
-        if (!tokens.nextToken()) {
+        if (!validateInitialToken()) {
             return false;
         }
-        if (tokens.getTokenType() != PRTokeniser.TK_NUMBER) {
+
+        PdfObject object = readPRObject();
+        PRStream stm = extractStreamIfValid(object);
+        if (stm == null) {
             return false;
         }
-        thisStream = tokens.intValue();
+
+        if (trailer == null) {
+            initializeTrailer(stm);
+        }
+
+        int size = ((PdfNumber) stm.get(PdfName.SIZE)).intValue();
+        PdfArray index = getIndex(stm, size);
+        PdfArray w = (PdfArray) stm.get(PdfName.W);
+        int prev = getPrev(stm);
+
+        ensureXrefSize(size * 2);
+        initializeObjStmCollections();
+
+        byte[] streamBytes = getStreamBytes(stm, tokens.getFile());
+        processXrefEntries(index, w, streamBytes);
+
+        return handlePrevXrefStream(prev);
+    }
+
+    private boolean validateInitialToken() throws IOException {
         if (!tokens.nextToken() || tokens.getTokenType() != PRTokeniser.TK_NUMBER) {
             return false;
         }
-        if (!tokens.nextToken() || !tokens.getStringValue().equals("obj")) {
-            return false;
-        }
-        PdfObject object = readPRObject();
-        PRStream stm;
+        return tokens.nextToken() && tokens.getTokenType() == PRTokeniser.TK_NUMBER
+                && tokens.getStringValue().equals("obj");
+    }
+
+    private PRStream extractStreamIfValid(PdfObject object) {
         if (object.isStream()) {
-            stm = (PRStream) object;
-            if (!PdfName.XREF.equals(stm.get(PdfName.TYPE))) {
-                return false;
+            PRStream stm = (PRStream) object;
+            if (PdfName.XREF.equals(stm.get(PdfName.TYPE))) {
+                return stm;
             }
-        } else {
-            return false;
         }
-        if (trailer == null) {
-            trailer = new PdfDictionary();
-            trailer.putAll(stm);
-        }
-        stm.setLength(((PdfNumber) stm.get(PdfName.PDF_NAME_LENGTH)).intValue());
-        int size = ((PdfNumber) stm.get(PdfName.SIZE)).intValue();
-        PdfArray index;
+        return null;
+    }
+
+    private void initializeTrailer(PRStream stm) {
+        trailer = new PdfDictionary();
+        trailer.putAll(stm);
+    }
+
+    private PdfArray getIndex(PRStream stm, int size) {
         PdfObject obj = stm.get(PdfName.INDEX);
         if (obj == null) {
-            index = new PdfArray();
+            PdfArray index = new PdfArray();
             index.add(new int[]{0, size});
-        } else {
-            index = (PdfArray) obj;
+            return index;
         }
-        PdfArray w = (PdfArray) stm.get(PdfName.W);
-        int prev = -1;
-        obj = stm.get(PdfName.PREV);
+        return (PdfArray) obj;
+    }
+
+    private int getPrev(PRStream stm) {
+        PdfObject obj = stm.get(PdfName.PREV);
         if (obj != null) {
-            prev = ((PdfNumber) obj).intValue();
+            return ((PdfNumber) obj).intValue();
         }
-        // Each xref pair is a position
-        // type 0 -> -1, 0
-        // type 1 -> offset, 0
-        // type 2 -> index, obj num
-        ensureXrefSize(size * 2);
+        return -1;
+    }
+
+    private void initializeObjStmCollections() {
         if (objStmMark == null && !partial) {
             objStmMark = new HashMap<>();
         }
         if (objStmToOffset == null && partial) {
             objStmToOffset = new IntHashtable();
         }
-        byte[] b = getStreamBytes(stm, tokens.getFile());
-        int bptr = 0;
+    }
+
+    private void processXrefEntries(PdfArray index, PdfArray w, byte[] streamBytes) {
         int[] wc = new int[3];
         for (int k = 0; k < 3; ++k) {
             wc[k] = w.getAsNumber(k).intValue();
         }
+
+        int bptr = 0;
         for (int idx = 0; idx < index.size(); idx += 2) {
             int start = index.getAsNumber(idx).intValue();
             int length = index.getAsNumber(idx + 1).intValue();
             ensureXrefSize((start + length) * 2);
-            while (length-- > 0) {
-                int type = 1;
-                if (wc[0] > 0) {
-                    type = 0;
-                    for (int k = 0; k < wc[0]; ++k) {
-                        type = (type << 8) + (b[bptr++] & 0xff);
-                    }
-                }
-                int field2 = 0;
-                for (int k = 0; k < wc[1]; ++k) {
-                    field2 = (field2 << 8) + (b[bptr++] & 0xff);
-                }
-                int field3 = 0;
-                for (int k = 0; k < wc[2]; ++k) {
-                    field3 = (field3 << 8) + (b[bptr++] & 0xff);
-                }
-                int base = start * 2;
-                if (xref[base] == 0 && xref[base + 1] == 0) {
-                    switch (type) {
-                        case 0:
-                            xref[base] = -1;
-                            break;
-                        case 1:
-                            xref[base] = field2;
-                            break;
-                        case 2:
-                            xref[base] = field3;
-                            xref[base + 1] = field2;
-                            if (partial) {
-                                objStmToOffset.put(field2, 0);
-                            } else {
-                                Integer on = field2;
-                                IntHashtable seq = objStmMark.get(on);
-                                if (seq == null) {
-                                    seq = new IntHashtable();
-                                    seq.put(field3, 1);
-                                    objStmMark.put(on, seq);
-                                } else {
-                                    seq.put(field3, 1);
-                                }
-                            }
-                            break;
-                    }
-                }
-                ++start;
+            processXrefEntry(streamBytes, wc, bptr, start, length);
+        }
+    }
+
+    private void processXrefEntry(byte[] streamBytes, int[] wc, int bptr, int start, int length) {
+        while (length-- > 0) {
+            int type = readType(streamBytes, wc[0], bptr);
+            int field2 = readField(streamBytes, wc[1], bptr);
+            int field3 = readField(streamBytes, wc[2], bptr);
+
+            int base = start * 2;
+            updateXrefEntry(base, type, field2, field3);
+
+            ++start;
+        }
+    }
+
+    private int readType(byte[] streamBytes, int fieldSize, int bptr) {
+        int type = 1;
+        if (fieldSize > 0) {
+            type = 0;
+            for (int k = 0; k < fieldSize; ++k) {
+                type = (type << 8) + (streamBytes[bptr++] & 0xff);
             }
         }
-        thisStream *= 2;
-        if (thisStream + 1 < xref.length && xref[thisStream + 1] == 0 && xref[thisStream] == 0) {
-            xref[thisStream] = -1;
-        }
+        return type;
+    }
 
+    private int readField(byte[] streamBytes, int fieldSize, int bptr) {
+        int field = 0;
+        for (int k = 0; k < fieldSize; ++k) {
+            field = (field << 8) + (streamBytes[bptr++] & 0xff);
+        }
+        return field;
+    }
+
+    private void updateXrefEntry(int base, int type, int field2, int field3) {
+        if (xref[base] == 0 && xref[base + 1] == 0) {
+            switch (type) {
+                case 0:
+                    xref[base] = -1;
+                    break;
+                case 1:
+                    xref[base] = field2;
+                    break;
+                case 2:
+                    xref[base] = field3;
+                    xref[base + 1] = field2;
+                    updateObjStmCollections(field2, field3);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void updateObjStmCollections(int field2, int field3) {
+        if (partial) {
+            objStmToOffset.put(field2, 0);
+        } else {
+            Integer on = field2;
+            IntHashtable seq = objStmMark.get(on);
+            if (seq == null) {
+                seq = new IntHashtable();
+                seq.put(field3, 1);
+                objStmMark.put(on, seq);
+            } else {
+                seq.put(field3, 1);
+            }
+        }
+    }
+
+    private boolean handlePrevXrefStream(int prev) throws IOException, PDFFilterException {
         if (prev == -1) {
             return true;
         }
@@ -2477,97 +2613,117 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     protected PdfObject readPRObject() throws IOException {
         tokens.nextValidToken();
         int type = tokens.getTokenType();
+
         switch (type) {
-            case PRTokeniser.TK_START_DIC: {
-                ++readDepth;
-                PdfDictionary dic = readDictionary();
-                --readDepth;
-                int pos = tokens.getFilePointer();
-                // be careful in the trailer. May not be a "next" token.
-                boolean hasNext;
-                do {
-                    hasNext = tokens.nextToken();
-                } while (hasNext && tokens.getTokenType() == PRTokeniser.TK_COMMENT);
-
-                if (hasNext && tokens.getStringValue().equals("stream")) {
-                    // skip whitespaces
-                    int ch;
-                    do {
-                        ch = tokens.read();
-                    } while (ch == 32 || ch == 9 || ch == 0 || ch == 12);
-                    if (ch != '\n') {
-                        ch = tokens.read();
-                    }
-                    if (ch != '\n') {
-                        tokens.backOnePosition(ch);
-                    }
-                    PRStream stream = new PRStream(this, tokens.getFilePointer());
-                    stream.putAll(dic);
-                    // crypto handling
-                    stream.setObjNum(objNum, objGen);
-
-                    return stream;
-                } else {
-                    tokens.seek(pos);
-                    return dic;
-                }
-            }
-            case PRTokeniser.TK_START_ARRAY: {
-                ++readDepth;
-                PdfArray arr = readArray();
-                --readDepth;
-                return arr;
-            }
+            case PRTokeniser.TK_START_DIC:
+                return handleDictionary();
+            case PRTokeniser.TK_START_ARRAY:
+                return handleArray();
             case PRTokeniser.TK_NUMBER:
-                return new PdfNumber(tokens.getStringValue());
+                return handleNumber();
             case PRTokeniser.TK_STRING:
-                PdfString str = new PdfString(tokens.getStringValue(), null)
-                        .setHexWriting(tokens.isHexString());
-                // crypto handling
-                str.setObjNum(objNum, objGen);
-                if (strings != null) {
-                    strings.add(str);
-                }
-
-                return str;
-            case PRTokeniser.TK_NAME: {
-                PdfName cachedName = PdfName.staticNames.get(tokens
-                        .getStringValue());
-                if (readDepth > 0 && cachedName != null) {
-                    return cachedName;
-                } else {
-                    // an indirect name (how odd...), or a non-standard one
-                    return new PdfName(tokens.getStringValue(), false);
-                }
-            }
+                return handleString();
+            case PRTokeniser.TK_NAME:
+                return handleName();
             case PRTokeniser.TK_REF:
-                int num = tokens.getReference();
-                PRIndirectReference ref = new PRIndirectReference(this, num,
-                        tokens.getGeneration());
-                return ref;
+                return handleReference();
             case PRTokeniser.TK_ENDOFFILE:
-                throw new IOException(
-                        MessageLocalization.getComposedMessage("unexpected.end.of.file"));
+                throw new IOException(MessageLocalization.getComposedMessage("unexpected.end.of.file"));
             default:
-                String sv = tokens.getStringValue();
-                if ("null".equals(sv)) {
-                    if (readDepth == 0) {
-                        return new PdfNull();
-                    } // else
-                    return PdfNull.PDFNULL;
-                } else if ("true".equals(sv)) {
-                    if (readDepth == 0) {
-                        return new PdfBoolean(true);
-                    } // else
-                    return PdfBoolean.PDFTRUE;
-                } else if ("false".equals(sv)) {
-                    if (readDepth == 0) {
-                        return new PdfBoolean(false);
-                    } // else
-                    return PdfBoolean.PDFFALSE;
-                }
-                return new PdfLiteral(-type, tokens.getStringValue());
+                return handleDefault();
         }
+    }
+
+    private PdfObject handleDictionary() throws IOException {
+        ++readDepth;
+        PdfDictionary dic = readDictionary();
+        --readDepth;
+        int pos = tokens.getFilePointer();
+        boolean hasNext = skipCommentsAndCheckNextToken();
+
+        if (hasNext && tokens.getStringValue().equals("stream")) {
+            processStream(dic);
+        } else {
+            tokens.seek(pos);
+            return dic;
+        }
+        return null; // Questo è qui per conformarsi alla firma del metodo
+    }
+
+    private boolean skipCommentsAndCheckNextToken() throws IOException {
+        boolean hasNext;
+        do {
+            hasNext = tokens.nextToken();
+        } while (hasNext && tokens.getTokenType() == PRTokeniser.TK_COMMENT);
+        return hasNext;
+    }
+
+    private PdfObject processStream(PdfDictionary dic) throws IOException {
+        int ch;
+        do {
+            ch = tokens.read();
+        } while (isWhitespace(ch));
+
+        if (ch != '\n') {
+            ch = tokens.read();
+        }
+        if (ch != '\n') {
+            tokens.backOnePosition(ch);
+        }
+
+        PRStream stream = new PRStream(this, tokens.getFilePointer());
+        stream.putAll(dic);
+        stream.setObjNum(objNum, objGen);
+
+        return stream;
+    }
+
+    private boolean isWhitespace(int ch) {
+        return ch == 32 || ch == 9 || ch == 0 || ch == 12;
+    }
+
+    private PdfArray handleArray() throws IOException {
+        ++readDepth;
+        PdfArray arr = readArray();
+        --readDepth;
+        return arr;
+    }
+
+    private PdfNumber handleNumber() {
+        return new PdfNumber(tokens.getStringValue());
+    }
+
+    private PdfString handleString() {
+        PdfString str = new PdfString(tokens.getStringValue(), null).setHexWriting(tokens.isHexString());
+        str.setObjNum(objNum, objGen);
+        if (strings != null) {
+            strings.add(str);
+        }
+        return str;
+    }
+
+    private PdfName handleName() {
+        PdfName cachedName = PdfName.staticNames.get(tokens.getStringValue());
+        if (readDepth > 0 && cachedName != null) {
+            return cachedName;
+        } else {
+            return new PdfName(tokens.getStringValue(), false);
+        }
+    }
+
+    private PRIndirectReference handleReference() {
+        int num = tokens.getReference();
+        return new PRIndirectReference(this, num, tokens.getGeneration());
+    }
+
+    private PdfObject handleDefault() {
+        String sv = tokens.getStringValue();
+        return switch (sv) {
+            case "null" -> (readDepth == 0) ? new PdfNull() : PdfNull.PDFNULL;
+            case "true" -> (readDepth == 0) ? new PdfBoolean(true) : PdfBoolean.PDFTRUE;
+            case FALSE_CONST -> (readDepth == 0) ? new PdfBoolean(false) : PdfBoolean.PDFFALSE;
+            default -> new PdfLiteral(-tokens.getTokenType(), sv);
+        };
     }
 
     /**
@@ -2717,14 +2873,15 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 }
                 break;
             }
-            case PdfObject.STREAM:
-            case PdfObject.DICTIONARY: {
+            case PdfObject.STREAM, PdfObject.DICTIONARY: {
                 PdfDictionary dic = (PdfDictionary) obj;
                 for (Object o : dic.getKeys()) {
                     killXref(dic.get((PdfName) o));
                 }
                 break;
             }
+            default:
+                break;
         }
     }
 
@@ -3090,7 +3247,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      * @return gets all the named destinations
      */
-    public HashMap<Object, PdfObject> getNamedDestination() {
+    public Map<Object, PdfObject> getNamedDestination() {
         return getNamedDestination(false);
     }
 
@@ -3102,8 +3259,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return gets all the named destinations
      * @since 2.1.6
      */
-    public HashMap<Object, PdfObject> getNamedDestination(boolean keepNames) {
-        HashMap<Object, PdfObject> names = getNamedDestinationFromNames(keepNames);
+    public Map<Object, PdfObject> getNamedDestination(boolean keepNames) {
+        HashMap<Object, PdfObject> names = (HashMap<Object, PdfObject>) getNamedDestinationFromNames(keepNames);
         names.putAll(getNamedDestinationFromStrings());
         return names;
     }
@@ -3115,7 +3272,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      * @return gets the named destinations
      */
-    public HashMap<?,?> getNamedDestinationFromNames() {
+    public Map<?,?> getNamedDestinationFromNames() {
         return getNamedDestinationFromNames(false);
     }
 
@@ -3128,7 +3285,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return gets the named destinations
      * @since 2.1.6
      */
-    public HashMap<Object, PdfObject> getNamedDestinationFromNames(boolean keepNames) {
+    public Map<Object, PdfObject> getNamedDestinationFromNames(boolean keepNames) {
         HashMap<Object, PdfObject> names = new HashMap<>();
         if (catalog.get(PdfName.DESTS) != null) {
             PdfDictionary dic = (PdfDictionary) getPdfObjectRelease(catalog.get(PdfName.DESTS));
@@ -3160,7 +3317,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      * @return gets the named destinations
      */
-    public HashMap<String, PdfObject> getNamedDestinationFromStrings() {
+    public Map<String, PdfObject> getNamedDestinationFromStrings() {
         if (catalog.get(PdfName.NAMES) != null) {
             PdfDictionary dic = (PdfDictionary) getPdfObjectRelease(catalog
                     .get(PdfName.NAMES));
@@ -3168,8 +3325,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 dic = (PdfDictionary) getPdfObjectRelease(dic.get(PdfName.DESTS));
                 if (dic != null) {
                     HashMap<String, PdfObject> names = PdfNameTree.readTree(dic);
-                    for (Iterator<Map.Entry<String, PdfObject>> it = names.entrySet().iterator(); it.hasNext(); ) {
-                        Map.Entry<String, PdfObject> entry = it.next();
+                    for (Iterator<Entry<String, PdfObject>> it = names.entrySet().iterator(); it.hasNext(); ) {
+                        Entry<String, PdfObject> entry = it.next();
                         PdfArray arr = getNameArray(entry.getValue());
                         if (arr != null) {
                             entry.setValue(arr);
@@ -3245,9 +3402,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         pageRefs.resetReleasePage();
     }
 
-    public List<PdfAnnotation.PdfImportedLink> getLinks(int page) {
+    public List<PdfImportedLink> getLinks(int page) {
         pageRefs.resetReleasePage();
-        ArrayList<PdfAnnotation.PdfImportedLink> result = new ArrayList<>();
+        ArrayList<PdfImportedLink> result = new ArrayList<>();
         PdfDictionary pageDic = pageRefs.getPageN(page);
 
         if (pageDic != null) { // Check if pageDic is null
@@ -3258,7 +3415,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     PdfDictionary annot = (PdfDictionary) getPdfObjectRelease(annots.getPdfObject(j));
 
                     if (annot != null && PdfName.LINK.equals(annot.get(PdfName.SUBTYPE))) {
-                        result.add(new PdfAnnotation.PdfImportedLink(annot));
+                        result.add(new PdfImportedLink(annot));
                     }
                 }
             }
@@ -3497,8 +3654,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             if (current instanceof PdfObject) {
                 obj = (PdfObject) current;
                 switch (obj.type()) {
-                    case PdfObject.DICTIONARY:
-                    case PdfObject.STREAM:
+                    case PdfObject.DICTIONARY, PdfObject.STREAM:
                         dic = (PdfDictionary) obj;
                         keys = new PdfName[dic.size()];
                         dic.getKeys().toArray(keys);
@@ -3944,7 +4100,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return new byte[]{};
         }
         PdfObject o = documentIDs.getPdfObject(0);
-        return com.lowagie.text.DocWriter.getISOBytes(o.toString());
+        return DocWriter.getISOBytes(o.toString());
     }
 
     static class PageRefs {
@@ -4222,9 +4378,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             if (kidsPR == null) {
                 page.put(PdfName.TYPE, PdfName.PAGE);
                 PdfDictionary dic = pageInh.get(pageInh.size() - 1);
-                PdfName key;
-                for (Object o : dic.getKeys()) {
-                    key = (PdfName) o;
+                for (PdfName key : dic.getKeys()) {
                     if (page.get(key) == null) {
                         page.put(key, dic.get(key));
                     }
