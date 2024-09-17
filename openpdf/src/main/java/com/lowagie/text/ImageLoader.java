@@ -54,7 +54,7 @@ import javax.imageio.ImageIO;
 /**
  * Loads image files such as PNG, JPEG, GIF, TIFF and BMP.
  * <p>
- * TODO: The goal of this class is to use Java ImageIO to parse images and metadata,
+ * The goal of this class is to use Java ImageIO to parse images and metadata,
  * and embed the image in the PDF in the best way (the compressed image format, not the raw pixels).
  * <p>
  * <p>

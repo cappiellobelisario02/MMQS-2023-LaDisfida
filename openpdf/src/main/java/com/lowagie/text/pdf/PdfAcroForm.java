@@ -49,7 +49,6 @@
 
 package com.lowagie.text.pdf;
 
-import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.exceptions.AnnotationException;
 import com.lowagie.text.pdf.CheckboxParams;
@@ -184,9 +183,8 @@ public class PdfAcroForm extends PdfDictionary {
             return true;
         }
         PdfDictionary dic = new PdfDictionary();
-        for (Object o : fieldTemplates.keySet()) {
-            PdfTemplate template = (PdfTemplate) o;
-            PdfFormField.mergeResources(dic, (PdfDictionary) template.getResources());
+        for (PdfTemplate o : fieldTemplates.keySet()) {
+            PdfFormField.mergeResources(dic, (PdfDictionary) o.getResources());
         }
         put(PdfName.DR, dic);
         put(PdfName.DA, new PdfString("/Helv 0 Tf 0 g "));
@@ -326,88 +324,6 @@ public class PdfAcroForm extends PdfDictionary {
         return hidden;
     }
 
-    /**
-     * @param config Text drawing configuration
-     * @return a PdfFormField
-     */
-    public PdfFormField addSingleLineTextField(TextDrawingConfig config) {
-        // Create a single-line text field
-        PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.SINGLELINE, PdfFormField.PLAINTEXT, 0);
-        
-        // Set field parameters
-        setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
-        
-        // Draw the single line of text
-        drawSingleLineOfText(config);
-        
-        // Add the form field to the document
-        addFormField(field);
-        
-        return field;
-    }
-
-
-    /**
-     * @param config Text drawing configuration
-     * @return a PdfFormField
-     */
-    public PdfFormField addMultiLineTextField(TextDrawingConfig config) {
-        // Create a multi-line text field
-        PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.MULTILINE, PdfFormField.PLAINTEXT, 0);
-        
-        // Set field parameters (including name)
-        setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
-        
-        // Draw the multi-line text
-        drawMultiLineOfText(config);
-        
-        // Add the form field to the document
-        addFormField(field);
-        
-        return field;
-    }
-
-
-    /**
-     * @param config Text drawing configuration
-     * @return PdfFormField
-     */
-    public PdfFormField addSingleLinePasswordField(TextDrawingConfig config) {
-        // Create a text field with password protection
-        PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.SINGLELINE, PdfFormField.PASSWORD, 0);
-        
-        // Set field parameters (including name)
-        setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
-        
-        // Draw the single line of text
-        drawSingleLineOfText(config);
-        
-        // Add the form field to the document
-        addFormField(field);
-        
-        return field;
-    }
-
-
-    /**
-     * @param field an object of {@link PdfFormField}
-     * @param text  text for the field
-     * @param name  name of the field
-     * @param llx   lower-left-x
-     * @param lly   lower-left-y
-     * @param urx   upper-right-x
-     * @param ury   upper-right-y
-     */
-    public void setTextFieldParams(PdfFormField field, String text, String name, float llx, float lly, float urx,
-            float ury) {
-        field.setWidget(new Rectangle(llx, lly, urx, ury), PdfAnnotation.HIGHLIGHT_INVERT);
-        field.setValueAsString(text);
-        field.setDefaultValueAsString(text);
-        field.setFieldName(name);
-        field.setFlags(PdfAnnotation.FLAGS_PRINT);
-        field.setPage();
-    }
-
 
     /**
      * @param textDrawingConfig Text drawing configuration
@@ -441,79 +357,6 @@ public class PdfAcroForm extends PdfDictionary {
     }
 
     /**
-     * @param name   field name
-     * @param status status
-     * @param value  value of the field
-     * @param llx    lower-left-x
-     * @param lly    lower-left-y
-     * @param urx    upper-right-x
-     * @param ury    upper-right-y
-     * @return a PdfFormField
-     */
-    public PdfFormField addCheckBox(String name, String value, boolean status, float llx, float lly, float urx,
-            float ury) {
-        PdfFormField field = PdfFormField.createCheckBox(writer);
-        CheckboxParams checkboxParams = new CheckboxParams(field, name, value, status, llx, lly, urx, ury);
-        setCheckBoxParams(checkboxParams);
-        drawCheckBoxAppearences(field, value, llx, lly, urx, ury);
-        addFormField(field);
-        return field;
-    }
-
-    /**
-     * @param checkBoxParams check box parameters
-     */
-    public void setCheckBoxParams(CheckboxParams checkBoxParams) {
-        field.setWidget(new Rectangle(checkBoxParams.getLlx(), checkBoxParams.getLly(), checkBoxParams.getUrx(), checkBoxParams.getUry()), PdfAnnotation.HIGHLIGHT_TOGGLE);
-        field.setFieldName(checkBoxParams.getName());
-        if (checkBoxParams.isStatus()) {
-            field.setValueAsName(checkBoxParams.getValue());
-            field.setAppearanceState(checkBoxParams.getValue());
-        } else {
-            field.setValueAsName("Off");
-            field.setAppearanceState("Off");
-        }
-        field.setFlags(PdfAnnotation.FLAGS_PRINT);
-        field.setPage();
-        field.setBorderStyle(new PdfBorderDictionary(1, PdfBorderDictionary.STYLE_SOLID));
-    }
-
-    /**
-     * @param field field, an object of {@link PdfFormField}
-     * @param value value of the field
-     * @param llx   lower-left-x
-     * @param lly   lower-left-y
-     * @param urx   upper-right-x
-     * @param ury   upper-right-y
-     */
-    public void drawCheckBoxAppearences(PdfFormField field, String value, float llx, float lly, float urx, float ury) {
-        BaseFont font = null;
-        try {
-            font = BaseFont.createFont(BaseFont.ZAPFDINGBATS, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
-        } catch (Exception e) {
-            throw new ExceptionConverter(e);
-        }
-        float size = (ury - lly);
-        PdfAppearance tpOn = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
-        PdfAppearance tp2 = (PdfAppearance) tpOn.getDuplicate();
-        tp2.setFontAndSize(font, size);
-        tp2.resetRGBColorFill();
-        field.setDefaultAppearanceString(tp2);
-        tpOn.drawTextField(0f, 0f, urx - llx, ury - lly);
-        tpOn.saveState();
-        tpOn.resetRGBColorFill();
-        tpOn.beginText();
-        tpOn.setFontAndSize(font, size);
-        tpOn.showTextAligned(PdfContentByte.ALIGN_CENTER, "4", (urx - llx) / 2, (ury - lly) / 2 - (size * 0.3f), 0);
-        tpOn.endText();
-        tpOn.restoreState();
-        field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, value, tpOn);
-        PdfAppearance tpOff = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
-        tpOff.drawTextField(0f, 0f, urx - llx, ury - lly);
-        field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, "Off", tpOff);
-    }
-
-    /**
      * @param name          name of the field
      * @param defaultValue  default value
      * @param noToggleToOff noToggleToOff
@@ -524,13 +367,6 @@ public class PdfAcroForm extends PdfDictionary {
         radio.setFieldName(name);
         radio.setValueAsName(defaultValue);
         return radio;
-    }
-
-    /**
-     * @param radiogroup field
-     */
-    public void addRadioGroup(PdfFormField radiogroup) {
-        addFormField(radiogroup);
     }
 
     /**

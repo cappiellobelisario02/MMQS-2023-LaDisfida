@@ -49,6 +49,8 @@
 
 package com.lowagie.text.pdf;
 
+import static com.ibm.icu.util.ULocale.getBaseName;
+
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Utilities;
 import com.lowagie.text.error_messages.MessageLocalization;
@@ -61,8 +63,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.ibm.icu.util.ULocale.getBaseName;
-
 /**
  * Represents a True Type font with Unicode encoding. All the character in the font can be used directly by using the
  * encoding Identity-H or Identity-V. This is the only way to represent some character sets such as Thai.
@@ -70,9 +70,6 @@ import static com.ibm.icu.util.ULocale.getBaseName;
  * @author Paulo Soares (psoares@consiste.pt)
  */
 class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
-
-    private static final byte[] rotbits = {(byte) 0x80, (byte) 0x40, (byte) 0x20, (byte) 0x10, (byte) 0x08, (byte) 0x04,
-            (byte) 0x02, (byte) 0x01};
 
     /**
      * <CODE>true</CODE> if the encoding is vertical.
@@ -96,7 +93,7 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
             throws DocumentException, IOException {
         String nameBase = getBaseName(ttFile);
         String ttcName = getTTCName(nameBase);
-        processFileName(nameBase, ttFile, ttcName);
+        processFileName(nameBase, ttFile);
 
         encoding = enc;
         embeddedBool = emb;
@@ -114,7 +111,7 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
         vertical = enc.endsWith("V");
     }
 
-    private void processFileName(String nameBase, String ttFile, String ttcName) {
+    private void processFileName(String nameBase, String ttFile) {
         if (nameBase.length() < ttFile.length()) {
             style = ttFile.substring(nameBase.length());
         }
@@ -297,19 +294,21 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
             return null;
         }
         StringBuilder buf = new StringBuilder(
-                "/CIDInit /ProcSet findresource begin\n" +
-                        "12 dict begin\n" +
-                        "begincmap\n" +
-                        "/CIDSystemInfo\n" +
-                        "<< /Registry (TTX+0)\n" +
-                        "/Ordering (T42UV)\n" +
-                        "/Supplement 0\n" +
-                        ">> def\n" +
-                        "/CMapName /TTX+0 def\n" +
-                        "/CMapType 2 def\n" +
-                        "1 begincodespacerange\n" +
-                        "<0000><FFFF>\n" +
-                        "endcodespacerange\n");
+                """
+                        /CIDInit /ProcSet findresource begin
+                        12 dict begin
+                        begincmap
+                        /CIDSystemInfo
+                        << /Registry (TTX+0)
+                        /Ordering (T42UV)
+                        /Supplement 0
+                        >> def
+                        /CMapName /TTX+0 def
+                        /CMapType 2 def
+                        1 begincodespacerange
+                        <0000><FFFF>
+                        endcodespacerange
+                        """);
         int size = 0;
         for (int k = 0; k < metrics.length; ++k) {
             if (size == 0) {
@@ -325,10 +324,12 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
             buf.append(fromTo).append(fromTo).append(toHex(metric[2])).append('\n');
         }
         buf.append(
-                "endbfrange\n" +
-                        "endcmap\n" +
-                        "CMapName currentdict /CMap defineresource pop\n" +
-                        "end end\n");
+                """
+                        endbfrange
+                        endcmap
+                        CMapName currentdict /CMap defineresource pop
+                        end end
+                        """);
         String s = buf.toString();
         PdfStream stream = new PdfStream(PdfEncodings.convertToBytes(s, null));
         stream.flateCompress(compressionLevel);
@@ -356,76 +357,6 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
         }
 
         return cmapMetrics.toArray(new int[0][]);
-    }
-
-    /**
-     * Generates the CIDFontTyte2 dictionary.
-     *
-     * @param fontDescriptor the indirect reference to the font descriptor
-     * @param subsetPrefix   the subset prefix
-     * @param metrics        the horizontal width metrics
-     * @return a stream
-     */
-    private PdfDictionary getCIDFontType2(PdfIndirectReference fontDescriptor, String subsetPrefix, int[][] metrics) {
-        PdfDictionary dic = createBaseFontDictionary(fontDescriptor, subsetPrefix);
-        addCIDSystemInfo(dic);
-
-        if (!vertical) {
-            addWidthArray(dic, metrics);
-        }
-
-        return dic;
-    }
-
-    private PdfDictionary createBaseFontDictionary(PdfIndirectReference fontDescriptor, String subsetPrefix) {
-        PdfDictionary dic = new PdfDictionary(PdfName.FONT);
-        if (cff) {
-            dic.put(PdfName.SUBTYPE, PdfName.CIDFONTTYPE0);
-            dic.put(PdfName.BASEFONT, new PdfName(subsetPrefix + fontName + "-" + encoding));
-        } else {
-            dic.put(PdfName.SUBTYPE, PdfName.CIDFONTTYPE2);
-            dic.put(PdfName.BASEFONT, new PdfName(subsetPrefix + fontName));
-            dic.put(PdfName.CIDTOGIDMAP, PdfName.IDENTITY);
-        }
-        dic.put(PdfName.FONTDESCRIPTOR, fontDescriptor);
-        return dic;
-    }
-
-    private void addCIDSystemInfo(PdfDictionary dic) {
-        PdfDictionary cdic = new PdfDictionary();
-        cdic.put(PdfName.REGISTRY, new PdfString("Adobe"));
-        cdic.put(PdfName.ORDERING, new PdfString("Identity"));
-        cdic.put(PdfName.SUPPLEMENT, new PdfNumber(0));
-        dic.put(PdfName.CIDSYSTEMINFO, cdic);
-    }
-
-    private void addWidthArray(PdfDictionary dic, int[][] metrics) {
-        dic.put(PdfName.DW, new PdfNumber(1000));
-        StringBuilder buf = new StringBuilder("[");
-        int lastNumber = -10;
-        boolean firstTime = true;
-
-        for (int[] metric : metrics) {
-            if (metric[1] == 1000) {
-                continue;
-            }
-            int m = metric[0];
-            if (m == lastNumber + 1) {
-                buf.append(' ').append(metric[1]);
-            } else {
-                if (!firstTime) {
-                    buf.append(']');
-                }
-                firstTime = false;
-                buf.append(m).append('[').append(metric[1]);
-            }
-            lastNumber = m;
-        }
-
-        if (buf.length() > 1) {
-            buf.append("]]");
-            dic.put(PdfName.W, new PdfLiteral(buf.toString()));
-        }
     }
 
 
@@ -487,11 +418,9 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
         addRangeUni(longTag, true, subset);
         int[][] metrics = prepareMetrics(longTag);
 
-        PdfIndirectReference cidset = createCidSetIfNeeded(writer, metrics);
         PdfIndirectReference indFont = processFont(writer, longTag);
 
         String subsetPrefix = subset ? createSubsetPrefix() : "";
-        PdfDictionary dic = getFontDescriptor(indFont, subsetPrefix, cidset);
         PdfIndirectReference toUnicodeRef = addToUnicodeIfNeeded(writer, metrics, fillerCmap);
 
         PdfObject baseType = getFontBaseType(indFont, subsetPrefix, toUnicodeRef);
@@ -502,31 +431,6 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
         int[][] metrics = longTag.values().toArray(new int[0][]);
         Arrays.sort(metrics, this);
         return metrics;
-    }
-
-    private PdfIndirectReference createCidSetIfNeeded(PdfWriter writer, int[][] metrics) throws IOException, DocumentException {
-        if (includeCidSet || writer.getPDFXConformance() == PdfWriter.PDFA1A
-                || writer.getPDFXConformance() == PdfWriter.PDFA1B) {
-            PdfStream stream = createCidSetStream(metrics);
-            return writer.addToBody(stream).getIndirectReference();
-        }
-        return null;
-    }
-
-    private PdfStream createCidSetStream(int[][] metrics) throws IOException {
-        if (metrics.length == 0) {
-            return new PdfStream(new byte[]{(byte) 0x80});
-        } else {
-            int top = metrics[metrics.length - 1][0];
-            byte[] bt = new byte[top / 8 + 1];
-            for (int[] metric : metrics) {
-                int v = metric[0];
-                bt[v / 8] |= rotbits[v % 8];
-            }
-            PdfStream stream = new PdfStream(bt);
-            stream.flateCompress(compressionLevel);
-            return stream;
-        }
     }
 
     private PdfIndirectReference processFont(PdfWriter writer, HashMap<Integer, int[]> longTag) throws IOException, DocumentException {
@@ -608,12 +512,12 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
      */
     @Override
     byte[] convertToBytes(String text) {
-        return null;
+        return new byte[0];
     }
 
     @Override
     byte[] convertToBytes(int char1) {
-        return null;
+        return new byte[0];
     }
 
     /**
@@ -634,13 +538,13 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
             map = cmap31;
         }
         if (map == null) {
-            return null;
+            return new int[0];
         }
         if (fontSpecific) {
             if ((c & 0xffffff00) == 0 || (c & 0xffffff00) == 0xf000) {
                 return map.get(c & 0xff);
             } else {
-                return null;
+                return new int[0];
             }
         } else {
             return map.get(c);
@@ -680,11 +584,11 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
     @Override
     public int[] getCharBBox(int c) {
         if (bboxes == null) {
-            return null;
+            return new int[0];
         }
         int[] m = getMetricsTT(c);
         if (m == null) {
-            return null;
+            return new int[0];
         }
         return bboxes[m[0]];
     }
