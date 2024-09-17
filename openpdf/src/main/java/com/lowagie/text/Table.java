@@ -151,6 +151,8 @@ import java.util.Optional;
 
 public class Table extends TableRectangle implements LargeElement, WithHorizontalAlignment {
 
+    public static final String INSERTTABLE_TABLE_HAS_NULL_VALUE = "inserttable.table.has.null.value";
+
     // membervariables
 
     /**
@@ -276,16 +278,16 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
 
         // the DEFAULT widths are calculated
         widths = new float[columns];
-        float width = 100f / columns;
+        float widthM = 100f / columns;
         for (int i = 0; i < columns; i++) {
-            widths[i] = width;
+            widths[i] = widthM;
         }
     }
 
     /**
      * Copy constructor (shallow copy).
      *
-     * @param t ab object of {@link Table} new table will created from a shallow copy of this
+     * @param t ab object of {@link Table} new table will be created from a shallow copy of this
      */
     public Table(Table t) {
         super(0, 0, 0, 0);
@@ -587,10 +589,11 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
         }
 
         // The different percentages are calculated
-        float Width;
         this.widths[columns - 1] = 100;
         for (int i = 0; i < columns - 1; i++) {
-            width = (100.0f * widths[i]) / hundredPercent;
+            if(hundredPercent != 0){
+                width = (100.0f * widths[i]) / hundredPercent;
+            }
             this.widths[i] = width;
             this.widths[columns - 1] -= width;
         }
@@ -841,7 +844,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      */
     public void insertTable(Table aTable) {
         if (aTable == null) {
-            throw new NullPointerException(MessageLocalization.getComposedMessage("inserttable.table.has.null.value"));
+            throw new NullPointerException(MessageLocalization.getComposedMessage(INSERTTABLE_TABLE_HAS_NULL_VALUE));
         }
         insertTable(aTable, curPosition);
     }
@@ -856,7 +859,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      */
     public void insertTable(Table aTable, int row, int column) {
         if (aTable == null) {
-            throw new NullPointerException(MessageLocalization.getComposedMessage("inserttable.table.has.null.value"));
+            throw new NullPointerException(MessageLocalization.getComposedMessage(INSERTTABLE_TABLE_HAS_NULL_VALUE));
         }
         insertTable(aTable, new Point(row, column));
     }
@@ -871,7 +874,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     public void insertTable(Table aTable, Point aLocation) {
 
         if (aTable == null) {
-            throw new NullPointerException(MessageLocalization.getComposedMessage("inserttable.table.has.null.value"));
+            throw new NullPointerException(MessageLocalization.getComposedMessage(INSERTTABLE_TABLE_HAS_NULL_VALUE));
         }
         if (aLocation == null) {
             throw new NullPointerException(MessageLocalization.getComposedMessage("inserttable.point.has.null.value"));
@@ -1019,15 +1022,18 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      * Integrates all added tables and recalculates column widths.
      */
     private void mergeInsertedTables() {
-        int i, j;
+        int i;
+        int j;
         float[] lNewWidths;
         int[] lDummyWidths = new int[columns];     // to keep track in how many new cols this one will be split
         float[][] lDummyColumnWidths = new float[columns][]; // bugfix Tony Copping
         int[] lDummyHeights = new int[rows.size()]; // to keep track in how many new rows this one will be split
         ArrayList<Row> newRows;
         boolean isTable = false;
-        int lTotalRows = 0, lTotalColumns = 0;
-        int lNewMaxRows, lNewMaxColumns;
+        int lTotalRows = 0;
+        int lTotalColumns = 0;
+        int lNewMaxRows;
+        int lNewMaxColumns;
 
         Table lDummyTable;
 
@@ -1038,17 +1044,20 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
             lNewMaxColumns = 1; // value to hold in how many columns the current one will be split
             float[] tmpWidths = null;
             for (i = 0; i < rows.size(); i++) {
-                if (rows.get(i).getCell(j) instanceof Table) {
+                if (rows.get(i).getCell(j) instanceof Table dummyTableCell) {
                     isTable = true;
-                    lDummyTable = ((Table) rows.get(i).getCell(j));
+                    lDummyTable = dummyTableCell;
                     if (tmpWidths == null) {
                         tmpWidths = lDummyTable.widths;
-                        lNewMaxColumns = tmpWidths.length;
                     } else {
                         int cols = lDummyTable.getDimension().width;
                         float[] tmpWidthsN = new float[cols * tmpWidths.length];
-                        float tpW = 0, btW = 0, totW = 0;
-                        int tpI = 0, btI = 0, totI = 0;
+                        float tpW = 0;
+                        float btW = 0;
+                        float totW = 0;
+                        int tpI = 0;
+                        int btI = 0;
+                        int totI = 0;
                         tpW += tmpWidths[0];
                         btW += lDummyTable.widths[0];
                         while (tpI < tmpWidths.length && btI < cols) {
@@ -1074,22 +1083,17 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
                             totW += tmpWidthsN[totI];
                             totI++;
                         }
-                       {
-                           System.arraycopy(tmpWidths, tpI, tmpWidthsN, totI, tmpWidths.length-tpI);
-                           totI +=tmpWidths.length-tpI;
-                       }
-                       if(btI<cols)
+                        System.arraycopy(tmpWidths, tpI, tmpWidthsN, totI, tmpWidths.length-tpI);
+                        totI +=tmpWidths.length-tpI;
+                        if(btI<cols)
                        {
                            System.arraycopy(lDummyTable.widths, btI, tmpWidthsN, totI, lDummyTable.widths.length-btI);
                            totI +=lDummyTable.widths.length-btI;                                                  }
                         tmpWidths = new float[totI];
                         System.arraycopy(tmpWidthsN, 0, tmpWidths, 0, totI);
-                        lNewMaxColumns = totI;
                     }
-                   {
-                       lNewMaxColumns = lDummyTable.getDimension().width;
-                       lDummyColumnWidths[j] = lDummyTable.widths; // bugfix Tony Copping
-                   }
+                    lNewMaxColumns = lDummyTable.getDimension().width;
+                    lDummyColumnWidths[j] = lDummyTable.widths; // bugfix Tony Copping
                 }
             }
             lDummyColumnWidths[j] = tmpWidths;
@@ -1101,9 +1105,9 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
         for (i = 0; i < rows.size(); i++) {
             lNewMaxRows = 1;    // holds value in how many rows the current one will be split
             for (j = 0; j < columns; j++) {
-                if (rows.get(i).getCell(j) instanceof Table) {
+                if (rows.get(i).getCell(j) instanceof Table table) {
                     isTable = true;
-                    lDummyTable = (Table) rows.get(i).getCell(j);
+                    lDummyTable = table;
                     if (lDummyTable.getDimension().height > lNewMaxRows) {
                         lNewMaxRows = lDummyTable.getDimension().height;
                     }
@@ -1142,18 +1146,20 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
             for (i = 0; i < lTotalRows; i++) {
                 newRows.add(new Row(lTotalColumns));
             }
-            int lDummyRow = 0, lDummyColumn;        // to remember where we are in the new, larger table
+            int lDummyRow = 0;
+            int lDummyColumn;        // to remember where we are in the new, larger table
             TableRectangle lDummyElement;
             for (i = 0; i < rows.size(); i++) {
                 lDummyColumn = 0;
                 for (j = 0; j < columns; j++) {
-                    if (rows.get(i).getCell(j) instanceof Table) {
+                    if (rows.get(i).getCell(j) instanceof Table table) {
                         // copy values from embedded table
-                        lDummyTable = (Table) rows.get(i).getCell(j);
+                        lDummyTable = table;
 
-                        // Work out where columns in table table correspond to columns in current table
+                        // Work out where columns in table correspond to columns in current table
                         int[] colMap = new int[lDummyTable.widths.length + 1];
-                        int cb = 0, ct = 0;
+                        int cb = 0;
+                        int ct = 0;
 
                         for (; cb < lDummyTable.widths.length; cb++) {
                             colMap[cb] = lDummyColumn + ct;
@@ -1178,13 +1184,12 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
                                 if (lDummyElement != null) {
                                     int col = lDummyColumn + l;
 
-                                    if (lDummyElement instanceof Cell) {
-                                        Cell lDummyC = (Cell) lDummyElement;
+                                    if (lDummyElement instanceof Cell dummyElementCell) {
                                         // Find col to add cell in and set col span
                                         col = colMap[l];
-                                        int ot = colMap[l + lDummyC.getColspan()];
+                                        int ot = colMap[l + dummyElementCell.getColspan()];
 
-                                        lDummyC.setColspan(ot - col);
+                                        dummyElementCell.setColspan(ot - col);
                                     }
 
                                     newRows.get(k + lDummyRow).addElement(lDummyElement,
@@ -1196,7 +1201,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
                         // copy others values
                         TableRectangle aElement = getElement(i, j);
 
-                        if (aElement instanceof Cell) {
+                        if (aElement instanceof Cell cell) {
 
                             // adjust spans for cell
                             ((Cell) aElement).setRowspan(
@@ -1205,7 +1210,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
                                     ((Cell) rows.get(i).getCell(j)).getColspan() + lDummyWidths[j] - 1);
 
                             // most likely this cell covers a larger area because of the row/cols splits : define not-to-be-filled cells
-                            placeCell(newRows, ((Cell) aElement), new Point(lDummyRow, lDummyColumn));
+                            placeCell(newRows, cell, new Point(lDummyRow, lDummyColumn));
                         }
                     }
                     lDummyColumn += lDummyWidths[j];
@@ -1248,30 +1253,39 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      * @return true if the location was valid
      */
     private boolean isValidLocation(Cell aCell, Point aLocation) {
-        // rowspan not beyond last column
-        if (aLocation.x < rows.size()) {
-            // if false : new location is already at new, not-yet-created area so no check
-            if ((aLocation.y + aCell.getColspan()) > columns) {
-                return false;
-            }
-
-            int difx =
-                    ((rows.size() - aLocation.x) > aCell.getRowspan()) ? aCell.getRowspan() : rows.size() - aLocation.x;
-            int dify = ((columns - aLocation.y) > aCell.getColspan()) ? aCell.getColspan() : columns - aLocation.y;
-            // no other content at cells targeted by rowspan/colspan
-            for (int i = aLocation.x; i < (aLocation.x + difx); i++) {
-                for (int j = aLocation.y; j < (aLocation.y + dify); j++) {
-                    if (rows.get(i).isReserved(j)) {
-                        return false;
-                    }
-                }
-            }
-        } else {
-            return (aLocation.y + aCell.getColspan()) <= columns;
+        // Check if the location exceeds the row boundary
+        if (aLocation.x >= rows.size()) {
+            return isWithinColumnBounds(aCell, aLocation);
         }
 
-        return true;
+        // Check if the colspan exceeds the column limit
+        if ((aLocation.y + aCell.getColspan()) > columns) {
+            return false;
+        }
+
+        // Calculate the valid rowspan and colspan limits
+        int difx = Math.min(aCell.getRowspan(), rows.size() - aLocation.x);
+        int dify = Math.min(aCell.getColspan(), columns - aLocation.y);
+
+        // Check if any targeted cells are reserved
+        return !isAnyCellReserved(aLocation, difx, dify);
     }
+
+    private boolean isWithinColumnBounds(Cell aCell, Point aLocation) {
+        return (aLocation.y + aCell.getColspan()) <= columns;
+    }
+
+    private boolean isAnyCellReserved(Point aLocation, int difx, int dify) {
+        for (int i = aLocation.x; i < aLocation.x + difx; i++) {
+            for (int j = aLocation.y; j < aLocation.y + dify; j++) {
+                if (rows.get(i).isReserved(j)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Sets the unset cell properties to be the table defaults.
@@ -1343,7 +1357,8 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      */
     private void setCurrentLocationToNextValidPosition(Point aLocation) {
         // set latest location to next valid position
-        int i, j;
+        int i;
+        int j;
         i = aLocation.x;
         j = aLocation.y;
         do {
@@ -1420,59 +1435,88 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      * @throws BadElementException on error
      */
     public PdfPTable createPdfPTable() throws BadElementException {
+        validatePdfTableConversion();
+
+        setAutoFillEmptyCells(true);
+        complete();
+        PdfPTable pdfptable = initializePdfPTable();
+
+        configureTableProperties(pdfptable);
+        addRowsToPdfPTable(pdfptable);
+
+        return pdfptable;
+    }
+
+    private void validatePdfTableConversion() throws BadElementException {
         if (!convert2pdfptable) {
             throw new BadElementException(MessageLocalization.getComposedMessage("no.error.just.an.old.style.table"));
         }
-        setAutoFillEmptyCells(true);
-        complete();
+    }
+
+    private PdfPTable initializePdfPTable() {
         PdfPTable pdfptable = new PdfPTable(widths);
         pdfptable.setComplete(complete);
         if (isNotAddedYet()) {
             pdfptable.setSkipFirstHeader(true);
         }
-        SimpleTable t_evt = new SimpleTable();
-        t_evt.cloneNonPositionParameters(this);
-        t_evt.setCellspacing(cellspacing);
-        pdfptable.setTableEvent(t_evt);
+        return pdfptable;
+    }
+
+    private void configureTableProperties(PdfPTable pdfptable) {
+        SimpleTable tEvt = new SimpleTable();
+        tEvt.cloneNonPositionParameters(this);
+        tEvt.setCellspacing(cellspacing);
+        pdfptable.setTableEvent(tEvt);
         pdfptable.setHeaderRows(lastHeaderRow + 1);
         pdfptable.setSplitLate(cellsFitPage);
         pdfptable.setKeepTogether(tableFitsPage);
+
         if (!Float.isNaN(offset)) {
             pdfptable.setSpacingBefore(offset);
         }
+
         pdfptable.setHorizontalAlignment(alignment);
+
         if (locked) {
             pdfptable.setTotalWidth(width);
             pdfptable.setLockedWidth(true);
         } else {
             pdfptable.setWidthPercentage(width);
         }
-        Row row;
-        for (Iterator<Row> iterator = iterator(); iterator.hasNext(); ) {
-            Element element = iterator.next();
-            row = (Row) iterator.next();
-            Element cell;
-            PdfPCell pcell;
-            for (int i = 0; i < row.getColumns(); i++) {
-                if ((cell = row.getCell(i)) != null) {
-                    if (cell instanceof Table) {
-                        pcell = new PdfPCell(((Table) cell).createPdfPTable());
-                    } else if (cell instanceof Cell) {
-                        pcell = ((Cell) cell).createPdfPCell();
-                        pcell.setPadding(cellpadding + cellspacing / 2f);
-                        SimpleCell c_evt = new SimpleCell(SimpleCell.CELL);
-                        c_evt.cloneNonPositionParameters((Cell) cell);
-                        c_evt.setSpacing(cellspacing * 2f);
-                        pcell.setCellEvent(c_evt);
-                    } else {
-                        pcell = new PdfPCell();
-                    }
-                    pdfptable.addCell(pcell);
-                }
+    }
+
+    private void addRowsToPdfPTable(PdfPTable pdfptable) {
+        for (Row row : this) {
+            addCellsToPdfPTable(pdfptable, row);
+        }
+    }
+
+    private void addCellsToPdfPTable(PdfPTable pdfptable, Row row) {
+        for (int i = 0; i < row.getColumns(); i++) {
+            Element cell = row.getCell(i);
+            if (cell != null) {
+                PdfPCell pcell = createPdfPCell(cell);
+                pdfptable.addCell(pcell);
             }
         }
-        return pdfptable;
     }
+
+    private PdfPCell createPdfPCell(Element cell) {
+        if (cell instanceof Table table) {
+            return new PdfPCell(table.createPdfPTable());
+        } else if (cell instanceof Cell instanceCell) {
+            PdfPCell pcell = instanceCell.createPdfPCell();
+            pcell.setPadding(cellpadding + cellspacing / 2f);
+            SimpleCell cEvt = new SimpleCell(SimpleCell.CELL);
+            cEvt.cloneNonPositionParameters((Cell) cell);
+            cEvt.setSpacing(cellspacing * 2f);
+            pcell.setCellEvent(cEvt);
+            return pcell;
+        } else {
+            return new PdfPCell();
+        }
+    }
+
 
     /**
      * Indicates if this is the first time the section is added.

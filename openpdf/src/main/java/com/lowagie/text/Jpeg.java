@@ -82,7 +82,7 @@ public class Jpeg extends Image {
     /**
      * Acceptable Jpeg markers.
      */
-    public static final int[] VALID_MARKERS = {0xC0, 0xC1, 0xC2};
+    protected static final int[] VALID_MARKERS = {0xC0, 0xC1, 0xC2};
 
     /**
      * This is a type of marker.
@@ -92,7 +92,7 @@ public class Jpeg extends Image {
     /**
      * Unsupported Jpeg markers.
      */
-    public static final int[] UNSUPPORTED_MARKERS = {0xC3, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF};
+    protected static final int[] UNSUPPORTED_MARKERS = {0xC3, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF};
 
     /**
      * This is a type of marker.
@@ -102,7 +102,7 @@ public class Jpeg extends Image {
     /**
      * Jpeg markers without additional parameters.
      */
-    public static final int[] NOPARAM_MARKERS = {0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7, 0xD8, 0x01};
+    protected static final int[] NOPARAM_MARKERS = {0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7, 0xD8, 0x01};
 
     /**
      * Marker value
@@ -120,7 +120,7 @@ public class Jpeg extends Image {
     /**
      * sequence that is used in all Jpeg files
      */
-    public static final byte[] JFIF_ID = {0x4A, 0x46, 0x49, 0x46, 0x00};
+    protected static final byte[] JFIF_ID = {0x4A, 0x46, 0x49, 0x46, 0x00};
 
     private byte[][] icc;
     // Constructors
@@ -295,12 +295,12 @@ public class Jpeg extends Image {
         int units = is.read();
         int dx = getShort(is);
         int dy = getShort(is);
-        setDPI(units, dx, dy);
+        setDPIMethod(units, dx, dy);
 
         Utilities.skip(is, len - 2 - bcomp.length - 7);
     }
 
-    private void setDPI(int units, int dx, int dy) {
+    private void setDPIMethod(int units, int dx, int dy) {
         if (units == 1) {
             dpiX = dx;
             dpiY = dy;
@@ -313,9 +313,11 @@ public class Jpeg extends Image {
     private void processAPPE(InputStream is) throws IOException {
         int len = getShort(is) - 2;
         byte[] byteappe = new byte[len];
-        is.read(byteappe);
 
-        if (byteappe.length >= 12) {
+        // Capture the number of bytes read
+        int bytesRead = is.read(byteappe);
+
+        if (bytesRead >= 12) {
             String appe = new String(byteappe, 0, 5, StandardCharsets.ISO_8859_1);
             if (appe.equals("Adobe")) {
                 invert = true;
@@ -326,9 +328,9 @@ public class Jpeg extends Image {
     private void processAPP2(InputStream is) throws IOException {
         int len = getShort(is) - 2;
         byte[] byteapp2 = new byte[len];
-        is.read(byteapp2);
+        int bytesReadapp2 = is.read(byteapp2);
 
-        if (byteapp2.length >= 14) {
+        if (bytesReadapp2 >= 14) {
             String app2 = new String(byteapp2, 0, 11, StandardCharsets.ISO_8859_1);
             if (app2.equals("ICC_PROFILE")) {
                 int order = byteapp2[12] & 0xff;
@@ -367,7 +369,7 @@ public class Jpeg extends Image {
         bpc = 8;
     }
 
-    private void finalizeProcessing() throws IOException {
+    private void finalizeProcessing() {
         plainWidth = getWidth();
         plainHeight = getHeight();
         if (icc != null) {
@@ -393,12 +395,31 @@ public class Jpeg extends Image {
         }
 
         try {
-            ICC_Profile icc_prof = ICC_Profile.getInstance(ficc);
-            tagICC(icc_prof);
+            ICC_Profile iccProfile = ICC_Profile.getInstance(ficc);
+            tagICC(iccProfile);
         } catch (IllegalArgumentException e) {
             // ignore ICC profile if it's invalid.
         }
         icc = null;
     }
 
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
+    }
 }
