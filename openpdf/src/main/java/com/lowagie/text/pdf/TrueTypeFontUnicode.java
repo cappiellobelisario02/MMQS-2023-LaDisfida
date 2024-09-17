@@ -99,7 +99,7 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
         processFileName(nameBase, ttFile, ttcName);
 
         encoding = enc;
-        embedded = emb;
+        embeddedBool = emb;
         fileName = ttcName;
         ttcIndex = getTtcIndex(nameBase, ttcName);
         fontType = FONT_TYPE_TTUNI;

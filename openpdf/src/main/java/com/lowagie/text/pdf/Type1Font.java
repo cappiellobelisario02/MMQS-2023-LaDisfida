@@ -204,7 +204,7 @@ class Type1Font extends BaseFont {
         validateInput(emb, ttfAfm, pfb);
 
         encoding = enc;
-        embedded = emb;
+        embeddedBool = emb;
         fileName = afmFile;
         fontType = FONT_TYPE_T1;
 
@@ -228,7 +228,7 @@ class Type1Font extends BaseFont {
     }
 
     private void handleBuiltinFont(String afmFile) throws DocumentException, IOException {
-        embedded = false;
+        embeddedBool = false;
         builtinFont = true;
         byte[] buf = readResourceFont(afmFile);
         try (RandomAccessFileOrArray rf = new RandomAccessFileOrArray(buf)) {
@@ -585,7 +585,7 @@ class Type1Font extends BaseFont {
      * @since 2.1.3
      */
     public PdfStream getFullFontStream() throws DocumentException {
-        if (builtinFont || !embedded) {
+        if (builtinFont || !embeddedBool) {
             return null;
         }
 

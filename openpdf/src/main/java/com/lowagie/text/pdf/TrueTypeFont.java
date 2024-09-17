@@ -277,7 +277,7 @@ class TrueTypeFont extends BaseFont {
             style = ttFile.substring(nameBase.length());
         }
         encoding = enc;
-        embedded = emb;
+        embeddedBool = emb;
         fileName = ttcName;
         fontType = FONT_TYPE_TT;
         ttcIndex = "";
@@ -287,7 +287,7 @@ class TrueTypeFont extends BaseFont {
         if (fileName.toLowerCase().endsWith(".ttf") || fileName.toLowerCase().endsWith(".otf") || fileName.toLowerCase()
                 .endsWith(".ttc")) {
             process(ttfAfm, forceRead);
-            if (!justNames && embedded && os_2.fsType == 2) {
+            if (!justNames && embeddedBool && os_2.fsType == 2) {
                 throw new DocumentException(
                         MessageLocalization.getComposedMessage("1.cannot.be.embedded.due.to.licensing.restrictions",
                                 fileName + style));
@@ -712,7 +712,7 @@ class TrueTypeFont extends BaseFont {
     private void closeRandomAccessFileOrArray() throws IOException {
         if (rf != null) {
             rf.close();
-            if (!embedded) {
+            if (!embeddedBool) {
                 rf = null;
             }
         }
@@ -1399,7 +1399,7 @@ class TrueTypeFont extends BaseFont {
         PdfIndirectReference ind_font = null;
         String subsetPrefix = "";
 
-        if (embedded) {
+        if (embeddedBool) {
             if (cff) {
                 ind_font = handleEmbeddedCff(writer);
             } else {

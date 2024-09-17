@@ -72,7 +72,7 @@ public class PRTokeniser implements AutoCloseable {
     public static final int TK_REF = 9;
     public static final int TK_OTHER = 10;
     public static final int TK_ENDOFFILE = 11;
-    public static final boolean[] delims = {
+    protected static final boolean[] delims = {
             true, true, false, false, false, false, false, false, false, false,
             true, true, false, true, true, false, false, false, false, false,
             false, false, false, false, false, false, false, false, false, false,
@@ -297,62 +297,65 @@ public class PRTokeniser implements AutoCloseable {
         String n1 = null;
         String n2 = null;
         int ptr = 0;
+
         while (nextToken() || level == 2) {
             if (type == TK_COMMENT) {
                 continue;
             }
+
             switch (level) {
-                case 0: {
-                    if (type != TK_NUMBER) {
-                        return;
-                    }
-                    ptr = file.getFilePointer();
-                    n1 = stringValue;
-                    ++level;
+                case 0:
+                    level = processLevelZero();
                     break;
-                }
-                case 1: {
-                    if (type != TK_NUMBER) {
-                        file.seek(ptr);
-                        type = TK_NUMBER;
-                        stringValue = n1;
-                        return;
-                    }
-                    n2 = stringValue;
-                    ++level;
+                case 1:
+                    level = processLevelOne(ptr, n1);
                     break;
-                }
-                default: {
-                    if (type != TK_OTHER || !stringValue.equals("R")) {
-                        file.seek(ptr);
-                        type = TK_NUMBER;
-                        stringValue = n1;
-                        return;
-                    }
-                    type = TK_REF;
-                    reference = Integer.parseInt(n1);
-                    generation = Integer.parseInt(n2);
+                default:
+                    processDefaultLevel(ptr, n1, n2);
                     return;
-                }
             }
         }
-        // http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=687669#20
+
+        handleEndOfFile(level, ptr, n1);
+    }
+
+    private int processLevelZero() {
+        if (type != TK_NUMBER) {
+            return 0;
+        }
+        return 1;
+    }
+
+    private int processLevelOne(int ptr, String n1) throws IOException {
+        if (type != TK_NUMBER) {
+            file.seek(ptr);
+            type = TK_NUMBER;
+            stringValue = n1;
+            return 0;
+        }
+        return 2;
+    }
+
+    private void processDefaultLevel(int ptr, String n1, String n2) throws IOException {
+        if (type != TK_OTHER || !stringValue.equals("R")) {
+            file.seek(ptr);
+            type = TK_NUMBER;
+            stringValue = n1;
+            return;
+        }
+        type = TK_REF;
+        reference = Integer.parseInt(n1);
+        generation = Integer.parseInt(n2);
+    }
+
+    private void handleEndOfFile(int level, int ptr, String n1) throws IOException {
         if (level > 0) {
             type = TK_NUMBER;
             file.seek(ptr);
             stringValue = n1;
             return;
         }
-//                    {
-//                        file.seek(ptr);
-//                        type = TK_NUMBER;
-//                        stringValue = n1;
-//                    }
-
         throwError("Unexpected end of file");
-        // if we hit here, the file is either corrupt (stream ended unexpectedly),
-        // or the last token ended exactly at the end of a stream.  This last
-        // case can occur inside an Object Stream.
     }
 
     public boolean nextToken() throws IOException {
@@ -486,9 +489,9 @@ public class PRTokeniser implements AutoCloseable {
                             case 'f':
                                 ch = '\f';
                                 break;
-                            case '(':
-                            case ')':
-                            case '\\':
+                            case '(', 
+                                 ')', 
+                                 '\\':
                                 break;
                             case '\r':
                                 lineBreak = true;
@@ -556,7 +559,7 @@ public class PRTokeniser implements AutoCloseable {
                     do {
                         outBuf.append((char) ch);
                         ch = file.read();
-                    } while (ch != -1 && ((ch >= '0' && ch <= '9') || ch == '.'));
+                    } while (((ch >= '0' && ch <= '9') || ch == '.'));
                 } else {
                     type = TK_OTHER;
                     do {
@@ -579,71 +582,70 @@ public class PRTokeniser implements AutoCloseable {
     }
 
     public boolean readLineSegment(byte[] input) throws IOException {
-        int c = -1;
-        boolean eol = false;
         int ptr = 0;
         int len = input.length;
-        // ssteward, pdftk-1.10, 040922:
-        // skip initial whitespace; added this because PdfReader.rebuildXref()
-        if (ptr < len) {
-            while (isWhitespace((c = read()))) {
-                // consume input
-            }
-        }
-        while (!eol && ptr < len) {
-            switch (c) {
-                case -1:
-                case '\n':
-                    eol = true;
-                    break;
-                case '\r':
-                    eol = true;
-                    int cur = getFilePointer();
-                    if ((read()) != '\n') {
-                        seek(cur);
-                    }
-                    break;
-                default:
-                    input[ptr++] = (byte) c;
-                    break;
-            }
 
-            // break loop? do it before we read() again
-            if (eol || len <= ptr) {
+        // Skip initial whitespace
+        skipInitialWhitespace();
+
+        // Read until end of line or end of input
+        while (ptr < len) {
+            int c = read();
+            if (isEndOfLine(c)) {
                 break;
-            } else {
-                c = read();
             }
-        }
-        if (ptr >= len) {
-            eol = false;
-            while (!eol) {
-                c = read();
-                switch (c) {
-                    case -1:
-                    case '\n':
-                        eol = true;
-                        break;
-                    case '\r':
-                        eol = true;
-                        int cur = getFilePointer();
-                        if ((read()) != '\n') {
-                            seek(cur);
-                        }
-                        break;
-                }
+            if (c == -1) {
+                break;
             }
+            input[ptr++] = (byte) c;
         }
 
-        if ((c == -1) && (ptr == 0)) {
-            return false;
+        // Handle end of file if needed
+        if (ptr >= len) {
+            handleEndOfFile();
+        }
+
+        // Handle special cases for output
+        return handleSpecialCases(ptr, len, input);
+    }
+
+    private void skipInitialWhitespace() throws IOException {
+        int c;
+        while ((c = read()) != -1 && isWhitespace(c)) {
+            // skip whitespace
+        }
+        if (c != -1) {
+            seek(getFilePointer() - 1); // Put back the last read character
+        }
+    }
+
+    private boolean isEndOfLine(int c) {
+        return c == -1 || c == '\n' || c == '\r';
+    }
+
+    private void handleEndOfFile() throws IOException {
+        int c;
+        while (!isEndOfLine(c = read())) {
+            if (c == -1) {
+                break;
+            }
+        }
+        if (c == '\r' && read() != '\n') {
+            seek(getFilePointer() - 1);
+        }
+    }
+
+    private boolean handleSpecialCases(int ptr, int len, byte[] input) {
+        if (ptr >= len) {
+            return ptr == 0;
         }
         if (ptr + 2 <= len) {
             input[ptr++] = (byte) ' ';
             input[ptr] = (byte) 'X';
         }
-        return true;
+        return false;
     }
+
 
     public boolean isHexString() {
         return this.hexString;

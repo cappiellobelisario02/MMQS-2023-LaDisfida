@@ -735,7 +735,7 @@ public class BidiLine {
             width -= charWidth;
             lastValidChunk = ck;
 
-            float newWidth = handleTab(ck, leftX, originalWidth, width, alignment, isRTL);
+            float newWidth = handleTab(ck, leftX, originalWidth, width);
             if (newWidth == -1) {
                 // La linea è stata creata, quindi restituire l'oggetto PdfLine
                 return createNewLine(originalWidth, width, alignment, isRTL);
@@ -787,14 +787,13 @@ public class BidiLine {
         return lastSplit;
     }
 
-    private float handleTab(PdfChunk ck, float leftX, float originalWidth, float width, int alignment, boolean isRTL) {
+    private float handleTab(PdfChunk ck, float leftX, float originalWidth, float width) {
         if (ck.isTab()) {
             Object[] tab = (Object[]) ck.getAttribute(Chunk.TAB);
             float tabPosition = (Float) tab[1];
             boolean newLine = (Boolean) tab[2];
             if (newLine && tabPosition < originalWidth - width) {
                 // Creiamo una nuova linea e ritorniamo l'oggetto `PdfLine`
-                PdfLine newLineResult = createNewLine(originalWidth, width, alignment, isRTL);
                 // Restituiamo un valore speciale per indicare che la linea è stata creata
                 return -1; // Un valore speciale per indicare che la linea è stata creata e non c'è bisogno di continuare
             }
@@ -805,19 +804,19 @@ public class BidiLine {
     }
 
     private PdfLine createNewLine(float originalWidth, float width, int alignment, boolean isRTL) {
-        return new PdfLine(0, originalWidth, width, alignment, true,
-                createArrayOfPdfChunks(currentChar - 1, currentChar - 1), isRTL);
+        return new PdfLine((float) 0, originalWidth, width, alignment, true,
+                (ArrayList<PdfChunk>) createArrayOfPdfChunks(currentChar - 1, currentChar - 1), isRTL);
     }
 
     private PdfLine finalizeLine(PdfChunk lastValidChunk, float originalWidth, float width, int alignment, boolean isRTL, int lastSplit) {
         if (lastValidChunk == null) {
             incrementCurrentChar();
-            return new PdfLine(0, originalWidth, 0, alignment, false,
-                    createArrayOfPdfChunks(currentChar - 1, currentChar - 1), isRTL);
+            return new PdfLine((float) 0, originalWidth, (float) 0, alignment, false,
+                    (ArrayList<PdfChunk>) createArrayOfPdfChunks(currentChar - 1, currentChar - 1), isRTL);
         }
         if (currentChar >= totalTextLength) {
-            return new PdfLine(0, originalWidth, width, alignment, true,
-                    createArrayOfPdfChunks(currentChar - 1, totalTextLength - 1), isRTL);
+            return new PdfLine((float) 0, originalWidth, width, alignment, true,
+                    (ArrayList<PdfChunk>) createArrayOfPdfChunks(currentChar - 1, totalTextLength - 1), isRTL);
         }
         return handleLineEnd(originalWidth, width, alignment, isRTL, lastSplit);
     }
@@ -832,12 +831,12 @@ public class BidiLine {
     private PdfLine handleLineEnd(float originalWidth, float width, int alignment, boolean isRTL, int lastSplit) {
         int newCurrentChar = trimRightEx(currentChar, currentChar - 1);
         if (newCurrentChar < currentChar) {
-            return new PdfLine(0, originalWidth, width, alignment, false,
-                    createArrayOfPdfChunks(currentChar, currentChar - 1), isRTL);
+            return new PdfLine((float) 0, originalWidth, width, alignment, false,
+                    (ArrayList<PdfChunk>) createArrayOfPdfChunks(currentChar, currentChar - 1), isRTL);
         }
         if (lastSplit == -1 || lastSplit >= newCurrentChar) {
-            return new PdfLine(0, originalWidth, width + getWidth(newCurrentChar + 1, currentChar - 1), alignment,
-                    false, createArrayOfPdfChunks(currentChar, newCurrentChar), isRTL);
+            return new PdfLine((float) 0, originalWidth, width + getWidth(newCurrentChar + 1, currentChar - 1), alignment,
+                    false, (ArrayList<PdfChunk>) createArrayOfPdfChunks(currentChar, newCurrentChar), isRTL);
         }
         return createSplitLine(originalWidth, alignment, isRTL, lastSplit);
     }
@@ -848,8 +847,8 @@ public class BidiLine {
         if (newCurrentChar < currentChar) {
             newCurrentChar = currentChar - 1;
         }
-        return new PdfLine(0, originalWidth, originalWidth - getWidth(currentChar, newCurrentChar), alignment, false,
-                createArrayOfPdfChunks(currentChar, newCurrentChar), isRTL);
+        return new PdfLine((float) 0, originalWidth, originalWidth - getWidth(currentChar, newCurrentChar), alignment, false,
+                (ArrayList<PdfChunk>) createArrayOfPdfChunks(currentChar, newCurrentChar), isRTL);
     }
 
 
@@ -862,9 +861,9 @@ public class BidiLine {
      * @return the sum of all widths
      */
     public float getWidth(int startIdx, int lastIdx) {
-        char c = 0;
-        char uniC;
-        PdfChunk ck = null;
+        char c;
+
+        PdfChunk ck;
         float width = 0;
         for (; startIdx <= lastIdx; ++startIdx) {
             boolean surrogate = Utilities.isSurrogatePair(text, startIdx);
@@ -1000,7 +999,7 @@ public class BidiLine {
 
     public int trimRightEx(int startIdx, int endIdx) {
         int idx = endIdx;
-        char c = 0;
+        char c;
         for (; idx >= startIdx; --idx) {
             c = (char) detailChunks[idx].getUnicodeEquivalent(text[idx]);
             if (!isWS(c) && !PdfChunk.noPrint(c)) {
@@ -1012,7 +1011,7 @@ public class BidiLine {
 
     public int trimLeftEx(int startIdx, int endIdx) {
         int idx = startIdx;
-        char c = 0;
+        char c;
         for (; idx <= endIdx; ++idx) {
             c = (char) detailChunks[idx].getUnicodeEquivalent(text[idx]);
             if (!isWS(c) && !PdfChunk.noPrint(c)) {

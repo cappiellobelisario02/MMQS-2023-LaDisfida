@@ -2029,7 +2029,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             tokens.seek(start);
             while (true) {
                 int pos = tokens.getFilePointer();
-                if (!tokens.readLineSegment(tline)) {
+                if (tokens.readLineSegment(tline)) {
                     break;
                 }
                 if (equalsn(tline, endstream)) {
@@ -2376,7 +2376,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         byte[] line = new byte[64];
         for (; ; ) {
             int pos = tokens.getFilePointer();
-            if (!tokens.readLineSegment(line)) {
+            if (tokens.readLineSegment(line)) {
                 break;
             }
             if (line[0] == 't') {

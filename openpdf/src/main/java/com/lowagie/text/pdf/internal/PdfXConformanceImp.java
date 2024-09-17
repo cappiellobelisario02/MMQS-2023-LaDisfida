@@ -183,7 +183,7 @@ public class PdfXConformanceImp implements PdfXConformance {
     }
 
     private static void checkFontConformance(Object obj1) {
-        if (!((BaseFont) obj1).isEmbedded()) {
+        if (!((BaseFont) obj1).isEmbeddedBool()) {
             throw new PdfXConformanceException(
                     MessageLocalization.getComposedMessage("all.the.fonts.must.be.embedded.this.one.isn.t.1",
                             ((BaseFont) obj1).getPostscriptFontName()));

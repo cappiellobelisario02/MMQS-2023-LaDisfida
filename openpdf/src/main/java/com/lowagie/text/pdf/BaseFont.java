@@ -283,13 +283,13 @@ public abstract class BaseFont {
      */
     public static final String MACROMAN = "MacRoman";
 
-    public static final int[] CHAR_RANGE_LATIN = {0, 0x17f, 0x2000, 0x206f,
+    protected static final int[] CHAR_RANGE_LATIN = {0, 0x17f, 0x2000, 0x206f,
             0x20a0, 0x20cf, 0xfb00, 0xfb06};
-    public static final int[] CHAR_RANGE_ARABIC = {0, 0x7f, 0x0600, 0x067f,
+    protected static final int[] CHAR_RANGE_ARABIC = {0, 0x7f, 0x0600, 0x067f,
             0x20a0, 0x20cf, 0xfb50, 0xfbff, 0xfe70, 0xfeff};
-    public static final int[] CHAR_RANGE_HEBREW = {0, 0x7f, 0x0590, 0x05ff,
+    protected static final int[] CHAR_RANGE_HEBREW = {0, 0x7f, 0x0590, 0x05ff,
             0x20a0, 0x20cf, 0xfb1d, 0xfb4f};
-    public static final int[] CHAR_RANGE_CYRILLIC = {0, 0x7f, 0x0400, 0x052f,
+    protected static final int[] CHAR_RANGE_CYRILLIC = {0, 0x7f, 0x0400, 0x052f,
             0x2000, 0x206f, 0x20a0, 0x20cf};
 
     /**
@@ -371,7 +371,7 @@ public abstract class BaseFont {
     /**
      * true if the font is to be embedded in the PDF
      */
-    protected boolean embedded;
+    protected boolean embeddedBool;
     /**
      * The compression level for the font stream.
      *
@@ -735,7 +735,7 @@ public abstract class BaseFont {
         return name + "\n" + encoding + "\n" + embedded;
     }
 
-    private static BaseFont getCachedFont(String key, boolean cached, String name) throws IOException, DocumentException {
+    private static BaseFont getCachedFont(String key, boolean cached, String name) throws DocumentException {
         if (cached) {
             BaseFont fontFound = fontCache.get(key);
             if (fontFound != null) {
@@ -1436,8 +1436,8 @@ public abstract class BaseFont {
      *
      * @return <CODE>true</CODE> if the font is embedded.
      */
-    public boolean isEmbedded() {
-        return embedded;
+    public boolean isEmbeddedBool() {
+        return embeddedBool;
     }
 
     /**
@@ -1455,10 +1455,10 @@ public abstract class BaseFont {
      * @return the subset prefix
      */
     protected String createSubsetPrefix() {
-        String s = "";
-        SecureRandom secureRandom = getSecureRandom();
+        StringBuilder s = new StringBuilder();
+        SecureRandom secureRandomM = getSecureRandom();
         for (int k = 0; k < 6; ++k) {
-            s += (char) (secureRandom.nextDouble() * 26 + 'A');
+            s.append((char) (secureRandomM.nextDouble() * 26 + 'A'));
         }
         return s + "+";
     }
@@ -1704,7 +1704,7 @@ public abstract class BaseFont {
     public int[] getCharBBox(int c) {
         byte[] b = convertToBytes(c);
         if (b.length == 0) {
-            return null;
+            return new int[0];
         } else {
             return charBBoxes[0];
         }
