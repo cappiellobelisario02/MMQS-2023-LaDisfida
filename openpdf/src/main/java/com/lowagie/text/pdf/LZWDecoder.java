@@ -47,22 +47,9 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.UnsupportedLZWFlavorException;
 import java.io.IOException;
 import java.io.OutputStream;
-
-// File: UnsupportedLZWFlavorException.java
-class UnsupportedLZWFlavorException extends RuntimeException {
-    // Constructor that accepts a message
-    public UnsupportedLZWFlavorException(String message) {
-        super(message);
-    }
-
-    // Constructor that accepts a message and a cause
-    public UnsupportedLZWFlavorException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-
 
 /**
  * A class for performing LZW decoding.

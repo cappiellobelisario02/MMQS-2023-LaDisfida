@@ -56,23 +56,9 @@ import com.lowagie.text.ElementListener;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.InvalidTopPositionException;
 import java.util.ArrayList;
 import java.util.List;
-
-
-// File: InvalidTopPositionException.java
-class InvalidTopPositionException extends RuntimeException {
-    // Constructor that accepts a message
-    public InvalidTopPositionException(String message) {
-        super(message);
-    }
-
-    // Constructor that accepts a message and a cause
-    public InvalidTopPositionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-
 
 /**
  * Formats content into one or more columns bounded by a rectangle.  The columns may be simple rectangles or more
@@ -463,6 +449,26 @@ public class MultiColumnText implements Element {
         return new ArrayList<>();
     }
 
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
+    }
+
     /**
      * @see com.lowagie.text.Element#isContent()
      * @since iText 2.0.8
@@ -642,7 +648,7 @@ public class MultiColumnText implements Element {
             }
             if (top == AUTOMATIC) {
                 // this is bad - must be programmer error
-                   throw new InvalidTopPositionException("resolvePositions called with top=AUTOMATIC (-1). Top position must be set before lines can be resolved.");
+                throw new InvalidTopPositionException("resolvePositions called with top=AUTOMATIC (-1). Top position must be set before lines can be resolved.");
             }
             positions[1] = top;
             positions[3] = getColumnBottom();
