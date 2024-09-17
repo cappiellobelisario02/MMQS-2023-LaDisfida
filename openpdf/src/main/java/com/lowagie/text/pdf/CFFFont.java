@@ -676,7 +676,7 @@ public class CFFFont {
         public IndexOffsetItem(int size) {
             this.size = size;
         }
-
+        
         @Override
         public void increment(int[] currentOffset) {
             super.increment(currentOffset);
@@ -921,11 +921,11 @@ public class CFFFont {
         }
 
         int size = 5;
-
+        
         public DictNumberItem(int value) {
             this.value = value;
         }
-
+        
         @Override
         public void increment(int[] currentOffset) {
             super.increment(currentOffset);
@@ -962,40 +962,37 @@ public class CFFFont {
         }
     }
 
-    /**
-     * Changed from private to protected by {@literal Ygal&Oren}
-     */
     protected static final class Font {
 
-        public String name;
-        public String fullName;
-        public boolean isCID = false;
-        public int privateOffset = -1; // only if not CID
-        public int privateLength = -1; // only if not CID
-        public int privateSubrs = -1;
-        public int charstringsOffset = -1;
-        public int encodingOffset = -1;
-        public int charsetOffset = -1;
-        public int fdarrayOffset = -1; // only if CID
-        public int fdselectOffset = -1; // only if CID
-        public int[] fdprivateOffsets;
-        public int[] fdprivateLengths;
+        String name;
+        String fullName;
+        boolean isCID = false;
+        int privateOffset = -1; // only if not CID
+        int privateLength = -1; // only if not CID
+        int privateSubrs = -1;
+        int charstringsOffset = -1;
+        int charsetOffset = -1;
+        int fdarrayOffset = -1; // only if CID
+        int fdselectOffset = -1; // only if CID
+        int[] fdprivateOffsets;
+        int[] fdprivateLengths;
 
         // Added by Oren & Ygal
-        public int nglyphs;
-        public int nstrings;
-        public int charsetLength;
-        public int[] charstringsOffsets;
-        public int[] charset;
-        public int[] fdselect;
-        public int fdselectlength;
-        public int fdselectformat;
-        public int charstringType = 2;
-        public int fdarraycount;
-        public int fdarrayoffsize;
-        public int[] fdarrayoffsets;
-        public int[] privatesubrsoffset;
-        public int[][] privatesubrsoffsetsarray;
-        public int[] subrsOffsets;
+        int nglyphs;
+        int nstrings;
+        int charsetLength;
+        int[] charstringsOffsets;
+        int[] charset;
+        int[] fdselect;
+        int fdselectlength;
+        int fdselectformat;
+        int charstringType = 2;
+        int fdarraycount;
+        int fdarrayoffsize;
+        int[] fdarrayoffsets;
+        int[] privateSubrsOffset;
+        int[][] privateSubrsOffsetsArray;
+        int[] subrsOffsets;
+
     }
 }
