@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the License.
  *
  * The Original Code is 'iText, a free JAVA-PDF library'.
- * 
+ *
  * The Initial Developer of the Original Code is Bruno Lowagie. Portions created by
  * the Initial Developer are Copyright (C) 1999, 2000, 2001, 2002 by Bruno Lowagie.
  * All Rights Reserved.
@@ -1140,9 +1140,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         if (copy == null) {
             copy = new PdfDictionary();
         }
-        for (Object o : original.getKeys()) {
-            PdfName key = (PdfName) o;
-            copy.put(key, duplicatePdfObject(original.get(key), newReader));
+        for (PdfName o : original.getKeys()) {
+            copy.put(o, duplicatePdfObject(original.get(o), newReader));
         }
         return copy;
     }
@@ -1382,9 +1381,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         if (info == null) {
             return map;
         }
-        for (Object o : info.getKeys()) {
-            PdfName key = (PdfName) o;
-            PdfObject obj = getPdfObject(info.get(key));
+        for (PdfName o : info.getKeys()) {
+            PdfObject obj = getPdfObject(info.get(o));
             if (obj == null) {
                 continue;
             }
@@ -1401,7 +1399,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 default:
                     break;
             }
-            map.put(PdfName.decodeName(key.toString()), value);
+            map.put(PdfName.decodeName(o.toString()), value);
         }
         return map;
     }
@@ -1441,7 +1439,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
             strings.clear();
             readPages();
-            
+
             removeUnusedObjects();
         } finally {
             try {
@@ -1456,28 +1454,36 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         try {
             fileLength = tokens.getFile().length();
             pdfVersion = tokens.checkPdfHeader();
-            try {
-                readXref();
-            } catch (Exception e) {
-                try {
-                    rebuilt = true;
-                    rebuildXref();
-                    lastXref = -1;
-                } catch (Exception ne) {
-                    throw new InvalidPdfException(MessageLocalization.getComposedMessage(
-                            "rebuild.failed.1.original.message.2", ne.getMessage(),
-                            e.getMessage()));
-                }
-            }
+            readAndRebuildXRef();
             readDocObjPartial();
             readPages();
         } catch (IOException e) {
             try {
                 tokens.close();
-            } catch (Exception ignored) {
-                ignored.printStackTrace();
+            } catch (Exception exc) {
+                logger.info("Error closing tokens: " + exc.getMessage());
             }
             throw e;
+        }
+    }
+
+    void readAndRebuildXRef() throws InvalidPdfException {
+        try {
+            readXref();
+        } catch (Exception e) {
+            tryRebuildXref(e);
+        }
+    }
+
+    void tryRebuildXref(Exception e) throws InvalidPdfException {
+        try {
+            rebuilt = true;
+            rebuildXref();
+            lastXref = -1;
+        } catch (Exception ne) {
+            throw new InvalidPdfException(MessageLocalization.getComposedMessage(
+                    "rebuild.failed.1.original.message.2", ne.getMessage(),
+                    e.getMessage()));
         }
     }
 
@@ -1744,7 +1750,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     private void decryptAllStrings() {
-        for (Object string : strings) {
+        for (PdfObject string : strings) {
             PdfString str = (PdfString) string;
             str.decrypt(this);
         }
@@ -2051,10 +2057,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
         readDecryptedDocObj();
         if (objStmMark != null) {
-            for (Object o : objStmMark.entrySet()) {
-                Entry<?,?> entry = (Entry<?,?>) o;
-                int n = (Integer) entry.getKey();
-                IntHashtable h = (IntHashtable) entry.getValue();
+            for (Entry<?,?> o : objStmMark.entrySet()) {
+                int n = (Integer) o.getKey();
+                IntHashtable h = (IntHashtable) o.getValue();
                 readObjStm((PRStream) xrefObj.get(n), h);
                 xrefObj.set(n, null);
             }
@@ -2506,57 +2511,102 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         hybridXref = false;
         newXrefType = false;
         tokens.seek(0);
-        int[][] xr = new int[1024][];
-        int top = 0;
         trailer = null;
+
+        int[][] xr = initializeXrefArray();
+        int top = processPdfFile(xr);
+
+        if (trailer == null) {
+            throw new InvalidPdfException(MessageLocalization.getComposedMessage("trailer.not.found"));
+        }
+
+        buildXrefTable(xr, top);
+    }
+
+    private int[][] initializeXrefArray() {
+        return new int[1024][];
+    }
+
+    private int processPdfFile(int[][] xr) throws IOException {
         byte[] line = new byte[64];
-        for (; ; ) {
+        int top = 0;
+
+        while (true) {
             int pos = tokens.getFilePointer();
             if (tokens.readLineSegment(line)) {
                 break;
             }
-            if (line[0] == 't') {
-                if (!PdfEncodings.convertToString(line, null).startsWith("trailer")) {
-                    continue;
-                }
-                tokens.seek(pos);
-                tokens.nextToken();
-                pos = tokens.getFilePointer();
-                try {
-                    PdfDictionary dic = (PdfDictionary) readPRObject();
-                    if (dic.get(PdfName.ROOT) != null) {
-                        trailer = dic;
-                    } else {
-                        tokens.seek(pos);
-                    }
-                } catch (Exception e) {
-                    tokens.seek(pos);
-                }
-            } else if (line[0] >= '0' && line[0] <= '9') {
-                int[] obj = PRTokeniser.checkObjectStart(line);
-                if (obj == null) {
-                    continue;
-                }
-                int num = obj[0];
-                int gen = obj[1];
-                if (num >= xr.length) {
-                    int newLength = num * 2;
-                    int[][] xr2 = new int[newLength][];
-                    System.arraycopy(xr, 0, xr2, 0, top);
-                    xr = xr2;
-                }
-                if (num >= top) {
-                    top = num + 1;
-                }
-                if (xr[num] == null || gen >= xr[num][1]) {
-                    obj[0] = pos;
-                    xr[num] = obj;
-                }
+            if (isTrailer(line)) {
+                handleTrailer(pos, line);
+            } else if (isObjectStart(line)) {
+                top = handleObjectStart(xr, line, pos, top);
             }
         }
-        if (trailer == null) {
-            throw new InvalidPdfException(MessageLocalization.getComposedMessage("trailer.not.found"));
+
+        return top;
+    }
+
+    private boolean isTrailer(byte[] line) {
+        return line[0] == 't';
+    }
+
+    private void handleTrailer(int pos, byte[] line) throws IOException {
+        if (!PdfEncodings.convertToString(line, null).startsWith("trailer")) {
+            return;
         }
+        tokens.seek(pos);
+        tokens.nextToken();
+        pos = tokens.getFilePointer();
+
+        try {
+            PdfDictionary dic = (PdfDictionary) readPRObject();
+            if (dic.get(PdfName.ROOT) != null) {
+                trailer = dic;
+            } else {
+                tokens.seek(pos);
+            }
+        } catch (Exception e) {
+            tokens.seek(pos);
+        }
+    }
+
+    private boolean isObjectStart(byte[] line) {
+        return line[0] >= '0' && line[0] <= '9';
+    }
+
+    private int handleObjectStart(int[][] xr, byte[] line, int pos, int top) {
+        int[] obj = PRTokeniser.checkObjectStart(line);
+        if (obj == null) {
+            return top;
+        }
+
+        int num = obj[0];
+        int gen = obj[1];
+
+        if (num >= xr.length) {
+            xr = expandXrefArray(xr, num);
+        }
+
+        if (num >= top) {
+            top = num + 1;
+        }
+
+        if (xr[num] == null || gen >= xr[num][1]) {
+            obj[0] = pos;
+            xr[num] = obj;
+        }
+
+        return top;
+    }
+
+    private int[][] expandXrefArray(int[][] xr, int num) {
+        int newLength = num * 2;
+        int[][] xr2 = new int[newLength][];
+        System.arraycopy(xr, 0, xr2, 0, xr.length);
+        return xr2;
+    }
+
+    private void buildXrefTable(int[][] xr, int top) {
         xref = new int[top * 2];
         for (int k = 0; k < top; ++k) {
             int[] obj = xr[k];
@@ -2875,8 +2925,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
             case PdfObject.STREAM, PdfObject.DICTIONARY: {
                 PdfDictionary dic = (PdfDictionary) obj;
-                for (Object o : dic.getKeys()) {
-                    killXref(dic.get((PdfName) o));
+                for (PdfName o : dic.getKeys()) {
+                    killXref(dic.get(o));
                 }
                 break;
             }
@@ -3123,60 +3173,85 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         int total = 0;
         for (int k = 1; k < xrefObj.size(); ++k) {
             PdfObject obj = getPdfObjectRelease(k);
-            if (obj == null || !obj.isDictionary()) {
-                continue;
-            }
-            PdfDictionary dic = (PdfDictionary) obj;
-            if (!existsName(dic, PdfName.TYPE, PdfName.FONT)) {
-                continue;
-            }
-            if (existsName(dic, PdfName.SUBTYPE, PdfName.TYPE1)
-                    || existsName(dic, PdfName.SUBTYPE, PdfName.MMTYPE1)
-                    || existsName(dic, PdfName.SUBTYPE, PdfName.TRUETYPE)) {
-                String s = getSubsetPrefix(dic);
-                if (s == null) {
-                    continue;
-                }
-                String ns = createRandomSubsetPrefix() + s.substring(7);
-                PdfName newName = new PdfName(ns);
-                dic.put(PdfName.BASEFONT, newName);
-                setXrefPartialObject(k, dic);
-                ++total;
-                PdfDictionary fd = dic.getAsDict(PdfName.FONTDESCRIPTOR);
-                if (fd == null) {
-                    continue;
-                }
-                fd.put(PdfName.FONTNAME, newName);
-            } else if (existsName(dic, PdfName.SUBTYPE, PdfName.TYPE0)) {
-                String s = getSubsetPrefix(dic);
-                PdfArray arr = dic.getAsArray(PdfName.DESCENDANTFONTS);
-                if (arr == null) {
-                    continue;
-                }
-                if (arr.isEmpty()) {
-                    continue;
-                }
-                PdfDictionary desc = arr.getAsDict(0);
-                String sde = getSubsetPrefix(desc);
-                if (sde == null) {
-                    continue;
-                }
-                String ns = createRandomSubsetPrefix();
-                if (s != null) {
-                    dic.put(PdfName.BASEFONT, new PdfName(ns + s.substring(7)));
-                }
-                setXrefPartialObject(k, dic);
-                PdfName newName = new PdfName(ns + sde.substring(7));
-                desc.put(PdfName.BASEFONT, newName);
-                ++total;
-                PdfDictionary fd = desc.getAsDict(PdfName.FONTDESCRIPTOR);
-                if (fd == null) {
-                    continue;
-                }
-                fd.put(PdfName.FONTNAME, newName);
+            if (isFontDictionary(obj)) {
+                PdfDictionary dic = (PdfDictionary) obj;
+                total += processFontDictionary(dic, k);
             }
         }
         return total;
+    }
+
+    private boolean isFontDictionary(PdfObject obj) {
+        if (obj == null || !obj.isDictionary()) {
+            return false;
+        }
+        PdfDictionary dic = (PdfDictionary) obj;
+        return existsName(dic, PdfName.TYPE, PdfName.FONT);
+    }
+
+    private int processFontDictionary(PdfDictionary dic, int k) {
+        if (isType1OrTrueTypeFont(dic)) {
+            return handleSimpleFont(dic, k);
+        } else if (isType0Font(dic)) {
+            return handleCompositeFont(dic, k);
+        }
+        return 0;
+    }
+
+    private boolean isType1OrTrueTypeFont(PdfDictionary dic) {
+        return existsName(dic, PdfName.SUBTYPE, PdfName.TYPE1)
+                || existsName(dic, PdfName.SUBTYPE, PdfName.MMTYPE1)
+                || existsName(dic, PdfName.SUBTYPE, PdfName.TRUETYPE);
+    }
+
+    private boolean isType0Font(PdfDictionary dic) {
+        return existsName(dic, PdfName.SUBTYPE, PdfName.TYPE0);
+    }
+
+    private int handleSimpleFont(PdfDictionary dic, int k) {
+        String s = getSubsetPrefix(dic);
+        if (s == null) {
+            return 0;
+        }
+        String ns = createRandomSubsetPrefix() + s.substring(7);
+        PdfName newName = new PdfName(ns);
+        dic.put(PdfName.BASEFONT, newName);
+        setXrefPartialObject(k, dic);
+
+        PdfDictionary fd = dic.getAsDict(PdfName.FONTDESCRIPTOR);
+        if (fd != null) {
+            fd.put(PdfName.FONTNAME, newName);
+        }
+        return 1;
+    }
+
+    private int handleCompositeFont(PdfDictionary dic, int k) {
+        String s = getSubsetPrefix(dic);
+        PdfArray arr = dic.getAsArray(PdfName.DESCENDANTFONTS);
+        if (arr == null || arr.isEmpty()) {
+            return 0;
+        }
+
+        PdfDictionary desc = arr.getAsDict(0);
+        String sde = getSubsetPrefix(desc);
+        if (sde == null) {
+            return 0;
+        }
+
+        String ns = createRandomSubsetPrefix();
+        if (s != null) {
+            dic.put(PdfName.BASEFONT, new PdfName(ns + s.substring(7)));
+        }
+        setXrefPartialObject(k, dic);
+
+        PdfName newName = new PdfName(ns + sde.substring(7));
+        desc.put(PdfName.BASEFONT, newName);
+
+        PdfDictionary fd = desc.getAsDict(PdfName.FONTDESCRIPTOR);
+        if (fd != null) {
+            fd.put(PdfName.FONTNAME, newName);
+        }
+        return 1;
     }
 
     /**
@@ -3272,7 +3347,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      * @return gets the named destinations
      */
-    public Map<?,?> getNamedDestinationFromNames() {
+    public Map<Object, PdfObject> getNamedDestinationFromNames() {
         return getNamedDestinationFromNames(false);
     }
 
@@ -3293,16 +3368,15 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 return names;
             }
             Set<PdfName> keys = dic.getKeys();
-            for (Object key1 : keys) {
-                PdfName key = (PdfName) key1;
-                PdfArray arr = getNameArray(dic.get(key));
+            for (PdfName key1 : keys) {
+                PdfArray arr = getNameArray(dic.get(key1));
                 if (arr == null) {
                     continue;
                 }
                 if (keepNames) {
-                    names.put(key, arr);
+                    names.put(key1, arr);
                 } else {
-                    String name = PdfName.decodeName(key.toString());
+                    String name = PdfName.decodeName(key1.toString());
                     names.put(name, arr);
                 }
             }
@@ -3639,106 +3713,97 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     @SuppressWarnings("unchecked")
     protected void removeUnusedNode(PdfObject obj, boolean[] hits) {
-        Deque<PdfObject> state = new ArrayDeque<>();
+        Deque<Object> state = new ArrayDeque<>();
         state.push(obj);
+
         while (!state.isEmpty()) {
             Object current = state.pop();
             if (current == null) {
                 continue;
             }
-            List<PdfObject> ar = null;
-            PdfDictionary dic = null;
-            PdfName[] keys = null;
-            Object[] objs = null;
-            int idx = 0;
-            if (current instanceof PdfObject) {
-                obj = (PdfObject) current;
-                switch (obj.type()) {
-                    case PdfObject.DICTIONARY, PdfObject.STREAM:
-                        dic = (PdfDictionary) obj;
-                        keys = new PdfName[dic.size()];
-                        dic.getKeys().toArray(keys);
-                        break;
-                    case PdfObject.ARRAY:
-                        ar = ((PdfArray) obj).getElements();
-                        break;
-                    case PdfObject.INDIRECT:
-                        PRIndirectReference ref = (PRIndirectReference) obj;
-                        int num = ref.getNumber();
-                        if (!hits[num]) {
-                            hits[num] = true;
-                            state.push(getPdfObjectRelease(ref));
-                        }
-                        continue;
-                    default:
-                        continue;
-                }
-            } else {
-                objs = (Object[]) current;
-                if (objs[0] instanceof ArrayList) {
-                    ar = (ArrayList<PdfObject>) objs[0];
-                    idx = (Integer) objs[1];
-                } else {
-                    keys = (PdfName[]) objs[0];
-                    dic = (PdfDictionary) objs[1];
-                    idx = (Integer) objs[2];
-                }
+
+            if (current instanceof PdfObject pdfObject) {
+                handlePdfObject(state, hits, pdfObject);
+            } else if (current instanceof Object[] objects) {  // Aggiungiamo la condizione corretta qui
+                handleStateObject(state, objects);
             }
-            if (ar != null) {
-                for (int k = idx; k < ar.size(); ++k) {
-                    PdfObject v = ar.get(k);
-                    if (v.isIndirect()) {
-                        int num = ((PRIndirectReference) v).getNumber();
-                        if (num < 0 || num >= xrefObj.size() || (!partial && xrefObj.get(num) == null)) {
-                            ar.set(k, PdfNull.PDFNULL);
-                            continue;
-                        }
-                    }
-                    if (objs == null) {
-                        for (PdfObject ar_element : ar){
-                            state.push(ar_element);
-                        }
-                    } else {
-                        objs[1] = k + 1;
-                        for (Object object : objs){
-                            state.push((PdfObject) object);
-                        }
-                    }
-                    state.push(v);
-                    break;
+        }
+    }
+
+
+    private void handlePdfObject(Deque<Object> state, boolean[] hits, PdfObject obj) {
+        switch (obj.type()) {
+            case PdfObject.DICTIONARY, PdfObject.STREAM:
+                PdfDictionary dic = (PdfDictionary) obj;
+                PdfName[] keys = new PdfName[dic.size()];
+                dic.getKeys().toArray(keys);
+                for(PdfName key:keys){
+                    state.push(key);
                 }
-            } else {
-                // Ensure keys is not null before proceeding with the loop
-                if (keys == null) {
-                    // Handle the null keys case appropriately
-                    // This could be returning early, throwing an exception, or logging
-                    throw new IllegalArgumentException("Keys array cannot be null");
+                state.push(dic);
+                break;
+            case PdfObject.ARRAY:
+                List<PdfObject> ar = ((PdfArray) obj).getElements();
+                for(PdfObject element:ar){
+                    state.push(element);
                 }
-                for (int k = idx; k < keys.length; ++k) {
-                    PdfName key = keys[k];
-                    PdfObject v = dic.get(key);
-                    if (v.isIndirect()) {
-                        int num = ((PRIndirectReference) v).getNumber();
-                        if (num < 0 || num >= xrefObj.size() || (!partial && xrefObj.get(num) == null)) {
-                            dic.put(key, PdfNull.PDFNULL);
-                            continue;
-                        }
-                    }
-                    if (objs == null) {
-                        for(PdfObject key_element : keys){
-                            state.push(key_element);
-                        }
-                        state.push(dic);
-                    } else {
-                        objs[2] = k + 1;
-                        for (Object object : objs){
-                            state.push((PdfObject) object);
-                        }
-                    }
-                    state.push(v);
-                    break;
-                }
+                break;
+            case PdfObject.INDIRECT:
+                handleIndirectReference(state, hits, (PRIndirectReference) obj);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void handleStateObject(Deque<Object> state, Object[] objs) {
+        if (objs[0] instanceof List) {
+            handleArrayState(state, (List<PdfObject>) objs[0], (int) objs[1]);
+        } else {
+            handleDictionaryState(state, (PdfName[]) objs[0], (PdfDictionary) objs[1], (int) objs[2]);
+        }
+    }
+
+    private void handleArrayState(Deque<Object> state, List<PdfObject> ar, int idx) {
+        for (int k = idx; k < ar.size(); ++k) {
+            PdfObject v = ar.get(k);
+            if (v.isIndirect()) {
+                handleIndirectArrayElement(ar, k, v);
             }
+            state.push(v);
+        }
+    }
+
+    private void handleDictionaryState(Deque<Object> state, PdfName[] keys, PdfDictionary dic, int idx) {
+        for (int k = idx; k < keys.length; ++k) {
+            PdfName key = keys[k];
+            PdfObject v = dic.get(key);
+            if (v.isIndirect()) {
+                handleIndirectDictionaryElement(dic, key, v);
+            }
+            state.push(v);
+        }
+    }
+
+    private void handleIndirectReference(Deque<Object> state, boolean[] hits, PRIndirectReference ref) {
+        int num = ref.getNumber();
+        if (!hits[num]) {
+            hits[num] = true;
+            state.push(getPdfObjectRelease(ref));
+        }
+    }
+
+    private void handleIndirectArrayElement(List<PdfObject> ar, int k, PdfObject v) {
+        int num = ((PRIndirectReference) v).getNumber();
+        if (num < 0 || num >= xrefObj.size() || (!partial && xrefObj.get(num) == null)) {
+            ar.set(k, PdfNull.PDFNULL);
+        }
+    }
+
+    private void handleIndirectDictionaryElement(PdfDictionary dic, PdfName key, PdfObject v) {
+        int num = ((PRIndirectReference) v).getNumber();
+        if (num < 0 || num >= xrefObj.size() || (!partial && xrefObj.get(num) == null)) {
+            dic.put(key, PdfNull.PDFNULL);
         }
     }
 
@@ -4185,10 +4250,10 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             refsn = new ArrayList<>();
             pageInh = new ArrayList<>();
             PdfObject obj = reader.catalog.get(PdfName.PAGES);
-            if (obj instanceof PRIndirectReference) {
-                iteratePages((PRIndirectReference) obj);
-            } else if (obj instanceof PdfDictionary) {
-                iteratePages((PdfDictionary) obj);
+            if (obj instanceof PRIndirectReference prIndirectReference) {
+                iteratePages(prIndirectReference);
+            } else if (obj instanceof PdfDictionary pdfDictionary) {
+                iteratePages(pdfDictionary);
             }
             pageInh = null;
             reader.rootPages.put(PdfName.COUNT, new PdfNumber(refsn.size()));
@@ -4401,10 +4466,10 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                         }
                         break;
                     }
-                    if (obj instanceof PRIndirectReference) {
-                        iteratePages((PRIndirectReference) obj);
-                    } else if (obj instanceof PdfDictionary) {
-                        iteratePages((PdfDictionary) obj);
+                    if (obj instanceof PRIndirectReference prIndirectReference) {
+                        iteratePages(prIndirectReference);
+                    } else if (obj instanceof PdfDictionary pdfDictionary) {
+                        iteratePages(pdfDictionary);
                     }
                 }
                 popPageAttributes();
@@ -4425,10 +4490,10 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                         }
                         break;
                     }
-                    if (obj instanceof PRIndirectReference) {
-                        iteratePages((PRIndirectReference) obj);
-                    } else if (obj instanceof PdfDictionary) {
-                        iteratePages((PdfDictionary) obj);
+                    if (obj instanceof PRIndirectReference prIndirectReference) {
+                        iteratePages(prIndirectReference);
+                    } else if (obj instanceof PdfDictionary pdfDictionary) {
+                        iteratePages(pdfDictionary);
                     }
                 }
                 popPageAttributes();

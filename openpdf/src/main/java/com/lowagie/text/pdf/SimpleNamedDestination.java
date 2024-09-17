@@ -84,7 +84,7 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
         for (int k = 1; k <= numPages; ++k) {
             pages.put(reader.getPageOrigRef(k).getNumber(), k);
         }
-        HashMap<?, ?> names = fromNames ? (HashMap<Object, Object>) reader.getNamedDestinationFromNames()
+        HashMap<?, ?> names = fromNames ? (HashMap<Object, PdfObject>) reader.getNamedDestinationFromNames()
                 : (HashMap<String, PdfObject>) reader.getNamedDestinationFromStrings();
         for (Iterator<? extends Entry<?, ?>> it = names.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<Object, Object> entry = (Entry<Object, Object>) it.next();
