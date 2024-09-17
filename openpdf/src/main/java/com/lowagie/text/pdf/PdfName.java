@@ -54,6 +54,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -447,7 +448,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
      * The specified value shall not be used if the annotation has an appearance stream in that case, the appearance
      * stream shall specify any transparency.
      */
-    public static final PdfName ca = new PdfName("ca");
+    public static final PdfName CA_CONST = new PdfName("ca");
     /**
      * A name
      */
@@ -2914,7 +2915,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
      *
      *  </ul>
      */
-    public static final PdfName TYPE = new PdfName("Type");
+    public static final PdfName TYPE_CONST = new PdfName("Type");
     /**
      * A name
      */
@@ -3207,7 +3208,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
      *
      * @since 2.1.6
      */
-    public static Map<String, PdfName> staticNames;
+    protected static Map<String, PdfName> staticNames;
 
     /**
      * List of names used for widget annotations
@@ -3292,7 +3293,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
 
     private static void initLists() {
         //All possible values for an annotation dictionary
-        widgetNames.add(PdfName.TYPE);
+        widgetNames.add(PdfName.TYPE_CONST);
         widgetNames.add(PdfName.SUBTYPE);
         widgetNames.add(PdfName.RECT);
         widgetNames.add(PdfName.CONTENTS);
@@ -3307,7 +3308,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
         widgetNames.add(PdfName.STRUCTPARENT);
         widgetNames.add(PdfName.OC);
         widgetNames.add(PdfName.AF);
-        widgetNames.add(PdfName.ca);
+        widgetNames.add(PdfName.CA_CONST);
         widgetNames.add(PdfName.CA);
         widgetNames.add(PdfName.BM);
         widgetNames.add(PdfName.LANG);
@@ -3349,11 +3350,11 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
 
     }
 
-    public static ArrayList<PdfName> getWidgetNames() {
+    public static List<PdfName> getWidgetNames() {
         return widgetNames;
     }
 
-    public static ArrayList<PdfName> getFormfieldNames() {
+    public static List<PdfName> getFormfieldNames() {
         return formfieldNames;
     }
 
@@ -3380,33 +3381,20 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
         for (int k = 0; k < length; k++) {
             c = (char) (chars[k] & 0xff);
             // Escape special characters
-            switch (c) {
-                case ' ':
-                case '%':
-                case '(':
-                case ')':
-                case '<':
-                case '>':
-                case '[':
-                case ']':
-                case '{':
-                case '}':
-                case '/':
-                case '#':
+            if (c == ' ' || c == '%' || c == '(' || c == ')' || c == '{' || c == '}' || c == '<' || c == '>' || c == '['
+                    || c == ']' || c == '/' || c == '#') {
+                buf.append('#');
+                buf.append(Integer.toString(c, 16));
+            } else {
+                if (c >= 32 && c <= 126) {
+                    buf.append(c);
+                } else {
                     buf.append('#');
-                    buf.append(Integer.toString(c, 16));
-                    break;
-                default:
-                    if (c >= 32 && c <= 126) {
-                        buf.append(c);
-                    } else {
-                        buf.append('#');
-                        if (c < 16) {
-                            buf.append('0');
-                        }
-                        buf.append(Integer.toString(c, 16));
+                    if (c < 16) {
+                        buf.append('0');
                     }
-                    break;
+                    buf.append(Integer.toString(c, 16));
+                }
             }
         }
         return buf.toByteArray();
@@ -3475,8 +3463,8 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof PdfName) {
-            return compareTo((PdfName) obj) == 0;
+        if (obj instanceof PdfName pdfName) {
+            return compareTo(pdfName) == 0;
         }
         return false;
     }

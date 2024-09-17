@@ -57,6 +57,7 @@ import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -651,7 +652,8 @@ public abstract class BaseFont {
     public static BaseFont createFont(String name, String encoding,
             boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb, boolean noThrow) throws DocumentException,
             IOException {
-        return createFont(name, encoding, embedded, cached, ttfAfm, pfb, noThrow);
+        FontOptions options = new FontOptions(name, encoding, embedded, cached, ttfAfm, pfb, noThrow);
+        return createFont(options);
     }
 
     /**
@@ -750,19 +752,19 @@ public abstract class BaseFont {
         String nameBase = getBaseName(name);
         byte[] ttfAfm = options.getTtfAfm();
         byte[] pfb = options.getPfb();
-        boolean forceRead = options.isForceRead();
+        boolean noThrow = options.isNoThrow();
 
         if (BuiltinFonts14.containsKey(name) || name.toLowerCase().endsWith(".afm") || name.toLowerCase().endsWith(".pfm")) {
-            Type1Font type1Font = new Type1Font(name, encoding, embedded, ttfAfm, pfb, forceRead);
+            Type1Font type1Font = new Type1Font(name, encoding, embedded, ttfAfm, pfb, noThrow);
             type1Font.fastWinansi = encoding.equals(CP1252);
             return type1Font;
         } else if (nameBase.toLowerCase().endsWith(".ttf") || nameBase.toLowerCase().endsWith(".otf") || nameBase.toLowerCase().indexOf(TTC_KEY) >= 1) {
             if (encoding.equals(IDENTITY_H) || encoding.equals(IDENTITY_V)) {
-                TrueTypeFontUnicode trueTypeFontUnicode = new TrueTypeFontUnicode(name, encoding, embedded, ttfAfm, forceRead);
+                TrueTypeFontUnicode trueTypeFontUnicode = new TrueTypeFontUnicode(name, encoding, embedded, ttfAfm, noThrow);
                 LayoutProcessor.loadFont(trueTypeFontUnicode, name);
                 return trueTypeFontUnicode;
             } else {
-                TrueTypeFont trueTypeFont = new TrueTypeFont(name, encoding, embedded, ttfAfm, false, forceRead);
+                TrueTypeFont trueTypeFont = new TrueTypeFont(name, encoding, embedded, ttfAfm, false, noThrow);
                 trueTypeFont.fastWinansi = encoding.equals(CP1252);
                 return trueTypeFont;
             }
@@ -940,7 +942,7 @@ public abstract class BaseFont {
                 is = contextClassLoader.getResourceAsStream(key);
             }
         }  catch (Exception e) {
-                throw new DocumentException(e);
+            throw new DocumentException(e);
         }
 
         if (is == null) {
@@ -1010,7 +1012,7 @@ public abstract class BaseFont {
      * @param reader the document where the fonts are to be listed from
      * @return the list of fonts and references
      */
-    public static ArrayList<Object[]> getDocumentFonts(PdfReader reader) {
+    public static List<Object[]> getDocumentFonts(PdfReader reader) {
         IntHashtable hits = new IntHashtable();
         ArrayList<Object[]> fonts = new ArrayList<>();
         int npages = reader.getNumberOfPages();
@@ -1029,7 +1031,7 @@ public abstract class BaseFont {
      * @param page   the page to list the fonts from
      * @return the list of fonts and references
      */
-    public static ArrayList<Object[]> getDocumentFonts(PdfReader reader,
+    public static List<Object[]> getDocumentFonts(PdfReader reader,
             int page) {
         IntHashtable hits = new IntHashtable();
         ArrayList<Object[]> fonts = new ArrayList<>();

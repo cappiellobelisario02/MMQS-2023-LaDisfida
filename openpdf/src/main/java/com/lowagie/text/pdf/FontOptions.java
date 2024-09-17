@@ -8,10 +8,10 @@ public class FontOptions {
     private byte[] ttfAfm;
     private byte[] pfb;
     private boolean noThrow;
-    private boolean forceRead;
 
     // Constructors, getters, and setters
-    public FontOptions(String name, String encoding, boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb, boolean noThrow, boolean forceRead) {
+    public FontOptions(String name, String encoding, boolean embedded, boolean cached, byte[] ttfAfm,
+            byte[] pfb, boolean noThrow) {
         this.name = name;
         this.encoding = encoding;
         this.embedded = embedded;
@@ -19,7 +19,6 @@ public class FontOptions {
         this.ttfAfm = ttfAfm;
         this.pfb = pfb;
         this.noThrow = noThrow;
-        this.forceRead = forceRead;
     }
 
     public String getName() {
@@ -48,9 +47,5 @@ public class FontOptions {
 
     public boolean isNoThrow() {
         return noThrow;
-    }
-
-    public boolean isForceRead() {
-        return forceRead;
     }
 }

@@ -135,13 +135,33 @@ public class IncCell implements TextElementArray {
     }
 
     @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
+    }
+
+    @Override
     public boolean process(ElementListener listener) {
         return true;
     }
 
     @Override
     public int type() {
-        return Element.RECTANGLE;
+        return Element.RECTANGLE_CONST;
     }
 
     public PdfPCell getCell() {

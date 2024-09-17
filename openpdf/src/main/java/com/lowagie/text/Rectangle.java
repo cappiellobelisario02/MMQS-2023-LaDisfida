@@ -293,7 +293,7 @@ public class Rectangle implements Element {
      */
     @Override
     public int type() {
-        return Element.RECTANGLE;
+        return Element.RECTANGLE_CONST;
     }
 
     /**
@@ -555,8 +555,8 @@ public class Rectangle implements Element {
      * @return the grayscale color of the background or 0 if the background has no grayscale color.
      */
     public float getGrayFill() {
-        if (backgroundColor instanceof GrayColor) {
-            return ((GrayColor) backgroundColor).getGray();
+        if (backgroundColor instanceof GrayColor grayColor) {
+            return (grayColor).getGray();
         }
         return 0;
     }
@@ -600,13 +600,12 @@ public class Rectangle implements Element {
      * @return a boolean
      */
     public boolean hasBorders() {
-        switch (border) {
-            case UNDEFINED:
-            case NO_BORDER:
-                return false;
-            default:
-                return borderWidth > 0 || borderWidthLeft > 0 || borderWidthRight > 0
-                        || borderWidthTop > 0 || borderWidthBottom > 0;
+        if(border == UNDEFINED || border == NO_BORDER){
+            return false;
+        }
+        else{
+            return borderWidth > 0 || borderWidthLeft > 0 || borderWidthRight > 0
+                    || borderWidthTop > 0 || borderWidthBottom > 0;
         }
     }
 
@@ -906,7 +905,7 @@ public class Rectangle implements Element {
      * @param bottom the bottom position
      * @return a <CODE>Rectangle</CODE>
      */
-    public Rectangle RECTANGLE(float top, float bottom) {
+    public Rectangle rectangleMethod(float top, float bottom) {
         Rectangle tmp = new Rectangle(this);
         if (getTop() > top) {
             tmp.setTop(top);
@@ -1007,6 +1006,26 @@ public class Rectangle implements Element {
         buf.append(rotation);
         buf.append(" degrees)");
         return buf.toString();
+    }
+
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
     }
 
 }

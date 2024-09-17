@@ -440,8 +440,8 @@ public class PdfDocument extends Document {
                 case Element.PARAGRAPH -> handleParagraphElement((Paragraph) element);
                 case Element.SECTION, Element.CHAPTER -> handleSectionElement((Section) element);
                 case Element.LIST -> handleListElement((List) element);
-                case Element.LISTITEM -> handleListItemElement((ListItem) element);
-                case Element.RECTANGLE -> handleRectangleElement((Rectangle) element);
+                case Element.LISTITEM -> handleListItemElement((ListItem) element, element);
+                case Element.RECTANGLE_CONST -> handleRectangleElement((Rectangle) element);
                 case Element.PTABLE -> handlePTableElement((PdfPTable) element);
                 case Element.MULTI_COLUMN_TEXT -> handleMultiColumnTextElement((MultiColumnText) element);
                 case Element.TABLE -> handleTableElement((Table) element);
@@ -526,19 +526,19 @@ public class PdfDocument extends Document {
         if (url != null) {
             anchorAction = new PdfAction(url);
         }
-        element.process(this);
+        anchor.process(this);
         anchorAction = null;
         leadingCount--;
         return true;
     }
 
-    private boolean handleAnnotationElement(Annotation annot) {
+    private boolean handleAnnotationElement(Annotation annot) throws IOException {
         if (line == null) {
             carriageReturn();
         }
         Rectangle rect = new Rectangle(0, 0);
         if (line != null) {
-            rect = new Rectangle(annot.llxMethod(indentRight() - line.widthLeft()),
+            rect = new Rectangle(annot.llx(indentRight() - line.widthLeft()),
                     annot.uryMethod(indentTop() - currentHeight - 20),
                     annot.urxMethod(indentRight() - line.widthLeft() + 20),
                     annot.llyMethod(indentTop() - currentHeight));
@@ -552,13 +552,75 @@ public class PdfDocument extends Document {
     private boolean handlePhraseElement(Phrase phrase) {
         leadingCount++;
         leading = phrase.getLeading();
+        phrase.process(this);
+        leadingCount--;
+        return true;
+    }
+
+    private boolean handleParagraphElement(Paragraph paragraph) {
+        leadingCount++;
+        leading = paragraph.getLeading();
+        paragraph.process(this);
+        leadingCount--;
+        return true;
+    }
+
+    private boolean handleSectionElement(Section section) {
+        if (section.isTriggerNewPage()) {
+            newPage();
+        }
+        leadingCount++;
+        section.process(this);
+        leadingCount--;
+        return true;
+    }
+
+    private boolean handleListElement(List list) {
+        leadingCount++;
+        leading = list.getTotalLeading();
+        list.process(this);
+        leadingCount--;
+        return true;
+    }
+
+    private boolean handleListItemElement(ListItem listItem, Element element) {
+        leadingCount++;
+        leading = listItem.getLeading();
         element.process(this);
         leadingCount--;
         return true;
     }
 
-// Implement similar methods for other element types
-// ...
+    private boolean handleRectangleElement(Rectangle rectangle) {
+        graphics.rectangle(rectangle.getLeft(), rectangle.getBottom(), rectangle.getWidth(), rectangle.getHeight());
+        if (rectangle.getBackgroundColor() != null) {
+            graphics.setColorFill(rectangle.getBackgroundColor());
+        }
+        graphics.fill();
+        pageEmpty = false;
+        return true;
+    }
+
+    private boolean handlePTableElement(PdfPTable table) {
+        try {
+            table.writeSelectedRows(0, -1, indentLeft(), indentTop() - currentHeight, writer.getDirectContent());
+            currentHeight += table.getTotalHeight();
+        } catch (DocumentException e) {
+            return false;
+        }
+        pageEmpty = false;
+        return true;
+    }
+
+    private boolean handleMultiColumnTextElement(MultiColumnText multiColumnText) {
+        try {
+            currentHeight += multiColumnText.write(writer.getDirectContent(), writer.getPdfDocument(), indentTop() - currentHeight);
+        } catch (DocumentException e) {
+            return false;
+        }
+        pageEmpty = false;
+        return true;
+    }
 
     private boolean handleImageElement(Image image) {
         if (isDoFooter) {
@@ -577,10 +639,10 @@ public class PdfDocument extends Document {
     }
 
     private boolean handleMarkedElement(MarkedObject mo) {
-            MarkedObject title = ((MarkedSection) mo).getTitle();
-            if (title != null) {
-                title.process(this);
-            }
+        MarkedObject title = ((MarkedSection) mo).getTitle();
+        if (title != null) {
+            title.process(this);
+        }
         mo.process(this);
         return true;
     }
@@ -588,16 +650,17 @@ public class PdfDocument extends Document {
 // Handle additional cases or default behavior as needed
 
 
-    private void handleTableElement(Table element) throws BadElementException, DocumentException {
+    private boolean handleTableElement(Table element) throws BadElementException, DocumentException {
         PdfPTable ptable = element.createPdfPTable();
         if (ptable.size() <= ptable.getHeaderRows()) {
-            return; //nothing to do
+            return false; //nothing to do
         }
         // before every table, we add a new line and flush all lines
         ensureNewLine();
         flushLines();
         addPTable(ptable);
         pageEmpty = false;
+        return true;
     }
 
 //    Info Dictionary and Catalog
@@ -752,7 +815,7 @@ public class PdfDocument extends Document {
 
     private void addMetadataToPage(PdfPage page) throws IOException {
         PdfStream xmp = new PdfStream(xmpMetadata);
-        xmp.put(PdfName.TYPE, PdfName.METADATA);
+        xmp.put(PdfName.TYPE_CONST, PdfName.METADATA);
         xmp.put(PdfName.SUBTYPE, PdfName.XML);
         PdfEncryption crypto = writer.getEncryption();
         if (crypto != null && !crypto.isMetadataEncrypted()) {
@@ -1236,7 +1299,7 @@ public class PdfDocument extends Document {
         } else if (chunk.isHorizontalSeparator()) {
             handleHorizontalSeparator(chunk, text, params);
         } else if (chunk.isTab()) {
-            handleTabChunk(chunk, text, attributes);
+            handleTabChunk(chunk, text, attributes, params);
         } else if (params.getJustified() && params.getNumberOfSpaces() > 0 && chunk.isSpecialEncoding()) {
             handleSpecialEncoding(chunk, text, params);
         } else {
@@ -1288,10 +1351,10 @@ public class PdfDocument extends Document {
         text.showText(array);
     }
 
-    private void handleTabChunk(PdfChunk chunk, PdfContentByte text, ChunkAttributes attributes) {
+    private void handleTabChunk(PdfChunk chunk, PdfContentByte text, ChunkAttributes attributes, LineLayoutParams params) {
         // Gestisce il rendering dei chunk di tipo tabulazione
         PdfTextArray array = new PdfTextArray();
-        array.add((attributes.getTabPosition() - attributes.getxMarker()) * 1000f / chunk.font().size() / attributes.getHScale());
+        array.add((attributes.getTabPosition() - attributes.getxMarker()) * 1000f / chunk.font().size() / params.getHScale());
         text.showText(array);
     }
 
@@ -1510,7 +1573,7 @@ public class PdfDocument extends Document {
         float width = params.getGlueWidth();
         Object[] sep = (Object[]) chunk.getAttribute(Chunk.SEPARATOR);
         DrawInterface di = (DrawInterface) sep[0];
-        Boolean vertical = (Boolean) sep[1];
+        boolean vertical = (boolean) sep[1];
         float fontSize = chunk.font().size();
         float ascender = chunk.font().getFont().getFontDescriptor(BaseFont.ASCENT, fontSize);
         float descender = chunk.font().getFont().getFontDescriptor(BaseFont.DESCENT, fontSize);
@@ -1613,8 +1676,8 @@ public class PdfDocument extends Document {
             float subtract = calculateSubtract(null, lastBaseFactor, params);
             Object[] obj = (Object[]) chunk.getAttribute(Chunk.REMOTEGOTO);
             String filename = (String) obj[0];
-            if (obj[1] instanceof String) {
-                remoteGoto(filename, (String) obj[1], attributes.getxMarker(), attributes.getyMarker(),
+            if (obj[1] instanceof String string) {
+                remoteGoto(filename, string, attributes.getxMarker(), attributes.getyMarker(),
                         attributes.getxMarker() + width - subtract, attributes.getyMarker() + chunk.font().size());
             } else {
                 remoteGoto(filename, (Integer) obj[1], attributes.getxMarker(), attributes.getyMarker(),
@@ -2467,10 +2530,10 @@ public class PdfDocument extends Document {
         for (Element element : footer.getSpecialContent()) {
             switch (element.type()) {
                 case Element.JPEG,
-                Element.JPEG2000,
-                Element.JBIG2,
-                Element.IMGRAW,
-                Element.IMGTEMPLATE:
+                     Element.JPEG2000,
+                     Element.JBIG2,
+                     Element.IMGRAW,
+                     Element.IMGTEMPLATE:
                     processImage((Image) element);
                     break;
                 case Element.PTABLE:
@@ -2704,7 +2767,7 @@ public class PdfDocument extends Document {
         footer.setBottom(bottom() - (0.75f * leading));
         footer.setLeft(left());
         footer.setRight(right());
-        graphics.rectangle(footer);
+        graphics.rectangle(footer.llx(), footer.urx(), footer.getWidth(), footer.getHeight());
         flushSpecial();
         indentation.indentBottom = currentHeight + leading * 2;
         currentHeight = 0;
@@ -2751,7 +2814,7 @@ public class PdfDocument extends Document {
         header.setBottom(indentTop() + leading * 2 / 3);
         header.setLeft(left());
         header.setRight(right());
-        graphics.rectangle(header);
+        graphics.rectangle(header.llx(), header.urx(), header.getWidth(), header.getHeight());
         flushLines();
         currentHeight = 0;
         // Begin added by Edgar Leonardo Prieto Perilla
@@ -3071,7 +3134,7 @@ public class PdfDocument extends Document {
         /**
          * A PdfPTable
          */
-        public PdfTable table;
+        public static final PdfTable table = null;
         float pagetop = -1;
         float oldHeight = -1;
         PdfContentByte cellGraphics = null;
