@@ -62,7 +62,7 @@ public class ShadingPattern {
             cb.sanityCheck();
             document.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

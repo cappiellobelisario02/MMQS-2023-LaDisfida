@@ -152,7 +152,7 @@ class HtmlParserTest {
             HtmlParser.parse(doc1, new StringReader(html));
             assertNotNull(doc1, () -> html + " was not parsed successfully");
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
             fail(() -> html + " resulted in " + e);
         }
     }

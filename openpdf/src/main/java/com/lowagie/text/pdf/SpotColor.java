@@ -50,14 +50,16 @@
 package com.lowagie.text.pdf;
 
 import java.awt.Color;
+import java.io.Serial;
 
 /**
  * @author psoares
  */
 public class SpotColor extends ExtendedColor {
 
+    @Serial
     private static final long serialVersionUID = -6257004582113248079L;
-    PdfSpotColor spot;
+    transient PdfSpotColor spot;
     float tint;
 
     public SpotColor(PdfSpotColor spot, float tint) {

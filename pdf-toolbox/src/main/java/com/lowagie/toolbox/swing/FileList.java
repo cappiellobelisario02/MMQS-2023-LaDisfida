@@ -86,7 +86,7 @@ public class FileList
         try {
             jbInit();
         } catch (Exception ex) {
-            ex.printStackTrace();
+//da vedere come effettuare il log
         }
     }
 
@@ -143,7 +143,7 @@ public class FileList
                 logger.info(stringToLog);
             }
         } catch (IOException | UnsupportedFlavorException ex) {
-            ex.printStackTrace();
+//da vedere come effettuare il log
         }
         dtde.dropComplete(true);
         File[] filar = new File[filevector.size()];
@@ -232,7 +232,7 @@ public class FileList
                 this.pages = reader.getNumberOfPages();  // Safe to access reader here
             } catch (IOException e) {
                 // Handle the exception or log an error message
-                e.printStackTrace();  // You can replace this with a logger if needed
+                //da vedere come effettuare il log
                 this.pages = 0;  // Set pages to 0 or an appropriate default value
             }
         }

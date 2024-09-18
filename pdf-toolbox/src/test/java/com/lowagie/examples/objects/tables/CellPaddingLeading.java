@@ -80,7 +80,7 @@ public class CellPaddingLeading {
                     "blah blah\nblah blah blah\nblah blah\nblah blah blah\nblah blah\nblah blah blah\nblah blah\nblah blah blah\n");
             document.add(table);
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step5
         document.close();

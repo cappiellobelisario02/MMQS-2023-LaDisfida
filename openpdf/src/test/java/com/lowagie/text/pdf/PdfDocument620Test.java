@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
  * and there are 2 test cases
  */
 
-public class PdfDocument620Test {
+class PdfDocument620Test {
 
     /**
      * According to the issue, there will be different when you use setKeepTogether and not use it in the leading.
@@ -25,7 +25,7 @@ public class PdfDocument620Test {
      * see the pdf file, the two should be same.
      */
     @Test
-    public void generate2DocumentsWithShortLine() throws IOException {
+    void generate2DocumentsWithShortLine() throws IOException {
         createPdf("shortLine", "Test Paragraph", true);
         createPdf("shortLine", "Test Paragraph", false);
         // the 2 documents should look the same
@@ -34,7 +34,7 @@ public class PdfDocument620Test {
     }
 
     @Test
-    public void generate2DocumentsWithLongLine() throws IOException {
+    void generate2DocumentsWithLongLine() throws IOException {
         String s = "sagdageafedddddd dddddddddddddd dddddddddddddddddd ddddddddddd dddddddd" +
                 "sdaffffff ffffffffffffff ffffffffffffff ffffffffffff" +
                 "dsaffffffffff ffffffffffffffffff ffffffffffffff fffffffffffff" +
@@ -61,6 +61,7 @@ public class PdfDocument620Test {
             par3.setLeading(12);
             document.add(par3);
         } catch (DocumentException ignored) {
+            //eccezione ignorata, non sta da fare niente
         }
     }
 }

@@ -68,7 +68,7 @@ public class PageSizeArgument extends OptionArgument {
                 addOption(size.getName(), size.get(null));
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

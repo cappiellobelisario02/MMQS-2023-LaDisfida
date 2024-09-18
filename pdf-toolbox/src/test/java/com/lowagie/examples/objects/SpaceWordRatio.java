@@ -48,7 +48,7 @@ public class SpaceWordRatio {
             writer.setSpaceCharRatio(PdfWriter.NO_SPACE_CHAR_RATIO);
             document.add(p);
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step 5
         document.close();

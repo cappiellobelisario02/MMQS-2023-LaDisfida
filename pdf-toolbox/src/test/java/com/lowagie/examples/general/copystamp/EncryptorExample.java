@@ -39,7 +39,7 @@ public class EncryptorExample {
                     PdfWriter.ALLOW_PRINTING | PdfWriter.ALLOW_COPY,
                     false);
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

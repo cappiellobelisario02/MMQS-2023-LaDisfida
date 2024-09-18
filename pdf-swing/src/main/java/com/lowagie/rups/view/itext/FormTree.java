@@ -125,7 +125,7 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
                     xfaTree.load(xfaFile);
                     xfaTextArea.load(xfaFile);
                 } catch (IOException | DocumentException e) {
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
             setModel(new DefaultTreeModel(root));

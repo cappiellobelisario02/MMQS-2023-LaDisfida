@@ -21,15 +21,12 @@
 package com.lowagie.rups.view.itext;
 
 import com.lowagie.rups.controller.PdfReaderController;
-import com.lowagie.rups.model.ObjectLoader;
 import com.lowagie.rups.model.TreeNodeFactory;
 import com.lowagie.rups.view.icons.IconTreeCellRenderer;
 import com.lowagie.rups.view.itext.treenodes.OutlineTreeNode;
 import com.lowagie.rups.view.itext.treenodes.PdfObjectTreeNode;
-import com.lowagie.rups.view.itext.treenodes.PdfTrailerTreeNode;
 import com.lowagie.text.pdf.PdfName;
-import java.util.Observable;
-import java.util.Observer;
+import java.io.Serial;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -38,16 +35,17 @@ import javax.swing.tree.DefaultTreeModel;
 /**
  * A JTree visualizing information about the outlines (aka bookmarks) of the PDF file (if any).
  */
-public class OutlineTree extends JTree implements TreeSelectionListener, Observer {
+public class OutlineTree extends JTree implements TreeSelectionListener {
 
     /**
      * A serial version uid.
      */
+    @Serial
     private static final long serialVersionUID = 5646572654823301007L;
     /**
      * Nodes in the FormTree correspond with nodes in the main PdfTree.
      */
-    protected PdfReaderController controller;
+    protected transient PdfReaderController controller;
 
     /**
      * Creates a new outline tree.
@@ -60,30 +58,6 @@ public class OutlineTree extends JTree implements TreeSelectionListener, Observe
         setCellRenderer(new IconTreeCellRenderer());
         setModel(new DefaultTreeModel(new OutlineTreeNode()));
         addTreeSelectionListener(this);
-    }
-
-    /**
-     * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
-     */
-    public void update(Observable observable, Object obj) {
-        if (obj == null) {
-            setModel(new DefaultTreeModel(new OutlineTreeNode()));
-            repaint();
-            return;
-        }
-        if (obj instanceof ObjectLoader) {
-            ObjectLoader loader = (ObjectLoader) obj;
-            TreeNodeFactory factory = loader.getNodes();
-            PdfTrailerTreeNode trailer = controller.getPdfTree().getRoot();
-            PdfObjectTreeNode catalog = factory.getChildNode(trailer, PdfName.ROOT);
-            PdfObjectTreeNode outline = factory.getChildNode(catalog, PdfName.OUTLINES);
-            if (outline == null) {
-                return;
-            }
-            OutlineTreeNode root = new OutlineTreeNode();
-            loadOutline(factory, root, factory.getChildNode(outline, PdfName.FIRST));
-            setModel(new DefaultTreeModel(root));
-        }
     }
 
     /**

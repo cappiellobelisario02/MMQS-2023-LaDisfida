@@ -56,6 +56,7 @@ import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStream;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.SimpleBookmark;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -92,7 +93,7 @@ public class ConcatPdf {
                 }
                 concat(sources, outFile);
             } catch (IOException e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }
@@ -120,7 +121,7 @@ public class ConcatPdf {
                 writer.setOutlines(bookmarks);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 
@@ -132,14 +133,15 @@ public class ConcatPdf {
         }
     }
 
-    private static int getNumberOfPages(File source) throws IOException {
+    private static int getNumberOfPages(File source) throws IOException, PDFFilterException {
         PdfReader reader = new PdfReader(new BufferedInputStream(Files.newInputStream(source.toPath())));
         int numberOfPages = reader.getNumberOfPages();
         reader.close();
         return numberOfPages;
     }
 
-    private static void processPdfFile(File source, int pageOffset, PdfCopy writer, List<Map<String, Object>> bookmarks) throws IOException {
+    private static void processPdfFile(File source, int pageOffset, PdfCopy writer, List<Map<String, Object>> bookmarks)
+            throws IOException, PDFFilterException {
         PdfReader reader = new PdfReader(new BufferedInputStream(Files.newInputStream(source.toPath())));
         reader.consolidateNamedDestinations();
 

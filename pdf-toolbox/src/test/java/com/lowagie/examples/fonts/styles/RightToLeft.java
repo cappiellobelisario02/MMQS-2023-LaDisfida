@@ -202,7 +202,7 @@ public class RightToLeft {
             // step 5
             document.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

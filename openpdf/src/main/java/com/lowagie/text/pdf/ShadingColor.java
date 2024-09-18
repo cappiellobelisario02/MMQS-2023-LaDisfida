@@ -47,6 +47,8 @@
 
 package com.lowagie.text.pdf;
 
+import java.io.Serial;
+
 /**
  * Implements a shading pattern as a <code>Color</code>.
  *
@@ -54,8 +56,9 @@ package com.lowagie.text.pdf;
  */
 public class ShadingColor extends ExtendedColor {
 
+    @Serial
     private static final long serialVersionUID = 4817929454941328671L;
-    PdfShadingPattern shadingPattern;
+    transient PdfShadingPattern shadingPattern;
 
     /**
      * Creates a shading color.

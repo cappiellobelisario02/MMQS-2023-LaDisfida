@@ -35,7 +35,7 @@ public class ConcatenateForms {
             copy.addDocument(reader2);
             copy.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

@@ -107,7 +107,7 @@ public class Decrypt extends AbstractTool {
         FileOutputStream fos = null;
         try {
             if (getValue(SRCFILE_ARG) == null) {
-                throw new InstantiationException("You need to choose a source file");
+                throw new InstantiationException("You need to choose a sourcefile");
             }
             if (getValue(DEST) == null) {
                 throw new InstantiationException("You need to choose a destination file");
@@ -116,10 +116,17 @@ public class Decrypt extends AbstractTool {
             if (getValue(OP) != null) {
                 ownerpassword = ((String) getValue(OP)).getBytes();
             }
-
-            // Extracted the PdfReader initialization logic to a new method
-            reader = initializePdfReader((File) getValue(SRCFILE_ARG), ownerpassword);
-            fos = createFileOutputStream((File) getValue(DEST));
+            try {
+                reader = new PdfReader(((File) getValue(SRCFILE_ARG)).getAbsolutePath(), ownerpassword);
+                // Rest of your code here...
+            } catch (Exception e) {
+                // Handle the exception here...
+            }
+            try{
+                fos = new FileOutputStream((File) getValue(DEST));
+            } catch(Exception e){
+                e.printStackTrace();
+            }
             PdfStamper stamper = new PdfStamper(reader, fos);
             stamper.close();
         } catch (Exception e) {
@@ -128,39 +135,17 @@ public class Decrypt extends AbstractTool {
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
             logger.info(e.getMessage());
-        } finally {
-            if (reader != null && fos != null) {
-                try {
+        } finally{
+            if(reader != null && fos != null){
+                try{
                     reader.close();
                     fos.close();
-                } catch (Exception e) {
-                    //e.printStackTrace();
+                }catch(Exception e){
+                    e.printStackTrace();
                 }
             }
         }
     }
-
-    // New method to initialize PdfReader
-    private PdfReader initializePdfReader(File sourceFile, byte[] ownerpassword) {
-        PdfReader reader = null;
-        try {
-            reader = new PdfReader(sourceFile.getAbsolutePath(), ownerpassword);
-            // You can add more processing logic here if needed...
-        } catch (Exception e) {
-            //e.printStackTrace();  // Handle the exception or log it as necessary
-        }
-        return reader;
-    }
-    private FileOutputStream createFileOutputStream(File destFile) {
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(destFile);
-        } catch (Exception e) {
-            //e.printStackTrace();
-        }
-        return fos;
-    }
-
 
     /**
      * @param arg StringArgument

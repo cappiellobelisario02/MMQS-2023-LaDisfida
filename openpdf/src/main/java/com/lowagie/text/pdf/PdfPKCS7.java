@@ -741,7 +741,7 @@ public class PdfPKCS7 {
                     cert.verify(certNext.getPublicKey());
                     break;
                 } catch (Exception ignored) {
-                    ignored.printStackTrace();
+//da vedere come effettuare il log
                 }
             }
             if (j == certs.length) {
@@ -823,7 +823,7 @@ public class PdfPKCS7 {
                 }
             }
         } catch (Exception ignored) {
-            ignored.printStackTrace();
+//da vedere come effettuare il log
         }
         return null;
     }
@@ -1126,7 +1126,7 @@ public class PdfPKCS7 {
                     oc.remove(k);
                     break;
                 } catch (Exception ignored) {
-                    ignored.printStackTrace();
+//da vedere come effettuare il log
                 }
             }
         }
@@ -1221,7 +1221,7 @@ public class PdfPKCS7 {
             return id.equals(cid);
             // ******************************************************************************
         } catch (Exception ignored) {
-            ignored.printStackTrace();
+//da vedere come effettuare il log
         }
         return false;
     }

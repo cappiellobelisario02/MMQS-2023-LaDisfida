@@ -46,7 +46,7 @@ public class EndPage extends PdfPageEventHelper {
             document.add(new Paragraph(text));
             document.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

@@ -52,7 +52,7 @@ public class AnnotatedImage {
             wmf.setAbsolutePosition(100f, 200f);
             document.add(wmf);
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // step 5: we close the document

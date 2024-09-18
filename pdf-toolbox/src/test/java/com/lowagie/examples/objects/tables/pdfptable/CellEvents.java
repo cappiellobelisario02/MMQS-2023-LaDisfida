@@ -63,7 +63,7 @@ public class CellEvents implements PdfPCellEvent {
             table.setHeaderRows(3);
             document.add(table);
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step5
         document.close();

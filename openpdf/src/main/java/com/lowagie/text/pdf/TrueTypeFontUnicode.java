@@ -131,7 +131,7 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
     }
 
     private void checkEmbeddingRestrictions() throws DocumentException {
-        if (os_2.fsType == 2) {
+        if (os2.fsType == 2) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("1.cannot.be.embedded.due.to.licensing.restrictions",
                             fileName + style));

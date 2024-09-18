@@ -180,7 +180,7 @@ public class HtmlBookmarks extends AbstractTool {
      * @param args String[]
      */
     public static void main(String[] args) {
-        com.lowagie.toolbox.plugins.HtmlBookmarks tool = new com.lowagie.toolbox.plugins.HtmlBookmarks();
+        HtmlBookmarks tool = new HtmlBookmarks();
         if (args.length < 1) {
             logger.info(tool.getUsage());
         }
@@ -298,6 +298,7 @@ public class HtmlBookmarks extends AbstractTool {
     }
 
     private void handleException(Exception e) {
+        //da vedere come effettuare il log
         JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
         logger.info(e.getMessage());
     }

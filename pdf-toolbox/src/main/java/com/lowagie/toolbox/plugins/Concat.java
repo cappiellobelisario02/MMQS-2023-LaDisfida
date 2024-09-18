@@ -60,7 +60,7 @@ import javax.swing.JInternalFrame;
  */
 public class Concat extends AbstractTool {
 
-    private static final Logger logger = Logger.getLogger(Concat.class.getName());
+    private static final Logger logger = Logger.getLogger(com.lowagie.toolbox.plugins.Concat.class.getName());
     public static final String SRCFILE_1 = "srcfile1";
     public static final String SRCFILE_2 = "srcfile2";
     public static final String DESTFILE = "destfile";
@@ -87,7 +87,7 @@ public class Concat extends AbstractTool {
      * @param args String[]
      */
     public static void main(String[] args) throws Exception {
-        Concat tool = new Concat();
+        com.lowagie.toolbox.plugins.Concat tool = new com.lowagie.toolbox.plugins.Concat();
         if (args.length < 2) {
             logger.severe(tool.getUsage());
         }

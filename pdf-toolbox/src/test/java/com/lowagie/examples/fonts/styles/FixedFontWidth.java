@@ -51,7 +51,7 @@ public class FixedFontWidth {
             bf.setForceWidthsOutput(true);
             document.add(new Paragraph("A big text to show Helvetica with fixed width.", new Font(bf)));
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step 5
         document.close();

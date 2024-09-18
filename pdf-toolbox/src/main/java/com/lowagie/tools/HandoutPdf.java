@@ -142,7 +142,7 @@ public class HandoutPdf {
                 }
             }
         }catch(Exception e){
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

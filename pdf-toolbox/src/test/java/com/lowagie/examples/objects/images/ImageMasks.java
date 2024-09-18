@@ -86,7 +86,7 @@ public class ImageMasks {
             cb.addImage(mask, mask.getScaledWidth() * 8, 0, 0, mask.getScaledHeight() * 8, 100, 350);
             document.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

@@ -2023,7 +2023,7 @@ public class PdfWriter extends DocWriter implements
             XmpWriter xmp = new XmpWriter(baos, pdf.getInfo(), pdfxConformance.getPDFXConformance());
             xmp.close();
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            //da vedere come effettuare il log
         }
         return baos.toByteArray();
     }

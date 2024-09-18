@@ -81,7 +81,7 @@ public class Destinations {
             new PdfOutline(out2, d4, "sub 2.1");
             new PdfOutline(out2, d5, "sub 2.2");
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // step 5: we close the document

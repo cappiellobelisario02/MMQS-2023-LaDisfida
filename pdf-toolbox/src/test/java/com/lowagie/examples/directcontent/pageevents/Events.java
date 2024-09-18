@@ -87,7 +87,7 @@ public class Events {
             document.close();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
             System.err.println(e.getMessage());
         }
     }
@@ -111,7 +111,7 @@ public class Events {
         try {
             return new MyHandler(document, new RomeoJulietMap());
         } catch (IOException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
         return null;
     }
@@ -154,6 +154,7 @@ public class Events {
          * @see com.lowagie.text.pdf.PdfPageEventHelper#onGenericTag(com.lowagie.text.pdf.PdfWriter,
          * com.lowagie.text.Document, com.lowagie.text.Rectangle, java.lang.String)
          */
+        @Override
         public void onGenericTag(PdfWriter writer, Document document,
                 Rectangle rect, String text) {
             speakers.add(new Speaker(text));
@@ -166,6 +167,7 @@ public class Events {
          * @see com.lowagie.text.pdf.PdfPageEventHelper#onOpenDocument(com.lowagie.text.pdf.PdfWriter,
          * com.lowagie.text.Document)
          */
+        @Override
         public void onOpenDocument(PdfWriter writer, Document document) {
             try {
                 bf = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252,
@@ -173,6 +175,7 @@ public class Events {
                 cb = writer.getDirectContent();
                 template = cb.createTemplate(50, 50);
             } catch (DocumentException | IOException ignored) {
+                //eccezioni ignorate, non sta da fare niente
             }
         }
 
@@ -182,6 +185,7 @@ public class Events {
          * @see com.lowagie.text.pdf.PdfPageEventHelper#onChapter(com.lowagie.text.pdf.PdfWriter,
          * com.lowagie.text.Document, float, com.lowagie.text.Paragraph)
          */
+        @Override
         public void onChapter(PdfWriter writer, Document document,
                 float paragraphPosition, Paragraph title) {
             StringBuilder buf = new StringBuilder();
@@ -199,6 +203,7 @@ public class Events {
          * @see com.lowagie.text.pdf.PdfPageEventHelper#onEndPage(com.lowagie.text.pdf.PdfWriter,
          * com.lowagie.text.Document)
          */
+        @Override
         public void onEndPage(PdfWriter writer, Document document) {
             int pageN = writer.getPageNumber();
             String text = "Page " + pageN + " of ";
@@ -226,6 +231,7 @@ public class Events {
          * @see com.lowagie.text.pdf.PdfPageEventHelper#onCloseDocument(com.lowagie.text.pdf.PdfWriter,
          * com.lowagie.text.Document)
          */
+        @Override
         public void onCloseDocument(PdfWriter writer, Document document) {
             template.beginText();
             template.setFontAndSize(bf, 8);
@@ -247,7 +253,7 @@ public class Events {
      * Special implementation of the XML handler. It adds a paragraph after each SPEAKER block and avoids closing the
      * document after the final closing tag.
      */
-    class MyHandler extends SAXmyHandler {
+    static class MyHandler extends SAXmyHandler {
 
         /**
          * We have to override the constructor
@@ -266,6 +272,7 @@ public class Events {
          * @param lname the local name of the tag
          * @param name  the name of the tag
          */
+        @Override
         public void endElement(String uri, String lname, String name) {
             if (myTags.containsKey(name)) {
                 XmlPeer peer = myTags.get(name);
@@ -283,6 +290,7 @@ public class Events {
                         previous.add(new Paragraph(16));
                         stack.push(previous);
                     } catch (EmptyStackException ignored) {
+                        //eccezioni ignorate, non sta da fare niente
                     }
                 }
             } else {

@@ -93,7 +93,7 @@ public class Concatenate {
                 // step 5: we close the document
                 document.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }

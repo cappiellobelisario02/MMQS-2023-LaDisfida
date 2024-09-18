@@ -45,8 +45,10 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
@@ -113,7 +115,7 @@ public class RemoveLaunchApplication
             validateFiles();
             processPdf();
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 
@@ -126,7 +128,7 @@ public class RemoveLaunchApplication
         }
     }
 
-    private void processPdf() throws IOException {
+    private void processPdf() throws IOException, InstantiationException, PDFFilterException {
         PdfReader reader = null;
         FileOutputStream fouts = null;
         try {
@@ -139,6 +141,8 @@ public class RemoveLaunchApplication
             fouts = new FileOutputStream(dest);
             PdfStamper stamper = new PdfStamper(reader, fouts);
             stamper.close();
+        } catch (PDFFilterException e) {
+            throw new PDFFilterException();
         } finally {
             closeResources(reader, fouts);
         }
@@ -147,13 +151,13 @@ public class RemoveLaunchApplication
     private void removeLaunchActions(PdfReader reader) {
         for (int i = 1; i < Objects.requireNonNull(reader).getXrefSize(); i++) {
             PdfObject o = reader.getPdfObject(i);
-            if (o instanceof PdfDictionary) {
-                PdfDictionary d = (PdfDictionary) o;
-                o = d.get(PdfName.A);
+            if (o instanceof PdfDictionary oPdfDict) {
+                o = oPdfDict.get(PdfName.A);
                 if (o == null) {
                     continue;
                 }
-                PdfDictionary l = (o instanceof PdfDictionary) ? (PdfDictionary) o : (PdfDictionary) reader.getPdfObject(((PRIndirectReference) o).getNumber());
+                PdfDictionary l = (o instanceof PdfDictionary oPdfDict2) ? oPdfDict2 :
+                        (PdfDictionary) reader.getPdfObject(((PRIndirectReference) o).getNumber());
                 PdfName n = (PdfName) l.get(PdfName.S);
                 if (PdfName.LAUNCH.equals(n)) {
                     logAndRemoveLaunchAction(l);
@@ -187,7 +191,7 @@ public class RemoveLaunchApplication
                 fouts.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

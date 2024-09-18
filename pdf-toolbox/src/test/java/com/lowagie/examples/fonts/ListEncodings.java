@@ -46,7 +46,7 @@ public class ListEncodings {
             out.flush();
             out.close();
         } catch (DocumentException | IOException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

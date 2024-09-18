@@ -48,8 +48,10 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.OptionArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -65,7 +67,7 @@ public class Handouts extends AbstractTool {
         addVersion("$Id: Handouts.java 3271 2008-04-18 20:39:42Z xlv $");
     }
 
-    static Logger logger = Logger.getLogger(com.lowagie.toolbox.plugins.Handouts.class.getName());
+    static Logger logger = Logger.getLogger(Handouts.class.getName());
 
     /**
      * Constructs a Handouts object.
@@ -93,7 +95,7 @@ public class Handouts extends AbstractTool {
      * @param args String[]
      */
     public static void main(String[] args) {
-        com.lowagie.toolbox.plugins.Handouts tool = new com.lowagie.toolbox.plugins.Handouts();
+        Handouts tool = new Handouts();
         if (args.length < 2) {
             logger.info(tool.getUsage());
         }
@@ -102,7 +104,7 @@ public class Handouts extends AbstractTool {
     }
 
     /**
-     * @see com.lowagie.toolbox.AbstractTool#createFrame()
+     * @see AbstractTool#createFrame()
      */
     protected void createFrame() {
         internalFrame = new JInternalFrame("Handouts", true, false, true);
@@ -112,7 +114,7 @@ public class Handouts extends AbstractTool {
     }
 
     /**
-     * @see com.lowagie.toolbox.AbstractTool#execute()
+     * @see AbstractTool#execute()
      */
     public void execute() {
         try {
@@ -159,20 +161,21 @@ public class Handouts extends AbstractTool {
         return y2;
     }
 
-    private void processDocument(File src, File dest, int pages, float[] y1, float[] y2) throws Exception {
+    private void processDocument(File src, File dest, int pages, float[] y1, float[] y2)
+            throws IOException, PDFFilterException {
         PdfReader reader = new PdfReader(src.getAbsolutePath());
         Document document = new Document(PageSize.A4);
         PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(dest));
         document.open();
         PdfContentByte cb = writer.getDirectContent();
         int n = reader.getNumberOfPages();
-
-        logger.info("There are " + n + " pages in the original file.");
+        String stringToLog = "There are " + n + " pages in the original file.";
+        logger.info(stringToLog);
 
         int i = 0;
         int p = 0;
         while (i < n) {
-            processPage(reader, writer, document, cb, i + 1, y1, y2, p);
+            processPage(reader, writer, cb, i + 1, y1, y2, p);
             i++;
             p = (p + 1) % pages;
             if (p == 0) {
@@ -184,20 +187,21 @@ public class Handouts extends AbstractTool {
         reader.close();
     }
 
-    private void processPage(PdfReader reader, PdfWriter writer, Document document, PdfContentByte cb, int pageIndex, float[] y1, float[] y2, int p) throws Exception {
+    private void processPage(PdfReader reader, PdfWriter writer, PdfContentByte cb, int pageIndex, float[] y1, float[] y2, int p) {
         Rectangle rect = reader.getPageSizeWithRotation(pageIndex);
         float factor = calculateScalingFactor(rect, y1[p], y2[p]);
         float dx = calculateOffsetX(rect, factor);
         float dy = calculateOffsetY(rect, factor, y1[p], y2[p]);
+        String stringToLog;
 
         PdfImportedPage page = writer.getImportedPage(reader, pageIndex);
         int rotation = reader.getPageRotation(pageIndex);
         float x1 = 0;
         float x2 = 0;
-        float x3 = 0;
         addPageTemplate(cb, page, rotation, factor, dx, dy, x1, y2[p], rect);
-        drawRectangle(cb, x1, y2[p], x2, x3, y1[p], y2[p]);
-        logger.info("Processed page " + pageIndex);
+        drawRectangle(cb, x1, y2[p], x2);
+        stringToLog = "Processed page " + pageIndex;
+        logger.info(stringToLog);
     }
 
     private float calculateScalingFactor(Rectangle rect, float y1, float y2) {
@@ -228,20 +232,20 @@ public class Handouts extends AbstractTool {
         }
     }
 
-    private void drawRectangle(PdfContentByte cb, float x1, float x3, float y1, float v, float v1, float v2) {
+    private void drawRectangle(PdfContentByte cb, float x1, float x3, float y1) {
         cb.setRGBColorStroke(0xC0, 0xC0, 0xC0);
         float x4 = 0;
         cb.rectangle(x3 - 5f, - 5f, x4 - x3 + 10f, y1  + 10f);
-        for (float l = y1 - 19; ; l -= 16) {
+        for (float l = y1 - 19; l > 0; l -= 16) {
             cb.moveTo(x3, l);
             cb.lineTo(x4, l);
         }
         float dx = 0;
         float dy = 0;
 
-        BarcodeDatamatrix rect;
-        int factor;
-        cb.rectangle(x1 + dx,  + dy, rect.getWidth() * factor, rect.getHeight() * factor);
+        BarcodeDatamatrix rect = new BarcodeDatamatrix();
+        int factor = 1;
+        cb.rectangle(x1 + dx,  + dy, rect.getWidth() * (float) factor, rect.getHeight() * (float) factor);
         cb.stroke();
     }
 
@@ -255,32 +259,28 @@ public class Handouts extends AbstractTool {
 
     /**
      * @param arg StringArgument
-     * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
+     * @see AbstractTool#valueHasChanged(AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 
     /**
      * @return File
      * @throws InstantiationException on error
-     * @see com.lowagie.toolbox.AbstractTool#getDestPathPDF()
+     * @see AbstractTool#getDestPathPDF()
      */
     protected File getDestPathPDF() throws InstantiationException {
         return (File) getValue(DESTFILE);
     }
 
     private int tryParsingPagesNumber() {
-        int pages_to_parse;
+        int pagesToParse;
         try {
-            pages_to_parse = Integer.parseInt((String) getValue("pages"));
+            pagesToParse = Integer.parseInt((String) getValue("pages"));
         } catch (Exception e) {
-            pages_to_parse = 4;
+            pagesToParse = 4;
         }
-        return pages_to_parse;
+        return pagesToParse;
     }
 }

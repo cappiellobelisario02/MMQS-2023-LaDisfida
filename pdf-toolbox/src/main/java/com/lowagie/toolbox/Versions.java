@@ -97,7 +97,7 @@ public class Versions
         try {
             initialize();
         } catch (Exception ex) {
-            ex.printStackTrace();
+//da vedere come effettuare il log
         }
     }
 

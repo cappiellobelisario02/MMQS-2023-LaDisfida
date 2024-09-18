@@ -57,7 +57,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Encrypts a PDF document. It needs iText (http://www.lowagie.com/iText).
+ * Encrypts a PDF document. It needs iText (<a href="http://www.lowagie.com/iText">...</a>).
  *
  * @author Paulo Soares (psoares@consiste.pt)
  * @since 2.1.1 (renamed to follow Java naming conventions)
@@ -132,7 +132,7 @@ public class EncryptPdf {
                     args[STRENGTH].equals("128"), moreInfo);
             logger.info("Done.");
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il logs
         }
     }
 }

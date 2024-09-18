@@ -46,7 +46,7 @@ public class ParseTitleHtml {
             HtmlParser.parse(document, ParseHelloHtml.class.getClassLoader()
                     .getResourceAsStream("com/lowagie/examples/html/parseTitle.html"));
         } catch (DocumentException | IOException de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

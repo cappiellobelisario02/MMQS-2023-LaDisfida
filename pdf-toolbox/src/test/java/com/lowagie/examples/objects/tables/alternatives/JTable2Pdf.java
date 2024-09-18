@@ -154,7 +154,7 @@ public class JTable2Pdf extends JFrame {
             cb.restoreState();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
             System.err.println(e.getMessage());
         }
 

@@ -123,7 +123,7 @@ public class DropCapsWithColumns {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // close the document

@@ -40,7 +40,7 @@ public class Info {
             out.flush();
             out.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

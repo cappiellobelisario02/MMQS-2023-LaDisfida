@@ -72,6 +72,7 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -111,7 +112,7 @@ public class XfaForm {
      * @throws javax.xml.parsers.ParserConfigurationException on error
      * @throws org.xml.sax.SAXException                       on error
      */
-    public XfaForm(PdfReader reader) throws IOException, ParserConfigurationException, SAXException {
+    public XfaForm(PdfReader reader) throws IOException, ParserConfigurationException, SAXException, PDFFilterException {
         this.reader = reader;
         PdfObject xfa = getXfaObject(reader);
         if (xfa == null) {
@@ -124,13 +125,13 @@ public class XfaForm {
             PdfArray ar = (PdfArray) xfa;
             for (int k = 1; k < ar.size(); k += 2) {
                 PdfObject ob = ar.getDirectObject(k);
-                if (ob instanceof PRStream) {
-                    byte[] b = PdfReader.getStreamBytes((PRStream) ob);
+                if (ob instanceof PRStream obPrStream) {
+                    byte[] b = PdfReader.getStreamBytes(obPrStream);
                     bout.write(b);
                 }
             }
-        } else if (xfa instanceof PRStream) {
-            byte[] b = PdfReader.getStreamBytes((PRStream) xfa);
+        } else if (xfa instanceof PRStream xfaPrStream) {
+            byte[] b = PdfReader.getStreamBytes(xfaPrStream);
             bout.write(b);
         }
         bout.close();
@@ -550,8 +551,8 @@ public class XfaForm {
             com.lowagie.text.pdf.XfaForm.InverseStore store = this;
             while (true) {
                 Object obj = store.follow.get(0);
-                if (obj instanceof String) {
-                    return (String) obj;
+                if (obj instanceof String objString) {
+                    return objString;
                 }
                 store = (com.lowagie.text.pdf.XfaForm.InverseStore) obj;
             }
@@ -1158,8 +1159,8 @@ public class XfaForm {
                         case "subform":
                             processSubform(n2, ff, ss);
                             break;
-                        case "field":
-                        case EXCL_GROUP:
+                        case "field",
+                             EXCL_GROUP:
                             processFieldOrGroup(n2, ff);
                             break;
                         case "occur":
@@ -1242,7 +1243,7 @@ public class XfaForm {
                 try {
                     return Integer.parseInt(attribute.getNodeValue().trim());
                 } catch (NumberFormatException e) {
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
             return defaultValue;

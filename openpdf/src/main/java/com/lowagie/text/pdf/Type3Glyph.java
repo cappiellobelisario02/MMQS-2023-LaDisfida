@@ -3,6 +3,7 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.pdf.Type3Glyph.Builder;
 
 /**
  * The content where Type3 glyphs are written to.
@@ -14,7 +15,7 @@ public final class Type3Glyph extends PdfContentByte {
     private Rectangle rectangle;
     private float wx;
 
-    private Type3Glyph(Builder builder) {
+    private Type3Glyph(com.lowagie.text.pdf.Type3Glyph.Builder builder) {
         super(builder.writer);
         this.pageResources = builder.pageResources;
         this.colorized = builder.colorized;
@@ -49,7 +50,7 @@ public final class Type3Glyph extends PdfContentByte {
 
     @Override
     public PdfContentByte getDuplicate() {
-        Type3Glyph dup = new Type3Glyph.Builder(writer, pageResources, wx, rectangle, colorized).build();
+        com.lowagie.text.pdf.Type3Glyph dup = new com.lowagie.text.pdf.Type3Glyph.Builder(writer, pageResources, wx, rectangle, colorized).build();
         return dup;
     }
 
@@ -68,8 +69,8 @@ public final class Type3Glyph extends PdfContentByte {
             this.colorized = colorized;
         }
 
-        public Type3Glyph build() {
-            return new Type3Glyph(this);
+        public com.lowagie.text.pdf.Type3Glyph build() {
+            return new com.lowagie.text.pdf.Type3Glyph(this);
         }
     }
 }

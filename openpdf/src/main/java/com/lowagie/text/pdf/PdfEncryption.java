@@ -59,6 +59,8 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.Arrays;
 import javax.crypto.Cipher;
@@ -94,11 +96,12 @@ public class PdfEncryption {
     private static final byte[] metadataPad = {(byte) 255, (byte) 255,
             (byte) 255, (byte) 255};
     public static final String AES_CBC_NO_PADDING = "AES/CBC/NoPadding";
+    public static final String SHA_256 = "SHA-256";
     static long seq = System.currentTimeMillis();
     /**
      * The public key security handler for certificate encryption
      */
-    protected PdfPublicKeySecurityHandler publicKeyHandler = null;
+    protected PdfPublicKeySecurityHandler publicKeyHandler;
     /**
      * The encryption key for a particular object/generation
      */
@@ -137,7 +140,7 @@ public class PdfEncryption {
     byte[] documentID;
     private int revision;
 
-    private ARCFOUREncryption arcfour = new ARCFOUREncryption();
+    private final ARCFOUREncryption arcfour = new ARCFOUREncryption();
 
     /**
      * The generic key length. It may be 40 or 128.
@@ -157,7 +160,7 @@ public class PdfEncryption {
 
     public PdfEncryption() {
         try {
-            md5 = MessageDigest.getInstance("MD5");
+            md5 = MessageDigest.getInstance(SHA_256);
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -195,20 +198,20 @@ public class PdfEncryption {
         keySize = enc.keySize;
     }
 
-    public static byte[] createDocumentId() {
-        MessageDigest md5;
+    public static byte[] createDocumentId() throws NoSuchAlgorithmException {
+        MessageDigest sha256;
         try {
-            md5 = MessageDigest.getInstance("MD5");
-        } catch (Exception e) {
-            throw new ExceptionConverter(e);
+            sha256 = MessageDigest.getInstance(SHA_256);
+        } catch (NoSuchAlgorithmException e) {
+            throw new NoSuchAlgorithmException("Algorithm not found", e);
         }
         long time = System.currentTimeMillis();
         long mem = Runtime.getRuntime().freeMemory();
         String s = time + "+" + mem + "+" + (seq++);
-        return md5.digest(s.getBytes());
+        return sha256.digest(s.getBytes());
     }
 
-    public static PdfObject createInfoId(byte[] id) {
+    public static PdfObject createInfoId(byte[] id) throws NoSuchAlgorithmException {
         return createInfoId(id, createDocumentId());
     }
 
@@ -465,7 +468,7 @@ public class PdfEncryption {
     // gets keylength and revision and uses revision to choose the initial values
     // for permissions
     public void setupAllKeys(byte[] userPassword, byte[] ownerPassword,
-            int permissions) {
+            int permissions) throws NoSuchAlgorithmException {
         if (ownerPassword == null || ownerPassword.length == 0) {
             ownerPassword = md5.digest(createDocumentId());
         }
@@ -567,7 +570,7 @@ public class PdfEncryption {
         }
     }
 
-    public PdfDictionary getEncryptionDictionary() {
+    public PdfDictionary getEncryptionDictionary() throws NoSuchAlgorithmException {
         PdfDictionary dic = new PdfDictionary();
 
         if (publicKeyHandler.getRecipientsSize() > 0) {
@@ -579,7 +582,7 @@ public class PdfEncryption {
         return dic;
     }
 
-    private void handleEncryptionForRecipients(PdfDictionary dic) {
+    private void handleEncryptionForRecipients(PdfDictionary dic) throws NoSuchAlgorithmException {
         PdfArray recipients = getEncodedRecipients();
 
         addBasicEncryptionEntries(dic);
@@ -721,9 +724,11 @@ public class PdfEncryption {
         dic.put(PdfName.CF, cf);
     }
 
-    private byte[] calculateMessageDigest() {
+    public byte[] calculateMessageDigest() throws NoSuchAlgorithmException {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            // Use SHA-256 instead of SHA-1
+            MessageDigest md = MessageDigest.getInstance(SHA_256);
+
             md.update(publicKeyHandler.getSeed());
             for (int i = 0; i < publicKeyHandler.getRecipientsSize(); i++) {
                 byte[] encodedRecipient = publicKeyHandler.getEncodedRecipient(i);
@@ -733,13 +738,16 @@ public class PdfEncryption {
                 md.update(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255});
             }
             return md.digest();
+        } catch (NoSuchAlgorithmException e) {
+            throw new NoSuchAlgorithmException("Hash algorithm not found", e);
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
     }
 
 
-    public PdfObject getFileID() {
+
+    public PdfObject getFileID() throws NoSuchAlgorithmException {
         return createInfoId(documentID);
     }
 
@@ -789,7 +797,7 @@ public class PdfEncryption {
         }
     }
 
-    public void addRecipient(Certificate cert, int permission) {
+    public void addRecipient(Certificate cert, int permission) throws NoSuchAlgorithmException {
         documentID = createDocumentId();
         publicKeyHandler.addRecipient(new PdfPublicKeyRecipient(cert,
                 permission));
@@ -884,7 +892,7 @@ public class PdfEncryption {
      * implements Algorithm 2.B: Computing a hash (revision 6 and later) - ISO 32000-2 section 7.6.4.3.4
      */
     byte[] hashAlg2B(byte[] input, byte[] salt, byte[] userKey) throws GeneralSecurityException {
-        final MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+        final MessageDigest sha256 = MessageDigest.getInstance(SHA_256);
         final MessageDigest sha384 = MessageDigest.getInstance("SHA-384");
         final MessageDigest sha512 = MessageDigest.getInstance("SHA-512");
         final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING);
@@ -899,6 +907,7 @@ public class PdfEncryption {
         byte[] k = sha256.digest();
 
         int lastEByte = 0;
+        SecureRandom random = new SecureRandom(); // SecureRandom for generating IV
 
         for (int round = 0; round < 64 || lastEByte > round - 32; round++) {
             int singleSequenceSize = input.length + k.length + userKey.length;
@@ -910,9 +919,13 @@ public class PdfEncryption {
                 System.arraycopy(k1, 0, k1, singleSequenceSize * i, singleSequenceSize);
             }
 
+            // Generate a random IV for each encryption
+            byte[] iv = new byte[16];
+            random.nextBytes(iv);
+
             cipher.init(Cipher.ENCRYPT_MODE,
                     new SecretKeySpec(Arrays.copyOf(k, 16), "AES"),
-                    new IvParameterSpec(Arrays.copyOfRange(k, 16, 32)));
+                    new IvParameterSpec(iv));
             byte[] e = cipher.update(k1, 0, k1.length);
             lastEByte = e[e.length - 1] & 0xFF;
 
@@ -922,9 +935,7 @@ public class PdfEncryption {
                 case 0 -> sha256.digest(e);
                 case 1 -> sha384.digest(e);
                 case 2 -> sha512.digest(e);
-                default ->
-                    // Handle unexpected cases (though technically, this should not be reached)
-                        throw new IllegalStateException("Unexpected value: " + remainder);
+                default -> throw new IllegalStateException("Unexpected value: " + remainder);
             };
         }
 
@@ -946,16 +957,30 @@ public class PdfEncryption {
 
         byte[] userSalts = IVGenerator.getIV(16);
 
+        // Prepare user key
         userKey = new byte[48];
         System.arraycopy(userSalts, 0, userKey, 32, 16);
         byte[] hashAlg2B = hashAlg2B(userPassword, Arrays.copyOf(userSalts, 8), null);
         System.arraycopy(hashAlg2B, 0, userKey, 0, 32);
 
         hashAlg2B = hashAlg2B(userPassword, Arrays.copyOfRange(userSalts, 8, 16), null);
+
+        // Generate a random IV
+        byte[] randomIV = new byte[16];
+        SecureRandom secureRandom = new SecureRandom();
+        secureRandom.nextBytes(randomIV);
+
+        // Initialize Cipher with the random IV
         cipher.init(Cipher.ENCRYPT_MODE,
                 new SecretKeySpec(hashAlg2B, "AES"),
-                new IvParameterSpec(new byte[16]));
+                new IvParameterSpec(randomIV));
+
+        // Encrypt data
         ueKey = cipher.update(key, 0, keySize);
+
+        // Optionally, store or use the IV here
+        // For example, if you need to store the IV with the encrypted data:
+        // storeIV(randomIV
     }
 
     /**
@@ -963,7 +988,7 @@ public class PdfEncryption {
      * (Security handlers of revision 6) - ISO 32000-2 section 7.6.4.4.8
      */
     void computeOAndOeAlg9(byte[] ownerPassword) throws GeneralSecurityException {
-        final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING);
+        final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING); // Ensure the correct transformation string
 
         if (ownerPassword == null) {
             ownerPassword = new byte[0];
@@ -971,18 +996,27 @@ public class PdfEncryption {
             ownerPassword = Arrays.copyOf(ownerPassword, 127);
         }
 
-        byte[] ownerSalts = IVGenerator.getIV(16);
+        // Generate a random IV and salt
+        SecureRandom secureRandom = new SecureRandom(); // Use SecureRandom for cryptographic purposes
+        byte[] ownerSalts = new byte[16];
+        secureRandom.nextBytes(ownerSalts);
 
         ownerKey = new byte[48];
         System.arraycopy(ownerSalts, 0, ownerKey, 32, 16);
+
         byte[] hashAlg2B = hashAlg2B(ownerPassword, Arrays.copyOf(ownerSalts, 8), userKey);
         System.arraycopy(hashAlg2B, 0, ownerKey, 0, 32);
 
         hashAlg2B = hashAlg2B(ownerPassword, Arrays.copyOfRange(ownerSalts, 8, 16), userKey);
-        cipher.init(Cipher.ENCRYPT_MODE,
-                new SecretKeySpec(hashAlg2B, "AES"),
-                new IvParameterSpec(new byte[16]));
-        oeKey = cipher.update(key, 0, keySize);
+
+        // Generate a new random IV for encryption
+        byte[] iv = new byte[16];
+        secureRandom.nextBytes(iv); // Generate a random 16-byte IV
+
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(hashAlg2B, "AES"), new IvParameterSpec(iv));
+        oeKey = cipher.doFinal(key); // Use doFinal for finalizing the encryption
+
+        // Optionally, store or transmit the IV along with the ciphertext
     }
 
     /**
@@ -990,8 +1024,12 @@ public class PdfEncryption {
      * revision 6) - ISO 32000-2 section 7.6.4.4.9
      */
     void computePermsAlg10(int permissions) throws GeneralSecurityException {
+        final SecureRandom secureRandom = new SecureRandom();
+
+        // Create a new Cipher instance
         final Cipher cipher = Cipher.getInstance(AES_CBC_NO_PADDING);
 
+        // Prepare the raw permissions data
         byte[] rawPerms = new byte[16];
         rawPerms[0] = (byte) (permissions & 0xff);
         rawPerms[1] = (byte) ((permissions & 0xff00) >> 8);
@@ -1005,11 +1043,23 @@ public class PdfEncryption {
         rawPerms[9] = (byte) 'a';
         rawPerms[10] = (byte) 'd';
         rawPerms[11] = (byte) 'b';
-        System.arraycopy(IVGenerator.getIV(4), 0, rawPerms, 12, 4);
 
-        cipher.init(Cipher.ENCRYPT_MODE,
-                new SecretKeySpec(key, "AES"),
-                new IvParameterSpec(new byte[16]));
-        perms = cipher.update(rawPerms, 0, 16);
+        // Generate a random IV
+        byte[] iv = new byte[16];
+        secureRandom.nextBytes(iv);
+
+        // Initialize the cipher with the random IV
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
+
+        // Encrypt the raw permissions data
+        byte[] permsBytes = cipher.doFinal(rawPerms);
+
+        // Optionally, store or transmit the IV with the encrypted data
+        // For example, prepend or append the IV to the encrypted data
+        byte[] encryptedDataWithIv = new byte[iv.length + permsBytes.length];
+        System.arraycopy(iv, 0, encryptedDataWithIv, 0, iv.length);
+        System.arraycopy(permsBytes, 0, encryptedDataWithIv, iv.length, permsBytes.length);
+
+        // Now encryptedDataWithIv contains both the IV and the encrypted data
     }
 }

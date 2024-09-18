@@ -387,7 +387,7 @@ public abstract class AbstractTool implements ActionListener {
     /**
      * Executes the tool (in most cases this generates a PDF file).
      */
-    public abstract void execute() throws Exception;
+    public abstract void execute();
 
     /**
      * Indicates that the value of an argument has changed.

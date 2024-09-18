@@ -133,7 +133,7 @@ public class ExtractAttachments extends AbstractTool {
         try (FileOutputStream fout = new FileOutputStream(fullPath);) {
             fout.write(b);
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 
@@ -161,7 +161,7 @@ public class ExtractAttachments extends AbstractTool {
             processEmbeddedFiles(reader, outPath);
             processAnnotations(reader, outPath);
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         } finally {
             closeReader(reader);
         }
@@ -214,7 +214,7 @@ public class ExtractAttachments extends AbstractTool {
             try {
                 reader.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }

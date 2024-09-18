@@ -106,7 +106,7 @@ public class BuildTutorial {
                 build.flush();
                 build.close();
             } catch (IOException ioe) {
-                ioe.printStackTrace();
+                //da vedere come effettuare il log
             }
         } else {
             logger.severe("Wrong number of parameters.\nUsage: BuildSite srcdr destdir xsl_examples xsl_site");
@@ -132,7 +132,6 @@ public class BuildTutorial {
             logger.info(" ");
             logger.info(source.getCanonicalPath());
             File dest = new File(destination, source.getName());
-            dest.mkdir();
             File current;
             File[] xmlFiles = source.listFiles();
             if (xmlFiles != null) {
@@ -202,7 +201,7 @@ public class BuildTutorial {
             // output file
             xformer.transform(source, result);
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

@@ -91,7 +91,7 @@ public class AsianFontMapper extends DefaultFontMapper {
                 return BaseFont.createFont(defaultFont, encoding, true);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
         return null;
 

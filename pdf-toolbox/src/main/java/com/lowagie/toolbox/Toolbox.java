@@ -140,7 +140,7 @@ public class Toolbox extends JFrame implements ActionListener {
             c = new com.lowagie.toolbox.Toolbox.Console();
             console = new JScrollPane(c.textArea);
         } catch (IOException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 desktop,
@@ -187,7 +187,7 @@ public class Toolbox extends JFrame implements ActionListener {
                 tool.execute();
             } catch (PropertyVetoException | InstantiationException | IllegalAccessException
                      | ClassNotFoundException ex) {
-                ex.printStackTrace();
+//da vedere come effettuare il log
             }
         }
     }
@@ -230,7 +230,7 @@ public class Toolbox extends JFrame implements ActionListener {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
         toolmap = new Properties();
         JMenuBar menubar = new JMenuBar();
@@ -410,7 +410,7 @@ public class Toolbox extends JFrame implements ActionListener {
             frame.setMaximum(false);
             frame.reshape(x, y, frame.getWidth(), frame.getHeight());
         } catch (PropertyVetoException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 
@@ -424,7 +424,7 @@ public class Toolbox extends JFrame implements ActionListener {
         try {
             createFrame(actionCommand);
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 
@@ -521,7 +521,7 @@ public class Toolbox extends JFrame implements ActionListener {
                         oriout.print(snippet);
                         textArea.setCaretPosition(textArea.getDocument().getLength());
                     } catch (BadLocationException | IOException ex) {
-                        ex.printStackTrace();
+//da vedere come effettuare il log
                     }
                 }
             }

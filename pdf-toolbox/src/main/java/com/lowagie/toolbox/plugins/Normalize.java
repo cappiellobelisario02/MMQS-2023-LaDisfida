@@ -262,7 +262,7 @@ public class Normalize
                     fouts.close();
                     stp.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
         }

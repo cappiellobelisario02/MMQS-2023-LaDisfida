@@ -76,7 +76,7 @@ public class SplitRows {
             table.setSplitRows(false);
             document3.add(table);
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step5
         document1.close();

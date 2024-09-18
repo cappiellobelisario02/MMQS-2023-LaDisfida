@@ -122,7 +122,7 @@ public class Divide extends AbstractTool {
             try{
                 reader = new PdfReader(src.getAbsolutePath());
             } catch (Exception e){
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
             // we retrieve the total number of pages and the page size
             int total = reader.getNumberOfPages();
@@ -137,7 +137,7 @@ public class Divide extends AbstractTool {
             try{
                 document = new Document(newSize, 0, 0, 0, 0);
             } catch (Exception e){
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
             // step 2: we create a writer that listens to the document
             PdfWriter writer = PdfWriter.getInstance(document,
@@ -169,7 +169,7 @@ public class Divide extends AbstractTool {
             // step 5: we close the document
             document.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

@@ -72,7 +72,7 @@ public class WriteSelectedRows {
             document.add(new Paragraph("row 150 - 200"));
             table.writeSelectedRows(150, -1, 50, 820, writer.getDirectContent());
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step5
         document.close();

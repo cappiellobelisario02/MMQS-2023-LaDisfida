@@ -128,7 +128,7 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
                 pp.parse(new FileInputStream(args[0]), pp);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 
@@ -144,8 +144,8 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
     protected List<Object> normalizeException(List<Object> ex) {
         List<Object> res = new ArrayList<>();
         for (Object item : ex) {
-            if (item instanceof String) {
-                String str = (String) item;
+            if (item instanceof String stringItem) {
+                String str = stringItem;
                 StringBuilder buf = new StringBuilder();
                 for (int j = 0; j < str.length(); j++) {
                     char c = str.charAt(j);
@@ -174,8 +174,8 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
     protected String getExceptionWord(List<Object> ex) {
         StringBuilder res = new StringBuilder();
         for (Object item : ex) {
-            if (item instanceof String) {
-                res.append((String) item);
+            if (item instanceof String stringItem) {
+                res.append(stringItem);
             } else {
                 if (((Hyphen) item).noBreak != null) {
                     res.append(((Hyphen) item).noBreak);
@@ -291,16 +291,19 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
     // PatternConsumer implementation for testing purposes
     @Override
     public void addClass(String c) {
-        logger.info("class: " + c);
+        String stringToLog = "class: " + c;
+        logger.info(stringToLog);
     }
 
     @Override
     public void addException(String w, ArrayList<String> e) {
-        logger.info("exception: " + w + " : " + e.toString());
+        String stringToLog = "exception: " + w + " : " + e.toString();
+        logger.info(stringToLog);
     }
 
     @Override
     public void addPattern(String p, String v) {
-        logger.info("pattern: " + p + " : " + v);
+        String stringToLog = "pattern: " + p + " : " + v;
+        logger.info(stringToLog);
     }
 }

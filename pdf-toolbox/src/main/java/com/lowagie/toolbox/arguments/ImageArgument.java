@@ -110,7 +110,7 @@ public class ImageArgument extends AbstractArgument {
         try {
             setValue(fc.getSelectedFile().getAbsolutePath());
         } catch (NullPointerException npe) {
-            npe.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

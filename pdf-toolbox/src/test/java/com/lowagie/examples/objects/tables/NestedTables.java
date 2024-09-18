@@ -61,7 +61,7 @@ public class NestedTables {
             // step 5: we close the document
             document.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step5
         document.close();

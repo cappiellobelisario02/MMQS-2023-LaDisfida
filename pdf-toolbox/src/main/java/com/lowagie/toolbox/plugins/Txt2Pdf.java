@@ -145,14 +145,14 @@ public class Txt2Pdf extends AbstractTool {
                 try {
                     in.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
             if(document != null) {
                 try{
                     document.close();
                 }catch (Exception e){
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
         }
@@ -163,10 +163,6 @@ public class Txt2Pdf extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

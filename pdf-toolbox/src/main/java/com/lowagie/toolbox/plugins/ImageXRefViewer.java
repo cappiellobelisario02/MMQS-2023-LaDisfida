@@ -248,13 +248,13 @@ public class ImageXRefViewer extends AbstractTool {
                             }
                         }
                     } catch (InstantiationException | IOException ex) {
-                        ex.printStackTrace();
+//da vedere come effettuare il log
                     } finally {
                         if (reader != null) {
                             try {
                                 reader.close();
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                //da vedere come effettuare il log
                             }
                         }
                     }

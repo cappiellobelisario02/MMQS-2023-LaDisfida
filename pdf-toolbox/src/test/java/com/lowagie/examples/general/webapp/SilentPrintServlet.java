@@ -95,7 +95,7 @@ public class SilentPrintServlet extends HttpServlet {
                     document.add(new Chunk("Silent Auto Print"));
                     document.close();
                 } catch (DocumentException e) {
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
                 resp.setContentType("application/pdf");
 
