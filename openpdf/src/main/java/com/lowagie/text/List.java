@@ -355,7 +355,7 @@ public class List implements TextElementArray {
      * @param nested the nested list to add.
      * @return true if adding the nested list succeeded
      */
-    public boolean add(List nested) {
+    public boolean add(com.lowagie.text.List nested) {
         nested.setIndentationLeft(nested.getIndentationLeft() + symbolIndent);
         first--;
         return listOfListItems.add(nested);
@@ -503,7 +503,7 @@ public class List implements TextElementArray {
      * @param uppercase the uppercase to set
      */
     public static void setLowercase(boolean uppercase) {
-        List.lowercase = uppercase;
+        com.lowagie.text.List.lowercase = uppercase;
     }
 
     /**

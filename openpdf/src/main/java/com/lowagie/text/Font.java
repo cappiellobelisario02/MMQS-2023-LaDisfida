@@ -70,7 +70,7 @@ import java.util.Locale;
  * </BLOCKQUOTE>
  */
 
-public class Font implements Comparable<Font> {
+public class Font implements Comparable<com.lowagie.text.Font> {
 
     // static membervariables for the different families
 
@@ -177,7 +177,7 @@ public class Font implements Comparable<Font> {
      *
      * @param other the font that has to be copied
      */
-    public Font(Font other) {
+    public Font(com.lowagie.text.Font other) {
         this.family = other.family;
         this.size = other.size;
         this.style = other.style;
@@ -332,12 +332,12 @@ public class Font implements Comparable<Font> {
     public static int getFontStyleFromName(final String fontName) {
         String lowerCaseFontName = fontName.toLowerCase(Locale.ROOT);
 
-        int fontStyle = Font.NORMAL;
+        int fontStyle = com.lowagie.text.Font.NORMAL;
         if (lowerCaseFontName.contains("bold")) {
-            fontStyle |= Font.BOLD;
+            fontStyle |= com.lowagie.text.Font.BOLD;
         }
         if (lowerCaseFontName.contains("italic") || lowerCaseFontName.contains("oblique")) {
-            fontStyle |= Font.ITALIC;
+            fontStyle |= com.lowagie.text.Font.ITALIC;
         }
         return fontStyle;
     }
@@ -382,9 +382,9 @@ public class Font implements Comparable<Font> {
         if (object == null) {
             return -1;
         }
-        Font font;
+        com.lowagie.text.Font font;
         try {
-            font = (Font) object;
+            font = (com.lowagie.text.Font) object;
             if (baseFont != null && !baseFont.equals(font.getBaseFont())) {
                 return -2;
             }
@@ -443,15 +443,15 @@ public class Font implements Comparable<Font> {
      */
     public String getFamilyname() {
         switch (getFamily()) {
-            case Font.COURIER:
+            case com.lowagie.text.Font.COURIER:
                 return FontFactory.COURIER;
-            case Font.HELVETICA:
+            case com.lowagie.text.Font.HELVETICA:
                 return FontFactory.HELVETICA;
-            case Font.TIMES_ROMAN:
+            case com.lowagie.text.Font.TIMES_ROMAN:
                 return FontFactory.TIMES_ROMAN;
-            case Font.SYMBOL:
+            case com.lowagie.text.Font.SYMBOL:
                 return FontFactory.SYMBOL;
-            case Font.ZAPFDINGBATS:
+            case com.lowagie.text.Font.ZAPFDINGBATS:
                 return FontFactory.ZAPFDINGBATS;
             default:
                 return getFamilynameFromBaseFont();
@@ -751,7 +751,7 @@ public class Font implements Comparable<Font> {
                 }
                 break;
             default:
-            case Font.HELVETICA:
+            case com.lowagie.text.Font.HELVETICA:
                 switch (Style & BOLDITALIC) {
                     case BOLD:
                         fontName = BaseFont.HELVETICA_BOLD;
@@ -797,7 +797,7 @@ public class Font implements Comparable<Font> {
      * @param font the font of a bigger element class
      * @return a <CODE>Font</CODE>
      */
-    public Font difference(Font font) {
+    public com.lowagie.text.Font difference(com.lowagie.text.Font font) {
         if (font == null) {
             return this;
         }
@@ -826,20 +826,20 @@ public class Font implements Comparable<Font> {
         }
         // family
         if (font.baseFont != null) {
-            return new Font(font.baseFont, dSize, dStyle, dColor);
+            return new com.lowagie.text.Font(font.baseFont, dSize, dStyle, dColor);
         }
         if (font.getFamily() != UNDEFINED) {
-            return new Font(font.family, dSize, dStyle, dColor);
+            return new com.lowagie.text.Font(font.family, dSize, dStyle, dColor);
         }
         if (this.baseFont != null) {
             if (dStyle == style1) {
-                return new Font(this.baseFont, dSize, dStyle, dColor);
+                return new com.lowagie.text.Font(this.baseFont, dSize, dStyle, dColor);
             } else {
                 return FontFactory.getFont(this.getFamilyname(), dSize, dStyle,
                         dColor);
             }
         }
-        return new Font(this.family, dSize, dStyle, dColor);
+        return new com.lowagie.text.Font(this.family, dSize, dStyle, dColor);
     }
 
 }

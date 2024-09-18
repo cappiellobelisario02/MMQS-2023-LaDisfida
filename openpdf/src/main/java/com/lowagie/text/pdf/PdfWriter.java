@@ -1491,7 +1491,7 @@ public class PdfWriter extends DocWriter implements
             makePdfXConformant();
             addExtraCatalog(catalog);
 
-            writeOutlines(catalog, false);
+            writeOutlines(catalog);
             PdfIndirectObject indirectCatalog = addToBody(catalog, false);
             PdfIndirectObject infoObj = addToBody(getInfo(), false);
 
@@ -1691,13 +1691,13 @@ public class PdfWriter extends DocWriter implements
         newBookmarks = outlines;
     }
 
-    protected void writeOutlines(PdfDictionary catalog, boolean namedAsNames) throws IOException {
+    protected void writeOutlines(PdfDictionary catalog) throws IOException {
         if (newBookmarks == null || newBookmarks.isEmpty()) {
             return;
         }
         PdfDictionary top = new PdfDictionary();
         PdfIndirectReference topRef = getPdfIndirectReference();
-        Object[] kids = SimpleBookmark.iterateOutlines(this, topRef, newBookmarks, namedAsNames);
+        Object[] kids = SimpleBookmark.iterateOutlines(this, topRef, newBookmarks);
         top.put(PdfName.FIRST, (PdfIndirectReference) kids[0]);
         top.put(PdfName.LAST, (PdfIndirectReference) kids[1]);
         top.put(PdfName.COUNT, new PdfNumber((Integer) kids[2]));

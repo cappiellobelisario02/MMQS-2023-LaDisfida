@@ -73,8 +73,8 @@ class Type1Font extends BaseFont {
      */
     private static final int[] PFB_TYPES = {1, 2, 1};
     private static FontsResourceAnchor resourceAnchor;
-    private float ItalicAngle;
-    private float CapHeight;
+    private float italicAngleVar;
+    private float capHeightVar;
 
     /**
      * The PFB file if the input was made with a <CODE>byte</CODE> array.
@@ -83,32 +83,32 @@ class Type1Font extends BaseFont {
     /**
      * The Postscript font name.
      */
-    private String FontName;
+    private String fontName;
     /**
      * The full name of the font.
      */
-    private String FullName;
+    private String fullName;
     /**
      * The family name of the font.
      */
-    private String FamilyName;
+    private String familyName;
     /**
      * The weight of the font: normal, bold, etc.
      */
-    private String Weight = "";
+    private String weight = "";
     /**
      * The italic angle of the font, usually 0.0 or negative.
      */
-    private static final int ITALICANGLE = 0;
+    private static final int ITALICANGLE_CONST = 0;
     /**
      * <CODE>true</CODE> if all the characters have the same
      * width.
      */
-    private boolean IsFixedPitch = false;
+    private boolean isFixedPitch = false;
     /**
      * The character set of the font.
      */
-    private String CharacterSet;
+    private String characterSet;
     /**
      * The llx of the FontBox.
      */
@@ -128,40 +128,40 @@ class Type1Font extends BaseFont {
     /**
      * The underline position.
      */
-    private int UnderlinePosition = -100;
+    private int underlinePosition = -100;
     /**
      * The underline thickness.
      */
-    private int UnderlineThickness = 50;
+    private int underlineThickness = 50;
     /**
      * The font's encoding name. This encoding is 'StandardEncoding' or 'AdobeStandardEncoding' for a font that can be
      * totally encoded according to the characters names. For all other names the font is treated as symbolic.
      */
-    private String EncodingScheme = "FontSpecific";
+    private String encodingScheme = "FontSpecific";
     /**
      * A variable.
      */
-    private static final int CAPHEIGHT = 700;
+    private static final int CAPHEIGHT_CONST = 700;
     /**
      * A variable.
      */
-    private int XHeight = 480;
+    private int xHeight = 480;
     /**
      * A variable.
      */
-    private int Ascender = 800;
+    private int ascender = 800;
     /**
      * A variable.
      */
-    private int Descender = -200;
+    private int descender = -200;
     /**
      * A variable.
      */
-    private int StdHW;
+    private int stdHW;
     /**
      * A variable.
      */
-    private int StdVW = 80;
+    private int stdVW = 80;
 
     private static final String DELIMITER = "\u00ff";
 
@@ -170,13 +170,13 @@ class Type1Font extends BaseFont {
      * with an Integer, Integer, String and int[]. This is the code, width, name and char bbox. The key is the name of
      * the char and also an Integer with the char number.
      */
-    private Map<Object, Object[]> CharMetrics = new HashMap<>();
+    private Map<Object, Object[]> charMetrics = new HashMap<>();
     /**
      * Represents the section KernPairs in the AFM file. The key is the name of the first character and the value is a
      * <CODE>Object[]</CODE> with 2 elements for each kern pair. Position 0 is the name of the second character and
      * position 1 is the kerning distance. This is repeated for all the pairs.
      */
-    private Map<String, Object[]> KernPairs = new HashMap<>();
+    private Map<String, Object[]> kernPairs = new HashMap<>();
     /**
      * The file in use.
      */
@@ -282,8 +282,8 @@ class Type1Font extends BaseFont {
     }
 
     private void finalizeEncoding() throws DocumentException {
-        EncodingScheme = EncodingScheme.trim();
-        if (EncodingScheme.equals("AdobeStandardEncoding") || EncodingScheme.equals("StandardEncoding")) {
+        encodingScheme = encodingScheme.trim();
+        if (encodingScheme.equals("AdobeStandardEncoding") || encodingScheme.equals("StandardEncoding")) {
             fontSpecific = false;
         }
         if (!encoding.startsWith("#")) {
@@ -304,12 +304,12 @@ class Type1Font extends BaseFont {
     int getRawWidth(int c, String name) {
         Object[] metrics;
         if (name == null) { // font specific
-            metrics = CharMetrics.get(c);
+            metrics = charMetrics.get(c);
         } else {
             if (name.equals(".notdef")) {
                 return 0;
             }
-            metrics = CharMetrics.get(name);
+            metrics = charMetrics.get(name);
         }
         if (metrics != null) {
             return (Integer) (metrics[1]);
@@ -334,7 +334,7 @@ class Type1Font extends BaseFont {
         if (second == null) {
             return 0;
         }
-        Object[] obj = KernPairs.get(first);
+        Object[] obj = kernPairs.get(first);
         if (obj == null) {
             return 0;
         }
@@ -372,55 +372,55 @@ class Type1Font extends BaseFont {
             String ident = tok.nextToken();
             switch (ident) {
                 case "FontName":
-                    FontName = tok.nextToken(DELIMITER).substring(1);
+                    fontName = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "FullName":
-                    FullName = tok.nextToken(DELIMITER).substring(1);
+                    fullName = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "FamilyName":
-                    FamilyName = tok.nextToken(DELIMITER).substring(1);
+                    familyName = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "Weight":
-                    Weight = tok.nextToken(DELIMITER).substring(1);
+                    weight = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "ItalicAngle":
-                    ItalicAngle = Float.parseFloat(tok.nextToken());
+                    italicAngleVar = Float.parseFloat(tok.nextToken());
                     break;
                 case "IsFixedPitch":
-                    IsFixedPitch = tok.nextToken().equals("true");
+                    isFixedPitch = tok.nextToken().equals("true");
                     break;
                 case "CharacterSet":
-                    CharacterSet = tok.nextToken(DELIMITER).substring(1);
+                    characterSet = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "FontBBox":
                     parseFontBBox(tok);
                     break;
                 case "UnderlinePosition":
-                    UnderlinePosition = (int) Float.parseFloat(tok.nextToken());
+                    underlinePosition = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "UnderlineThickness":
-                    UnderlineThickness = (int) Float.parseFloat(tok.nextToken());
+                    underlineThickness = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "EncodingScheme":
-                    EncodingScheme = tok.nextToken(DELIMITER).substring(1);
+                    encodingScheme = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "CapHeight":
-                    CapHeight = (int) Float.parseFloat(tok.nextToken());
+                    capHeightVar = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "XHeight":
-                    XHeight = (int) Float.parseFloat(tok.nextToken());
+                    xHeight = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "Ascender":
-                    Ascender = (int) Float.parseFloat(tok.nextToken());
+                    ascender = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "Descender":
-                    Descender = (int) Float.parseFloat(tok.nextToken());
+                    descender = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "StdHW":
-                    StdHW = (int) Float.parseFloat(tok.nextToken());
+                    stdHW = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "StdVW":
-                    StdVW = (int) Float.parseFloat(tok.nextToken());
+                    stdVW = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "StartCharMetrics":
                     isMetrics = true;
@@ -462,16 +462,15 @@ class Type1Font extends BaseFont {
             }
 
             if (ident.equals("StartCharMetrics")) {
-                isMetrics = true;
                 continue;
             }
 
             Object[] metrics = parseCharMetrics(line);
-            Integer C = (Integer) metrics[0];
-            if (C >= 0) {
-                CharMetrics.put(C, metrics);
+            Integer c = (Integer) metrics[0];
+            if (c >= 0) {
+                charMetrics.put(c, metrics);
             }
-            CharMetrics.put((String) metrics[2], metrics);
+            charMetrics.put(metrics[2], metrics);
         }
 
         if (isMetrics) {
@@ -479,20 +478,20 @@ class Type1Font extends BaseFont {
                     MessageLocalization.getComposedMessage("missing.endcharmetrics.in.1", fileName));
         }
 
-        if (!CharMetrics.containsKey("nonbreakingspace")) {
-            Object[] space = CharMetrics.get("space");
+        if (!charMetrics.containsKey("nonbreakingspace")) {
+            Object[] space = charMetrics.get("space");
             if (space != null) {
-                CharMetrics.put("nonbreakingspace", space);
+                charMetrics.put("nonbreakingspace", space);
             }
         }
     }
 
     private Object[] parseCharMetrics(String line) {
         StringTokenizer tok = new StringTokenizer(line, ";");
-        Integer C = -1;
-        int WX = 250;
-        String N = "";
-        int[] B = null;
+        int c = -1;
+        int wx = 250;
+        String n = "";
+        int[] b = null;
 
         while (tok.hasMoreTokens()) {
             StringTokenizer tokc = new StringTokenizer(tok.nextToken());
@@ -501,16 +500,16 @@ class Type1Font extends BaseFont {
             String ident = tokc.nextToken();
             switch (ident) {
                 case "C":
-                    C = Integer.valueOf(tokc.nextToken());
+                    c = Integer.parseInt(tokc.nextToken());
                     break;
                 case "WX":
-                    WX = (int) Float.parseFloat(tokc.nextToken());
+                    wx = (int) Float.parseFloat(tokc.nextToken());
                     break;
                 case "N":
-                    N = tokc.nextToken();
+                    n = tokc.nextToken();
                     break;
                 case "B":
-                    B = new int[]{
+                    b = new int[]{
                             Integer.parseInt(tokc.nextToken()),
                             Integer.parseInt(tokc.nextToken()),
                             Integer.parseInt(tokc.nextToken()),
@@ -525,7 +524,7 @@ class Type1Font extends BaseFont {
             }
         }
 
-        return new Object[]{C, WX, N, B};
+        return new Object[]{c, wx, n, b};
     }
 
     private void readKernPairs(RandomAccessFileOrArray rf) throws DocumentException, IOException {
@@ -562,16 +561,16 @@ class Type1Font extends BaseFont {
         String second = tok.nextToken();
         int width = Integer.parseInt(tok.nextToken());
 
-        Object[] relates = KernPairs.get(first);
+        Object[] relates = kernPairs.get(first);
         if (relates == null) {
-            KernPairs.put(first, new Object[]{second, width});
+            kernPairs.put(first, new Object[]{second, width});
         } else {
             int n = relates.length;
             Object[] relates2 = new Object[n + 2];
             System.arraycopy(relates, 0, relates2, 0, n);
             relates2[n] = second;
             relates2[n + 1] = width;
-            KernPairs.put(first, relates2);
+            kernPairs.put(first, relates2);
         }
     }
 
@@ -669,28 +668,28 @@ class Type1Font extends BaseFont {
             return null;
         }
         PdfDictionary dic = new PdfDictionary(PdfName.FONTDESCRIPTOR);
-        dic.put(PdfName.ASCENT, new PdfNumber(Ascender));
-        dic.put(PdfName.CAPHEIGHT, new PdfNumber(CapHeight));
-        dic.put(PdfName.DESCENT, new PdfNumber(Descender));
+        dic.put(PdfName.ASCENT, new PdfNumber(ascender));
+        dic.put(PdfName.CAPHEIGHT, new PdfNumber(capHeightVar));
+        dic.put(PdfName.DESCENT, new PdfNumber(descender));
         dic.put(PdfName.FONTBBOX, new PdfRectangle(llx, lly, urx, ury));
-        dic.put(PdfName.FONTNAME, new PdfName(FontName));
-        dic.put(PdfName.ITALICANGLE, new PdfNumber(ItalicAngle));
-        dic.put(PdfName.STEMV, new PdfNumber(StdVW));
+        dic.put(PdfName.FONTNAME, new PdfName(fontName));
+        dic.put(PdfName.ITALICANGLE, new PdfNumber(italicAngleVar));
+        dic.put(PdfName.STEMV, new PdfNumber(stdVW));
         if (fontStream != null) {
             dic.put(PdfName.FONTFILE, fontStream);
         }
         int flags = 0;
-        if (IsFixedPitch) {
+        if (isFixedPitch) {
             flags |= 1;
         }
         flags |= fontSpecific ? 4 : 32;
-        if (ItalicAngle < 0) {
+        if (italicAngleVar < 0) {
             flags |= 64;
         }
-        if (FontName.contains("Caps") || FontName.endsWith("SC")) {
+        if (fontName.contains("Caps") || fontName.endsWith("SC")) {
             flags |= 131072;
         }
-        if (Weight.equals("Bold")) {
+        if (weight.equals("Bold")) {
             flags |= 262144;
         }
         dic.put(PdfName.FLAGS, new PdfNumber(flags));
@@ -711,7 +710,7 @@ class Type1Font extends BaseFont {
     private PdfDictionary getFontBaseType(PdfIndirectReference fontDescriptor, int firstChar, int lastChar, byte[] shortTag) {
         PdfDictionary dic = new PdfDictionary(PdfName.FONT);
         dic.put(PdfName.SUBTYPE, PdfName.TYPE1);
-        dic.put(PdfName.BASEFONT, new PdfName(FontName));
+        dic.put(PdfName.BASEFONT, new PdfName(fontName));
 
         boolean stdEncoding = isStandardEncoding();
         if (!fontSpecific || specialMap != null) {
@@ -814,20 +813,20 @@ class Type1Font extends BaseFont {
                 shortTag[k] = 1;
             }
         }
-        PdfIndirectReference ind_font = null;
+        PdfIndirectReference indFont = null;
         PdfObject pobj = null;
         PdfIndirectObject obj = null;
         pobj = getFullFontStream();
         if (pobj != null) {
             obj = writer.addToBody(pobj);
-            ind_font = obj.getIndirectReference();
+            indFont = obj.getIndirectReference();
         }
-        pobj = getFontDescriptor(ind_font);
+        pobj = getFontDescriptor(indFont);
         if (pobj != null) {
             obj = writer.addToBody(pobj);
-            ind_font = obj.getIndirectReference();
+            indFont = obj.getIndirectReference();
         }
-        pobj = getFontBaseType(ind_font, firstChar, lastChar, shortTag);
+        pobj = getFontBaseType(indFont, firstChar, lastChar, shortTag);
         writer.addToBody(pobj, ref);
     }
 
@@ -843,16 +842,14 @@ class Type1Font extends BaseFont {
      */
     public float getFontDescriptor(int key, float fontSize) {
         switch (key) {
-            case AWT_ASCENT:
-            case ASCENT:
-                return Ascender * fontSize / 1000;
-            case CAPHEIGHT:
-                return CapHeight * fontSize / 1000;
-            case AWT_DESCENT:
-            case DESCENT:
-                return Descender * fontSize / 1000;
-            case ITALICANGLE:
-                return ItalicAngle;
+            case AWT_ASCENT, ASCENT:
+                return ascender * fontSize / 1000;
+            case CAPHEIGHT_CONST:
+                return capHeightVar * fontSize / 1000;
+            case AWT_DESCENT, DESCENT:
+                return descender * fontSize / 1000;
+            case ITALICANGLE_CONST:
+                return italicAngleVar;
             case BBOXLLX:
                 return llx * fontSize / 1000;
             case BBOXLLY:
@@ -866,9 +863,9 @@ class Type1Font extends BaseFont {
             case AWT_MAXADVANCE:
                 return (urx - llx) * fontSize / 1000;
             case UNDERLINE_POSITION:
-                return UnderlinePosition * fontSize / 1000;
+                return underlinePosition * fontSize / 1000;
             case UNDERLINE_THICKNESS:
-                return UnderlineThickness * fontSize / 1000;
+                return underlineThickness * fontSize / 1000;
             default:
                 // Log a message or handle the unexpected identifier
                 System.err.println("Unexpected identifier: " + key);
@@ -884,7 +881,7 @@ class Type1Font extends BaseFont {
      * @return the postscript font name
      */
     public String getPostscriptFontName() {
-        return FontName;
+        return fontName;
     }
 
     /**
@@ -894,7 +891,7 @@ class Type1Font extends BaseFont {
      * @param name the new font name
      */
     public void setPostscriptFontName(String name) {
-        FontName = name;
+        fontName = name;
     }
 
     /**
@@ -906,7 +903,7 @@ class Type1Font extends BaseFont {
      * @return the full name of the font
      */
     public String[][] getFullFontName() {
-        return new String[][]{{"", "", "", FullName}};
+        return new String[][]{{"", "", "", fullName}};
     }
 
     /**
@@ -918,7 +915,7 @@ class Type1Font extends BaseFont {
      * @return the full name of the font
      */
     public String[][] getAllNameEntries() {
-        return new String[][]{{"4", "", "", "", FullName}};
+        return new String[][]{{"4", "", "", "", fullName}};
     }
 
     /**
@@ -930,7 +927,7 @@ class Type1Font extends BaseFont {
      * @return the family name of the font
      */
     public String[][] getFamilyFontName() {
-        return new String[][]{{"", "", "", FamilyName}};
+        return new String[][]{{"", "", "", familyName}};
     }
 
     /**
@@ -939,7 +936,7 @@ class Type1Font extends BaseFont {
      * @return <CODE>true</CODE> if the font has any kerning pairs
      */
     public boolean hasKernPairs() {
-        return !KernPairs.isEmpty();
+        return !kernPairs.isEmpty();
     }
 
     /**
@@ -959,10 +956,10 @@ class Type1Font extends BaseFont {
         if (second == null) {
             return false;
         }
-        Object[] obj = KernPairs.get(first);
+        Object[] obj = kernPairs.get(first);
         if (obj == null) {
             obj = new Object[]{second, kern};
-            KernPairs.put(first, obj);
+            kernPairs.put(first, obj);
             return true;
         }
         for (int k = 0; k < obj.length; k += 2) {
@@ -976,19 +973,19 @@ class Type1Font extends BaseFont {
         System.arraycopy(obj, 0, obj2, 0, size);
         obj2[size] = second;
         obj2[size + 1] = kern;
-        KernPairs.put(first, obj2);
+        kernPairs.put(first, obj2);
         return true;
     }
 
     protected int[] getRawCharBBox(int c, String name) {
         Object[] metrics;
         if (name == null) { // font specific
-            metrics = CharMetrics.get(c);
+            metrics = charMetrics.get(c);
         } else {
             if (name.equals(".notdef")) {
                 return new int[]{};
             }
-            metrics = CharMetrics.get(name);
+            metrics = charMetrics.get(name);
         }
         if (metrics != null) {
             return ((int[]) (metrics[3]));

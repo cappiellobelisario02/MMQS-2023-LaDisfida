@@ -221,8 +221,8 @@ public class HtmlWriter extends DocWriter {
      * @param os       The <CODE>OutputStream</CODE> the writer has to write to.
      * @return a new <CODE>HtmlWriter</CODE>
      */
-    public static HtmlWriter getInstance(Document document, OutputStream os) {
-        return new HtmlWriter(document, os);
+    public static com.lowagie.text.html.HtmlWriter getInstance(Document document, OutputStream os) {
+        return new com.lowagie.text.html.HtmlWriter(document, os);
     }
 
     // implementation of the DocListener methods

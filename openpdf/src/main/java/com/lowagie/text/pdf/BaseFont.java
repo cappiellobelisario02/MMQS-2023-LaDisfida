@@ -942,7 +942,7 @@ public abstract class BaseFont {
                 is = contextClassLoader.getResourceAsStream(key);
             }
         }  catch (Exception e) {
-            throw new DocumentException(e);
+                throw new DocumentException(e);
         }
 
         if (is == null) {

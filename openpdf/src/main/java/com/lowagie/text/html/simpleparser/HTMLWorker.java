@@ -89,7 +89,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
 
     private static final String TABLE_KEY = "table";
 
-        public static final String TAGS_SUPPORTED_STRING =
+    public static final String TAGS_SUPPORTED_STRING =
             "ol ul li a pre font span br p div body table td th tr i b u sub sup em strong s strike"
                     + " h1 h2 h3 h4 h5 h6 img hr";
     protected static final Map<String, Object> tagsSupported = new HashMap<>();
@@ -171,7 +171,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
 
     public static ArrayList<Element> parseToList(Reader reader, StyleSheet style, Map<String, Object> interfaceProps)
             throws IOException {
-        HTMLWorker worker = new HTMLWorker(null);
+        com.lowagie.text.html.simpleparser.HTMLWorker worker = new com.lowagie.text.html.simpleparser.HTMLWorker(null);
         if (style != null) {
             worker.style = style;
         }

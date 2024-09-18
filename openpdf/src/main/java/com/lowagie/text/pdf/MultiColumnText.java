@@ -648,7 +648,7 @@ public class MultiColumnText implements Element {
             }
             if (top == AUTOMATIC) {
                 // this is bad - must be programmer error
-                throw new InvalidTopPositionException("resolvePositions called with top=AUTOMATIC (-1). Top position must be set before lines can be resolved.");
+                   throw new InvalidTopPositionException("resolvePositions called with top=AUTOMATIC (-1). Top position must be set before lines can be resolved.");
             }
             positions[1] = top;
             positions[3] = getColumnBottom();

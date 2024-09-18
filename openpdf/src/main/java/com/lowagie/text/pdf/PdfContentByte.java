@@ -1390,8 +1390,8 @@ public class PdfContentByte {
         float[] matrix = image.matrix();
         matrix[Image.CX] = image.getAbsoluteX() - matrix[Image.CX];
         matrix[Image.CY] = image.getAbsoluteY() - matrix[Image.CY];
-        TransformationMatrix transformationMatrix = new TransformationMatrix(matrix[0], matrix[1], matrix[2],
-                matrix[3], matrix[4], matrix[5]);
+        TransformationMatrix transformationMatrix = new TransformationMatrix(matrix[0], matrix[1], matrix[2], 
+            matrix[3], matrix[4], matrix[5]);
         addImage(image, transformationMatrix, inlineImage);
     }
 
@@ -2666,7 +2666,7 @@ public class PdfContentByte {
         checkWriter();
         if (!p.isStencil()) {
             throw new InvalidColorTypeException(
-                    MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
+                MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
         }
         saveColorFill(new RGBColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
         PageResources prs = getPageResources();
@@ -2704,7 +2704,7 @@ public class PdfContentByte {
         checkWriter();
         if (!p.isStencil()) {
             throw new InvalidColorTypeException(
-                    MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
+                MessageLocalization.getComposedMessage("an.uncolored.pattern.was.expected"));
         }
         saveColorStroke(new PatternColor(p));
         PageResources prs = getPageResources();

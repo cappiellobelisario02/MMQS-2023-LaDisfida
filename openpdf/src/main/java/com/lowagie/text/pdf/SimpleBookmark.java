@@ -54,6 +54,7 @@ import com.lowagie.text.xml.simpleparser.IanaEncodings;
 import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
 import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
 import org.apache.fop.fo.pagination.bookmarks.Bookmark;
+import java.awt.print.Book;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +64,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -534,10 +536,17 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
 
     public static Object[] iterateOutlines(PdfWriter writer, PdfIndirectReference parent,
             List<Map<String, Object>> kids, boolean namedAsNames) throws IOException {
+
+        // Gestisci il caso in cui la lista kids è vuota
+        if (kids == null || kids.isEmpty()) {
+            return new Object[]{null, null, 0}; // Array vuoto, nessun riferimento e conteggio a 0
+        }
+
         PdfIndirectReference[] refs = new PdfIndirectReference[kids.size()];
         for (int k = 0; k < refs.length; ++k) {
             refs[k] = writer.getPdfIndirectReference();
         }
+
         int ptr = 0;
         int count = 0;
         for (Iterator<Map<String, Object>> it = kids.listIterator(); it.hasNext(); ++ptr) {
@@ -552,8 +561,12 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
             writer.addToBody(outline, refs[ptr]);
             count += extractCount(lower, map);
         }
-        return new Object[]{refs[0], refs[refs.length - 1], count};
+
+        // Verifica che refs abbia almeno un elemento prima di restituirlo
+        return new Object[]{refs.length > 0 ? refs[0] : null, refs.length > 0 ? refs[refs.length - 1] : null, count};
     }
+
+
 
     private static PdfDictionary createOutline(PdfWriter writer, PdfIndirectReference parent,
             PdfIndirectReference[] refs, int ptr, Map<String, Object> map, Object[] lower) {
@@ -641,9 +654,10 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
      */
     public static void exportToXMLNode(List<Bookmark> list, Writer out, int indent, boolean onlyASCII) throws IOException {
         String indentation = createIndentation(indent);
+        Map<String, Bookmark> map = new HashMap<>();
         for (Bookmark item : list) {
-            Map<?, ?> map = (Map<?, ?>) item;
-            List<?> kids = processMapEntries(map, out, indentation, onlyASCII);
+            map.put(item.getBookmarkTitle(), item);
+            List<Bookmark> kids = processMapEntries(map, out, indentation, onlyASCII);
             writeTitleAndChildren(out, map, indentation, kids, indent, onlyASCII);
         }
     }
@@ -652,23 +666,22 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
         return "  ".repeat(Math.max(0, indent));
     }
 
-    private static List<?> processMapEntries(Map<?, ?> map, Writer out, String indentation, boolean onlyASCII) throws IOException {
-        String title = null;
-        List<?> kids = null;
+    private static List<String> processMapEntries(Map<String, String> map, Writer out, String indentation,
+            boolean onlyASCII) throws IOException {
+        List<String> kids = null;
 
         out.write(indentation);
         out.write("<Title ");
 
-        for (Entry<?, ?> entry : map.entrySet()) {
-            String key = (String) entry.getKey();
-            String value = (String) entry.getValue();
+        for (Entry<String, String> entry : map.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
 
             switch (key) {
                 case TITLE:
-                    title = value;
                     break;
                 case "Kids":
-                    kids = (List<?>) value;
+                    kids = Collections.singletonList(value);
                     break;
                 default:
                     writeAttribute(out, key, value, onlyASCII);
@@ -692,7 +705,8 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
         out.write("\" ");
     }
 
-    private static void writeTitleAndChildren(Writer out, Map<?, ?> map, String indentation, List<?> kids, int indent, boolean onlyASCII) throws IOException {
+    private static void writeTitleAndChildren(Writer out, Map<?, ?> map, String indentation, List<Bookmark> kids, int indent
+            , boolean onlyASCII) throws IOException {
         String title = (String) map.getOrDefault(TITLE, "");
         out.write(XMLUtil.escapeXML(title, onlyASCII));
 

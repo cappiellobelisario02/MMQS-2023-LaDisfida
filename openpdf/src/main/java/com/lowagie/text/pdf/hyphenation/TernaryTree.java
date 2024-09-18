@@ -16,6 +16,7 @@
 
 package com.lowagie.text.pdf.hyphenation;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -62,6 +63,7 @@ public class TernaryTree implements Serializable {
      * collection! And now is kind of late, furthermore, if it ain't broken, don't fix it.
      */
 
+    @Serial
     private static final long serialVersionUID = 5313366505322983510L;
     /**
      * Pointer to low branch and to rest of the key when it is stored directly in this node, we don't have unions in
@@ -209,39 +211,47 @@ public class TernaryTree implements Serializable {
         int len = strlen(key, start);
 
         if (p == 0) {
-            return createNewNode(p, key, start, val, len);
+            return createNewNode(key, start, val, len);
+        }
+
+        // Check if start is within the bounds of the key array
+        if (start >= key.length) {
+            // Handle the case where start is out of bounds (e.g., return p or throw an exception)
+            throw new ArrayIndexOutOfBoundsException();
         }
 
         if (sc[p] == 0xFFFF && len == 0) {
-                return p;
-            }
+            return p;
+        }
 
         char s = key[start];
         if (s < sc[p]) {
             lo[p] = insert(lo[p], key, start, val);
-        }else {
+        } else {
             hi[p] = insert(hi[p], key, start, val);
         }
 
         return p;
     }
 
-    private char createNewNode(char p, char[] key, int start, char val, int len) {
-        p = freenode++;
-        eq[p] = val;
+
+    private char createNewNode(char[] key, int start, char val, int len) {
+        char newNode = freenode++;  // New variable for the node
+        eq[newNode] = val;
         length++;
-        hi[p] = 0;
+        hi[newNode] = 0;
 
         if (len > 0) {
-            sc[p] = 0xFFFF;  // indicates branch is compressed
-            lo[p] = (char) kv.alloc(len + 1);  // use 'lo' to hold pointer to key
-            strcpy(kv.getArray(), lo[p], key, start);
+            sc[newNode] = 0xFFFF;  // Indicates branch is compressed
+            lo[newNode] = (char) kv.alloc(len + 1);  // Use 'lo' to hold pointer to key
+            strcpy(kv.getArray(), lo[newNode], key, start);
         } else {
-            sc[p] = 0;
-            lo[p] = 0;
+            sc[newNode] = 0;
+            lo[newNode] = 0;
         }
-        return p;
+        return newNode;
     }
+
 
     public int find(String key) {
         int len = key.length();
@@ -289,7 +299,7 @@ public class TernaryTree implements Serializable {
 
     // redimension the arrays
     private void redimNodeArrays(int newsize) {
-        int len = newsize < lo.length ? newsize : lo.length;
+        int len = Math.min(newsize, lo.length);
         char[] na = new char[newsize];
         System.arraycopy(lo, 0, na, 0, len);
         lo = na;
@@ -492,7 +502,7 @@ public class TernaryTree implements Serializable {
             int res = 0;
             boolean climb = true;
 
-            while (climb && !ns.isEmpty()) {
+            while (climb) {
                 com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator.Item i = ns.pop();
                 i.child++;
 
@@ -512,7 +522,7 @@ public class TernaryTree implements Serializable {
                     case 2:
                         res = hi[i.parent];
                         ns.push(new com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator.Item(i));  // Usa il costruttore di copia
-                        if (ks.length() > 0) {
+                        if (!ks.isEmpty()) {
                             ks.setLength(ks.length() - 1);    // pop
                         }
                         climb = false;

@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the License.
  *
  * The Original Code is 'iText, a free JAVA-PDF library'.
- *
+ * 
  * The Initial Developer of the Original Code is Bruno Lowagie. Portions created by
  * the Initial Developer are Copyright (C) 1999, 2000, 2001, 2002 by Bruno Lowagie.
  * All Rights Reserved.
@@ -1439,7 +1439,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
             strings.clear();
             readPages();
-
+            
             removeUnusedObjects();
         } finally {
             try {

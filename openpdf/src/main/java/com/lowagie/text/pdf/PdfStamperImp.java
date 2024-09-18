@@ -283,8 +283,8 @@ class PdfStamperImp extends PdfWriter {
         markUsed(pages);
 
         PdfObject acroFormObject = PdfReader.getPdfObject(catalog.get(PdfName.ACROFORM), reader.getCatalog());
-        if (acroFormObject instanceof PdfDictionary) {
-            handleAcroForm((PdfDictionary) acroFormObject);
+        if (acroFormObject instanceof PdfDictionary acroformDict) {
+            handleAcroForm(acroformDict);
         }
 
         addSharedObjectsToBody();
@@ -345,7 +345,6 @@ class PdfStamperImp extends PdfWriter {
     }
 
     private void handleMetadata(Map<String, String> moreInfo) throws IOException {
-        PdfDictionary oldInfo = getOldInfo();
         String producer = getProducer(moreInfo);
         PdfStream xmp = prepareXMP(producer);
 
@@ -478,7 +477,7 @@ class PdfStamperImp extends PdfWriter {
         PdfIndirectReference root = new PdfIndirectReference(0, getNewObjectNumber(reader, ((PRIndirectReference) reader.trailer.get(PdfName.ROOT)).getNumber(), 0));
         PdfDictionary info = getInfoDictionary(getOldInfo(), new PdfDate(modificationDate), getProducer(null), null);
         PdfIndirectReference infoRef = addToBody(info, false).getIndirectReference();
-        body.writeCrossReferenceTable(os, root, infoRef, getEncryptionRef(), getFileID(), prevxref);
+        body.writeCrossReferenceTable(os, root, infoRef, getEncryptionRef(), getFileIDPSI(), prevxref);
         os.write(getISOBytes("startxref\n"));
         os.write(getISOBytes(String.valueOf(body.offset())));
         os.write(getISOBytes("\n%%EOF\n"));
@@ -504,7 +503,7 @@ class PdfStamperImp extends PdfWriter {
         return null;
     }
 
-    private PdfObject getFileID() {
+    private PdfObject getFileIDPSI() {
         if (crypto != null && includeFileID) {
             byte[] fileIDPartTwo = overrideFileId != null ? PdfEncryption.getFileIdChangingPart(overrideFileId) : PdfEncryption.createDocumentId();
             return PdfEncryption.createInfoId(crypto.documentID, fileIDPartTwo);
@@ -1270,7 +1269,7 @@ class PdfStamperImp extends PdfWriter {
 
         if (areReferencesEqual(ran, ran2)) {
             annotsList.add(ran);
-            handleWidgetReferences(ran, ran2, acroFds);
+            handleWidgetReferences(ran2, acroFds);
         }
     }
 
@@ -1279,7 +1278,7 @@ class PdfStamperImp extends PdfWriter {
                 ((PRIndirectReference) ran).getNumber() == ((PRIndirectReference) ran2).getNumber();
     }
 
-    private void handleWidgetReferences(PdfObject ran, PdfObject ran2, PdfArray acroFds) {
+    private void handleWidgetReferences(PdfObject ran2, PdfArray acroFds) {
         PRIndirectReference wdref = (PRIndirectReference) ran2;
 
         while (true) {
@@ -1409,7 +1408,7 @@ class PdfStamperImp extends PdfWriter {
     }
 
     private boolean isValidAnnotation(PdfObject annoto) {
-        return annoto instanceof PdfDictionary && ((PdfDictionary) annoto).get(PdfName.SUBTYPE) != null;
+        return annoto instanceof PdfDictionary annotoDict && annotoDict.get(PdfName.SUBTYPE) != null;
     }
 
     private boolean isFreeTextAnnotation(PdfDictionary annDic) {
@@ -1876,7 +1875,7 @@ class PdfStamperImp extends PdfWriter {
         }
         PdfDictionary catalog = reader.getCatalog();
         boolean namedAsNames = (catalog.get(PdfName.DESTS) != null);
-        writeOutlines(catalog, namedAsNames);
+        writeOutlines(catalog);
         markUsed(catalog);
     }
 
@@ -2253,7 +2252,7 @@ class PdfStamperImp extends PdfWriter {
         Map<String, PdfLayer> map = new HashMap<>();
         PdfLayer layer;
         String key;
-        for (Object o : documentOCG) {
+        for (PdfOCG o : documentOCG) {
             layer = (PdfLayer) o;
             if (layer.getTitle() == null) {
                 key = layer.getAsString(PdfName.NAME).toString();

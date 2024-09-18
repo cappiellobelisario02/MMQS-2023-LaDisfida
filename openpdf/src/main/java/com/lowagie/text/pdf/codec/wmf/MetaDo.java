@@ -55,6 +55,7 @@ import com.lowagie.text.Image;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfLister;
 import java.awt.Color;
 import java.awt.Point;
 import java.io.ByteArrayOutputStream;
@@ -63,6 +64,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class MetaDo {
 
@@ -134,9 +136,27 @@ public class MetaDo {
     public static final int META_CREATEFONTINDIRECT = 0x02FB;
     public static final int META_CREATEBRUSHINDIRECT = 0x02FC;
     public static final int META_CREATEREGION = 0x06FF;
+    static Logger logger = Logger.getLogger(MetaDo.class.getName());
 
-    public PdfContentByte cb;
-    public InputMeta in;
+    private PdfContentByte cb;
+
+    public InputMeta getIn() {
+        return in;
+    }
+
+    public void setIn(InputMeta in) {
+        this.in = in;
+    }
+
+    public PdfContentByte getCb() {
+        return cb;
+    }
+
+    public void setCb(PdfContentByte cb) {
+        this.cb = cb;
+    }
+
+    private InputMeta in;
     int left;
     int top;
     int right;
@@ -161,17 +181,20 @@ public class MetaDo {
         if (image.getOriginalType() != Image.ORIGINAL_BMP) {
             throw new IOException(MessageLocalization.getComposedMessage("only.bmp.can.be.wrapped.in.wmf"));
         }
-        InputStream imgIn;
+        InputStream imgIn = null;
         byte[] data = null;
         if (image.getOriginalData() == null) {
             try{
                 imgIn = image.getUrl().openStream();
             } catch(Exception e){
-                System.out.print("ERROR image.getUrl().openStream() >> ");
+                logger.warning("ERROR image.getUrl().openStream() >> ");
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             int b = 0;
-            while ((b = imgIn.read()) != -1) {
+            while (true) {
+                assert imgIn != null;
+                if ((b = imgIn.read()) == -1)
+                    break;
                 out.write(b);
             }
             imgIn.close();
@@ -284,12 +307,9 @@ public class MetaDo {
 
     private void processMetaFunction(int function) throws IOException {
         switch (function) {
-            case 0:
-                // No operation
-                break;
-            case META_CREATEPALETTE:
-            case META_CREATEREGION:
-            case META_DIBCREATEPATTERNBRUSH:
+            case META_CREATEPALETTE,
+                 META_CREATEREGION,
+                 META_DIBCREATEPATTERNBRUSH:
                 state.addMetaObject(new MetaObject());
                 break;
             case META_CREATEPENINDIRECT:
@@ -297,8 +317,8 @@ public class MetaDo {
                 pen.init(in);
                 state.addMetaObject(pen);
                 break;
-            case META_CREATEBRUSHINDIRECT:
-            case META_CREATEFONTINDIRECT:
+            case META_CREATEBRUSHINDIRECT,
+                 META_CREATEFONTINDIRECT:
                 MetaObject obj = (function == META_CREATEBRUSHINDIRECT) ? new MetaBrush() : new MetaFont();
                 obj.init(in);
                 state.addMetaObject(obj);
@@ -359,8 +379,8 @@ public class MetaDo {
             case META_INTERSECTCLIPRECT:
                 intersectClipRect();
                 break;
-            case META_EXTTEXTOUT:
-            case META_TEXTOUT:
+            case META_EXTTEXTOUT,
+                 META_TEXTOUT:
                 outputText(in.readShort(), in.readShort(), readText());
                 break;
             case META_SETBKCOLOR:
@@ -381,8 +401,8 @@ public class MetaDo {
             case META_SETPIXEL:
                 drawPixel();
                 break;
-            case META_DIBSTRETCHBLT:
-            case META_STRETCHDIB:
+            case META_DIBSTRETCHBLT,
+                 META_STRETCHDIB:
                 // Not implemented
                 break;
             default:

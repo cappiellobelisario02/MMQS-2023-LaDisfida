@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * This will parser a CMap stream.
@@ -50,6 +51,7 @@ public class CMapParser {
     private static final String MARK_END_OF_ARRAY = "]";
 
     private byte[] tokenParserByteBuffer = new byte[512];
+    static Logger logger = Logger.getLogger(CMapParser.class.getName());
 
     /**
      * Creates a new instance of CMapParser.
@@ -66,12 +68,13 @@ public class CMapParser {
      */
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
-            System.err.println("usage: java org.pdfbox.cmapparser.CMapParser <CMAP File>");
+            logger.warning("usage: java org.pdfbox.cmapparser.CMapParser <CMAP File>");
             System.exit(-1);
         }
         com.lowagie.text.pdf.fonts.cmaps.CMapParser parser = new com.lowagie.text.pdf.fonts.cmaps.CMapParser();
         CMap result = parser.parse(new FileInputStream(args[0]));
-        System.out.println("Result:" + result);
+        String stringToLog = "Result: " + result;
+        logger.warning(stringToLog);
     }
 
     /**
@@ -88,8 +91,8 @@ public class CMapParser {
         Object token = null;
 
         while ((token = parseNextToken(cmapStream)) != null) {
-            if (token instanceof com.lowagie.text.pdf.fonts.cmaps.CMapParser.Operator) {
-                handleOperator((com.lowagie.text.pdf.fonts.cmaps.CMapParser.Operator) token, previousToken, cmapStream, result);
+            if (token instanceof com.lowagie.text.pdf.fonts.cmaps.CMapParser.Operator operator) {
+                handleOperator(operator, previousToken, cmapStream, result);
             }
             previousToken = token;
         }
@@ -134,12 +137,11 @@ public class CMapParser {
     }
 
     private void addMappingForBaseFontChar(CMap result, byte[] inputCode, Object nextToken) throws IOException {
-        if (nextToken instanceof byte[]) {
-            byte[] bytes = (byte[]) nextToken;
-            String value = createStringFromBytes(bytes);
+        if (nextToken instanceof byte[] bytesArr) {
+            String value = createStringFromBytes(bytesArr);
             result.addMapping(inputCode, value);
-        } else if (nextToken instanceof com.lowagie.text.pdf.fonts.cmaps.CMapParser.LiteralName) {
-            result.addMapping(inputCode, ((com.lowagie.text.pdf.fonts.cmaps.CMapParser.LiteralName) nextToken).name);
+        } else if (nextToken instanceof com.lowagie.text.pdf.fonts.cmaps.CMapParser.LiteralName literalName) {
+            result.addMapping(inputCode, literalName.name);
         } else {
             throw new IOException(MessageLocalization.getComposedMessage(
                     "error.parsing.cmap.beginbfchar.expected.cosstring.or.cosname.and.not.1",
@@ -161,8 +163,8 @@ public class CMapParser {
         List<Object> array = null;
         byte[] tokenBytes = null;
 
-        if (nextToken instanceof List) {
-            array = (List) nextToken;
+        if (nextToken instanceof List listToken) {
+            array = listToken;
             tokenBytes = (byte[]) array.get(0);
         } else {
             tokenBytes = (byte[]) nextToken;
@@ -275,9 +277,9 @@ public class CMapParser {
     private Map<String, Object> parseDictionary(PushbackInputStream is) throws IOException {
         Map<String, Object> result = new HashMap<>();
         Object key = parseNextToken(is);
-        while (key instanceof com.lowagie.text.pdf.fonts.cmaps.CMapParser.LiteralName && key != MARK_END_OF_DICTIONARY) {
+        while (key instanceof com.lowagie.text.pdf.fonts.cmaps.CMapParser.LiteralName literalName && key != MARK_END_OF_DICTIONARY) {
             Object value = parseNextToken(is);
-            result.put(((com.lowagie.text.pdf.fonts.cmaps.CMapParser.LiteralName) key).name, value);
+            result.put(literalName.name, value);
             key = parseNextToken(is);
         }
         return result;
@@ -368,7 +370,7 @@ public class CMapParser {
         }
     }
 
-    private String createStringFromBytes(byte[] bytes) throws IOException {
+    private String createStringFromBytes(byte[] bytes) {
         String retval = null;
         if (bytes.length == 1) {
             retval = new String(bytes);
@@ -410,12 +412,9 @@ public class CMapParser {
     /**
      * Internal class.
      */
-    private class Operator {
+    private static class Operator {
 
         private String op;
 
-        private Operator(String theOp) {
-            op = theOp;
-        }
     }
 }

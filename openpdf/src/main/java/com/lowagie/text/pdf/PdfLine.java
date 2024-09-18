@@ -185,7 +185,7 @@ public class PdfLine {
 
         // Process empty lines
         if (line.isEmpty()) {
-            return handleEmptyLine(chunk, overflow);
+            return handleEmptyLine(overflow);
         }
 
         // Adjust width and return overflow
@@ -224,9 +224,9 @@ public class PdfLine {
         return overflow;
     }
 
-    private PdfChunk handleEmptyLine(PdfChunk chunk, PdfChunk overflow) {
+    private PdfChunk handleEmptyLine(PdfChunk overflow) {
         if (overflow != null) {
-            chunk = overflow;
+            PdfChunk chunk = overflow;
             overflow = chunk.truncate(width);
             width -= chunk.width();
 

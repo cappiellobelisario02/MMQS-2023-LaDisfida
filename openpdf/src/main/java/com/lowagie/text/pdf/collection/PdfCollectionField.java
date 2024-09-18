@@ -45,7 +45,7 @@ public class PdfCollectionField extends PdfDictionary {
     /**
      * A possible type of collection field.
      */
-    public static final int SIZE = 7;
+    public static final int SIZE_CONST = 7;
 
     /**
      * The type of the PDF collection field.
@@ -83,7 +83,7 @@ public class PdfCollectionField extends PdfDictionary {
             case CREATIONDATE:
                 put(PdfName.SUBTYPE, PdfName.CREATIONDATE);
                 break;
-            case SIZE:
+            case SIZE_CONST:
                 put(PdfName.SUBTYPE, PdfName.SIZE);
                 break;
             default:
@@ -125,14 +125,10 @@ public class PdfCollectionField extends PdfDictionary {
      * @return true if it is a Collection item, false otherwise
      */
     public boolean isCollectionItem() {
-        switch (fieldType) {
-            case TEXT:
-            case DATE:
-            case NUMBER:
-                return true;
-            default:
-                return false;
-        }
+        return switch (fieldType) {
+            case TEXT, DATE, NUMBER -> true;
+            default -> false;
+        };
     }
 
     /**
