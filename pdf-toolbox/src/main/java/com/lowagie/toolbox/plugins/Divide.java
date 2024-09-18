@@ -107,44 +107,36 @@ public class Divide extends AbstractTool {
         Document document = null;
         try {
             if (getValue(SRCFILE_ARGUMENT_NAME) == null) {
-                throw new InstantiationException(
-                        "You need to choose a sourcefile");
+                throw new InstantiationException("You need to choose a sourcefile");
             }
             File src = (File) getValue(SRCFILE_ARGUMENT_NAME);
+
             if (getValue(DESTFILE) == null) {
-                throw new InstantiationException(
-                        "You need to choose a destination file");
+                throw new InstantiationException("You need to choose a destination file");
             }
             File dest = (File) getValue(DESTFILE);
 
-            // we create a reader for a certain document
-            /*PdfReader reader*/
-            try{
-                reader = new PdfReader(src.getAbsolutePath());
-            } catch (Exception e){
-                //da vedere come effettuare il log
-            }
-            // we retrieve the total number of pages and the page size
-            int total = reader.getNumberOfPages();
-            System.out.println("There are " + total
-                    + " pages in the original file.");
+            // Create PdfReader with the extracted method
+            reader = createPdfReader(src);
 
+            // Retrieve the total number of pages
+            int total = reader.getNumberOfPages();
+            logger.info("There are " + total + " pages in the original file.");  // Replaced System.out.println with logger
+
+            // Get page size and create a new size for the document
             Rectangle pageSize = reader.getPageSize(1);
-            Rectangle newSize = new Rectangle(pageSize.getWidth() / 2, pageSize
-                    .getHeight());
-            // step 1: creation of a document-object
-            /*Document document */
-            try{
-                document = new Document(newSize, 0, 0, 0, 0);
-            } catch (Exception e){
-                //da vedere come effettuare il log
-            }
-            // step 2: we create a writer that listens to the document
-            PdfWriter writer = PdfWriter.getInstance(document,
-                    new FileOutputStream(dest));
-            // step 3: we open the document
+            Rectangle newSize = new Rectangle(pageSize.getWidth() / 2, pageSize.getHeight());
+
+            // Create Document with the extracted method
+            document = createDocument(newSize);
+
+            // Create PdfWriter that listens to the document
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(dest));
+
+            // Open the document
             document.open();
-            // step 4: adding the content
+
+            // Add content to the document
             PdfContentByte cb = writer.getDirectContent();
             PdfImportedPage page;
             float offsetX, offsetY;
@@ -154,23 +146,48 @@ public class Divide extends AbstractTool {
                 pageSize = reader.getPageSize(p);
                 newSize = new Rectangle(pageSize.getWidth() / 2, pageSize.getHeight());
 
+                // Add the left half of the page
                 document.newPage();
                 offsetX = 0;
                 offsetY = 0;
                 page = writer.getImportedPage(reader, p);
                 cb.addTemplate(page, 1, 0, 0, 1, offsetX, offsetY);
+
+                // Add the right half of the page
                 document.newPage();
                 offsetX = -newSize.getWidth();
                 offsetY = 0;
                 page = writer.getImportedPage(reader, p);
                 cb.addTemplate(page, 1, 0, 0, 1, offsetX, offsetY);
-
             }
-            // step 5: we close the document
+
+            // Close the document
             document.close();
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.info(e.getMessage());  // Logging the exception
         }
+    }
+
+    // Method to handle PdfReader instantiation
+    private PdfReader createPdfReader(File src) {
+        PdfReader reader = null;
+        try {
+            reader = new PdfReader(src.getAbsolutePath());
+        } catch (Exception e) {
+            logger.info("Failed to create PdfReader: " + e.getMessage());
+        }
+        return reader;
+    }
+
+    // Method to handle Document creation
+    private Document createDocument(Rectangle newSize) {
+        Document document = null;
+        try {
+            document = new Document(newSize, 0, 0, 0, 0);
+        } catch (Exception e) {
+            logger.info("Failed to create Document: " + e.getMessage());
+        }
+        return document;
     }
 
     /**
