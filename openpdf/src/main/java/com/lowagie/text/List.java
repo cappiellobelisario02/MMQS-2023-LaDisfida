@@ -145,7 +145,7 @@ public class List implements TextElementArray {
     /**
      * a possible value for the lettered parameter
      */
-    public static boolean lowercase = true;
+    protected static boolean lowercase = true;
 
     // member variables
 
@@ -327,8 +327,7 @@ public class List implements TextElementArray {
      * @return true if adding the element succeeded
      */
     public boolean add(Element o) {
-        if (o instanceof ListItem) {
-            ListItem item = (ListItem) o;
+        if (o instanceof ListItem oListItem) {
             if (numbered || lettered) {
                 Chunk chunk = new Chunk(preSymbol, symbol.getFont());
                 int index = first + listOfListItems.size();
@@ -338,13 +337,13 @@ public class List implements TextElementArray {
                     chunk.append(String.valueOf(index));
                 }
                 chunk.append(postSymbol);
-                item.setListSymbol(chunk);
+                oListItem.setListSymbol(chunk);
             } else {
-                item.setListSymbol(symbol);
+                oListItem.setListSymbol(symbol);
             }
-            item.setIndentationLeft(symbolIndent, autoindent);
-            item.setIndentationRight(0);
-            return listOfListItems.add((Element) item);
+            oListItem.setIndentationLeft(symbolIndent, autoindent);
+            oListItem.setIndentationRight(0);
+            return listOfListItems.add((Element) oListItem);
         }
         return false;
     }
@@ -381,14 +380,14 @@ public class List implements TextElementArray {
         Element o;
         for (Element o2 : listOfListItems) {
             o = o2;
-            if (o instanceof ListItem) {
-                max = Math.max(max, ((ListItem) o).getIndentationLeft());
+            if (o instanceof ListItem oListItem) {
+                max = Math.max(max, oListItem.getIndentationLeft());
             }
         }
         for (Element o1 : listOfListItems) {
             o = o1;
-            if (o instanceof ListItem) {
-                ((ListItem) o).setIndentationLeft(max);
+            if (o instanceof ListItem oListItem) {
+                oListItem.setIndentationLeft(max);
             }
         }
     }
