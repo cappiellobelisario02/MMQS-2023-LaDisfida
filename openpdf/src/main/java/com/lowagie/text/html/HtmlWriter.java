@@ -49,6 +49,7 @@
 
 package com.lowagie.text.html;
 
+import static com.ibm.icu.impl.SortedSetRelation.EQUALS;
 import static com.lowagie.text.error_messages.MessageLocalization.getComposedMessage;
 
 import com.lowagie.text.Anchor;
@@ -78,7 +79,9 @@ import com.lowagie.text.Table;
 import com.lowagie.text.pdf.BaseFont;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayDeque;
 import java.util.Date;
+import java.util.Deque;
 import java.util.EmptyStackException;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -132,7 +135,24 @@ public class HtmlWriter extends DocWriter {
     /**
      * This is the current font of the HTML.
      */
-    protected Stack<Font> currentfont = new Stack<>();
+    // Replace Stack with Deque
+    protected Deque<Font> currentfont = new ArrayDeque<>();
+
+    // When you want to push an element onto the stack, use addFirst()
+    public void pushFont(Font font) {
+        currentfont.addFirst(font);
+    }
+
+    // When you want to pop an element from the stack, use removeFirst()
+    public Font popFont() {
+        return currentfont.removeFirst();
+    }
+
+    // When you want to peek at the top of the stack, use peekFirst()
+    public Font peekFont() {
+        return currentfont.peekFirst();
+    }
+
 
     /**
      * This is the standard font of the HTML.
@@ -244,72 +264,83 @@ public class HtmlWriter extends DocWriter {
             throw new DocumentException(
                     getComposedMessage("the.document.is.open.you.can.only.add.elements.with.content"));
         }
+
         try {
-            switch (element.type()) {
-                case Element.HEADER:
-                    try {
-                        Header header = (Header) element;
-                        if (HtmlTags.STYLESHEET.equals(header.getName())) {
-                            writeLink(header);
-                        } else if (HtmlTags.JAVASCRIPT.equals(header.getName())) {
-                            writeJavaScript(header);
-                        } else {
-                            writeHeader(header);
-                        }
-                    } catch (IOException ioe) {
-                        throw new IOException(ioe);
-                    }
-                    return true;
-                case Element.SUBJECT:
-                case Element.KEYWORDS:
-                case Element.AUTHOR:
-                    Meta meta = (Meta) element;
-                    writeHeader(meta);
-                    return true;
-                case Element.TITLE:
-                    addTabs(2);
-                    writeStart(HtmlTags.TITLE);
-                    os.write(GT);
-                    addTabs(3);
-                    write(HtmlEncoder.encode(((Meta) element).getContent()));
-                    addTabs(2);
-                    writeEnd(HtmlTags.TITLE);
-                    return true;
-                case Element.CREATOR:
-                    writeComment("Creator: " + HtmlEncoder.encode(((Meta) element).getContent()));
-                    return true;
-                case Element.PRODUCER:
-                    writeComment("Producer: " + HtmlEncoder.encode(((Meta) element).getContent()));
-                    return true;
-                case Element.CREATIONDATE:
-                    writeComment("Creationdate: " + HtmlEncoder.encode(((Meta) element).getContent()));
-                    return true;
-                case Element.MARKED:
-                    if (element instanceof MarkedSection) {
-                        MarkedSection ms = (MarkedSection) element;
-                        addTabs(1);
-                        writeStart(HtmlTags.DIV);
-                        writeMarkupAttributes(ms.getMarkupAttributes());
-                        os.write(GT);
-                        MarkedObject mo = ((MarkedSection) element).getTitle();
-                        if (mo != null) {
-                            markup = mo.getMarkupAttributes();
-                            mo.process(this);
-                        }
-                        ms.process(this);
-                        writeEnd(HtmlTags.DIV);
-                        return true;
-                    } else {
-                        MarkedObject mo = (MarkedObject) element;
-                        markup = mo.getMarkupAttributes();
-                        return mo.process(this);
-                    }
-                default:
-                    write(element, 2);
-                    return true;
-            }
+            return handleElementAddition(element);
         } catch (IOException ioe) {
             throw new ExceptionConverter(ioe);
+        }
+    }
+
+    private boolean handleElementAddition(Element element) throws IOException, DocumentException {
+        switch (element.type()) {
+            case Element.HEADER:
+                handleHeader((Header) element);
+                return true;
+            case Element.SUBJECT:
+            case Element.KEYWORDS:
+            case Element.AUTHOR:
+                writeHeader((Meta) element);
+                return true;
+            case Element.TITLE:
+                handleTitle((Meta) element);
+                return true;
+            case Element.CREATOR:
+                writeComment("Creator: " + HtmlEncoder.encode(((Meta) element).getContent()));
+                return true;
+            case Element.PRODUCER:
+                writeComment("Producer: " + HtmlEncoder.encode(((Meta) element).getContent()));
+                return true;
+            case Element.CREATIONDATE:
+                writeComment("Creationdate: " + HtmlEncoder.encode(((Meta) element).getContent()));
+                return true;
+            case Element.MARKED:
+                return handleMarkedElement(element);
+            default:
+                write(element, 2);
+                return true;
+        }
+    }
+
+    private void handleHeader(Header header) throws IOException {
+        if (HtmlTags.STYLESHEET.equals(header.getName())) {
+            writeLink(header);
+        } else if (HtmlTags.JAVASCRIPT.equals(header.getName())) {
+            writeJavaScript(header);
+        } else {
+            writeHeader(header);
+        }
+    }
+
+    private void handleTitle(Meta element) throws IOException {
+        addTabs(2);
+        writeStart(HtmlTags.TITLE);
+        os.write(GT);
+        addTabs(3);
+        write(HtmlEncoder.encode(element.getContent()));
+        addTabs(2);
+        writeEnd(HtmlTags.TITLE);
+    }
+
+    private boolean handleMarkedElement(Element element) throws IOException, DocumentException {
+        if (element instanceof MarkedSection) {
+            MarkedSection ms = (MarkedSection) element;
+            addTabs(1);
+            writeStart(HtmlTags.DIV);
+            writeMarkupAttributes(ms.getMarkupAttributes());
+            os.write(GT);
+            MarkedObject mo = ms.getTitle();
+            if (mo != null) {
+                markup = mo.getMarkupAttributes();
+                mo.process(this);
+            }
+            ms.process(this);
+            writeEnd(HtmlTags.DIV);
+            return true;
+        } else {
+            MarkedObject mo = (MarkedObject) element;
+            markup = mo.getMarkupAttributes();
+            return mo.process(this);
         }
     }
 
@@ -830,7 +861,7 @@ public class HtmlWriter extends DocWriter {
             write(HtmlTags.BACKGROUNDCOLOR, HtmlEncoder.encode(table.getBackgroundColor()));
         }
         os.write(GT);
-        for (Iterator<String> iterator = table.iterator(); iterator.hasNext(); ) {
+        for (Iterator<Row> iterator = table.iterator(); iterator.hasNext(); ) {
             write((Row) iterator.next(), indent + 1);
         }
         writeEnd(HtmlTags.TABLE);
@@ -950,7 +981,7 @@ public class HtmlWriter extends DocWriter {
             return;
         }
 
-        for (Enumeration<String> e = styleAttributes.propertyNames(); e.hasMoreElements();) {
+        for (Enumeration<String> e = (Enumeration<String>) styleAttributes.propertyNames(); e.hasMoreElements();) {
             String key = e.nextElement();
             writeCssProperty(key, styleAttributes.getProperty(key));
         }
