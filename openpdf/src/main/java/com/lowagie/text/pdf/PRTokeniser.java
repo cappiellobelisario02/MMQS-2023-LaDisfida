@@ -185,7 +185,7 @@ public class PRTokeniser implements AutoCloseable {
             return null;
         }
     }
-    
+
     public void seek(int pos) throws IOException {
         file.seek(pos);
     }
@@ -359,18 +359,12 @@ public class PRTokeniser implements AutoCloseable {
     }
 
     public boolean nextToken() throws IOException {
-        int ch = 0;
-        do {
-            ch = file.read();
-        } while (ch != -1 && isWhitespace(ch));
+        int ch = skipWhitespace();
         if (ch == -1) {
             type = TK_ENDOFFILE;
             return false;
         }
 
-        // Note:  We have to initialize stringValue here, after we've looked for the end of the stream,
-        // to ensure that we don't lose the value of a token that might end exactly at the end
-        // of the stream
         StringBuilder outBuf = null;
         stringValue = EMPTY;
 
@@ -381,200 +375,219 @@ public class PRTokeniser implements AutoCloseable {
             case ']':
                 type = TK_END_ARRAY;
                 break;
-            case '/': {
-                outBuf = new StringBuilder();
-                type = TK_NAME;
-                while (true) {
-                    ch = file.read();
-                    if (delims[ch + 1]) {
-                        break;
-                    }
-                    if (ch == '#') {
-                        ch = (getHex(file.read()) << 4) + getHex(file.read());
-                    }
-                    outBuf.append((char) ch);
-                }
-                backOnePosition(ch);
+            case '/':
+                outBuf = handleNameToken();
                 break;
-            }
             case '>':
-                ch = file.read();
-                if (ch != '>') {
-                    throwError(MessageLocalization.getComposedMessage("greaterthan.not.expected"));
-                }
-                type = TK_END_DIC;
+                handleEndDictionary();
                 break;
-            case '<': {
-                int v1 = file.read();
-                while (isWhitespace(v1)) {
-                    v1 = file.read();
-                }
-                if (v1 == '<') {
-                    type = TK_START_DIC;
-                    break;
-                }
-                outBuf = new StringBuilder();
-                type = TK_STRING;
-                hexString = true;
-                int v2 = 0;
-                while (true) {
-                    while (isWhitespace(v1)) {
-                        v1 = file.read();
-                    }
-                    if (v1 == '>') {
-                        break;
-                    }
-                    v1 = getHex(v1);
-                    if (v1 < 0) {
-                        break;
-                    }
-                    v2 = file.read();
-                    while (isWhitespace(v2)) {
-                        v2 = file.read();
-                    }
-                    if (v2 == '>') {
-                        ch = v1 << 4;
-                        outBuf.append((char) ch);
-                        break;
-                    }
-                    v2 = getHex(v2);
-                    if (v2 < 0) {
-                        break;
-                    }
-                    ch = (v1 << 4) + v2;
-                    outBuf.append((char) ch);
-                    v1 = file.read();
-                }
-                if (v1 < 0 || v2 < 0) {
-                    throwError(MessageLocalization.getComposedMessage("error.reading.string"));
-                }
+            case '<':
+                outBuf = handleStringOrDictionary();
                 break;
-            }
             case '%':
-                type = TK_COMMENT;
-                do {
-                    ch = file.read();
-                } while (ch != -1 && ch != '\r' && ch != '\n');
+                handleComment();
                 break;
-            case '(': {
-                outBuf = new StringBuilder();
-                type = TK_STRING;
-                hexString = false;
-                int nesting = 0;
-                while (true) {
-                    ch = file.read();
-                    if (ch == -1) {
-                        break;
-                    }
-                    if (ch == '(') {
-                        ++nesting;
-                    } else if (ch == ')') {
-                        --nesting;
-                    } else if (ch == '\\') {
-                        boolean lineBreak = false;
-                        ch = file.read();
-                        switch (ch) {
-                            case 'n':
-                                ch = '\n';
-                                break;
-                            case 'r':
-                                ch = '\r';
-                                break;
-                            case 't':
-                                ch = '\t';
-                                break;
-                            case 'b':
-                                ch = '\b';
-                                break;
-                            case 'f':
-                                ch = '\f';
-                                break;
-                            case '(', 
-                                 ')', 
-                                 '\\':
-                                break;
-                            case '\r':
-                                lineBreak = true;
-                                ch = file.read();
-                                if (ch != '\n') {
-                                    backOnePosition(ch);
-                                }
-                                break;
-                            case '\n':
-                                lineBreak = true;
-                                break;
-                            default: {
-                                if (ch < '0' || ch > '7') {
-                                    break;
-                                }
-                                int octal = ch - '0';
-                                ch = file.read();
-                                if (ch < '0' || ch > '7') {
-                                    backOnePosition(ch);
-                                    ch = octal;
-                                    break;
-                                }
-                                octal = (octal << 3) + ch - '0';
-                                ch = file.read();
-                                if (ch < '0' || ch > '7') {
-                                    backOnePosition(ch);
-                                    ch = octal;
-                                    break;
-                                }
-                                octal = (octal << 3) + ch - '0';
-                                ch = octal & 0xff;
-                                break;
-                            }
-                        }
-                        if (lineBreak) {
-                            continue;
-                        }
-                        if (ch < 0) {
-                            break;
-                        }
-                    } else if (ch == '\r') {
-                        ch = file.read();
-                        if (ch < 0) {
-                            break;
-                        }
-                        if (ch != '\n') {
-                            backOnePosition(ch);
-                            ch = '\n';
-                        }
-                    }
-                    if (nesting == -1) {
-                        break;
-                    }
-                    outBuf.append((char) ch);
-                }
-                if (ch == -1) {
-                    throwError(MessageLocalization.getComposedMessage("error.reading.string"));
-                }
+            case '(':
+                outBuf = handleLiteralString();
                 break;
-            }
-            default: {
-                outBuf = new StringBuilder();
-                if (ch == '-' || ch == '+' || ch == '.' || (ch >= '0' && ch <= '9')) {
-                    type = TK_NUMBER;
-                    do {
-                        outBuf.append((char) ch);
-                        ch = file.read();
-                    } while (((ch >= '0' && ch <= '9') || ch == '.'));
-                } else {
-                    type = TK_OTHER;
-                    do {
-                        outBuf.append((char) ch);
-                        ch = file.read();
-                    } while (!delims[ch + 1]);
-                }
-                backOnePosition(ch);
+            default:
+                outBuf = handleNumberOrOther(ch);
                 break;
-            }
         }
+
         if (outBuf != null) {
             stringValue = outBuf.toString();
         }
         return true;
+    }
+
+    private int skipWhitespace() throws IOException {
+        int ch;
+        do {
+            ch = file.read();
+        } while (ch != -1 && isWhitespace(ch));
+        return ch;
+    }
+
+    private StringBuilder handleNameToken() throws IOException {
+        StringBuilder outBuf = new StringBuilder();
+        type = TK_NAME;
+        int ch;
+        while (true) {
+            ch = file.read();
+            if (delims[ch + 1]) {
+                break;
+            }
+            if (ch == '#') {
+                ch = (getHex(file.read()) << 4) + getHex(file.read());
+            }
+            outBuf.append((char) ch);
+        }
+        backOnePosition(ch);
+        return outBuf;
+    }
+
+    private void handleEndDictionary() throws IOException {
+        int ch = file.read();
+        if (ch != '>') {
+            throwError(MessageLocalization.getComposedMessage("greaterthan.not.expected"));
+        }
+        type = TK_END_DIC;
+    }
+
+    private StringBuilder handleStringOrDictionary() throws IOException {
+        int v1 = readNonWhitespace();
+        if (v1 == '<') {
+            type = TK_START_DIC;
+            return null;
+        }
+
+        StringBuilder outBuf = new StringBuilder();
+        type = TK_STRING;
+        hexString = true;
+
+        while (v1 >= 0) {
+            int v1Hex = processHex(v1);
+            if (v1Hex < 0) break;
+
+            int v2 = readNonWhitespace();
+            if (v2 == '>') {
+                outBuf.append((char) (v1Hex << 4));
+                break;
+            }
+
+            int v2Hex = processHex(v2);
+            if (v2Hex < 0) break;
+
+            outBuf.append((char) ((v1Hex << 4) + v2Hex));
+            v1 = file.read();
+        }
+
+        validateHexRead(v1);
+        return outBuf;
+    }
+
+    private int readNonWhitespace() throws IOException {
+        int ch;
+        do {
+            ch = file.read();
+        } while (isWhitespace(ch));
+        return ch;
+    }
+
+    private int processHex(int value) {
+        return getHex(value);
+    }
+
+    private void validateHexRead(int v1) throws IOException {
+        if (v1 < 0) {
+            throwError(MessageLocalization.getComposedMessage("error.reading.string"));
+        }
+    }
+
+    private void handleComment() throws IOException {
+        type = TK_COMMENT;
+        int ch;
+        do {
+            ch = file.read();
+        } while (ch != -1 && ch != '\r' && ch != '\n');
+    }
+
+    private StringBuilder handleLiteralString() throws IOException {
+        StringBuilder outBuf = new StringBuilder();
+        type = TK_STRING;
+        hexString = false;
+        int nesting = 0;
+        int ch;
+        while (true) {
+            ch = file.read();
+            if (ch == -1) {
+                break;
+            }
+            if (ch == '(') {
+                nesting++;
+            } else if (ch == ')') {
+                nesting--;
+            } else if (ch == '\\') {
+                ch = handleEscapeSequence();
+            } else if (ch == '\r') {
+                ch = file.read();
+                if (ch != '\n') {
+                    backOnePosition(ch);
+                    ch = '\n';
+                }
+            }
+            if (nesting == -1) {
+                break;
+            }
+            outBuf.append((char) ch);
+        }
+        if (ch == -1) {
+            throwError(MessageLocalization.getComposedMessage("error.reading.string"));
+        }
+        return outBuf;
+    }
+
+    private int handleEscapeSequence() throws IOException {
+        int ch = file.read();
+        switch (ch) {
+            case 'n':
+                return '\n';
+            case 'r':
+                return '\r';
+            case 't':
+                return '\t';
+            case 'b':
+                return '\b';
+            case 'f':
+                return '\f';
+            case '(', ')', '\\':
+                return ch;
+            case '\r', '\n':
+                // Handle line break escape sequence
+                return '\n';
+            default:
+                return handleOctalEscape(ch);
+        }
+    }
+
+    private int handleOctalEscape(int ch) throws IOException {
+        if (ch < '0' || ch > '7') {
+            return ch;
+        }
+        int octal = ch - '0';
+        ch = file.read();
+        if (ch >= '0' && ch <= '7') {
+            octal = (octal << 3) + ch - '0';
+            ch = file.read();
+            if (ch >= '0' && ch <= '7') {
+                octal = (octal << 3) + ch - '0';
+            } else {
+                backOnePosition(ch);
+            }
+        } else {
+            backOnePosition(ch);
+        }
+        return octal & 0xff;
+    }
+
+    private StringBuilder handleNumberOrOther(int ch) throws IOException {
+        StringBuilder outBuf = new StringBuilder();
+        if (ch == '-' || ch == '+' || ch == '.' || (ch >= '0' && ch <= '9')) {
+            type = TK_NUMBER;
+            do {
+                outBuf.append((char) ch);
+                ch = file.read();
+            } while ((ch >= '0' && ch <= '9') || ch == '.');
+        } else {
+            type = TK_OTHER;
+            do {
+                outBuf.append((char) ch);
+                ch = file.read();
+            } while (!delims[ch + 1]);
+        }
+        backOnePosition(ch);
+        return outBuf;
     }
 
     public int intValue() {

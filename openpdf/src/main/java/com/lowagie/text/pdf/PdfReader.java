@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the License.
  *
  * The Original Code is 'iText, a free JAVA-PDF library'.
- * 
+ *
  * The Initial Developer of the Original Code is Bruno Lowagie. Portions created by
  * the Initial Developer are Copyright (C) 1999, 2000, 2001, 2002 by Bruno Lowagie.
  * All Rights Reserved.
@@ -1439,7 +1439,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
             strings.clear();
             readPages();
-            
+
             removeUnusedObjects();
         } finally {
             try {
@@ -2378,7 +2378,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     private PRStream extractStreamIfValid(PdfObject object) {
         if (object.isStream()) {
             PRStream stm = (PRStream) object;
-            if (PdfName.XREF.equals(stm.get(PdfName.TYPE))) {
+            if (PdfName.XREF.equals(stm.get(PdfName.TYPE_CONST))) {
                 return stm;
             }
         }
@@ -3186,7 +3186,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return false;
         }
         PdfDictionary dic = (PdfDictionary) obj;
-        return existsName(dic, PdfName.TYPE, PdfName.FONT);
+        return existsName(dic, PdfName.TYPE_CONST, PdfName.FONT);
     }
 
     private int processFontDictionary(PdfDictionary dic, int k) {
@@ -3280,7 +3280,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 continue;
             }
             PdfDictionary dic = (PdfDictionary) obj;
-            if (!existsName(dic, PdfName.TYPE, PdfName.FONT)) {
+            if (!existsName(dic, PdfName.TYPE_CONST, PdfName.FONT)) {
                 continue;
             }
             if (existsName(dic, PdfName.SUBTYPE, PdfName.TYPE1)
@@ -3437,13 +3437,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             while (iterator.hasNext()) {
                 PdfObject obj = getPdfObjectRelease(iterator.next());
 
-                if (obj != null && obj.isDictionary()) {
-                    PdfDictionary annot = (PdfDictionary) obj;
-
-                    if (PdfName.WIDGET.equals(annot.get(PdfName.SUBTYPE))) {
-                        iterator.remove(); // Remove safely using iterator
-                    }
-                }
+                removeIteratorIfIsObjDictionary(obj, iterator);
             }
 
             // Remove annotations if empty
@@ -3456,6 +3450,16 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
         catalog.remove(PdfName.ACROFORM);
         pageRefs.resetReleasePage();
+    }
+
+    private void removeIteratorIfIsObjDictionary(PdfObject obj, ListIterator<PdfObject> iterator){
+        if (obj != null && obj.isDictionary()) {
+            PdfDictionary annot = (PdfDictionary) obj;
+
+            if (PdfName.WIDGET.equals(annot.get(PdfName.SUBTYPE))) {
+                iterator.remove();// Remove safely using iterator
+            }
+        }
     }
 
 
@@ -4441,7 +4445,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             PdfArray kidsPR = page.getAsArray(PdfName.KIDS);
             // reference to a leaf
             if (kidsPR == null) {
-                page.put(PdfName.TYPE, PdfName.PAGE);
+                page.put(PdfName.TYPE_CONST, PdfName.PAGE);
                 PdfDictionary dic = pageInh.get(pageInh.size() - 1);
                 for (PdfName key : dic.getKeys()) {
                     if (page.get(key) == null) {
@@ -4456,7 +4460,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 refsn.add(rpage);
             } else {
                 // reference to a branch
-                page.put(PdfName.TYPE, PdfName.PAGES);
+                page.put(PdfName.TYPE_CONST, PdfName.PAGES);
                 pushPageAttributes(page);
                 for (int k = 0; k < kidsPR.size(); ++k) {
                     PdfObject obj = kidsPR.getPdfObject(k);
@@ -4480,7 +4484,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             PdfArray kidsPR = page.getAsArray(PdfName.KIDS);
             // reference to a leaf
             if (kidsPR != null) {
-                page.put(PdfName.TYPE, PdfName.PAGES);
+                page.put(PdfName.TYPE_CONST, PdfName.PAGES);
                 pushPageAttributes(page);
                 for (int k = 0; k < kidsPR.size(); ++k) {
                     PdfObject obj = kidsPR.getPdfObject(k);

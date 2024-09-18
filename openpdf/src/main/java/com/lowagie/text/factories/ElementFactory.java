@@ -356,7 +356,6 @@ public class ElementFactory {
         String value;
         Table table;
         try {
-
             value = attributes.getProperty(ElementTags.WIDTHS);
             if (value != null) {
                 StringTokenizer widthTokens = new StringTokenizer(value, ";");
@@ -384,54 +383,60 @@ public class ElementFactory {
             table.setBorderWidth(1);
             table.getDefaultCell().setBorder(Table.BOX);
 
-            value = attributes.getProperty(ElementTags.LASTHEADERROW);
-            if (value != null) {
-                table.setLastHeaderRow(Integer.parseInt(value));
-            }
-            value = attributes.getProperty(ElementTags.ALIGN);
-            if (value != null) {
-                try {
-                    final HorizontalAlignment horizontalAlignment = HorizontalAlignment.valueOf(value);
-                    table.setHorizontalAlignment(horizontalAlignment);
-                } catch (IllegalArgumentException exc) {
-                    table.setHorizontalAlignment(HorizontalAlignment.UNDEFINED);
-                }
-            }
-            value = attributes.getProperty(ElementTags.CELLSPACING);
-            if (value != null) {
-                table.setSpacing(Float.parseFloat(value + "f"));
-            }
-            value = attributes.getProperty(ElementTags.CELLPADDING);
-            if (value != null) {
-                table.setPadding(Float.parseFloat(value + "f"));
-            }
-            value = attributes.getProperty(ElementTags.OFFSET);
-            if (value != null) {
-                table.setOffset(Float.parseFloat(value + "f"));
-            }
-            value = attributes.getProperty(ElementTags.WIDTH);
-            if (value != null) {
-                if (value.endsWith("%")) {
-                    table.setWidth(Float.parseFloat(value.substring(0, value
-                            .length() - 1)
-                            + "f"));
-                } else {
-                    table.setWidth(Float.parseFloat(value + "f"));
-                    table.setLocked(true);
-                }
-            }
-            table.setTableFitsPage(Utilities.checkTrueOrFalse(attributes,
-                    ElementTags.TABLEFITSPAGE));
-            table.setCellsFitPage(Utilities.checkTrueOrFalse(attributes,
-                    ElementTags.CELLSFITPAGE));
-            table.setConvert2pdfptable(Utilities.checkTrueOrFalse(attributes,
-                    ElementTags.CONVERT2PDFP));
+            manageAttributesProperties(table, attributes);
 
             setRectangleProperties(table, attributes);
+
             return table;
         } catch (BadElementException e) {
             throw new ExceptionConverter(e);
         }
+    }
+
+    private static void manageAttributesProperties(Table table, Properties attributes){
+        String value;
+        value = attributes.getProperty(ElementTags.LASTHEADERROW);
+        if (value != null) {
+            table.setLastHeaderRow(Integer.parseInt(value));
+        }
+        value = attributes.getProperty(ElementTags.ALIGN);
+        if (value != null) {
+            try {
+                final HorizontalAlignment horizontalAlignment = HorizontalAlignment.valueOf(value);
+                table.setHorizontalAlignment(horizontalAlignment);
+            } catch (IllegalArgumentException exc) {
+                table.setHorizontalAlignment(HorizontalAlignment.UNDEFINED);
+            }
+        }
+        value = attributes.getProperty(ElementTags.CELLSPACING);
+        if (value != null) {
+            table.setSpacing(Float.parseFloat(value + "f"));
+        }
+        value = attributes.getProperty(ElementTags.CELLPADDING);
+        if (value != null) {
+            table.setPadding(Float.parseFloat(value + "f"));
+        }
+        value = attributes.getProperty(ElementTags.OFFSET);
+        if (value != null) {
+            table.setOffset(Float.parseFloat(value + "f"));
+        }
+        value = attributes.getProperty(ElementTags.WIDTH);
+        if (value != null) {
+            if (value.endsWith("%")) {
+                table.setWidth(Float.parseFloat(value.substring(0, value
+                        .length() - 1)
+                        + "f"));
+            } else {
+                table.setWidth(Float.parseFloat(value + "f"));
+                table.setLocked(true);
+            }
+        }
+        table.setTableFitsPage(Utilities.checkTrueOrFalse(attributes,
+                ElementTags.TABLEFITSPAGE));
+        table.setCellsFitPage(Utilities.checkTrueOrFalse(attributes,
+                ElementTags.CELLSFITPAGE));
+        table.setConvert2pdfptable(Utilities.checkTrueOrFalse(attributes,
+                ElementTags.CONVERT2PDFP));
     }
 
     /**
@@ -442,24 +447,7 @@ public class ElementFactory {
      */
     private static void setRectangleProperties(Rectangle rect,
             Properties attributes) {
-        String value;
-        value = attributes.getProperty(ElementTags.BORDERWIDTH);
-        if (value != null) {
-            rect.setBorderWidth(Float.parseFloat(value + "f"));
-        }
-        int border = 0;
-        if (Utilities.checkTrueOrFalse(attributes, ElementTags.LEFT)) {
-            border |= Rectangle.LEFT;
-        }
-        if (Utilities.checkTrueOrFalse(attributes, ElementTags.RIGHT)) {
-            border |= Rectangle.RIGHT;
-        }
-        if (Utilities.checkTrueOrFalse(attributes, ElementTags.TOP)) {
-            border |= Rectangle.TOP;
-        }
-        if (Utilities.checkTrueOrFalse(attributes, ElementTags.BOTTOM)) {
-            border |= Rectangle.BOTTOM;
-        }
+        int border = calculateRectangleBorder(rect, attributes);
         rect.setBorder(border);
 
         String r = attributes.getProperty(ElementTags.RED);
@@ -483,10 +471,38 @@ public class ElementFactory {
             rect.setBorderColor(Markup.decodeColor(attributes
                     .getProperty(ElementTags.BORDERCOLOR)));
         }
-        r = (String) attributes.remove(ElementTags.BGRED);
-        g = (String) attributes.remove(ElementTags.BGGREEN);
-        b = (String) attributes.remove(ElementTags.BGBLUE);
-        value = attributes.getProperty(ElementTags.BACKGROUNDCOLOR);
+
+        setRectangleBackground(rect, attributes);
+    }
+
+    private static int calculateRectangleBorder(Rectangle rect, Properties attributes){
+        String value;
+        value = attributes.getProperty(ElementTags.BORDERWIDTH);
+        if (value != null) {
+            rect.setBorderWidth(Float.parseFloat(value + "f"));
+        }
+        int border = 0;
+        if (Utilities.checkTrueOrFalse(attributes, ElementTags.LEFT)) {
+            border |= Rectangle.LEFT;
+        }
+        if (Utilities.checkTrueOrFalse(attributes, ElementTags.RIGHT)) {
+            border |= Rectangle.RIGHT;
+        }
+        if (Utilities.checkTrueOrFalse(attributes, ElementTags.TOP)) {
+            border |= Rectangle.TOP;
+        }
+        if (Utilities.checkTrueOrFalse(attributes, ElementTags.BOTTOM)) {
+            border |= Rectangle.BOTTOM;
+        }
+
+        return border;
+    }
+
+    private static void setRectangleBackground(Rectangle rect, Properties attributes){
+        String r = (String) attributes.remove(ElementTags.BGRED);
+        String g = (String) attributes.remove(ElementTags.BGGREEN);
+        String b = (String) attributes.remove(ElementTags.BGBLUE);
+        String value = attributes.getProperty(ElementTags.BACKGROUNDCOLOR);
         if (r != null || g != null || b != null) {
             int red = 0;
             int green = 0;
@@ -635,7 +651,10 @@ public class ElementFactory {
      * @return an Annotation
      */
     public static Annotation getAnnotation(Properties attributes) {
-        float llx = 0, lly = 0, urx = 0, ury = 0;
+        float llx = 0;
+        float lly = 0;
+        float urx = 0;
+        float ury = 0;
         String value;
 
         value = attributes.getProperty(ElementTags.LLX);
