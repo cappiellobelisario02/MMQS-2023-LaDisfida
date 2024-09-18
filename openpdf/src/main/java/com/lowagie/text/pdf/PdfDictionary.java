@@ -180,7 +180,7 @@ public class PdfDictionary extends PdfObject {
         return "Dictionary of type: " + get(PdfName.TYPE);
     }
 
-    // DICTIONARY CONTENT METHODS
+    // DICTIONARY contentMethod METHODS
 
     /**
      * Associates the specified <CODE>PdfObject</CODE> as <VAR>value</VAR> with the specified <CODE>PdfName</CODE> as
@@ -408,7 +408,6 @@ public class PdfDictionary extends PdfObject {
      * @param key A <CODE>PdfName</CODE>
      * @return the associated <CODE>PdfArray</CODE> object, or <CODE>null</CODE>
      */
-    @Override
     public PdfArray getAsArray(PdfName key) {
         PdfArray array = null;
         PdfObject orig = getDirectObject(key);

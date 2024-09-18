@@ -183,7 +183,7 @@ public class PdfXConformanceImp implements PdfXConformance {
     }
 
     private static void checkFontConformance(Object obj1) {
-        if (!((BaseFont) obj1).isEmbedded()) {
+        if (!((BaseFont) obj1).isEmbeddedBool()) {
             throw new PdfXConformanceException(
                     MessageLocalization.getComposedMessage("all.the.fonts.must.be.embedded.this.one.isn.t.1",
                             ((BaseFont) obj1).getPostscriptFontName()));
@@ -318,13 +318,13 @@ public class PdfXConformanceImp implements PdfXConformance {
     public void completeExtraCatalog(PdfDictionary extraCatalog) {
         if (isPdfX() && !isPdfA1() && extraCatalog.get(PdfName.OUTPUTINTENTS) == null) {
 
-                PdfDictionary out = new PdfDictionary(PdfName.OUTPUTINTENT);
-                out.put(PdfName.OUTPUTCONDITION, new PdfString("SWOP CGATS TR 001-1995"));
-                out.put(PdfName.OUTPUTCONDITIONIDENTIFIER, new PdfString("CGATS TR 001"));
-                out.put(PdfName.REGISTRYNAME, new PdfString("http://www.color.org"));
-                out.put(PdfName.INFO, new PdfString(""));
-                out.put(PdfName.S, PdfName.GTS_PDFX);
-                extraCatalog.put(PdfName.OUTPUTINTENTS, new PdfArray(out));
+            PdfDictionary out = new PdfDictionary(PdfName.OUTPUTINTENT);
+            out.put(PdfName.OUTPUTCONDITION, new PdfString("SWOP CGATS TR 001-1995"));
+            out.put(PdfName.OUTPUTCONDITIONIDENTIFIER, new PdfString("CGATS TR 001"));
+            out.put(PdfName.REGISTRYNAME, new PdfString("http://www.color.org"));
+            out.put(PdfName.INFO, new PdfString(""));
+            out.put(PdfName.S, PdfName.GTS_PDFX);
+            extraCatalog.put(PdfName.OUTPUTINTENTS, new PdfArray(out));
 
         }
     }

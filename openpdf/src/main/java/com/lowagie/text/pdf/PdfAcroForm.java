@@ -49,8 +49,8 @@
 
 package com.lowagie.text.pdf;
 
-import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.exceptions.AnnotationException;
 import com.lowagie.text.pdf.CheckboxParams;
 import com.lowagie.text.pdf.SelectListParams;
 import com.lowagie.text.pdf.ComboBoxParams;
@@ -61,155 +61,11 @@ import java.util.Map;
  * Each PDF document can contain maximum 1 AcroForm.
  */
 
-public class TextDrawingConfig {
-    private PdfFormField field;
-    private String text;
-    private BaseFont font;
-    private float fontSize;
-    private float llx;
-    private float lly;
-    private float urx;
-    private float ury;
-    private String name; // Field for the name of the text field
-
-    // Constructor
-    public TextDrawingConfig(PdfFormField field, String text, BaseFont font, float fontSize, float llx, float lly, float urx, float ury, String name) {
-        this.field = field;
-        this.text = text;
-        this.font = font;
-        this.fontSize = fontSize;
-        this.llx = llx;
-        this.lly = lly;
-        this.urx = urx;
-        this.ury = ury;
-        this.name = name;
-    }
-
-    // Getters
-    public PdfFormField getField() { return field; }
-    public String getText() { return text; }
-    public BaseFont getFont() { return font; }
-    public float getFontSize() { return fontSize; }
-    public float getLlx() { return llx; }
-    public float getLly() { return lly; }
-    public float getUrx() { return urx; }
-    public float getUry() { return ury; }
-    public String getName() { return name; }
-
-}
-public class MapButtonConfig {
-    private String name;
-    private String value;
-    private String url;
-    private PdfContentByte appearance;
-    private float llx;
-    private float lly;
-    private float urx;
-    private float ury;
-
-    // Constructor
-    public MapButtonConfig(String name, String value, String url, PdfContentByte appearance, float llx, float lly, float urx, float ury) {
-        this.name = name;
-        this.value = value;
-        this.url = url;
-        this.appearance = appearance;
-        this.llx = llx;
-        this.lly = lly;
-        this.urx = urx;
-        this.ury = ury;
-    }
-
-    // Getters
-    public String getName() { return name; }
-    public String getValue() { return value; }
-    public String getUrl() { return url; }
-    public PdfContentByte getAppearance() { return appearance; }
-    public float getLlx() { return llx; }
-    public float getLly() { return lly; }
-    public float getUrx() { return urx; }
-    public float getUry() { return ury; }
-}
-
-public class ResetButtonConfig {
-    private String name;
-    private String caption;
-    private String value;
-    private BaseFont font;
-    private float fontSize;
-    private float llx;
-    private float lly;
-    private float urx;
-    private float ury;
-
-    // Constructor
-    public ResetButtonConfig(String name, String caption, String value, BaseFont font, float fontSize, float llx, float lly, float urx, float ury) {
-        this.name = name;
-        this.caption = caption;
-        this.value = value;
-        this.font = font;
-        this.fontSize = fontSize;
-        this.llx = llx;
-        this.lly = lly;
-        this.urx = urx;
-        this.ury = ury;
-    }
-
-    // Getters
-    public String getName() { return name; }
-    public String getCaption() { return caption; }
-    public String getValue() { return value; }
-    public BaseFont getFont() { return font; }
-    public float getFontSize() { return fontSize; }
-    public float getLlx() { return llx; }
-    public float getLly() { return lly; }
-    public float getUrx() { return urx; }
-    public float getUry() { return ury; }
-}
-public class HtmlPostButtonConfig {
-    private String name;
-    private String caption;
-    private String value;
-    private String url;
-    private BaseFont font;
-    private float fontSize;
-    private float llx;
-    private float lly;
-    private float urx;
-    private float ury;
-
-    // Constructor
-    public HtmlPostButtonConfig(String name, String caption, String value, String url, BaseFont font, float fontSize, float llx, float lly, float urx, float ury) {
-        this.name = name;
-        this.caption = caption;
-        this.value = value;
-        this.url = url;
-        this.font = font;
-        this.fontSize = fontSize;
-        this.llx = llx;
-        this.lly = lly;
-        this.urx = urx;
-        this.ury = ury;
-    }
-
-    // Getters
-    public String getName() { return name; }
-    public String getCaption() { return caption; }
-    public String getValue() { return value; }
-    public String getUrl() { return url; }
-    public BaseFont getFont() { return font; }
-    public float getFontSize() { return fontSize; }
-    public float getLlx() { return llx; }
-    public float getLly() { return lly; }
-    public float getUrx() { return urx; }
-    public float getUry() { return ury; }
-}
-
-
 public class PdfAcroForm extends PdfDictionary {
 
     private PdfWriter writer;
 
-    public void drawButton(ButtonDrawingConfig config) {
+    public void drawButton(ResetButtonConfig config) {
         PdfFormField button = config.getButton();
         String caption = config.getCaption();
         BaseFont font = config.getFont();
@@ -248,37 +104,9 @@ public class PdfAcroForm extends PdfDictionary {
     }
 
     // Create the configuration object
-    TextDrawingConfig config = new TextDrawingConfig(
-        null, // PdfFormField will be created inside addSingleLineTextField
-        "Sample text",
-        font,
-        fontSize,
-        llx,
-        lly,
-        urx,
-        ury,
-        "textFieldName"
-    );
 
     // Create a new text field
     PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.SINGLELINE, PdfFormField.PLAINTEXT, 0);
-    config = new TextDrawingConfig(
-        field,
-        config.getText(),
-        config.getFont(),
-        config.getFontSize(),
-        config.getLlx(),
-        config.getLly(),
-        config.getUrx(),
-        config.getUry(),
-        config.getName()
-    );
-
-    // Add the single-line text field
-    PdfFormField resultField = addSingleLineTextField(config);
-
-    
-
 
     /**
      * This is a map containing FieldTemplates.
@@ -355,9 +183,8 @@ public class PdfAcroForm extends PdfDictionary {
             return true;
         }
         PdfDictionary dic = new PdfDictionary();
-        for (Object o : fieldTemplates.keySet()) {
-            PdfTemplate template = (PdfTemplate) o;
-            PdfFormField.mergeResources(dic, (PdfDictionary) template.getResources());
+        for (PdfTemplate o : fieldTemplates.keySet()) {
+            PdfFormField.mergeResources(dic, (PdfDictionary) o.getResources());
         }
         put(PdfName.DR, dic);
         put(PdfName.DA, new PdfString("/Helv 0 Tf 0 g "));
@@ -399,24 +226,17 @@ public class PdfAcroForm extends PdfDictionary {
     }
 
     /**
-     * @param name     name of the field
-     * @param value    value of the field
-     * @param url      url for the action
-     * @param caption  caption
-     * @param font     an object of {@link BaseFont}
-     * @param fontSize font size
-     * @param llx      lower-left-x
-     * @param lly      lower-left-y
-     * @param urx      upper-right-x
-     * @param ury      upper-right-y
+     * @param config HTML POST button configuration
      * @return a PdfFormField
      */
     public PdfFormField addHtmlPostButton(HtmlPostButtonConfig config) {
         PdfAction action = PdfAction.createSubmitForm(config.getUrl(), null, PdfAction.SUBMIT_HTML_FORMAT);
         PdfFormField button = new PdfFormField(writer, config.getLlx(), config.getLly(), config.getUrx(), config.getUry(), action);
         setButtonParams(button, PdfFormField.FF_PUSHBUTTON, config.getName(), config.getValue());
+
+
         
-        drawButton(button, config.getCaption(), config.getFont(), config.getFontSize(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
+        drawButton(config);
         
         addFormField(button);
         return button;
@@ -424,15 +244,7 @@ public class PdfAcroForm extends PdfDictionary {
 
 
     /**
-     * @param name     name of the field
-     * @param value    value of the field
-     * @param caption  caption
-     * @param font     an object of {@link BaseFont}
-     * @param fontSize font size
-     * @param llx      lower-left-x
-     * @param lly      lower-left-y
-     * @param urx      upper-right-x
-     * @param ury      upper-right-y
+     * @param config Reset button configuration
      * @return a PdfFormField
      */
     public PdfFormField addResetButton(ResetButtonConfig config) {
@@ -440,21 +252,14 @@ public class PdfAcroForm extends PdfDictionary {
         PdfFormField button = new PdfFormField(writer, config.getLlx(), config.getLly(), config.getUrx(), config.getUry(), action);
         setButtonParams(button, PdfFormField.FF_PUSHBUTTON, config.getName(), config.getValue());
         
-        drawButton(button, config.getCaption(), config.getFont(), config.getFontSize(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
+        drawButton(config);
         
         addFormField(button);
         return button;
     }
 
     /**
-     * @param name       name of the field
-     * @param value      value of the field
-     * @param url        url of the action
-     * @param appearance an object of {@link PdfContentByte}
-     * @param llx        lower-left-x
-     * @param lly        lower-left-y
-     * @param urx        upper-right-x
-     * @param ury        upper-right-y
+     * @param config Map button configuration
      * @return a PdfFormField
      */
     public PdfFormField addMap(MapButtonConfig config) {
@@ -488,16 +293,9 @@ public class PdfAcroForm extends PdfDictionary {
     }
 
     /**
-     * @param button   an object of {@link PdfFormField}
-     * @param caption  caption
-     * @param font     an object of {@link BaseFont}
-     * @param fontSize font size
-     * @param llx      lower-left-x
-     * @param lly      lower-left-y
-     * @param urx      upper-right-x
-     * @param ury      upper-right-y
+     * @param config HTML POST button configuration
      */
-    public void drawButton(ButtonDrawingConfig config) {
+    public void drawButton(HtmlPostButtonConfig config) {
         PdfFormField button = config.getButton();
         String caption = config.getCaption();
         BaseFont font = config.getFont();
@@ -526,120 +324,9 @@ public class PdfAcroForm extends PdfDictionary {
         return hidden;
     }
 
-    /**
-     * @param name     name of the field
-     * @param text     value for field
-     * @param font     an object of {@link BaseFont}
-     * @param fontSize font size
-     * @param llx      lower-left-x
-     * @param lly      lower-left-y
-     * @param urx      upper-right-x
-     * @param ury      upper-right-y
-     * @return a PdfFormField
-     */
-    public PdfFormField addSingleLineTextField(TextDrawingConfig config) {
-        // Create a single-line text field
-        PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.SINGLELINE, PdfFormField.PLAINTEXT, 0);
-        
-        // Set field parameters
-        setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
-        
-        // Draw the single line of text
-        drawSingleLineOfText(config);
-        
-        // Add the form field to the document
-        addFormField(field);
-        
-        return field;
-    }
-
 
     /**
-     * @param name     name of the field
-     * @param text     value for field
-     * @param font     an object of {@link BaseFont}
-     * @param fontSize font size
-     * @param llx      lower-left-x
-     * @param lly      lower-left-y
-     * @param urx      upper-right-x
-     * @param ury      upper-right-y
-     * @return a PdfFormField
-     */
-    public PdfFormField addMultiLineTextField() {
-        // Create a multi-line text field
-        PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.MULTILINE, PdfFormField.PLAINTEXT, 0);
-        TextDrawingConfig textDrawingConfig = new TextDrawingConfig(field, config.getText(), config.getFont(), config.getFontSize(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry(), config.getName());
-        
-        // Set field parameters (including name)
-        setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
-        
-        // Draw the multi-line text
-        drawMultiLineOfText(textDrawingConfig);
-        
-        // Add the form field to the document
-        addFormField(field);
-        
-        return field;
-    }
-
-
-    /**
-     * @param name     name of the field
-     * @param text     text for the field
-     * @param font     an object of {@link BaseFont}
-     * @param fontSize font size
-     * @param llx      lower-left-x
-     * @param lly      lower-left-y
-     * @param urx      upper-right-x
-     * @param ury      upper-right-y
-     * @return PdfFormField
-     */
-    public PdfFormField addSingleLinePasswordField(TextDrawingConfig config) {
-        // Create a text field with password protection
-        PdfFormField field = PdfFormField.createTextField(writer, PdfFormField.SINGLELINE, PdfFormField.PASSWORD, 0);
-        
-        // Set field parameters (including name)
-        setTextFieldParams(field, config.getText(), config.getName(), config.getLlx(), config.getLly(), config.getUrx(), config.getUry());
-        
-        // Draw the single line of text
-        drawSingleLineOfText(config);
-        
-        // Add the form field to the document
-        addFormField(field);
-        
-        return field;
-    }
-
-
-    /**
-     * @param field an object of {@link PdfFormField}
-     * @param text  text for the field
-     * @param name  name of the field
-     * @param llx   lower-left-x
-     * @param lly   lower-left-y
-     * @param urx   upper-right-x
-     * @param ury   upper-right-y
-     */
-    public void setTextFieldParams(PdfFormField field, String text, String name, float llx, float lly, float urx,
-            float ury) {
-        field.setWidget(new Rectangle(llx, lly, urx, ury), PdfAnnotation.HIGHLIGHT_INVERT);
-        field.setValueAsString(text);
-        field.setDefaultValueAsString(text);
-        field.setFieldName(name);
-        field.setFlags(PdfAnnotation.FLAGS_PRINT);
-        field.setPage();
-    }
-
-
-    /**
-     * @param field    field, an object of {@link PdfFormField}
-     * @param text     text for field
-     * @param font     an object of {@link BaseFont}
-     * @param fontSize font size
-     * @param llx      lower-left-x
-     * @param lly      lower-left-y
-     * @param urx      upper-right-x
-     * @param ury      upper-right-y
+     * @param textDrawingConfig Text drawing configuration
      */
     public void drawMultiLineOfText(TextDrawingConfig textDrawingConfig) {
         PdfAppearance tp = PdfAppearance.createAppearance(writer, textDrawingConfig.getUrx() - textDrawingConfig.getLlx(), textDrawingConfig.getUry() - textDrawingConfig.getLly());
@@ -670,86 +357,6 @@ public class PdfAcroForm extends PdfDictionary {
     }
 
     /**
-     * @param name   field name
-     * @param status status
-     * @param value  value of the field
-     * @param llx    lower-left-x
-     * @param lly    lower-left-y
-     * @param urx    upper-right-x
-     * @param ury    upper-right-y
-     * @return a PdfFormField
-     */
-    public PdfFormField addCheckBox(String name, String value, boolean status, float llx, float lly, float urx,
-            float ury) {
-        PdfFormField field = PdfFormField.createCheckBox(writer);
-        CheckboxParams checkboxParams = new CheckboxParams(field, name, value, status, llx, lly, urx, ury);
-        setCheckBoxParams(checkboxParams);
-        drawCheckBoxAppearences(field, value, llx, lly, urx, ury);
-        addFormField(field);
-        return field;
-    }
-
-    /**
-     * @param name   field name
-     * @param status status
-     * @param field  field, an object of {@link PdfFormField}
-     * @param value  value of the field
-     * @param llx    lower-left-x
-     * @param lly    lower-left-y
-     * @param urx    upper-right-x
-     * @param ury    upper-right-y
-     */
-    public void setCheckBoxParams(CheckboxParams checkBoxParams) {
-        field.setWidget(new Rectangle(checkBoxParams.getLlx(), checkBoxParams.getLly(), checkBoxParams.getUrx(), checkBoxParams.getUry()), PdfAnnotation.HIGHLIGHT_TOGGLE);
-        field.setFieldName(checkBoxParams.getName());
-        if (checkBoxParams.isStatus()) {
-            field.setValueAsName(checkBoxParams.getValue());
-            field.setAppearanceState(checkBoxParams.getValue());
-        } else {
-            field.setValueAsName("Off");
-            field.setAppearanceState("Off");
-        }
-        field.setFlags(PdfAnnotation.FLAGS_PRINT);
-        field.setPage();
-        field.setBorderStyle(new PdfBorderDictionary(1, PdfBorderDictionary.STYLE_SOLID));
-    }
-
-    /**
-     * @param field field, an object of {@link PdfFormField}
-     * @param value value of the field
-     * @param llx   lower-left-x
-     * @param lly   lower-left-y
-     * @param urx   upper-right-x
-     * @param ury   upper-right-y
-     */
-    public void drawCheckBoxAppearences(PdfFormField field, String value, float llx, float lly, float urx, float ury) {
-        BaseFont font = null;
-        try {
-            font = BaseFont.createFont(BaseFont.ZAPFDINGBATS, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
-        } catch (Exception e) {
-            throw new ExceptionConverter(e);
-        }
-        float size = (ury - lly);
-        PdfAppearance tpOn = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
-        PdfAppearance tp2 = (PdfAppearance) tpOn.getDuplicate();
-        tp2.setFontAndSize(font, size);
-        tp2.resetRGBColorFill();
-        field.setDefaultAppearanceString(tp2);
-        tpOn.drawTextField(0f, 0f, urx - llx, ury - lly);
-        tpOn.saveState();
-        tpOn.resetRGBColorFill();
-        tpOn.beginText();
-        tpOn.setFontAndSize(font, size);
-        tpOn.showTextAligned(PdfContentByte.ALIGN_CENTER, "4", (urx - llx) / 2, (ury - lly) / 2 - (size * 0.3f), 0);
-        tpOn.endText();
-        tpOn.restoreState();
-        field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, value, tpOn);
-        PdfAppearance tpOff = PdfAppearance.createAppearance(writer, urx - llx, ury - lly);
-        tpOff.drawTextField(0f, 0f, urx - llx, ury - lly);
-        field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, "Off", tpOff);
-    }
-
-    /**
      * @param name          name of the field
      * @param defaultValue  default value
      * @param noToggleToOff noToggleToOff
@@ -760,13 +367,6 @@ public class PdfAcroForm extends PdfDictionary {
         radio.setFieldName(name);
         radio.setValueAsName(defaultValue);
         return radio;
-    }
-
-    /**
-     * @param radiogroup field
-     */
-    public void addRadioGroup(PdfFormField radiogroup) {
-        addFormField(radiogroup);
     }
 
     /**
@@ -811,15 +411,7 @@ public class PdfAcroForm extends PdfDictionary {
     }
 
     /**
-     * @param name         name of the field
-     * @param options      options
-     * @param defaultValue default value
-     * @param font         an object of {@link BaseFont}
-     * @param fontSize     font size
-     * @param llx          lower-left-x
-     * @param lly          lower-left-y
-     * @param urx          upper-right-x
-     * @param ury          upper-right-y
+     * @param params select list parameters
      * @return a PdfFormField
      */
     public PdfFormField addSelectList(SelectListParams params) throws UnsupportedOperationException{
@@ -854,16 +446,7 @@ public class PdfAcroForm extends PdfDictionary {
     }
 
     /**
-     * @param name         name of the field
-     * @param options      options
-     * @param defaultValue default value
-     * @param editable     if field is editable, <code>true</code> or <code>false</code>
-     * @param font         an object of {@link BaseFont}
-     * @param fontSize     font size
-     * @param llx          lower-left-x
-     * @param lly          lower-left-y
-     * @param urx          upper-right-x
-     * @param ury          upper-right-y
+     * @param params combo box parameters
      * @return a PdfFormField
      */
     public PdfFormField addComboBox(ComboBoxParams params) throws UnsupportedOperationException {
@@ -938,7 +521,7 @@ public class PdfAcroForm extends PdfDictionary {
      * @return a PdfFormField
      */
     public PdfFormField addSignature(String name,
-            float llx, float lly, float urx, float ury) {
+            float llx, float lly, float urx, float ury) throws AnnotationException {
         PdfFormField signature = PdfFormField.createSignature(writer);
         setSignatureParams(signature, name, llx, lly, urx, ury);
         drawSignatureAppearences(signature, llx, lly, urx, ury);
@@ -955,7 +538,7 @@ public class PdfAcroForm extends PdfDictionary {
      * @param ury   upper-right-y
      */
     public void setSignatureParams(PdfFormField field, String name,
-            float llx, float lly, float urx, float ury) {
+            float llx, float lly, float urx, float ury) throws AnnotationException {
         field.setWidget(new Rectangle(llx, lly, urx, ury), PdfAnnotation.HIGHLIGHT_INVERT);
         field.setFieldName(name);
         field.setFlags(PdfAnnotation.FLAGS_PRINT);

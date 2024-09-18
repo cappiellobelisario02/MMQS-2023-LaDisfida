@@ -199,7 +199,7 @@ public interface Element {
     /**
      * This is a possible type of <CODE>Element</CODE>.
      */
-    int RECTANGLE = 30;
+    int RECTANGLE_CONST = 30;
 
     /**
      * This is a possible type of <CODE>Element</CODE>.
@@ -403,7 +403,6 @@ public interface Element {
 
     @Override
     String toString();
-
     float llx();
 
     float lly();

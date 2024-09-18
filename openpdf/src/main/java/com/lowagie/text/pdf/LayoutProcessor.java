@@ -44,6 +44,7 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.FontCreationException;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextAttribute;
@@ -59,20 +60,6 @@ import java.text.Bidi;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-// File: FontCreationException.java
-class FontCreationException extends RuntimeException {
-    // Constructor that accepts a message
-    public FontCreationException(String message) {
-        super(message);
-    }
-
-    // Constructor that accepts a message and a cause
-    public FontCreationException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-
 
 /**
  * Provides glyph layout e.g. for accented Latin letters.

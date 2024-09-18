@@ -1557,7 +1557,7 @@ public class PdfContentByte {
             concatCTM(matrix.getA() / image.getWidth(), matrix.getB() / image.getWidth(),
                     matrix.getC() / image.getHeight(), matrix.getD() / image.getHeight(),
                     matrix.getE(), matrix.getF());
-            rectangle(image);
+            rectangle(image.getAbsoluteX(), image.getAbsoluteY(), image.getWidth(), image.getHeight());
             restoreState();
         }
     }
@@ -2823,11 +2823,11 @@ public class PdfContentByte {
             return;
         }
         content.append("[");
-        List<String> arrayList = text.getArrayList();
+        List<Object> arrayList = glyphs.getList();
         boolean lastWasDisplacement = false;
         for (Object obj : arrayList) {
-            if (obj instanceof PdfGlyphArray.GlyphSubList) { // glyph codes
-                byte[] b = state.fontDetails.convertToBytes((PdfGlyphArray.GlyphSubList) obj);
+            if (obj instanceof PdfGlyphArray.GlyphSubList list) { // glyph codes
+                byte[] b = state.fontDetails.convertToBytes(list);
                 escapeAndAppendString(b, content); // appends escapedString to content
                 lastWasDisplacement = false;
             } else { // displacement
@@ -2853,7 +2853,7 @@ public class PdfContentByte {
                     MessageLocalization.getComposedMessage(BEFORE_WRITING_ANY_TEXT));
         }
         content.append("[");
-        List<String> arrayList = text.getArrayList();
+        List<Object> arrayList = text.getArrayList();
         boolean lastWasNumber = false;
         for (Object obj : arrayList) {
             if (obj instanceof String) {

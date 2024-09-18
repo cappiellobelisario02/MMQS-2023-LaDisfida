@@ -67,17 +67,19 @@ import java.util.Iterator;
  * <p>
  * A <CODE>PdfCell</CODE> is an <CODE>ArrayList</CODE> of <CODE>PdfLine</CODE>s.
  * <p>
- * When using variable borders ({@link com.lowagie.text.Rectangle#isUseVariableBorders isUseVariableBorders()} == true),
+ * When using variable borders ({@link Rectangle#isUseVariableBorders isUseVariableBorders()} == true),
  * the borders are drawn completely inside the cell Rectangle so that adjacent cell borders will not overlap. Otherwise,
  * the borders are drawn on top of the edges of the cell Rectangle and will overlap the borders of adjacent cells.
  *
- * @see com.lowagie.text.Rectangle
- * @see com.lowagie.text.Cell
+ * @see Rectangle
+ * @see Cell
  * @see PdfLine
  * @see PdfTable
  */
 
 public class PdfCell extends Rectangle {
+
+    public static final String UNEXPECTED_VALUE = "Unexpected value: ";
 
     // membervariables
 
@@ -205,14 +207,14 @@ public class PdfCell extends Rectangle {
         java.util.List<PdfAction> allActions;
         int aCounter;
         // we loop over all the elements of the cell
-        for (Iterator i = cell.getElements(); i.hasNext(); ) {
-            element = (Element) i.next();
+        for (Iterator<Element> i = cell.getElements(); i.hasNext(); ) {
+            element = i.next();
             switch (element.type()) {
-                case Element.JPEG:
-                case Element.JPEG2000:
-                case Element.JBIG2:
-                case Element.IMGRAW:
-                case Element.IMGTEMPLATE:
+                case Element.JPEG,
+                     Element.JPEG2000,
+                     Element.JBIG2,
+                     Element.IMGRAW,
+                     Element.IMGTEMPLATE:
                     addImage((Image) element, left, right, alignment); //
                     break;
                 // if the element is a list
@@ -234,13 +236,12 @@ public class PdfCell extends Rectangle {
                     float currentLineLeading = leading;
                     float currentLeft = left;
                     float currentRight = right;
-                    if (element instanceof Phrase) {
-                        currentLineLeading = ((Phrase) element).getLeading();
+                    if (element instanceof Phrase phrase) {
+                        currentLineLeading = phrase.getLeading();
                     }
-                    if (element instanceof Paragraph) {
-                        Paragraph p = (Paragraph) element;
-                        currentLeft += p.getIndentationLeft();
-                        currentRight -= p.getIndentationRight();
+                    if (element instanceof Paragraph paragraph) {
+                        currentLeft += paragraph.getIndentationLeft();
+                        currentRight -= paragraph.getIndentationRight();
                     }
                     if (line == null) {
                         line = new PdfLine(currentLeft, currentRight, alignment, currentLineLeading);
@@ -250,6 +251,13 @@ public class PdfCell extends Rectangle {
                     if (chunks.isEmpty()) {
                         addLine(line); // add empty line - all cells need some lines even if they are empty
                         line = new PdfLine(currentLeft, currentRight, alignment, currentLineLeading);
+                        int type = element.type();
+                        if (type == Element.PARAGRAPH || type == Element.SECTION || type == Element.CHAPTER) {
+                            line.resetAlignment();
+                            flushCurrentLine();
+                        } else {
+                            throw new IllegalStateException(UNEXPECTED_VALUE + element.type());
+                        }
                     } else {
                         for (Object chunk1 : chunks) {
                             Chunk c = (Chunk) chunk1;
@@ -260,15 +268,15 @@ public class PdfCell extends Rectangle {
                                 chunk = overflow;
                             }
                         }
-                    }
-                    // if the element is a paragraph, section or chapter, we reset the alignment and add the line
-                    switch (element.type()) {
-                        case Element.PARAGRAPH:
-                        case Element.SECTION:
-                        case Element.CHAPTER:
+                        int type = element.type();
+                        if (type == Element.PARAGRAPH || type == Element.SECTION || type == Element.CHAPTER) {
                             line.resetAlignment();
                             flushCurrentLine();
+                        } else {
+                            throw new IllegalStateException(UNEXPECTED_VALUE + element.type());
+                        }
                     }
+                    // if the element is a paragraph, section or chapter, we reset the alignment and add the line
             }
         }
         flushCurrentLine();
@@ -278,13 +286,13 @@ public class PdfCell extends Rectangle {
             }
             if (cell.getMaxLines() > 0) {
                 String more = cell.getShowTruncation();
-                if (more != null && more.length() > 0) {
+                if (more != null && !more.isEmpty()) {
                     // Denote that the content has been truncated
                     lastLine = lines.get(lines.size() - 1);
                     if (lastLine.size() >= 0) {
                         PdfChunk lastChunk = lastLine.getChunk(lastLine.size() - 1);
                         float moreWidth = new PdfChunk(more, lastChunk).width();
-                        while (lastChunk.toString().length() > 0 && lastChunk.width() + moreWidth > right - left) {
+                        while (!lastChunk.toString().isEmpty() && lastChunk.width() + moreWidth > right - left) {
                             // Remove characters to leave room for the 'more' indicator
                             lastChunk.setValue(lastChunk.toString().substring(0, lastChunk.length() - 1));
                         }
@@ -324,14 +332,13 @@ public class PdfCell extends Rectangle {
         java.util.List<PdfAction> allActions = new ArrayList<>();
         processActions(list, null, allActions);
         int aCounter = 0;
-        for (Object o1 : list.getItems()) {
-            Element ele = (Element) o1;
-            switch (ele.type()) {
+        for (Element o1 : list.getItems()) {
+            switch (o1.type()) {
                 case Element.LISTITEM:
-                    ListItem item = (ListItem) ele;
+                    ListItem item = (ListItem) o1;
                     line = new PdfLine(left + item.getIndentationLeft(), right, alignment, item.getLeading());
                     line.setListItem(item);
-                    for (Object o : item.getChunks()) {
+                    for (Element o : item.getChunks()) {
                         chunk = new PdfChunk((Chunk) o, allActions.get(aCounter++));
                         while ((overflow = line.add(chunk)) != null) {
                             addLine(line);
@@ -344,9 +351,11 @@ public class PdfCell extends Rectangle {
                     }
                     break;
                 case Element.LIST:
-                    List sublist = (List) ele;
+                    List sublist = (List) o1;
                     addList(sublist, left + sublist.getIndentationLeft(), right, alignment);
                     break;
+                default:
+                    throw new IllegalStateException(UNEXPECTED_VALUE + o1.type());
             }
         }
     }
@@ -413,18 +422,12 @@ public class PdfCell extends Rectangle {
         nonContentHeight += getBorderWidthInside(TOP) + getBorderWidthInside(BOTTOM);
 
         float interiorHeight = totalHeight - nonContentHeight;
-        float extraHeight = 0.0f;
-
-        switch (verticalAlignment) {
-            case Element.ALIGN_BOTTOM:
-                extraHeight = interiorHeight - contentHeight;
-                break;
-            case Element.ALIGN_MIDDLE:
-                extraHeight = (interiorHeight - contentHeight) / 2.0f;
-                break;
-            default:    // ALIGN_TOP
-                extraHeight = 0f;
-        }
+        float extraHeight = switch (verticalAlignment) {
+            case Element.ALIGN_BOTTOM -> interiorHeight - contentHeight;
+            case Element.ALIGN_MIDDLE -> (interiorHeight - contentHeight) / 2.0f;
+            default ->    // ALIGN_TOP
+                    0f;
+        };
 
         extraHeight += cellpadding() + cellspacing();
         extraHeight += getBorderWidthInside(TOP);
@@ -486,29 +489,19 @@ public class PdfCell extends Rectangle {
      * Gets the amount of the border for the specified side that is inside the Rectangle. For non-variable width borders
      * this is only 1/2 the border width on that side.  This always returns 0 if {@link #useBorderPadding} is false;
      *
-     * @param side the side to check.  One of the side constants in {@link com.lowagie.text.Rectangle}
+     * @param side the side to check.  One of the side constants in {@link Rectangle}
      * @return the borderwidth inside the cell
      */
     private float getBorderWidthInside(int side) {
         float width = 0f;
         if (useBorderPadding) {
-            switch (side) {
-                case Rectangle.LEFT:
-                    width = getBorderWidthLeft();
-                    break;
-
-                case Rectangle.RIGHT:
-                    width = getBorderWidthRight();
-                    break;
-
-                case Rectangle.TOP:
-                    width = getBorderWidthTop();
-                    break;
-
-                default:    // default and BOTTOM
-                    width = getBorderWidthBottom();
-                    break;
-            }
+            width = switch (side) {
+                case Rectangle.LEFT -> getBorderWidthLeft();
+                case Rectangle.RIGHT -> getBorderWidthRight();
+                case Rectangle.TOP -> getBorderWidthTop();
+                default ->    // default and BOTTOM
+                        getBorderWidthBottom();
+            };
             // non-variable (original style) borders overlap the rectangle (only 1/2 counts)
             if (!isUseVariableBorders()) {
                 width = width / 2f;
@@ -552,98 +545,6 @@ public class PdfCell extends Rectangle {
         imageLine.add(new PdfChunk(imageChunk, null));
         addLine(imageLine);
         return imageLine.height();
-    }
-
-    /**
-     * Gets the lines of a cell that can be drawn between certain limits.
-     * <p>
-     * Remark: all the lines that can be drawn are removed from the object!
-     *
-     * @param top    the top of the part of the table that can be drawn
-     * @param bottom the bottom of the part of the table that can be drawn
-     * @return an <CODE>ArrayList</CODE> of <CODE>PdfLine</CODE>s
-     */
-
-    public java.util.ArrayList<PdfLine> getLines(float top, float bottom) {
-        float lineHeight;
-        float currentPosition = Math.min(getTop(), top);
-        setTop(currentPosition + cellspacing);
-        java.util.ArrayList<PdfLine> result = new ArrayList<>();
-
-        // if the bottom of the page is higher than the top of the cell: do nothing
-        if (getTop() < bottom) {
-            return result;
-        }
-
-        // we loop over the lines
-        int size = lines.size();
-        boolean aboveBottom = true;
-        for (int i = 0; i < size && aboveBottom; i++) {
-            line = lines.get(i);
-            lineHeight = line.height();
-            currentPosition -= lineHeight;
-            // if the currentPosition is higher than the bottom, we add the line to the result
-            if (currentPosition > (bottom + cellpadding + getBorderWidthInside(BOTTOM))) {
-                result.add(line);
-            } else {
-                aboveBottom = false;
-            }
-        }
-        // if the bottom of the cell is higher than the bottom of the page, the cell is written, so we can remove all lines
-        float difference = 0f;
-        if (!header) {
-            if (aboveBottom) {
-                lines = new ArrayList<>();
-                contentHeight = 0f;
-            } else {
-                size = result.size();
-                for (int i = 0; i < size; i++) {
-                    line = removeLine(0);
-                    difference += line.height();
-                }
-            }
-        }
-        if (difference > 0) {
-            for (Image image : images) {
-                image.setAbsolutePosition(image.getAbsoluteX(), image.getAbsoluteY() - difference - leading);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Gets the images of a cell that can be drawn between certain limits.
-     * <p>
-     * Remark: all the lines that can be drawn are removed from the object!
-     *
-     * @param top    the top of the part of the table that can be drawn
-     * @param bottom the bottom of the part of the table that can be drawn
-     * @return an <CODE>ArrayList</CODE> of <CODE>Image</CODE>s
-     */
-
-    public java.util.ArrayList<Image> getImages(float top, float bottom) {
-
-        // if the bottom of the page is higher than the top of the cell: do nothing
-        if (getTop() < bottom) {
-            return new ArrayList<>();
-        }
-        top = Math.min(getTop(), top);
-        // initializations
-        Image image;
-        float height;
-        java.util.ArrayList<Image> result = new ArrayList<>();
-        // we loop over the images
-        for (Iterator<Image> i = images.iterator(); i.hasNext() && !header; ) {
-            image = i.next();
-            height = image.getAbsoluteY();
-            // if the currentPosition is higher than the bottom, we add the line to the result
-            if (top - height > (bottom + cellpadding)) {
-                image.setAbsolutePosition(image.getAbsoluteX(), top - height);
-                result.add(image);
-                i.remove();
-            }
-        }
-        return result;
     }
 
     /**
@@ -697,11 +598,10 @@ public class PdfCell extends Rectangle {
             return 0;
         }
         float result = 0;
-        int size = lines.size();
-        PdfLine line;
-        for (Object line1 : lines) {
-            line = (PdfLine) line1;
-            result += line.height();
+        PdfLine lineM;
+        for (PdfLine line1 : lines) {
+            lineM = line1;
+            result += lineM.height();
         }
         return result;
     }
@@ -716,8 +616,8 @@ public class PdfCell extends Rectangle {
 
     public float remainingHeight() {
         float result = 0f;
-        for (Object image1 : images) {
-            Image image = (Image) image1;
+        for (Image image1 : images) {
+            Image image = image1;
             result += image.getScaledHeight();
         }
         return remainingLinesHeight() + cellspacing + 2 * cellpadding + result;
@@ -790,12 +690,12 @@ public class PdfCell extends Rectangle {
         }
         Iterator<String> i;
         switch (element.type()) {
-            case Element.PHRASE:
-            case Element.SECTION:
-            case Element.ANCHOR:
-            case Element.CHAPTER:
-            case Element.LISTITEM:
-            case Element.PARAGRAPH:
+            case Element.PHRASE, 
+                 Element.SECTION, 
+                 Element.ANCHOR, 
+                 Element.CHAPTER, 
+                 Element.LISTITEM, 
+                 Element.PARAGRAPH:
                 for (i = ((ArrayList) element).iterator(); i.hasNext(); ) {
                     processActions((Element) i.next(), action, allActions);
                 }
@@ -845,6 +745,7 @@ public class PdfCell extends Rectangle {
      * @return a <CODE>Rectangle</CODE>
      */
 
+    @Override
     public Rectangle RECTANGLE(float top, float bottom) {
         Rectangle tmp = new Rectangle(getLeft(), getBottom(), getRight(), getTop());
         tmp.cloneNonPositionParameters(this);

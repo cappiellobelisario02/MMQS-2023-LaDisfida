@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: com.github.librepdf.pdfFontsExtra
+Bnd-LastModified: 1722960645273
+Build-Jdk-Spec: 17
+Bundle-Description: Open and Free PDF library.
+Bundle-License: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html,
+  https://www.mozilla.org/en-US/MPL/2.0/
+Bundle-ManifestVersion: 2
+Bundle-Name: openpdf-fonts-extra
+Bundle-SymbolicName: com.github.librepdf.openpdf-fonts-extra
+Bundle-Version: 2.0.3.SNAPSHOT
+Created-By: Apache Maven Bundle Plugin 5.1.9
+Export-Package: org.librepdf.openpdf.fonts;uses:="com.lowagie.text";vers
+ ion="2.0.3"
+Import-Package: com.lowagie.text,com.lowagie.text.pdf,java.io,java.lang
+Multi-Release: true
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=17))"
+Tool: Bnd-6.3.1.202206071316

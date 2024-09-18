@@ -69,20 +69,22 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.ExceptionConverter;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Objects;
 
 
 public class CFFFont {
 
+    public static final String CHARSET = "charset";
+    public static final String PRIVATE = "Private";
+    public static final String CHAR_STRINGS = "CharStrings";
+    public static final String UNIQUE_ID = "UniqueID";
+    public static final String FDARRAY = "FDArray";
+    public static final String FDSELECT = "FDSelect";
     static final String[] operatorNames = {
             "version", "Notice", "FullName", "FamilyName",
             "Weight", "FontBBox", "BlueValues", "OtherBlues",
             "FamilyBlues", "FamilyOtherBlues", "StdHW", "StdVW",
-            "UNKNOWN_12", "UniqueID", "XUID", "charset",
-            "Encoding", "CharStrings", "Private", "Subrs",
+            "UNKNOWN_12", UNIQUE_ID, "XUID", CHARSET,
+            "Encoding", CHAR_STRINGS, PRIVATE, "Subrs",
             "defaultWidthX", "nominalWidthX", "UNKNOWN_22", "UNKNOWN_23",
             "UNKNOWN_24", "UNKNOWN_25", "UNKNOWN_26", "UNKNOWN_27",
             "UNKNOWN_28", "UNKNOWN_29", "UNKNOWN_30", "UNKNOWN_31",
@@ -95,7 +97,7 @@ public class CFFFont {
             "UNKNOWN_12_24", "UNKNOWN_12_25", "UNKNOWN_12_26", "UNKNOWN_12_27",
             "UNKNOWN_12_28", "UNKNOWN_12_29", "ROS", "CIDFontVersion",
             "CIDFontRevision", "CIDFontType", "CIDCount", "UIDBase",
-            "FDArray", "FDSelect", "FontName"
+            FDARRAY, FDSELECT, "FontName"
     };
 
     static final String[] standardStrings = {
@@ -169,10 +171,9 @@ public class CFFFont {
             "Ydieresissmall", "001.000", "001.001", "001.002", "001.003", "Black",
             "Bold", "Book", "Light", "Medium", "Regular", "Roman", "Semibold"
     };
-    private final int oFFSize;
     protected String key;
     protected Object[] args = new Object[48];
-    protected int arg_count = 0;
+    protected int argCount = 0;
     /**
      * A random Access File or an array
      */
@@ -187,24 +188,15 @@ public class CFFFont {
     protected int[] gsubrOffsets;
     // Changed from private to protected by Ygal&Oren
     protected Font[] fonts;
+    protected char offSize;
     int nextIndexOffset;
 
     public CFFFont(RandomAccessFileOrArray inputbuffer) {
-
         buf = inputbuffer;
         seek(0);
 
-        int major, minor;
-        major = getCard8();
-        minor = getCard8();
-
-
-
         int hdrSize = getCard8();
-
         offSize = getCard8();
-
-
 
         nameIndexOffset = hdrSize;
         nameOffsets = getIndex(nameIndexOffset);
@@ -217,108 +209,109 @@ public class CFFFont {
 
         fonts = new Font[nameOffsets.length - 1];
 
-        // now get the name index
+        extractFontNames();
+        parseTopDicts();
+    }
 
-        /*
-        privateOffset     = new int[nfonts];
-        charsetOffset     = new int[nfonts];
-        encodingOffset    = new int[nfonts];
-        charstringsOffset = new int[nfonts];
-        fdarrayOffset     = new int[nfonts];
-        fdselectOffset    = new int[nfonts];
-         */
-
+    private void extractFontNames() {
         for (int j = 0; j < nameOffsets.length - 1; j++) {
             fonts[j] = new Font();
             seek(nameOffsets[j]);
             fonts[j].name = "";
+            StringBuilder sb;
             for (int k = nameOffsets[j]; k < nameOffsets[j + 1]; k++) {
-                fonts[j].name += getCard8();
+                sb = new StringBuilder(fonts[j].name);
+                sb.append(getCard8());
+                fonts[j].name = sb.toString();
             }
         }
+    }
 
-        // string index
-
-        /*
-        System.err.println("std strings = "+standardStrings.length);
-        System.err.println("fnt strings = "+(stringOffsets.length-1));
-        for (char j=0; j<standardStrings.length+(stringOffsets.length-1); j++) {
-            //seek(stringOffsets[j]);
-            //strings[j] = "";
-            //for (int k=stringOffsets[j]; k<stringOffsets[j+1]; k++) {
-            //    strings[j] += (char)getCard8();
-            //}
-            System.err.println("j="+(int)j+" <? "+(standardStrings.length+(stringOffsets.length-1)));
-            System.err.println("strings["+(int)j+"]=<"+getString(j)+">");
-        }
-         */
-
-        // top dict
-
+    private void parseTopDicts() {
         for (int j = 0; j < topdictOffsets.length - 1; j++) {
             seek(topdictOffsets[j]);
-            while (getPosition() < topdictOffsets[j + 1]) {
+            parseTopDictItems(j);
+            parsePrivateDict(j);
+            parseFdArrayIndex(j);
+        }
+    }
+
+    private void parseTopDictItems(int fontIndex) {
+        while (getPosition() < topdictOffsets[fontIndex + 1]) {
+            getDictItem();
+            switch (key) {
+                case "FullName":
+                    fonts[fontIndex].fullName = getString((char) ((Integer) args[0]).intValue());
+                    break;
+                case "ROS":
+                    fonts[fontIndex].isCID = true;
+                    break;
+                case PRIVATE:
+                    fonts[fontIndex].privateLength = (Integer) args[0];
+                    fonts[fontIndex].privateOffset = (Integer) args[1];
+                    break;
+                case CHARSET:
+                    fonts[fontIndex].charsetOffset = (Integer) args[0];
+                    break;
+                case CHAR_STRINGS:
+                    handleCharStrings(fontIndex);
+                    break;
+                case FDARRAY:
+                    fonts[fontIndex].fdarrayOffset = (Integer) args[0];
+                    break;
+                case FDSELECT:
+                    fonts[fontIndex].fdselectOffset = (Integer) args[0];
+                    break;
+                case "CharstringType":
+                    fonts[fontIndex].charstringType = (Integer) args[0];
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + key);
+            }
+        }
+    }
+
+    private void handleCharStrings(int fontIndex) {
+        int p = getPosition();
+        fonts[fontIndex].charstringsOffsets = getIndex(fonts[fontIndex].charstringsOffset);
+        seek(p);
+    }
+
+    private void parsePrivateDict(int fontIndex) {
+        if (fonts[fontIndex].privateOffset >= 0) {
+            seek(fonts[fontIndex].privateOffset);
+            while (getPosition() < fonts[fontIndex].privateOffset + fonts[fontIndex].privateLength) {
                 getDictItem();
-                if (Objects.equals(key, "FullName")) {
-                    fonts[j].fullName = getString((char) ((Integer) args[0]).intValue());
-                } else if (Objects.equals(key, "ROS")) {
-                    fonts[j].isCID = true;
-                } else if (Objects.equals(key, "Private")) {
-                    fonts[j].privateLength = (Integer) args[0];
-                    fonts[j].privateOffset = (Integer) args[1];
-                } else if (Objects.equals(key, "charset")) {
-                    fonts[j].charsetOffset = (Integer) args[0];
-
-                } else if (Objects.equals(key, "CharStrings")) {
-                    fonts[j].charstringsOffset = (Integer) args[0];
-                    // Added by Oren & Ygal
-                    int p = getPosition();
-                    fonts[j].charstringsOffsets = getIndex(fonts[j].charstringsOffset);
-                    seek(p);
-                } else if (Objects.equals(key, "FDArray")) {
-                    fonts[j].fdarrayOffset = (Integer) args[0];
-                } else if (Objects.equals(key, "FDSelect")) {
-                    fonts[j].fdselectOffset = (Integer) args[0];
-                } else if (Objects.equals(key, "CharstringType")) {
-                    fonts[j].CharstringType = (Integer) args[0];
-                }
-            }
-
-            // private dict
-            if (fonts[j].privateOffset >= 0) {
-                seek(fonts[j].privateOffset);
-                while (getPosition() < fonts[j].privateOffset + fonts[j].privateLength) {
-                    getDictItem();
-                    if (Objects.equals(key, "Subrs")) {
-                        //Add the private offset to the lsubrs since the offset is
-                        // relative to the beginning of the PrivateDict
-                        fonts[j].privateSubrs = (Integer) args[0] + fonts[j].privateOffset;
-                    }
-                }
-            }
-
-            // fdarray index
-            if (fonts[j].fdarrayOffset >= 0) {
-                int[] fdarrayOffsets = getIndex(fonts[j].fdarrayOffset);
-
-                fonts[j].fdprivateOffsets = new int[fdarrayOffsets.length - 1];
-                fonts[j].fdprivateLengths = new int[fdarrayOffsets.length - 1];
-
-
-                for (int k = 0; k < fdarrayOffsets.length - 1; k++) {
-                    seek(fdarrayOffsets[k]);
-                    while (getPosition() < fdarrayOffsets[k + 1]) {
-                        getDictItem();
-                    }
-                    if (Objects.equals(key, "Private")) {
-                        fonts[j].fdprivateLengths[k] = (Integer) args[0];
-                        fonts[j].fdprivateOffsets[k] = (Integer) args[1];
-                    }
-
+                if ("Subrs".equals(key)) {
+                    fonts[fontIndex].privateSubrs = (Integer) args[0] + fonts[fontIndex].privateOffset;
                 }
             }
         }
     }
+
+    private void parseFdArrayIndex(int fontIndex) {
+        if (fonts[fontIndex].fdarrayOffset >= 0) {
+            int[] fdarrayOffsets = getIndex(fonts[fontIndex].fdarrayOffset);
+            fonts[fontIndex].fdprivateOffsets = new int[fdarrayOffsets.length - 1];
+            fonts[fontIndex].fdprivateLengths = new int[fdarrayOffsets.length - 1];
+
+            for (int k = 0; k < fdarrayOffsets.length - 1; k++) {
+                seek(fdarrayOffsets[k]);
+                parseFdArrayItems(fontIndex, k, fdarrayOffsets[k + 1]);
+            }
+        }
+    }
+
+    private void parseFdArrayItems(int fontIndex, int k, int endOffset) {
+        while (getPosition() < endOffset) {
+            getDictItem();
+            if (PRIVATE.equals(key)) {
+                fonts[fontIndex].fdprivateLengths[k] = (Integer) args[0];
+                fonts[fontIndex].fdprivateOffsets[k] = (Integer) args[1];
+            }
+        }
+    }
+
 
     public String getString(char sid) {
         if (sid < standardStrings.length) {
@@ -401,7 +394,8 @@ public class CFFFont {
     // offsets, and return them.
     // Sets the nextIndexOffset.
     int[] getIndex(int nextIndexOffset) {
-        int count, indexOffSize;
+        int count;
+        int indexOffSize;
 
         seek(nextIndexOffset);
         count = getCard16();
@@ -409,7 +403,6 @@ public class CFFFont {
 
         if (count == 0) {
             offsets[0] = -1;
-            nextIndexOffset += 2;
             return offsets;
         }
 
@@ -431,111 +424,120 @@ public class CFFFont {
     }
 
     protected void getDictItem() {
-        for (int i = 0; i < arg_count; i++) {
-            args[i] = null;
-        }
-        arg_count = 0;
+        resetArgs();
         key = null;
-        boolean gotKey = false;
 
-        while (!gotKey) {
+        while (!processKey()) {
             char b0 = getCard8();
+
             if (b0 == 29) {
-                int item = getInt();
-                args[arg_count] = item;
-                arg_count++;
-                continue;
-            }
-            if (b0 == 28) {
-                short item = getShort();
-                args[arg_count] = (int) item;
-                arg_count++;
-                continue;
-            }
-            if (b0 >= 32 && b0 <= 246) {
-                byte item = (byte) (b0 - 139);
-                args[arg_count] = (int) item;
-                arg_count++;
-                continue;
-            }
-            if (b0 >= 247 && b0 <= 250) {
-                char b1 = getCard8();
-                short item = (short) ((b0 - 247) * 256 + b1 + 108);
-                args[arg_count] = (int) item;
-                arg_count++;
-                continue;
-            }
-            if (b0 >= 251 && b0 <= 254) {
-                char b1 = getCard8();
-                short item = (short) (-(b0 - 251) * 256 - b1 - 108);
-                args[arg_count] = (int) item;
-                arg_count++;
-                continue;
-            }
-            if (b0 == 30) {
-                String item = "";
-                boolean done = false;
-                char buffer = 0;
-                byte avail = 0;
-                int nibble = 0;
-                while (!done) {
-                    // get a nibble
-                    if (avail == 0) {
-                        buffer = getCard8();
-                        avail = 2;
-                    }
-                    if (avail == 1) {
-                        nibble = (buffer / 16);
-                        avail--;
-                    }
-                    if (avail == 2) {
-                        nibble = (buffer % 16);
-                        avail--;
-                    }
-                    switch (nibble) {
-                        case 0xa:
-                            item += ".";
-                            break;
-                        case 0xb:
-                            item += "E";
-                            break;
-                        case 0xc:
-                            item += "E-";
-                            break;
-                        case 0xe:
-                            item += "-";
-                            break;
-                        case 0xf:
-                            done = true;
-                            break;
-                        default:
-                            if (nibble >= 0 && nibble <= 9) {
-                                item += String.valueOf(nibble);
-                            } else {
-                                item += "<NIBBLE ERROR: " + nibble + '>';
-                                done = true;
-                            }
-                            break;
-                    }
-                }
-                args[arg_count] = item;
-                arg_count++;
-                continue;
-            }
-            if (b0 <= 21) {
-                gotKey = true;
-                if (b0 != 12) {
-                    key = operatorNames[b0];
-                } else {
-                    key = operatorNames[32 + getCard8()];
-                }
-                //for (int i=0; i<arg_count; i++)
-                //  System.err.print(args[i].toString()+" ");
-                //System.err.println(key+" ;");
-                continue;
+                handleIntItem();
+            } else if (b0 == 28) {
+                handleShortItem();
+            } else if (b0 >= 32 && b0 <= 246) {
+                handleByteItem(b0);
+            } else if (b0 >= 247 && b0 <= 250) {
+                handlePositiveRangeItem(b0);
+            } else if (b0 >= 251 && b0 <= 254) {
+                handleNegativeRangeItem(b0);
+            } else if (b0 == 30) {
+                handleStringItem();
             }
         }
     }
+
+    private void resetArgs() {
+        for (int i = 0; i < argCount; i++) {
+            args[i] = null;
+        }
+        argCount = 0;
+    }
+
+    private void handleIntItem() {
+        int item = getInt();
+        args[argCount++] = item;
+    }
+
+    private void handleShortItem() {
+        short item = getShort();
+        args[argCount++] = (int) item;
+    }
+
+    private void handleByteItem(char b0) {
+        byte item = (byte) (b0 - 139);
+        args[argCount++] = (int) item;
+    }
+
+    private void handlePositiveRangeItem(char b0) {
+        char b1 = getCard8();
+        short item = (short) ((b0 - 247) * 256 + b1 + 108);
+        args[argCount++] = (int) item;
+    }
+
+    private void handleNegativeRangeItem(char b0) {
+        char b1 = getCard8();
+        short item = (short) (-(b0 - 251) * 256 - b1 - 108);
+        args[argCount++] = (int) item;
+    }
+
+    private void handleStringItem() {
+        StringBuilder item = new StringBuilder();
+        boolean done = false;
+        char buffer = 0;
+        byte avail = 0;
+        int nibble;
+
+        while (!done) {
+            nibble = getNextNibble(buffer, avail);
+            avail = (byte) ((avail == 1) ? 0 : 1);
+            buffer = (avail == 2) ? getCard8() : buffer;
+
+            done = appendNibbleToString(item, nibble);
+        }
+
+        args[argCount++] = item.toString();
+    }
+
+    private int getNextNibble(char buffer, byte avail) {
+        return (avail == 1) ? (buffer / 16) : (buffer % 16);
+    }
+
+    private boolean appendNibbleToString(StringBuilder item, int nibble) {
+        switch (nibble) {
+            case 0xa:
+                item.append(".");
+                break;
+            case 0xb:
+                item.append("E");
+                break;
+            case 0xc:
+                item.append("E-");
+                break;
+            case 0xe:
+                item.append("-");
+                break;
+            case 0xf:
+                return true;
+            default:
+                if (nibble <= 9) {
+                    item.append(nibble);
+                } else {
+                    item.append("<NIBBLE ERROR: ").append(nibble).append('>');
+                    return true;
+                }
+        }
+        return false;
+    }
+
+    private boolean processKey() {
+        char b0 = getCard8();
+        if (b0 <= 21) {
+            key = (b0 != 12) ? operatorNames[b0] : operatorNames[32 + getCard8()];
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * a utility that creates a range item for an entire index
@@ -556,288 +558,6 @@ public class CFFFont {
             return new RangeItem(buf, indexOffset,
                     2 + 1 + (count + 1) * indexOffSize + size);
         }
-    }
-
-    /**
-     * get a single CID font. The PDF architecture (1.4) supports 16-bit strings only with CID CFF fonts, not in Type-1
-     * CFF fonts, so we convert the font to CID if it is in the Type-1 format. Two other tasks that we need to do are to
-     * select only a single font from the CFF package (this again is a PDF restriction) and to subset the CharStrings
-     * glyph description.
-     *
-     * @param fontName name of the font
-     * @return byte array
-     */
-    public byte[] getCID(String fontName) {
-        int j;
-        for (j = 0; j < fonts.length; j++) {
-            if (fontName.equals(fonts[j].name)) {
-                break;
-            }
-        }
-        if (j == fonts.length) {
-            return null;
-        }
-
-        Deque<Item> l = new LinkedList<>();
-
-        // copy the header
-
-        seek(0);
-
-        int major = getCard8();
-        int minor = getCard8();
-        int hdrSize = getCard8();
-        int oFFSize = getCard8();
-        nextIndexOffset = hdrSize;
-
-        l.addLast(new RangeItem(buf, 0, hdrSize));
-
-        int nglyphs = -1, nstrings = -1;
-        if (!fonts[j].isCID) {
-            // count the glyphs
-            seek(fonts[j].charstringsOffset);
-            nglyphs = getCard16();
-            seek(stringIndexOffset);
-            nstrings = getCard16() + standardStrings.length;
-            return new int[];
-        }
-
-        // create a name index
-
-        l.addLast(new UInt16Item((char) 1)); // count
-        l.addLast(new UInt8Item((char) 1)); // offSize
-        l.addLast(new UInt8Item((char) 1)); // first offset
-        l.addLast(new UInt8Item((char) (1 + fonts[j].name.length())));
-        l.addLast(new StringItem(fonts[j].name));
-
-        // create the topdict Index
-
-        l.addLast(new UInt16Item((char) 1)); // count
-        l.addLast(new UInt8Item((char) 2)); // offSize
-        l.addLast(new UInt16Item((char) 1)); // first offset
-        OffsetItem topdictIndex1Ref = new IndexOffsetItem(2);
-        l.addLast(topdictIndex1Ref);
-        IndexBaseItem topdictBase = new IndexBaseItem();
-        l.addLast(topdictBase);
-
-        /*
-        int maxTopdictLen = (topdictOffsets[j+1]-topdictOffsets[j])
-                            + 9*2 // at most 9 new keys
-                            + 8*5 // 8 new integer arguments
-                            + 3*2;// 3 new SID arguments
-         */
-        //byte[] topdict = new byte[maxTopdictLen];
-
-        OffsetItem charsetRef = new DictOffsetItem();
-        OffsetItem charstringsRef = new DictOffsetItem();
-        OffsetItem fdarrayRef = new DictOffsetItem();
-        OffsetItem fdselectRef = new DictOffsetItem();
-
-        if (!fonts[j].isCID) {
-            // create a ROS key
-            l.addLast(new DictNumberItem(nstrings));
-            l.addLast(new DictNumberItem(nstrings + 1));
-            l.addLast(new DictNumberItem(0));
-            l.addLast(new UInt8Item((char) 12));
-            l.addLast(new UInt8Item((char) 30));
-            // create a CIDCount key
-            l.addLast(new DictNumberItem(nglyphs));
-            l.addLast(new UInt8Item((char) 12));
-            l.addLast(new UInt8Item((char) 34));
-            // What about UIDBase (12,35)? Don't know what is it.
-            // I don't think we need FontName; the font I looked at didn't have it.
-        }
-
-        // create an FDArray key
-        l.addLast(fdarrayRef);
-        l.addLast(new UInt8Item((char) 12));
-        l.addLast(new UInt8Item((char) 36));
-        // create an FDSelect key
-        l.addLast(fdselectRef);
-        l.addLast(new UInt8Item((char) 12));
-        l.addLast(new UInt8Item((char) 37));
-        // create an charset key
-        l.addLast(charsetRef);
-        l.addLast(new UInt8Item((char) 15));
-        // create a CharStrings key
-        l.addLast(charstringsRef);
-        l.addLast(new UInt8Item((char) 17));
-
-        seek(topdictOffsets[j]);
-        while (getPosition() < topdictOffsets[j + 1]) {
-            int p1 = getPosition();
-            getDictItem();
-            int p2 = getPosition();
-            if (Objects.equals(key, "Encoding")
-                    || Objects.equals(key, "Private")
-                    || Objects.equals(key, "FDSelect")
-                    || Objects.equals(key, "FDArray")
-                    || Objects.equals(key, "charset")
-                    || Objects.equals(key, "CharStrings")
-            ) {
-                // just drop them
-            } else {
-                l.add(new RangeItem(buf, p1, p2 - p1));
-            }
-        }
-
-        l.addLast(new IndexMarkerItem(topdictIndex1Ref, topdictBase));
-
-        // Copy the string index and append new strings.
-        // We need 3 more strings: Registry, Ordering, and a FontName for one FD.
-        // The total length is at most "Adobe"+"Identity"+63 = 76
-
-        if (fonts[j].isCID) {
-            l.addLast(getEntireIndexRange(stringIndexOffset));
-        } else {
-            String fdFontName = fonts[j].name + "-OneRange";
-            if (fdFontName.length() > 127) {
-                fdFontName = fdFontName.substring(0, 127);
-            }
-            String extraStrings = "Adobe" + "Identity" + fdFontName;
-
-            int origStringsLen = stringOffsets[stringOffsets.length - 1]
-                    - stringOffsets[0];
-            int stringsBaseOffset = stringOffsets[0] - 1;
-
-            byte stringsIndexOffSize;
-            if (origStringsLen + extraStrings.length() <= 0xff) {
-                stringsIndexOffSize = 1;
-            } else if (origStringsLen + extraStrings.length() <= 0xffff) {
-                stringsIndexOffSize = 2;
-            } else if (origStringsLen + extraStrings.length() <= 0xffffff) {
-                stringsIndexOffSize = 3;
-            } else {
-                stringsIndexOffSize = 4;
-            }
-
-            l.addLast(new UInt16Item((char) ((stringOffsets.length - 1) + 3))); // count
-            l.addLast(new UInt8Item((char) stringsIndexOffSize)); // offSize
-            for (int stringOffset : stringOffsets) {
-                l.addLast(new IndexOffsetItem(stringsIndexOffSize,
-                        stringOffset - stringsBaseOffset));
-            }
-            int currentStringsOffset = stringOffsets[stringOffsets.length - 1]
-                    - stringsBaseOffset;
-            currentStringsOffset += "Adobe".length();
-            l.addLast(new IndexOffsetItem(stringsIndexOffSize, currentStringsOffset));
-            currentStringsOffset += "Identity".length();
-            l.addLast(new IndexOffsetItem(stringsIndexOffSize, currentStringsOffset));
-            currentStringsOffset += fdFontName.length();
-            l.addLast(new IndexOffsetItem(stringsIndexOffSize, currentStringsOffset));
-
-            l.addLast(new RangeItem(buf, stringOffsets[0], origStringsLen));
-            l.addLast(new StringItem(extraStrings));
-        }
-
-        // copy the global subroutine index
-
-        l.addLast(getEntireIndexRange(gsubrIndexOffset));
-
-        // deal with fdarray, fdselect, and the font descriptors
-
-        if (fonts[j].isCID) {
-            // copy the FDArray, FDSelect, charset
-        } else {
-            // create FDSelect
-            l.addLast(new MarkerItem(fdselectRef));
-            l.addLast(new UInt8Item((char) 3)); // format identifier
-            l.addLast(new UInt16Item((char) 1)); // nRanges
-
-            l.addLast(new UInt16Item((char) 0)); // Range[0].firstGlyph
-            l.addLast(new UInt8Item((char) 0)); // Range[0].fd
-
-            l.addLast(new UInt16Item((char) nglyphs)); // sentinel
-
-            // recreate a new charset
-            // This format is suitable only for fonts without subsetting
-
-            l.addLast(new MarkerItem(charsetRef));
-            l.addLast(new UInt8Item((char) 2)); // format identifier
-
-            l.addLast(new UInt16Item((char) 1)); // first glyph in range (ignore .notdef)
-            l.addLast(new UInt16Item((char) (nglyphs - 1))); // nLeft
-            // now all are covered, the data structure is complete.
-
-            // create a font dict index (fdarray)
-
-            l.addLast(new MarkerItem(fdarrayRef));
-            l.addLast(new UInt16Item((char) 1));
-            l.addLast(new UInt8Item((char) 1)); // offSize
-            l.addLast(new UInt8Item((char) 1)); // first offset
-
-            OffsetItem privateIndex1Ref = new IndexOffsetItem(1);
-            l.addLast(privateIndex1Ref);
-            IndexBaseItem privateBase = new IndexBaseItem();
-            l.addLast(privateBase);
-
-            // looking at the PS that acrobat generates from a PDF with
-            // a CFF opentype font embedded with an identity-H encoding,
-            // it seems that it does not need a FontName.
-            //l.addLast(new UInt8Item((char)12));
-            //l.addLast(new UInt8Item((char)38)); // FontName
-
-            l.addLast(new DictNumberItem(fonts[j].privateLength));
-            OffsetItem privateRef = new DictOffsetItem();
-            l.addLast(privateRef);
-            l.addLast(new UInt8Item((char) 18)); // Private
-
-            l.addLast(new IndexMarkerItem(privateIndex1Ref, privateBase));
-
-            // copy the private index & local subroutines
-
-            l.addLast(new MarkerItem(privateRef));
-            // copy the private dict and the local subroutines.
-            // the length of the private dict seems to NOT include
-            // the local subroutines.
-            l.addLast(new RangeItem(buf, fonts[j].privateOffset, fonts[j].privateLength));
-            if (fonts[j].privateSubrs >= 0) {
-                l.addLast(getEntireIndexRange(fonts[j].privateSubrs));
-            }
-        }
-
-        // copy the charstring index
-
-        l.addLast(new MarkerItem(charstringsRef));
-        l.addLast(getEntireIndexRange(fonts[j].charstringsOffset));
-
-        // now create the new CFF font
-
-        int[] currentOffset = new int[1];
-        currentOffset[0] = 0;
-
-        Iterator<Integer> listIter = l.iterator();
-        while (listIter.hasNext()) {
-            Item item = (Item) listIter.next();
-            item.increment(currentOffset);
-        }
-
-        listIter = l.iterator();
-        while (listIter.hasNext()) {
-            Item item = (Item) listIter.next();
-            item.xref();
-        }
-
-        int size = currentOffset[0];
-        byte[] b = new byte[size];
-
-        listIter = l.iterator();
-        while (listIter.hasNext()) {
-            Item item = (Item) listIter.next();
-            item.emit(b);
-        }
-
-        return b;
-    }
-
-    public boolean isCID(String fontName) {
-        int j;
-        for (j = 0; j < fonts.length; j++) {
-            if (fontName.equals(fonts[j].name)) {
-                return fonts[j].isCID;
-            }
-        }
-        return false;
     }
 
     public boolean exists(String fontName) {
@@ -861,7 +581,7 @@ public class CFFFont {
     /**
      * List items for the linked list that builds the new CID font.
      */
-    protected static abstract class Item {
+    protected abstract static class Item {
 
         protected int myOffset = -1;
 
@@ -889,9 +609,9 @@ public class CFFFont {
         }
     }
 
-    protected static abstract class OffsetItem extends Item {
+    protected abstract static class OffsetItem extends Item {
 
-        public int value;
+        int value;
 
         /**
          * set the value of an offset item that was initially unknown. It will be fixed up latex by a call to xref on
@@ -911,7 +631,8 @@ public class CFFFont {
     protected static final class RangeItem extends Item {
 
         private final RandomAccessFileOrArray buf;
-        public int offset, length;
+        int offset;
+        int length;
 
         public RangeItem(RandomAccessFileOrArray buf, int offset, int length) {
             this.offset = offset;
@@ -943,7 +664,7 @@ public class CFFFont {
      * need a specific size in bytes (for offset arrays) and a negative value means that this is a dict item that uses a
      * variable-size representation.
      */
-    static protected final class IndexOffsetItem extends OffsetItem {
+    protected static final class IndexOffsetItem extends OffsetItem {
 
         public final int size;
 
@@ -980,18 +701,21 @@ public class CFFFont {
                     // fallthrough
                 case 1:
                     buffer[myOffset + i] = (byte) ((value) & 0xff);
-                    i++;
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + size);
             }
         }
     }
 
-    static protected final class IndexBaseItem extends Item {
+    protected static final class IndexBaseItem extends Item {
 
         public IndexBaseItem() {
+            //empty on purpose for now
         }
     }
 
-    static protected final class IndexMarkerItem extends Item {
+    protected static final class IndexMarkerItem extends Item {
 
         private final OffsetItem offItem;
         private final IndexBaseItem indexBase;
@@ -1008,10 +732,10 @@ public class CFFFont {
     }
 
     /**
-     * TODO To change the template for this generated type comment go to Window - Preferences - Java - Code Generation -
+     * To change the template for this generated type comment go to Window - Preferences - Java - Code Generation -
      * Code and Comments
      */
-    static protected final class SubrMarkerItem extends Item {
+    protected static final class SubrMarkerItem extends Item {
 
         private final OffsetItem offItem;
         private final IndexBaseItem indexBase;
@@ -1022,8 +746,6 @@ public class CFFFont {
         }
         @Override
         public void xref() {
-            @Override
-            //System.err.println("index marker item, base="+indexBase.myOffset+" my="+this.myOffset);
             offItem.set(this.myOffset - indexBase.myOffset);
         }
     }
@@ -1031,7 +753,7 @@ public class CFFFont {
     /**
      * an unknown offset in a dictionary for the list. We will fix up the offset later; for now, assume it's large.
      */
-    static protected final class DictOffsetItem extends OffsetItem {
+    protected static final class DictOffsetItem extends OffsetItem {
 
         public final int size;
 
@@ -1052,7 +774,7 @@ public class CFFFont {
                 buffer[myOffset + 1] = (byte) ((value >>> 24) & 0xff);
                 buffer[myOffset + 2] = (byte) ((value >>> 16) & 0xff);
                 buffer[myOffset + 3] = (byte) ((value >>> 8) & 0xff);
-                buffer[myOffset + 4] = (byte) ((value >>> 0) & 0xff);
+                buffer[myOffset + 4] = (byte) ((value) & 0xff);
             }
         }
     }
@@ -1061,9 +783,9 @@ public class CFFFont {
      * Card24 item.
      */
 
-    static protected final class UInt24Item extends Item {
+    protected static final class UInt24Item extends Item {
 
-        public int value;
+        int value;
 
         public UInt24Item(int value) {
             this.value = value;
@@ -1079,7 +801,7 @@ public class CFFFont {
         public void emit(byte[] buffer) {
             buffer[myOffset] = (byte) ((value >>> 16) & 0xff);
             buffer[myOffset + 1] = (byte) ((value >>> 8) & 0xff);
-            buffer[myOffset + 2] = (byte) ((value >>> 0) & 0xff);
+            buffer[myOffset + 2] = (byte) ((value) & 0xff);
         }
     }
 
@@ -1087,9 +809,9 @@ public class CFFFont {
      * Card32 item.
      */
 
-    static protected final class UInt32Item extends Item {
+    protected static final class UInt32Item extends Item {
 
-        public int value;
+        int value;
 
         public UInt32Item(int value) {
             this.value = value;
@@ -1106,7 +828,7 @@ public class CFFFont {
             buffer[myOffset] = (byte) ((value >>> 24) & 0xff);
             buffer[myOffset + 1] = (byte) ((value >>> 16) & 0xff);
             buffer[myOffset + 2] = (byte) ((value >>> 8) & 0xff);
-            buffer[myOffset + 3] = (byte) ((value >>> 0) & 0xff);
+            buffer[myOffset + 3] = (byte) ((value) & 0xff);
         }
     }
 
@@ -1114,9 +836,9 @@ public class CFFFont {
      * A SID or Card16 item.
      */
 
-    static protected final class UInt16Item extends Item {
+    protected static final class UInt16Item extends Item {
 
-        public char value;
+        char value;
 
         public UInt16Item(char value) {
             this.value = value;
@@ -1128,9 +850,10 @@ public class CFFFont {
         }
 
         // this is incomplete!
+        @Override
         public void emit(byte[] buffer) {
             buffer[myOffset] = (byte) ((value >>> 8) & 0xff);
-            buffer[myOffset + 1] = (byte) ((value >>> 0) & 0xff);
+            buffer[myOffset + 1] = (byte) ((value) & 0xff);
         }
     }
 
@@ -1138,14 +861,15 @@ public class CFFFont {
      * A Card8 item.
      */
 
-    static protected final class UInt8Item extends Item {
+    protected static final class UInt8Item extends Item {
 
-        public char value;
+        char value;
 
         public UInt8Item(char value) {
             this.value = value;
         }
 
+        @Override
         public void increment(int[] currentOffset) {
             super.increment(currentOffset);
             currentOffset[0] += 1;
@@ -1154,13 +878,13 @@ public class CFFFont {
         // this is incomplete!
         @Override
         public void emit(byte[] buffer) {
-            buffer[myOffset] = (byte) ((value >>> 0) & 0xff);
+            buffer[myOffset] = (byte) ((value) & 0xff);
         }
     }
 
-    static protected final class StringItem extends Item {
+    protected static final class StringItem extends Item {
 
-        public String s;
+        String s;
 
         public StringItem(String s) {
             this.s = s;
@@ -1184,10 +908,19 @@ public class CFFFont {
      * A dictionary number on the list. This implementation is inefficient: it doesn't use the variable-length
      * representation.
      */
-    static protected final class DictNumberItem extends Item {
+    protected static final class DictNumberItem extends Item {
 
         public final int value;
-        public int size = 5;
+
+        public int getSize() {
+            return size;
+        }
+
+        public void setSize(int size) {
+            this.size = size;
+        }
+
+        int size = 5;
         
         public DictNumberItem(int value) {
             this.value = value;
@@ -1207,7 +940,7 @@ public class CFFFont {
                 buffer[myOffset + 1] = (byte) ((value >>> 24) & 0xff);
                 buffer[myOffset + 2] = (byte) ((value >>> 16) & 0xff);
                 buffer[myOffset + 3] = (byte) ((value >>> 8) & 0xff);
-                buffer[myOffset + 4] = (byte) ((value >>> 0) & 0xff);
+                buffer[myOffset + 4] = (byte) ((value) & 0xff);
             }
         }
     }
@@ -1216,7 +949,7 @@ public class CFFFont {
      * An offset-marker item for the list. It is used to mark an offset and to set the offset list item.
      */
 
-    static protected final class MarkerItem extends Item {
+    protected static final class MarkerItem extends Item {
 
         OffsetItem p;
 
@@ -1229,41 +962,37 @@ public class CFFFont {
         }
     }
 
-    /**
-     * TODO Changed from private to protected by {@literal Ygal&Oren}
-     */
-    protected final class Font {
+    protected static final class Font {
 
-        public String name;
-        public String fullName;
-        public boolean isCID = false;
-        public int privateOffset = -1; // only if not CID
-        public int privateLength = -1; // only if not CID
-        public int privateSubrs = -1;
-        public int charstringsOffset = -1;
-        public int encodingOffset = -1;
-        public int charsetOffset = -1;
-        public int fdarrayOffset = -1; // only if CID
-        public int fdselectOffset = -1; // only if CID
-        public int[] fdprivateOffsets;
-        public int[] fdprivateLengths;
-        public int[] fdprivateSubrs;
+        String name;
+        String fullName;
+        boolean isCID = false;
+        int privateOffset = -1; // only if not CID
+        int privateLength = -1; // only if not CID
+        int privateSubrs = -1;
+        int charstringsOffset = -1;
+        int charsetOffset = -1;
+        int fdarrayOffset = -1; // only if CID
+        int fdselectOffset = -1; // only if CID
+        int[] fdprivateOffsets;
+        int[] fdprivateLengths;
 
         // Added by Oren & Ygal
-        public int nglyphs;
-        public int nstrings;
-        public int CharsetLength;
-        public int[] charstringsOffsets;
-        public int[] charset;
-        public int[] FDSelect;
-        public int FDSelectLength;
-        public int FDSelectFormat;
-        public int CharstringType = 2;
-        public int FDArrayCount;
-        public int FDArrayOffsize;
-        public int[] FDArrayOffsets;
-        public int[] PrivateSubrsOffset;
-        public int[][] PrivateSubrsOffsetsArray;
-        public int[] SubrsOffsets;
+        int nglyphs;
+        int nstrings;
+        int charsetLength;
+        int[] charstringsOffsets;
+        int[] charset;
+        int[] fdselect;
+        int fdselectlength;
+        int fdselectformat;
+        int charstringType = 2;
+        int fdarraycount;
+        int fdarrayoffsize;
+        int[] fdarrayoffsets;
+        int[] privateSubrsOffset;
+        int[][] privateSubrsOffsetsArray;
+        int[] subrsOffsets;
+
     }
 }

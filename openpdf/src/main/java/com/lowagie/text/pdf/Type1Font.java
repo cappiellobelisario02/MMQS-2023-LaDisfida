@@ -59,7 +59,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 /**
  * Reads a Type1 font
@@ -68,14 +67,15 @@ import java.util.logging.Logger;
  */
 class Type1Font extends BaseFont {
 
-    static Logger logger = Logger.getLogger(Type1Font.class.getName());
-
     /**
      * Types of records in a PFB file. ASCII is 1 and BINARY is 2. They have to appear in the PFB file in this
      * sequence.
      */
     private static final int[] PFB_TYPES = {1, 2, 1};
-    private FontsResourceAnchor resourceAnchor;
+    private static FontsResourceAnchor resourceAnchor;
+    private float ItalicAngle;
+    private float CapHeight;
+
     /**
      * The PFB file if the input was made with a <CODE>byte</CODE> array.
      */
@@ -99,8 +99,7 @@ class Type1Font extends BaseFont {
     /**
      * The italic angle of the font, usually 0.0 or negative.
      */
-    private float italic_Angle = 0.0f;
-    private float cap_Height = 0.0f;
+    private static final int ITALICANGLE = 0;
     /**
      * <CODE>true</CODE> if all the characters have the same
      * width.
@@ -142,7 +141,7 @@ class Type1Font extends BaseFont {
     /**
      * A variable.
      */
-    private int CAPHEIGHT = 700;
+    private static final int CAPHEIGHT = 700;
     /**
      * A variable.
      */
@@ -163,6 +162,9 @@ class Type1Font extends BaseFont {
      * A variable.
      */
     private int StdVW = 80;
+
+    private static final String DELIMITER = "\u00ff";
+
     /**
      * Represents the section CharMetrics in the AFM file. Each value of this array contains a <CODE>Object[4]</CODE>
      * with an Integer, Integer, String and int[]. This is the code, width, name and char bbox. The key is the name of
@@ -199,6 +201,23 @@ class Type1Font extends BaseFont {
      */
     Type1Font(String afmFile, String enc, boolean emb, byte[] ttfAfm, byte[] pfb, boolean forceRead)
             throws DocumentException, IOException {
+        validateInput(emb, ttfAfm, pfb);
+
+        encoding = enc;
+        embeddedBool = emb;
+        fileName = afmFile;
+        fontType = FONT_TYPE_T1;
+
+        if (BuiltinFonts14.containsKey(afmFile)) {
+            handleBuiltinFont(afmFile);
+        } else {
+            processFontFile(afmFile, ttfAfm, forceRead);
+        }
+
+        finalizeEncoding();
+    }
+
+    private void validateInput(boolean emb, byte[] ttfAfm, byte[] pfb) throws DocumentException {
         if (emb && ttfAfm != null && pfb == null) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("two.byte.arrays.are.needed.if.the.type1.font.is.embedded"));
@@ -206,108 +225,73 @@ class Type1Font extends BaseFont {
         if (emb && ttfAfm != null) {
             this.pfb = pfb;
         }
-        encoding = enc;
-        embedded = emb;
-        fileName = afmFile;
-        fontType = FONT_TYPE_T1;
-        RandomAccessFileOrArray rf = null;
-        InputStream is = null;
-        if (BuiltinFonts14.containsKey(afmFile)) {
-            embedded = false;
-            builtinFont = true;
+    }
+
+    private void handleBuiltinFont(String afmFile) throws DocumentException, IOException {
+        embeddedBool = false;
+        builtinFont = true;
+        byte[] buf = readResourceFont(afmFile);
+        try (RandomAccessFileOrArray rf = new RandomAccessFileOrArray(buf)) {
+            process(rf);
+        }
+    }
+
+    private byte[] readResourceFont(String afmFile) throws DocumentException, IOException {
+        try (InputStream is = getResourceStream(RESOURCE_PATH + afmFile + ".afm", resourceAnchor.getClass().getClassLoader());
+                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            if (is == null) {
+                throw new DocumentException(
+                        MessageLocalization.getComposedMessage("1.not.found.as.resource", afmFile));
+            }
             byte[] buf = new byte[1024];
-            try {
-                if (resourceAnchor == null) {
-                    resourceAnchor = new FontsResourceAnchor();
-                }
-                is = getResourceStream(RESOURCE_PATH + afmFile + ".afm", resourceAnchor.getClass().getClassLoader());
-                if (is == null) {
-                    String msg = MessageLocalization.getComposedMessage("1.not.found.as.resource", afmFile);
-                    logger.info(msg);
-                    throw new DocumentException(msg);
-                }
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                while (true) {
-                    int size = is.read(buf);
-                    if (size < 0) {
-                        break;
-                    }
-                    out.write(buf, 0, size);
-                }
-                buf = out.toByteArray();
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (Exception e) {
-                        // empty on purpose
-                    }
-                }
+            int size;
+            while ((size = is.read(buf)) >= 0) {
+                out.write(buf, 0, size);
             }
-            try {
-                rf = new RandomAccessFileOrArray(buf);
-                process(rf);
-            } finally {
-                if (rf != null) {
-                    try {
-                        rf.close();
-                    } catch (Exception e) {
-                        // empty on purpose
-                    }
-                }
-            }
-        } else if (afmFile.toLowerCase().endsWith(".afm")) {
-            try {
-                if (ttfAfm == null) {
-                    rf = new RandomAccessFileOrArray(afmFile, forceRead, Document.plainRandomAccess);
-                } else {
-                    rf = new RandomAccessFileOrArray(ttfAfm);
-                }
-                process(rf);
-            } finally {
-                if (rf != null) {
-                    try {
-                        rf.close();
-                    } catch (Exception e) {
-                        // empty on purpose
-                    }
-                }
-            }
+            return out.toByteArray();
+        }
+    }
+
+    private void processFontFile(String afmFile, byte[] ttfAfm, boolean forceRead) throws DocumentException, IOException {
+        if (afmFile.toLowerCase().endsWith(".afm")) {
+            processAfmFile(afmFile, ttfAfm, forceRead);
         } else if (afmFile.toLowerCase().endsWith(".pfm")) {
-            try {
-                ByteArrayOutputStream ba = new ByteArrayOutputStream();
-                if (ttfAfm == null) {
-                    rf = new RandomAccessFileOrArray(afmFile, forceRead, Document.plainRandomAccess);
-                } else {
-                    rf = new RandomAccessFileOrArray(ttfAfm);
-                }
-                Pfm2afm.convert(rf, ba);
-                rf.close();
-                rf = new RandomAccessFileOrArray(ba.toByteArray());
-                process(rf);
-            } finally {
-                if (rf != null) {
-                    try {
-                        rf.close();
-                    } catch (Exception e) {
-                        // empty on purpose
-                    }
-                }
-            }
+            processPfmFile(afmFile, ttfAfm);
         } else {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("1.is.not.an.afm.or.pfm.font.file", afmFile));
         }
+    }
 
+    private void processAfmFile(String afmFile, byte[] ttfAfm, boolean forceRead) throws DocumentException, IOException {
+        try (RandomAccessFileOrArray rf = ttfAfm == null ? new RandomAccessFileOrArray(afmFile, forceRead, Document.plainRandomAccess)
+                : new RandomAccessFileOrArray(ttfAfm)) {
+            process(rf);
+        }
+    }
+
+    private void processPfmFile(String afmFile, byte[] ttfAfm) throws DocumentException, IOException {
+        try (RandomAccessFileOrArray rf = ttfAfm == null ? new RandomAccessFileOrArray(afmFile, false, Document.plainRandomAccess)
+                : new RandomAccessFileOrArray(ttfAfm);
+                ByteArrayOutputStream ba = new ByteArrayOutputStream()) {
+            Pfm2afm.convert(rf, ba);
+            try (RandomAccessFileOrArray newRf = new RandomAccessFileOrArray(ba.toByteArray())) {
+                process(newRf);
+            }
+        }
+    }
+
+    private void finalizeEncoding() throws DocumentException {
         EncodingScheme = EncodingScheme.trim();
         if (EncodingScheme.equals("AdobeStandardEncoding") || EncodingScheme.equals("StandardEncoding")) {
             fontSpecific = false;
         }
         if (!encoding.startsWith("#")) {
-            PdfEncodings.convertToBytes(" ", enc); // check if the encoding exists
+            PdfEncodings.convertToBytes(" ", encoding); // Check if the encoding exists
         }
         createEncoding();
     }
+
 
     /**
      * Gets the width from the font according to the <CODE>name</CODE> or, if the <CODE>name</CODE> is null, meaning it
@@ -371,41 +355,45 @@ class Type1Font extends BaseFont {
      * @throws IOException       the AFM file could not be read
      */
     public void process(RandomAccessFileOrArray rf) throws DocumentException, IOException {
+        readFontHeader(rf);
+        readCharMetrics(rf);
+        readKernPairs(rf);
+        rf.close();
+    }
+
+    private void readFontHeader(RandomAccessFileOrArray rf) throws DocumentException, IOException {
         String line;
         boolean isMetrics = false;
+
         while ((line = rf.readLine()) != null) {
             StringTokenizer tok = new StringTokenizer(line, " ,\n\r\t\f");
-            if (!tok.hasMoreTokens()) {
-                continue;
-            }
+            if (!tok.hasMoreTokens()) continue;
+
             String ident = tok.nextToken();
             switch (ident) {
                 case "FontName":
-                    FontName = tok.nextToken("\u00ff").substring(1);
+                    FontName = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "FullName":
-                    FullName = tok.nextToken("\u00ff").substring(1);
+                    FullName = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "FamilyName":
-                    FamilyName = tok.nextToken("\u00ff").substring(1);
+                    FamilyName = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "Weight":
-                    Weight = tok.nextToken("\u00ff").substring(1);
+                    Weight = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "ItalicAngle":
-                    italic_Angle = Float.parseFloat(tok.nextToken());
+                    ItalicAngle = Float.parseFloat(tok.nextToken());
                     break;
                 case "IsFixedPitch":
                     IsFixedPitch = tok.nextToken().equals("true");
                     break;
                 case "CharacterSet":
-                    CharacterSet = tok.nextToken("\u00ff").substring(1);
+                    CharacterSet = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "FontBBox":
-                    llx = (int) Float.parseFloat(tok.nextToken());
-                    lly = (int) Float.parseFloat(tok.nextToken());
-                    urx = (int) Float.parseFloat(tok.nextToken());
-                    ury = (int) Float.parseFloat(tok.nextToken());
+                    parseFontBBox(tok);
                     break;
                 case "UnderlinePosition":
                     UnderlinePosition = (int) Float.parseFloat(tok.nextToken());
@@ -414,10 +402,10 @@ class Type1Font extends BaseFont {
                     UnderlineThickness = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "EncodingScheme":
-                    EncodingScheme = tok.nextToken("\u00ff").substring(1);
+                    EncodingScheme = tok.nextToken(DELIMITER).substring(1);
                     break;
                 case "CapHeight":
-                    cap_Height = (int) Float.parseFloat(tok.nextToken());
+                    CapHeight = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "XHeight":
                     XHeight = (int) Float.parseFloat(tok.nextToken());
@@ -436,118 +424,157 @@ class Type1Font extends BaseFont {
                     break;
                 case "StartCharMetrics":
                     isMetrics = true;
-                    break label;
+                    break;
+                default:
+                    // Log a message or handle the unexpected identifier
+                    System.err.println("Unexpected identifier: " + ident);
+                    // Optionally, you can choose to ignore or throw an exception depending on your needs
+                    break;
             }
+
         }
+
         if (!isMetrics) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("missing.startcharmetrics.in.1", fileName));
         }
+    }
+
+    private void parseFontBBox(StringTokenizer tok) {
+        llx = (int) Float.parseFloat(tok.nextToken());
+        lly = (int) Float.parseFloat(tok.nextToken());
+        urx = (int) Float.parseFloat(tok.nextToken());
+        ury = (int) Float.parseFloat(tok.nextToken());
+    }
+
+    private void readCharMetrics(RandomAccessFileOrArray rf) throws DocumentException, IOException {
+        String line;
+        boolean isMetrics = true;
+
         while ((line = rf.readLine()) != null) {
             StringTokenizer tok = new StringTokenizer(line);
-            if (!tok.hasMoreTokens()) {
-                continue;
-            }
+            if (!tok.hasMoreTokens()) continue;
+
             String ident = tok.nextToken();
             if (ident.equals("EndCharMetrics")) {
                 isMetrics = false;
                 break;
             }
-            Integer C = -1;
-            int WX = 250;
-            String N = "";
-            int[] B = null;
 
-            tok = new StringTokenizer(line, ";");
-            while (tok.hasMoreTokens()) {
-                StringTokenizer tokc = new StringTokenizer(tok.nextToken());
-                if (!tokc.hasMoreTokens()) {
-                    continue;
-                }
-                ident = tokc.nextToken();
-                switch (ident) {
-                    case "C":
-                        C = Integer.valueOf(tokc.nextToken());
-                        break;
-                    case "WX":
-                        WX = (int) Float.parseFloat(tokc.nextToken());
-                        break;
-                    case "N":
-                        N = tokc.nextToken();
-                        break;
-                    case "B":
-                        B = new int[]{Integer.parseInt(tokc.nextToken()),
-                                Integer.parseInt(tokc.nextToken()),
-                                Integer.parseInt(tokc.nextToken()),
-                                Integer.parseInt(tokc.nextToken())};
-                        break;
-                }
+            if (ident.equals("StartCharMetrics")) {
+                isMetrics = true;
+                continue;
             }
-            Object[] metrics = new Object[]{C, WX, N, B};
+
+            Object[] metrics = parseCharMetrics(line);
+            Integer C = (Integer) metrics[0];
             if (C >= 0) {
                 CharMetrics.put(C, metrics);
             }
-            CharMetrics.put(N, metrics);
+            CharMetrics.put((String) metrics[2], metrics);
         }
+
         if (isMetrics) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("missing.endcharmetrics.in.1", fileName));
         }
+
         if (!CharMetrics.containsKey("nonbreakingspace")) {
             Object[] space = CharMetrics.get("space");
             if (space != null) {
                 CharMetrics.put("nonbreakingspace", space);
             }
         }
+    }
+
+    private Object[] parseCharMetrics(String line) {
+        StringTokenizer tok = new StringTokenizer(line, ";");
+        Integer C = -1;
+        int WX = 250;
+        String N = "";
+        int[] B = null;
+
+        while (tok.hasMoreTokens()) {
+            StringTokenizer tokc = new StringTokenizer(tok.nextToken());
+            if (!tokc.hasMoreTokens()) continue;
+
+            String ident = tokc.nextToken();
+            switch (ident) {
+                case "C":
+                    C = Integer.valueOf(tokc.nextToken());
+                    break;
+                case "WX":
+                    WX = (int) Float.parseFloat(tokc.nextToken());
+                    break;
+                case "N":
+                    N = tokc.nextToken();
+                    break;
+                case "B":
+                    B = new int[]{
+                            Integer.parseInt(tokc.nextToken()),
+                            Integer.parseInt(tokc.nextToken()),
+                            Integer.parseInt(tokc.nextToken()),
+                            Integer.parseInt(tokc.nextToken())
+                    };
+                    break;
+                default:
+                    // Log a message or handle the unexpected identifier
+                    System.err.println("Unexpected identifier: " + ident);
+                    // Optionally, you can choose to ignore or throw an exception depending on your needs
+                    break;
+            }
+        }
+
+        return new Object[]{C, WX, N, B};
+    }
+
+    private void readKernPairs(RandomAccessFileOrArray rf) throws DocumentException, IOException {
+        String line;
+        boolean isMetrics = false;
+
         while ((line = rf.readLine()) != null) {
             StringTokenizer tok = new StringTokenizer(line);
-            if (!tok.hasMoreTokens()) {
-                continue;
-            }
+            if (!tok.hasMoreTokens()) continue;
+
             String ident = tok.nextToken();
             if (ident.equals("EndFontMetrics")) {
                 return;
             }
+
             if (ident.equals("StartKernPairs")) {
                 isMetrics = true;
-                break;
-            }
-        }
-        if (!isMetrics) {
-            throw new DocumentException(
-                    MessageLocalization.getComposedMessage("missing.endfontmetrics.in.1", fileName));
-        }
-        while ((line = rf.readLine()) != null) {
-            StringTokenizer tok = new StringTokenizer(line);
-            if (!tok.hasMoreTokens()) {
                 continue;
             }
-            String ident = tok.nextToken();
+
             if (ident.equals("KPX")) {
-                String first = tok.nextToken();
-                String second = tok.nextToken();
-                int width = Integer.parseInt(tok.nextToken());
-                Object[] relates = KernPairs.get(first);
-                if (relates == null) {
-                    KernPairs.put(first, new Object[]{second, width});
-                } else {
-                    int n = relates.length;
-                    Object[] relates2 = new Object[n + 2];
-                    System.arraycopy(relates, 0, relates2, 0, n);
-                    relates2[n] = second;
-                    relates2[n + 1] = width;
-                    KernPairs.put(first, relates2);
-                }
-            } else if (ident.equals("EndKernPairs")) {
-                isMetrics = false;
-                break;
+                processKernPair(tok);
             }
         }
+
         if (isMetrics) {
-            throw new DocumentException(MessageLocalization.getComposedMessage("missing.endkernpairs.in.1", fileName));
+            throw new DocumentException(
+                    MessageLocalization.getComposedMessage("missing.endkernpairs.in.1", fileName));
         }
-        rf.close();
     }
+
+    private void processKernPair(StringTokenizer tok) {
+        String first = tok.nextToken();
+        String second = tok.nextToken();
+        int width = Integer.parseInt(tok.nextToken());
+
+        Object[] relates = KernPairs.get(first);
+        if (relates == null) {
+            KernPairs.put(first, new Object[]{second, width});
+        } else {
+            int n = relates.length;
+            Object[] relates2 = new Object[n + 2];
+            System.arraycopy(relates, 0, relates2, 0, n);
+            relates2[n] = second;
+            relates2[n + 1] = width;
+            KernPairs.put(first, relates2);
+        }
+    }
+
 
     /**
      * If the embedded flag is <CODE>false</CODE> or if the font is one of the 14 built in types, it returns
@@ -558,58 +585,78 @@ class Type1Font extends BaseFont {
      * @since 2.1.3
      */
     public PdfStream getFullFontStream() throws DocumentException {
-        if (builtinFont || !embedded) {
+        if (builtinFont || !embeddedBool) {
             return null;
         }
-        RandomAccessFileOrArray rf = null;
-        try {
-            String filePfb = fileName.substring(0, fileName.length() - 3) + "pfb";
-            if (pfb == null) {
-                rf = new RandomAccessFileOrArray(filePfb, true, Document.plainRandomAccess);
-            } else {
-                rf = new RandomAccessFileOrArray(pfb);
-            }
-            int fileLength = rf.length();
-            byte[] st = new byte[fileLength - 18];
-            int[] lengths = new int[3];
-            int bytePtr = 0;
-            for (int k = 0; k < 3; ++k) {
-                if (rf.read() != 0x80) {
-                    throw new DocumentException(
-                            MessageLocalization.getComposedMessage("start.marker.missing.in.1", filePfb));
-                }
-                if (rf.read() != PFB_TYPES[k]) {
-                    throw new DocumentException(
-                            MessageLocalization.getComposedMessage("incorrect.segment.type.in.1", filePfb));
-                }
-                int size = rf.read();
-                size += rf.read() << 8;
-                size += rf.read() << 16;
-                size += rf.read() << 24;
-                lengths[k] = size;
-                while (size != 0) {
-                    int got = rf.read(st, bytePtr, size);
-                    if (got < 0) {
-                        throw new DocumentException(
-                                MessageLocalization.getComposedMessage("premature.end.in.1", filePfb));
-                    }
-                    bytePtr += got;
-                    size -= got;
-                }
-            }
-            return new StreamFont(st, lengths, compressionLevel);
+
+        try (RandomAccessFileOrArray rf = createRandomAccessFileOrArray()) {
+            byte[] fontData = readFontData(rf);
+            int[] lengths = extractSegmentLengths(rf);
+            return new StreamFont(fontData, lengths, compressionLevel);
         } catch (Exception e) {
             throw new DocumentException(e);
-        } finally {
-            if (rf != null) {
-                try {
-                    rf.close();
-                } catch (Exception e) {
-                    // empty on purpose
-                }
-            }
         }
     }
+
+    private RandomAccessFileOrArray createRandomAccessFileOrArray() throws IOException {
+        String filePfb = fileName.substring(0, fileName.length() - 3) + "pfb";
+        if (pfb == null) {
+            return new RandomAccessFileOrArray(filePfb, true, Document.plainRandomAccess);
+        } else {
+            return new RandomAccessFileOrArray(pfb);
+        }
+    }
+
+    private byte[] readFontData(RandomAccessFileOrArray rf) throws IOException, DocumentException {
+        int fileLength = rf.length();
+        byte[] st = new byte[fileLength - 18];
+        int bytePtr = 0;
+
+        for (int k = 0; k < 3; ++k) {
+            validateSegment(rf, k);
+            int size = readSegmentSize(rf);
+            readSegmentData(rf, st, bytePtr, size);
+            bytePtr += size;
+        }
+
+        return st;
+    }
+
+    private void validateSegment(RandomAccessFileOrArray rf, int segmentIndex) throws IOException, DocumentException {
+        if (rf.read() != 0x80 || rf.read() != PFB_TYPES[segmentIndex]) {
+            throw new DocumentException(
+                    MessageLocalization.getComposedMessage("incorrect.segment.type.in.1", fileName));
+        }
+    }
+
+    private int readSegmentSize(RandomAccessFileOrArray rf) throws IOException {
+        int size = rf.read();
+        size += rf.read() << 8;
+        size += rf.read() << 16;
+        size += rf.read() << 24;
+        return size;
+    }
+
+    private void readSegmentData(RandomAccessFileOrArray rf, byte[] buffer, int offset, int size) throws IOException, DocumentException {
+        while (size > 0) {
+            int readBytes = rf.read(buffer, offset, size);
+            if (readBytes < 0) {
+                throw new DocumentException(
+                        MessageLocalization.getComposedMessage("premature.end.in.1", fileName));
+            }
+            size -= readBytes;
+        }
+    }
+
+    private int[] extractSegmentLengths(RandomAccessFileOrArray rf) throws IOException, DocumentException {
+        int[] lengths = new int[3];
+        for (int k = 0; k < 3; ++k) {
+            validateSegment(rf, k);
+            lengths[k] = readSegmentSize(rf);
+        }
+        return lengths;
+    }
+
 
     /**
      * Generates the font descriptor for this font or <CODE>null</CODE> if it is one of the 14 built in fonts.
@@ -623,11 +670,11 @@ class Type1Font extends BaseFont {
         }
         PdfDictionary dic = new PdfDictionary(PdfName.FONTDESCRIPTOR);
         dic.put(PdfName.ASCENT, new PdfNumber(Ascender));
-        dic.put(PdfName.CAPHEIGHT, new PdfNumber(cap_Height));
+        dic.put(PdfName.CAPHEIGHT, new PdfNumber(CapHeight));
         dic.put(PdfName.DESCENT, new PdfNumber(Descender));
         dic.put(PdfName.FONTBBOX, new PdfRectangle(llx, lly, urx, ury));
         dic.put(PdfName.FONTNAME, new PdfName(FontName));
-        dic.put(PdfName.ITALICANGLE, new PdfNumber(italic_Angle));
+        dic.put(PdfName.ITALICANGLE, new PdfNumber(ItalicAngle));
         dic.put(PdfName.STEMV, new PdfNumber(StdVW));
         if (fontStream != null) {
             dic.put(PdfName.FONTFILE, fontStream);
@@ -637,7 +684,7 @@ class Type1Font extends BaseFont {
             flags |= 1;
         }
         flags |= fontSpecific ? 4 : 32;
-        if (italic_Angle < 0) {
+        if (ItalicAngle < 0) {
             flags |= 64;
         }
         if (FontName.contains("Caps") || FontName.endsWith("SC")) {
@@ -661,59 +708,90 @@ class Type1Font extends BaseFont {
      *                       <CODE>null</CODE>
      * @return the PdfDictionary containing the font dictionary
      */
-    private PdfDictionary getFontBaseType(PdfIndirectReference fontDescriptor, int firstChar, int lastChar,
-            byte[] shortTag) {
+    private PdfDictionary getFontBaseType(PdfIndirectReference fontDescriptor, int firstChar, int lastChar, byte[] shortTag) {
         PdfDictionary dic = new PdfDictionary(PdfName.FONT);
         dic.put(PdfName.SUBTYPE, PdfName.TYPE1);
         dic.put(PdfName.BASEFONT, new PdfName(FontName));
-        boolean stdEncoding = encoding.equals("Cp1252") || encoding.equals("MacRoman");
+
+        boolean stdEncoding = isStandardEncoding();
         if (!fontSpecific || specialMap != null) {
-            for (int k = firstChar; k <= lastChar; ++k) {
-                if (!differences[k].equals(NOTDEF)) {
-                    firstChar = k;
-                    break;
-                }
-            }
-            if (stdEncoding) {
-                dic.put(PdfName.ENCODING,
-                        encoding.equals("Cp1252") ? PdfName.WIN_ANSI_ENCODING : PdfName.MAC_ROMAN_ENCODING);
-            } else {
-                PdfDictionary enc = new PdfDictionary(PdfName.ENCODING);
-                PdfArray dif = new PdfArray();
-                boolean gap = true;
-                for (int k = firstChar; k <= lastChar; ++k) {
-                    if (shortTag[k] != 0) {
-                        if (gap) {
-                            dif.add(new PdfNumber(k));
-                            gap = false;
-                        }
-                        dif.add(new PdfName(differences[k]));
-                    } else {
-                        gap = true;
-                    }
-                }
-                enc.put(PdfName.DIFFERENCES, dif);
-                dic.put(PdfName.ENCODING, enc);
-            }
+            firstChar = adjustFirstChar(firstChar, lastChar);
+            dic.put(PdfName.ENCODING, getEncoding(stdEncoding, firstChar, lastChar, shortTag));
         }
-        if (specialMap != null || forceWidthsOutput || !(builtinFont && (fontSpecific || stdEncoding))) {
-            dic.put(PdfName.FIRSTCHAR, new PdfNumber(firstChar));
-            dic.put(PdfName.LASTCHAR, new PdfNumber(lastChar));
-            PdfArray wd = new PdfArray();
-            for (int k = firstChar; k <= lastChar; ++k) {
-                if (shortTag[k] == 0) {
-                    wd.add(new PdfNumber(0));
-                } else {
-                    wd.add(new PdfNumber(widths[k]));
-                }
-            }
-            dic.put(PdfName.WIDTHS, wd);
+
+        if (shouldIncludeWidthAndCharInfo()) {
+            addWidthAndCharInfo(dic, firstChar, lastChar, shortTag);
         }
+
         if (!builtinFont && fontDescriptor != null) {
             dic.put(PdfName.FONTDESCRIPTOR, fontDescriptor);
         }
+
         return dic;
     }
+
+    private boolean isStandardEncoding() {
+        return encoding.equals("Cp1252") || encoding.equals("MacRoman");
+    }
+
+    private int adjustFirstChar(int firstChar, int lastChar) {
+        for (int k = firstChar; k <= lastChar; ++k) {
+            if (!differences[k].equals(".notdef")) {
+                return k;
+            }
+        }
+        return firstChar; // Fallback in case no valid character is found
+    }
+
+    private PdfDictionary getEncoding(boolean stdEncoding, int firstChar, int lastChar, byte[] shortTag) {
+        if (stdEncoding && encoding.equals("Cp1252")) {
+            return new PdfDictionary(PdfName.WIN_ANSI_ENCODING);
+        }
+        else if(!encoding.equals("Cp1252")){
+            return new PdfDictionary(PdfName.MAC_ROMAN_ENCODING);
+        }
+        else {
+            PdfDictionary enc = new PdfDictionary(PdfName.ENCODING);
+            enc.put(PdfName.DIFFERENCES, getDifferencesArray(firstChar, lastChar, shortTag));
+            return enc;
+        }
+    }
+
+    private PdfArray getDifferencesArray(int firstChar, int lastChar, byte[] shortTag) {
+        PdfArray dif = new PdfArray();
+        boolean gap = true;
+        for (int k = firstChar; k <= lastChar; ++k) {
+            if (shortTag[k] != 0) {
+                if (gap) {
+                    dif.add(new PdfNumber(k));
+                    gap = false;
+                }
+                dif.add(new PdfName(differences[k]));
+            } else {
+                gap = true;
+            }
+        }
+        return dif;
+    }
+
+    private boolean shouldIncludeWidthAndCharInfo() {
+        return specialMap != null || forceWidthsOutput || !(builtinFont && (fontSpecific || isStandardEncoding()));
+    }
+
+    private void addWidthAndCharInfo(PdfDictionary dic, int firstChar, int lastChar, byte[] shortTag) {
+        dic.put(PdfName.FIRSTCHAR, new PdfNumber(firstChar));
+        dic.put(PdfName.LASTCHAR, new PdfNumber(lastChar));
+        dic.put(PdfName.WIDTHS, getWidthsArray(firstChar, lastChar, shortTag));
+    }
+
+    private PdfArray getWidthsArray(int firstChar, int lastChar, byte[] shortTag) {
+        PdfArray wd = new PdfArray();
+        for (int k = firstChar; k <= lastChar; ++k) {
+            wd.add(new PdfNumber(shortTag[k] == 0 ? 0 : widths[k]));
+        }
+        return wd;
+    }
+
 
     /**
      * Outputs to the writer the font dictionaries and streams.
@@ -769,12 +847,12 @@ class Type1Font extends BaseFont {
             case ASCENT:
                 return Ascender * fontSize / 1000;
             case CAPHEIGHT:
-                return cap_Height * fontSize / 1000;
+                return CapHeight * fontSize / 1000;
             case AWT_DESCENT:
             case DESCENT:
                 return Descender * fontSize / 1000;
             case ITALICANGLE:
-                return italic_Angle;
+                return ItalicAngle;
             case BBOXLLX:
                 return llx * fontSize / 1000;
             case BBOXLLY:
@@ -791,6 +869,11 @@ class Type1Font extends BaseFont {
                 return UnderlinePosition * fontSize / 1000;
             case UNDERLINE_THICKNESS:
                 return UnderlineThickness * fontSize / 1000;
+            default:
+                // Log a message or handle the unexpected identifier
+                System.err.println("Unexpected identifier: " + key);
+                // Optionally, you can choose to ignore or throw an exception depending on your needs
+                break;
         }
         return 0;
     }
@@ -903,14 +986,14 @@ class Type1Font extends BaseFont {
             metrics = CharMetrics.get(c);
         } else {
             if (name.equals(".notdef")) {
-                return new int[];
+                return new int[]{};
             }
             metrics = CharMetrics.get(name);
         }
         if (metrics != null) {
             return ((int[]) (metrics[3]));
         }
-        return new int[];
+        return new int[]{};
     }
 
 }

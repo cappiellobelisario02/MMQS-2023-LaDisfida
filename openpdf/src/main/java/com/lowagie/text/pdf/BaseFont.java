@@ -57,8 +57,11 @@ import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.ibm.icu.util.ULocale.getBaseName;
 
 /**
  * Base class for the several font types supported
@@ -281,13 +284,13 @@ public abstract class BaseFont {
      */
     public static final String MACROMAN = "MacRoman";
 
-    public static final int[] CHAR_RANGE_LATIN = {0, 0x17f, 0x2000, 0x206f,
+    protected static final int[] CHAR_RANGE_LATIN = {0, 0x17f, 0x2000, 0x206f,
             0x20a0, 0x20cf, 0xfb00, 0xfb06};
-    public static final int[] CHAR_RANGE_ARABIC = {0, 0x7f, 0x0600, 0x067f,
+    protected static final int[] CHAR_RANGE_ARABIC = {0, 0x7f, 0x0600, 0x067f,
             0x20a0, 0x20cf, 0xfb50, 0xfbff, 0xfe70, 0xfeff};
-    public static final int[] CHAR_RANGE_HEBREW = {0, 0x7f, 0x0590, 0x05ff,
+    protected static final int[] CHAR_RANGE_HEBREW = {0, 0x7f, 0x0590, 0x05ff,
             0x20a0, 0x20cf, 0xfb1d, 0xfb4f};
-    public static final int[] CHAR_RANGE_CYRILLIC = {0, 0x7f, 0x0400, 0x052f,
+    protected static final int[] CHAR_RANGE_CYRILLIC = {0, 0x7f, 0x0400, 0x052f,
             0x2000, 0x206f, 0x20a0, 0x20cf};
 
     /**
@@ -369,7 +372,7 @@ public abstract class BaseFont {
     /**
      * true if the font is to be embedded in the PDF
      */
-    protected boolean embedded;
+    protected boolean embeddedBool;
     /**
      * The compression level for the font stream.
      *
@@ -407,7 +410,7 @@ public abstract class BaseFont {
     /**
      * Used to build a randomized prefix for a subset name
      */
-    protected SsecureRandom secureRandom;
+    protected SecureRandom secureRandom;
 
     /**
      * Indicates if a CIDSet stream should be included in the document.
@@ -647,9 +650,10 @@ public abstract class BaseFont {
      * @since 2.0.3
      */
     public static BaseFont createFont(String name, String encoding,
-            boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb) throws DocumentException, IOException {
-        return createFont(name, encoding, embedded, cached, ttfAfm, pfb, false,
-                false);
+            boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb, boolean noThrow) throws DocumentException,
+            IOException {
+        FontOptions options = new FontOptions(name, encoding, embedded, cached, ttfAfm, pfb, noThrow);
+        return createFont(options);
     }
 
     /**
@@ -686,79 +690,13 @@ public abstract class BaseFont {
      * &quot;# full 'A' nottriangeqlleft 0041 'B' dividemultiply 0042 32 space 0020&quot;
      * </PRE>
      *
-     * @param name      the name of the font or its location on file
-     * @param encoding  the encoding to be applied to this font
-     * @param embedded  true if the font is to be embedded in the PDF
-     * @param cached    true if the font comes from the cache or is added to the cache if new, false if the font is
-     *                  always created new
-     * @param ttfAfm    the true type font or the afm in a byte array
-     * @param pfb       the pfb in a byte array
-     * @param noThrow   if true will not throw an exception if the font is not recognized and will return null, if false
-     *                  will throw an exception if the font is not recognized. Note that even if true an exception may
-     *                  be thrown in some circumstances. This parameter is useful for FontFactory that may have to check
-     *                  many invalid font names before finding the right one
-     * @param forceRead in some cases (TrueTypeFont, Type1Font), the full font file will be read and kept in memory if
-     *                  forceRead is true
+     * @param options font options
      * @return returns a new font. This font may come from the cache but only if cached is true, otherwise it will
      * always be created new
      * @throws DocumentException the font is invalid
      * @throws IOException       the font file could not be read
      * @since 2.1.5
      */
-    public class FontOptions {
-        private String name;
-        private String encoding;
-        private boolean embedded;
-        private boolean cached;
-        private byte[] ttfAfm;
-        private byte[] pfb;
-        private boolean noThrow;
-        private boolean forceRead;
-
-        // Constructors, getters, and setters
-        public FontOptions(String name, String encoding, boolean embedded, boolean cached, byte[] ttfAfm, byte[] pfb, boolean noThrow, boolean forceRead) {
-            this.name = name;
-            this.encoding = encoding;
-            this.embedded = embedded;
-            this.cached = cached;
-            this.ttfAfm = ttfAfm;
-            this.pfb = pfb;
-            this.noThrow = noThrow;
-            this.forceRead = forceRead;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getEncoding() {
-            return encoding;
-        }
-
-        public boolean isEmbedded() {
-            return embedded;
-        }
-
-        public boolean isCached() {
-            return cached;
-        }
-
-        public byte[] getTtfAfm() {
-            return ttfAfm;
-        }
-
-        public byte[] getPfb() {
-            return pfb;
-        }
-
-        public boolean isNoThrow() {
-            return noThrow;
-        }
-
-        public boolean isForceRead() {
-            return forceRead;
-        }
-    }
 
     public static BaseFont createFont(FontOptions options) throws DocumentException, IOException {
         String name = options.getName();
@@ -799,7 +737,7 @@ public abstract class BaseFont {
         return name + "\n" + encoding + "\n" + embedded;
     }
 
-    private static BaseFont getCachedFont(String key, boolean cached, String name) throws IOException, DocumentException {
+    private static BaseFont getCachedFont(String key, boolean cached, String name) throws DocumentException {
         if (cached) {
             BaseFont fontFound = fontCache.get(key);
             if (fontFound != null) {
@@ -814,19 +752,19 @@ public abstract class BaseFont {
         String nameBase = getBaseName(name);
         byte[] ttfAfm = options.getTtfAfm();
         byte[] pfb = options.getPfb();
-        boolean forceRead = options.isForceRead();
+        boolean noThrow = options.isNoThrow();
 
         if (BuiltinFonts14.containsKey(name) || name.toLowerCase().endsWith(".afm") || name.toLowerCase().endsWith(".pfm")) {
-            Type1Font type1Font = new Type1Font(name, encoding, embedded, ttfAfm, pfb, forceRead);
+            Type1Font type1Font = new Type1Font(name, encoding, embedded, ttfAfm, pfb, noThrow);
             type1Font.fastWinansi = encoding.equals(CP1252);
             return type1Font;
         } else if (nameBase.toLowerCase().endsWith(".ttf") || nameBase.toLowerCase().endsWith(".otf") || nameBase.toLowerCase().indexOf(TTC_KEY) >= 1) {
             if (encoding.equals(IDENTITY_H) || encoding.equals(IDENTITY_V)) {
-                TrueTypeFontUnicode trueTypeFontUnicode = new TrueTypeFontUnicode(name, encoding, embedded, ttfAfm, forceRead);
+                TrueTypeFontUnicode trueTypeFontUnicode = new TrueTypeFontUnicode(name, encoding, embedded, ttfAfm, noThrow);
                 LayoutProcessor.loadFont(trueTypeFontUnicode, name);
                 return trueTypeFontUnicode;
             } else {
-                TrueTypeFont trueTypeFont = new TrueTypeFont(name, encoding, embedded, ttfAfm, false, forceRead);
+                TrueTypeFont trueTypeFont = new TrueTypeFont(name, encoding, embedded, ttfAfm, false, noThrow);
                 trueTypeFont.fastWinansi = encoding.equals(CP1252);
                 return trueTypeFont;
             }
@@ -1004,7 +942,7 @@ public abstract class BaseFont {
                 is = contextClassLoader.getResourceAsStream(key);
             }
         }  catch (Exception e) {
-                throw new DocumentException(e);
+            throw new DocumentException(e);
         }
 
         if (is == null) {
@@ -1074,7 +1012,7 @@ public abstract class BaseFont {
      * @param reader the document where the fonts are to be listed from
      * @return the list of fonts and references
      */
-    public static ArrayList<Object[]> getDocumentFonts(PdfReader reader) {
+    public static List<Object[]> getDocumentFonts(PdfReader reader) {
         IntHashtable hits = new IntHashtable();
         ArrayList<Object[]> fonts = new ArrayList<>();
         int npages = reader.getNumberOfPages();
@@ -1093,7 +1031,7 @@ public abstract class BaseFont {
      * @param page   the page to list the fonts from
      * @return the list of fonts and references
      */
-    public static ArrayList<Object[]> getDocumentFonts(PdfReader reader,
+    public static List<Object[]> getDocumentFonts(PdfReader reader,
             int page) {
         IntHashtable hits = new IntHashtable();
         ArrayList<Object[]> fonts = new ArrayList<>();
@@ -1500,8 +1438,8 @@ public abstract class BaseFont {
      *
      * @return <CODE>true</CODE> if the font is embedded.
      */
-    public boolean isEmbedded() {
-        return embedded;
+    public boolean isEmbeddedBool() {
+        return embeddedBool;
     }
 
     /**
@@ -1519,10 +1457,10 @@ public abstract class BaseFont {
      * @return the subset prefix
      */
     protected String createSubsetPrefix() {
-        String s = "";
-        SsecureRandom secureRandom = getSecureRandom();
+        StringBuilder s = new StringBuilder();
+        SecureRandom secureRandomM = getSecureRandom();
         for (int k = 0; k < 6; ++k) {
-            s += (char) (secureRandom.nextDouble() * 26 + 'A');
+            s.append((char) (secureRandomM.nextDouble() * 26 + 'A'));
         }
         return s + "+";
     }
@@ -1768,7 +1706,7 @@ public abstract class BaseFont {
     public int[] getCharBBox(int c) {
         byte[] b = convertToBytes(c);
         if (b.length == 0) {
-            return null;
+            return new int[0];
         } else {
             return charBBoxes[0];
         }

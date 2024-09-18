@@ -514,7 +514,7 @@ public class ColumnText {
     private void addWaitingPhrase() {
         if (bidiLine == null && waitPhrase != null) {
             bidiLine = new BidiLine();
-            for (Object o : waitPhrase.getChunks()) {
+            for (Element o : waitPhrase.getChunks()) {
                 bidiLine.addChunk(new PdfChunk((Chunk) o, null));
             }
             waitPhrase = null;
@@ -536,7 +536,7 @@ public class ColumnText {
             waitPhrase = phrase;
             return;
         }
-        for (Object o : phrase.getChunks()) {
+        for (Element o : phrase.getChunks()) {
             bidiLine.addChunk(new PdfChunk((Chunk) o, null));
         }
     }
@@ -582,8 +582,8 @@ public class ColumnText {
         if (element == null) {
             return;
         }
-        if (element instanceof Image) {
-            Image img = (Image) element;
+        if (element instanceof Image image) {
+            Image img = image;
             PdfPTable t = new PdfPTable(1);
             float w = img.getWidthPercentage();
             if (w == 0) {
@@ -619,9 +619,9 @@ public class ColumnText {
         } else if (element.type() == Element.PHRASE) {
             element = new Paragraph((Phrase) element);
         }
-        if (element instanceof SimpleTable) {
+        if (element instanceof SimpleTable simpleTable) {
             try {
-                element = ((SimpleTable) element).createPdfPTable();
+                element = simpleTable.createPdfPTable();
             } catch (DocumentException e) {
                 throw new IllegalArgumentException(MessageLocalization.getComposedMessage("element.not.allowed"));
             }
@@ -693,12 +693,11 @@ public class ColumnText {
             lineStatus = LINE_STATUS_OFFLIMITS;
             return 0;
         }
-        for (Object o : wall) {
-            float[] r = (float[]) o;
-            if (yLine < r[0] || yLine > r[1]) {
+        for (float[] o : wall) {
+            if (yLine < o[0] || yLine > o[1]) {
                 continue;
             }
-            return r[2] * yLine + r[3];
+            return o[2] * yLine + o[3];
         }
         lineStatus = LINE_STATUS_NOLINE;
         return 0;
@@ -1231,9 +1230,8 @@ public class ColumnText {
         linesWritten = 0;
         descender = 0;
         boolean firstPass = adjustFirstLine;
-        boolean continueLoop = true;
 
-        while (continueLoop) {
+        while (true) {
             if (compositeElements.isEmpty()) {
                 return NO_MORE_TEXT;
             }
@@ -1244,10 +1242,12 @@ public class ColumnText {
                     return handleParagraph((Paragraph) element, firstPass, simulate);
 
                 case Element.LIST:
-                    return handleList((com.lowagie.text.List) element, firstPass, simulate);
+                    return handleList((com.lowagie.text.List) element,
+                            simulate,
+                            firstPass);
 
                 case Element.PTABLE:
-                    return handleTable((PdfPTable) element, firstPass, simulate);
+                    return handleTable((PdfPTable) element, simulate, firstPass);
 
                 case Element.YMARK:
                     if (!simulate) {
@@ -1262,7 +1262,6 @@ public class ColumnText {
             }
             firstPass = false;
         }
-        return 0;
     }
 
     private int handleList(com.lowagie.text.List list, boolean simulate, boolean firstPass) throws DocumentException {
@@ -1276,13 +1275,11 @@ public class ColumnText {
         int status = 0;
         for (int keep = 0; keep < 2; ++keep) {
             float lastY = yLine;
-            if (initializeCompositeColumn(item, list, firstPass)) {
-                if (!firstPass) {
-                    yLine -= item.getSpacingBefore();
-                }
+            if (initializeCompositeColumn(item, list, firstPass) && !firstPass) {
+                yLine -= item.getSpacingBefore();
             }
 
-            status = processCompositeColumn(item, list, simulate, keep, lastY);
+            status = processCompositeColumn(item, simulate, keep, lastY);
             if (shouldBreakSimulation(simulate, status, keep)) break;
         }
 
@@ -1298,14 +1295,14 @@ public class ColumnText {
 
         for (int k = 0; k < items.size(); ++k) {
             Object obj = items.get(k);
-            if (obj instanceof ListItem) {
+            if (obj instanceof ListItem listitem) {
                 if (count == listIdx) {
-                    return (ListItem) obj;
+                    return listitem;
                 }
                 ++count;
-            } else if (obj instanceof com.lowagie.text.List) {
+            } else if (obj instanceof com.lowagie.text.List lowagieList) {
                 stack.push(new Object[]{list, k, listIndentation});
-                list = (com.lowagie.text.List) obj;
+                list = lowagieList;
                 items = list.getItems();
                 listIndentation += list.getIndentationLeft();
                 k = -1;
@@ -1318,7 +1315,7 @@ public class ColumnText {
                 listIndentation = (Float) objs[2];
             }
         }
-        return null;
+        return new ListItem();
     }
 
     private boolean initializeCompositeColumn(ListItem item, com.lowagie.text.List list, boolean firstPass) {
@@ -1340,7 +1337,7 @@ public class ColumnText {
         return false;
     }
 
-    private int processCompositeColumn(ListItem item, com.lowagie.text.List list, boolean simulate, int keep, float lastY) throws DocumentException {
+    private int processCompositeColumn(ListItem item, boolean simulate, int keep, float lastY) throws DocumentException {
         compositeColumn.leftX = leftX;
         compositeColumn.rightX = rightX;
         compositeColumn.yLine = yLine;
@@ -1532,7 +1529,7 @@ public class ColumnText {
     }
 
     private boolean statusNeedsBreaking(int status, boolean simulate, int keep) {
-        return simulate || !((status & NO_MORE_TEXT) != 0) || keep == 0;
+        return simulate || (status & NO_MORE_TEXT) == 0 || keep == 0;
     }
 
     private void updateLineAndStatusForParagraph(int status, Paragraph para) {
@@ -1554,14 +1551,11 @@ public class ColumnText {
             return NO_MORE_COLUMN;
         }
 
-        if (elementType == Element.LIST || elementType == Element.PARAGRAPH) {
-            if (compositeColumn != null) {
-                yLine = compositeColumn.yLine;
-                linesWritten += compositeColumn.linesWritten;
-                descender = compositeColumn.descender;
-            }
+        if (elementType == Element.LIST || elementType == Element.PARAGRAPH && compositeColumn != null) {
+            yLine = compositeColumn.yLine;
+            linesWritten += compositeColumn.linesWritten;
+            descender = compositeColumn.descender;
         }
-
         return 0;
     }
 

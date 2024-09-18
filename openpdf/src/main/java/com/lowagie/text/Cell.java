@@ -58,6 +58,7 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.pdf.PdfPCell;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 /**
  * A <CODE>Cell</CODE> is a <CODE>Rectangle</CODE> containing other
@@ -88,7 +89,12 @@ import java.util.Iterator;
 
 public class Cell extends TableRectangle implements TextElementArray, WithHorizontalAlignment, WithVerticalAlignment {
 
+    public static final String CALCULATED_SEE_THE_FAQ = "dimensions.of.a.cell.can.t.be.calculated.see.the.faq";
+    public static final String ATTRIBUTED_AUTOMAGICALLY_SEE_THE_FAQ = "dimensions.of.a.cell.are.attributed.automagically.see.the.faq";
+
     // membervariables
+
+    Logger logger = Logger.getLogger(Cell.class.getName());
 
     /**
      * The <CODE>ArrayList</CODE> of <CODE>Element</CODE>s that are part of the content of the Cell.
@@ -193,6 +199,8 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
         this();
         try {
             addElement(new Paragraph(content));
+        } catch(BadElementException e) {
+            logger.info("ERROR: " + e.getMessage());
         }
     }
 
@@ -208,8 +216,8 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public Cell(Element element) throws BadElementException {
         this();
-        if (element instanceof Phrase) {
-            setLeading(((Phrase) element).getLeading());
+        if (element instanceof Phrase phrase) {
+            setLeading(phrase.getLeading());
         }
         addElement(element);
     }
@@ -235,8 +243,9 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      * @param listener an <CODE>ElementListener</CODE>
      * @return <CODE>true</CODE> if the element was processed successfully
      */
+    @Override
     public boolean process(ElementListener listener) {
-        @Override
+
         try {
             return listener.add(this);
         } catch (DocumentException de) {
@@ -268,6 +277,26 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
             tmp.addAll(o.getChunks());
         }
         return tmp;
+    }
+
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
     }
 
     /**
@@ -568,25 +597,19 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      * @return <CODE>false</CODE> if there are non-empty <CODE>Element</CODE>s in the <CODE>Cell</CODE>.
      */
     public boolean isEmpty() {
-        switch (size()) {
-            case 0:
-                return true;
-            case 1:
+        return switch (size()) {
+            case 0 -> true;
+            case 1 -> {
                 Element element = arrayList.get(0);
-                switch (element.type()) {
-                    case Element.CHUNK:
-                        return ((Chunk) element).isEmpty();
-                    case Element.ANCHOR:
-                    case Element.PHRASE:
-                    case Element.PARAGRAPH:
-                        return ((Phrase) element).isEmpty();
-                    case Element.LIST:
-                        return ((List) element).isEmpty();
-                }
-                return false;
-            default:
-                return false;
-        }
+                yield switch (element.type()) {
+                    case Element.CHUNK -> ((Chunk) element).isEmpty();
+                    case Element.ANCHOR, Element.PHRASE, Element.PARAGRAPH -> ((Phrase) element).isEmpty();
+                    case Element.LIST -> ((List) element).isEmpty();
+                    default -> throw new IllegalStateException("Unexpected value: " + element.type());
+                };
+            }
+            default -> false;
+        };
     }
 
     /**
@@ -624,92 +647,111 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public void addElement(Element element) throws BadElementException {
         if (isTable()) {
-            Table table = (Table) arrayList.get(0);
-            Cell tmp = new Cell(element);
-            tmp.setBorder(NO_BORDER);
-            tmp.setColspan(table.getColumns());
-            table.addCell(tmp);
+            handleTableElement(element);
             return;
         }
         switch (element.type()) {
-            case Element.LISTITEM:
-            case Element.ROW:
-            case Element.CELL:
-                throw new BadElementException(
-                        MessageLocalization.getComposedMessage("you.can.t.add.listitems.rows.or.cells.to.a.cell"));
+            case Element.LISTITEM, Element.ROW, Element.CELL:
+                throw new BadElementException(MessageLocalization.getComposedMessage("you.can.t.add.listitems.rows.or.cells.to.a.cell"));
             case Element.LIST:
-                List list = (List) element;
-                if (Float.isNaN(leading)) {
-                    setLeading(list.getTotalLeading());
-                }
-                if (list.isEmpty()) {
-                    return;
-                }
-                arrayList.add(element);
+                handleListElement((List) element);
                 return;
-            case Element.ANCHOR:
-            case Element.PARAGRAPH:
-            case Element.PHRASE:
-                Phrase p = (Phrase) element;
-                if (Float.isNaN(leading)) {
-                    setLeading(p.getLeading());
-                }
-                if (p.isEmpty()) {
-                    return;
-                }
-                arrayList.add(element);
+            case Element.ANCHOR, Element.PARAGRAPH, Element.PHRASE:
+                handlePhraseElement((Phrase) element);
                 return;
             case Element.CHUNK:
-                if (((Chunk) element).isEmpty()) {
-                    return;
-                }
-                arrayList.add(element);
+                handleChunkElement((Chunk) element);
                 return;
             case Element.TABLE:
-                Table table = new Table(3);
-                float[] widths = new float[3];
-                widths[1] = ((Table) element).getWidth();
-                switch (((Table) element).getAlignment()) {
-                    case Element.ALIGN_LEFT:
-                        widths[0] = 0f;
-                        widths[2] = 100f - widths[1];
-                        break;
-                    case Element.ALIGN_CENTER:
-                        widths[0] = (100f - widths[1]) / 2f;
-                        widths[2] = widths[0];
-                        break;
-                    case Element.ALIGN_RIGHT:
-                        widths[0] = 100f - widths[1];
-                        widths[2] = 0f;
-                }
-                table.setWidths(widths);
-                Cell tmp;
-                if (arrayList.isEmpty()) {
-                    table.addCell(getDummyCell());
-                } else {
-                    tmp = new Cell();
-                    tmp.setBorder(NO_BORDER);
-                    tmp.setColspan(3);
-                    for (Element o : arrayList) {
-                        tmp.add(o);
-                    }
-                    table.addCell(tmp);
-                }
-                tmp = new Cell();
-                tmp.setBorder(NO_BORDER);
-                table.addCell(tmp);
-                table.insertTable((Table) element);
-                tmp = new Cell();
-                tmp.setBorder(NO_BORDER);
-                table.addCell(tmp);
-                table.addCell(getDummyCell());
-                clear();
-                arrayList.add(table);
+                handleTableInsertion((Table) element);
                 return;
             default:
                 arrayList.add(element);
         }
     }
+
+    private void handleTableElement(Element element) {
+        Table table = (Table) arrayList.get(0);
+        Cell tmp = new Cell(element);
+        tmp.setBorder(NO_BORDER);
+        tmp.setColspan(table.getColumns());
+        table.addCell(tmp);
+    }
+
+    private void handleListElement(List list) {
+        if (Float.isNaN(leading)) {
+            setLeading(list.getTotalLeading());
+        }
+        if (!list.isEmpty()) {
+            arrayList.add(list);
+        }
+    }
+
+    private void handlePhraseElement(Phrase phrase) {
+        if (Float.isNaN(leading)) {
+            setLeading(phrase.getLeading());
+        }
+        if (!phrase.isEmpty()) {
+            arrayList.add(phrase);
+        }
+    }
+
+    private void handleChunkElement(Chunk chunk) {
+        if (!chunk.isEmpty()) {
+            arrayList.add(chunk);
+        }
+    }
+
+    private void handleTableInsertion(Table element) throws BadElementException {
+        Table table = new Table(3);
+        float[] widths = calculateWidths(element);
+        table.setWidths(widths);
+
+        addElementsToTable(table);
+
+        clear();
+        arrayList.add(table);
+    }
+
+    private float[] calculateWidths(Table element) {
+        float[] widths = new float[3];
+        widths[1] = element.getWidth();
+
+        switch (element.getAlignment()) {
+            case Element.ALIGN_LEFT:
+                widths[0] = 0f;
+                widths[2] = 100f - widths[1];
+                break;
+            case Element.ALIGN_CENTER:
+                widths[0] = (100f - widths[1]) / 2f;
+                widths[2] = widths[0];
+                break;
+            case Element.ALIGN_RIGHT:
+                widths[0] = 100f - widths[1];
+                widths[2] = 0f;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + element.getAlignment());
+        }
+        return widths;
+    }
+
+    private void addElementsToTable(Table table) {
+        Cell tmp;
+        if (arrayList.isEmpty()) {
+            table.addCell(getDummyCell());
+        } else {
+            tmp = new Cell();
+            tmp.setBorder(NO_BORDER);
+            tmp.setColspan(3);
+            for (Element o : arrayList) {
+                tmp.add(o);
+            }
+            table.addCell(tmp);
+        }
+        table.addCell(getDummyCell());
+    }
+
 
     // unsupported Rectangle methods
 
@@ -755,7 +797,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
         cell.cloneNonPositionParameters(this);
         cell.setNoWrap(getMaxLines() == 1);
         for (Iterator<Element> i = getElements(); i.hasNext(); ) {
-            Element e = (Element) i.next();
+            Element e = i.next();
             if (e.type() == Element.PHRASE || e.type() == Element.PARAGRAPH) {
                 Paragraph p = new Paragraph((Phrase) e);
                 p.setAlignment(horizontalAlignment);
@@ -774,7 +816,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     @Override
     public float getTop() {
         throw new UnsupportedOperationException(
-                MessageLocalization.getComposedMessage("dimensions.of.a.cell.can.t.be.calculated.see.the.faq"));
+                MessageLocalization.getComposedMessage(CALCULATED_SEE_THE_FAQ));
     }
 
     /**
@@ -784,7 +826,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public void setTop(int value) {
         throw new UnsupportedOperationException(MessageLocalization.getComposedMessage(
-                "dimensions.of.a.cell.are.attributed.automagically.see.the.faq"));
+                ATTRIBUTED_AUTOMAGICALLY_SEE_THE_FAQ));
     }
 
     /**
@@ -795,7 +837,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     @Override
     public float getBottom() {
         throw new UnsupportedOperationException(
-                MessageLocalization.getComposedMessage("dimensions.of.a.cell.can.t.be.calculated.see.the.faq"));
+                MessageLocalization.getComposedMessage(CALCULATED_SEE_THE_FAQ));
     }
 
     /**
@@ -805,7 +847,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public void setBottom(int value) {
         throw new UnsupportedOperationException(MessageLocalization.getComposedMessage(
-                "dimensions.of.a.cell.are.attributed.automagically.see.the.faq"));
+                ATTRIBUTED_AUTOMAGICALLY_SEE_THE_FAQ));
     }
 
     /**
@@ -816,7 +858,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     @Override
     public float getLeft() {
         throw new UnsupportedOperationException(
-                MessageLocalization.getComposedMessage("dimensions.of.a.cell.can.t.be.calculated.see.the.faq"));
+                MessageLocalization.getComposedMessage(CALCULATED_SEE_THE_FAQ));
     }
 
     /**
@@ -826,7 +868,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public void setLeft(int value) {
         throw new UnsupportedOperationException(MessageLocalization.getComposedMessage(
-                "dimensions.of.a.cell.are.attributed.automagically.see.the.faq"));
+                ATTRIBUTED_AUTOMAGICALLY_SEE_THE_FAQ));
     }
 
     /**
@@ -837,7 +879,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     @Override
     public float getRight() {
         throw new UnsupportedOperationException(
-                MessageLocalization.getComposedMessage("dimensions.of.a.cell.can.t.be.calculated.see.the.faq"));
+                MessageLocalization.getComposedMessage(CALCULATED_SEE_THE_FAQ));
     }
 
     /**
@@ -847,7 +889,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public void setRight(int value) {
         throw new UnsupportedOperationException(MessageLocalization.getComposedMessage(
-                "dimensions.of.a.cell.are.attributed.automagically.see.the.faq"));
+                ATTRIBUTED_AUTOMAGICALLY_SEE_THE_FAQ));
     }
 
     /**
@@ -858,7 +900,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public float top(int margin) {
         throw new UnsupportedOperationException(
-                MessageLocalization.getComposedMessage("dimensions.of.a.cell.can.t.be.calculated.see.the.faq"));
+                MessageLocalization.getComposedMessage(CALCULATED_SEE_THE_FAQ));
     }
 
     /**
@@ -869,7 +911,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public float bottom(int margin) {
         throw new UnsupportedOperationException(
-                MessageLocalization.getComposedMessage("dimensions.of.a.cell.can.t.be.calculated.see.the.faq"));
+                MessageLocalization.getComposedMessage(CALCULATED_SEE_THE_FAQ));
     }
 
     /**
@@ -880,7 +922,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public float left(int margin) {
         throw new UnsupportedOperationException(
-                MessageLocalization.getComposedMessage("dimensions.of.a.cell.can.t.be.calculated.see.the.faq"));
+                MessageLocalization.getComposedMessage(CALCULATED_SEE_THE_FAQ));
     }
 
     /**
@@ -891,6 +933,6 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public float right(int margin) {
         throw new UnsupportedOperationException(
-                MessageLocalization.getComposedMessage("dimensions.of.a.cell.can.t.be.calculated.see.the.faq"));
+                MessageLocalization.getComposedMessage(CALCULATED_SEE_THE_FAQ));
     }
 }

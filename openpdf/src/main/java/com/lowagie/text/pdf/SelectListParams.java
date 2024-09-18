@@ -1,59 +1,5 @@
 package com.lowagie.text.pdf;
 
-abstract class OptionsDataStructure {
-    abstract String getElement(int index);
-    abstract String getElement(int row, int col);
-
-    // Metodo astratto che sarà implementato nelle sottoclassi
-    abstract Object getOptions();
-}
-
-class VectorData extends OptionsDataStructure {
-    private String[] vector;
-
-    public VectorData(String[] vector) {
-        this.vector = vector;
-    }
-
-    @Override
-    String getElement(int index) {
-        return vector[index];
-    }
-
-    @Override
-    String getElement(int row, int col) {
-        throw new UnsupportedOperationException("Not a matrix");
-    }
-
-    @Override
-    String[] getOptions() {
-        return vector;
-    }
-}
-
-class MatrixData extends OptionsDataStructure {
-    private String[][] matrix;
-
-    public MatrixData(String[][] matrix) {
-        this.matrix = matrix;
-    }
-
-    @Override
-    String getElement(int index) {
-        throw new UnsupportedOperationException("Not a vector");
-    }
-
-    @Override
-    String getElement(int row, int col) {
-        return matrix[row][col];
-    }
-
-    @Override
-    String[][] getOptions() {
-        return matrix;
-    }
-}
-
 public class SelectListParams {
     private String name;
     private OptionsDataStructure options;

@@ -1,0 +1,36 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: com.github.librepdf.pdfToolbox
+Bnd-LastModified: 1722884302808
+Build-Jdk-Spec: 17
+Bundle-Description: Open and Free PDF library.
+Bundle-License: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html,
+  https://www.mozilla.org/en-US/MPL/2.0/
+Bundle-ManifestVersion: 2
+Bundle-Name: pdf-toolbox
+Bundle-SymbolicName: com.github.librepdf.pdf-toolbox
+Bundle-Version: 2.0.3.SNAPSHOT
+Created-By: Apache Maven Bundle Plugin 5.1.9
+Export-Package: com.lowagie.toolbox;uses:="com.lowagie.toolbox.arguments
+ ,javax.swing,javax.swing.table";version="2.0.3",com.lowagie.toolbox.arg
+ uments;uses:="com.lowagie.toolbox,com.lowagie.toolbox.swing,javax.swing
+ .filechooser";version="2.0.3",com.lowagie.toolbox.arguments.filters;use
+ s:="javax.swing.filechooser";version="2.0.3",com.lowagie.toolbox.plugin
+ s;uses:="com.lowagie.text,com.lowagie.text.pdf,com.lowagie.toolbox,com.
+ lowagie.toolbox.arguments,javax.swing.event";version="2.0.3",com.lowagi
+ e.toolbox.plugins.watermarker;uses:="com.lowagie.text,com.lowagie.text.
+ pdf,com.lowagie.toolbox,com.lowagie.toolbox.arguments";version="2.0.3",
+ com.lowagie.toolbox.swing;uses:="javax.swing,javax.swing.text";version=
+ "2.0.3",com.lowagie.tools;version="2.0.3",org.librepdf.openpdf.examples
+ .fonts.languages;version="2.0.3"
+Import-Package: com.apple.mrj,com.lowagie.text,com.lowagie.text.error_me
+ ssages,com.lowagie.text.html,com.lowagie.text.pdf,com.lowagie.toolbox,c
+ om.lowagie.toolbox.arguments,com.lowagie.toolbox.arguments.filters,com.
+ lowagie.toolbox.plugins.watermarker,com.lowagie.toolbox.swing,com.lowag
+ ie.tools,java.awt,java.awt.datatransfer,java.awt.dnd,java.awt.event,jav
+ a.beans,java.io,java.lang,java.lang.invoke,java.lang.reflect,java.net,j
+ ava.nio.file,java.text,java.util,javax.swing,javax.swing.border,javax.s
+ wing.event,javax.swing.filechooser,javax.swing.table,javax.swing.text,j
+ avax.xml.transform,javax.xml.transform.stream
+Multi-Release: true
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=17))"
+Tool: Bnd-6.3.1.202206071316

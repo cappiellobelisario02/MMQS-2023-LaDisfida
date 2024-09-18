@@ -53,7 +53,6 @@ import static com.lowagie.text.error_messages.MessageLocalization.getComposedMes
 
 import com.lowagie.text.Anchor;
 import com.lowagie.text.Annotation;
-import com.lowagie.text.BadElementException;
 import com.lowagie.text.Cell;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.DocWriter;
@@ -75,7 +74,6 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Row;
 import com.lowagie.text.Section;
-import com.lowagie.text.SimpleTable;
 import com.lowagie.text.Table;
 import com.lowagie.text.pdf.BaseFont;
 import java.io.IOException;
@@ -839,7 +837,7 @@ public class HtmlWriter extends DocWriter {
     }
 
     private void handleAnnotation(Annotation annotation) throws IOException {
-        writeComment(annotation.TITLE() + ": " + annotation.CONTENT());
+        writeComment(annotation.titleMethod() + ": " + annotation.contentMethod());
     }
 
     private void handleImage(Image image, int indent) throws IOException {

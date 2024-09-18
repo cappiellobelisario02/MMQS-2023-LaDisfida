@@ -53,6 +53,7 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.logging.Logger;
 
 /**
  * An <CODE>Jpeg2000</CODE> is the representation of a graphic element (JPEG) that has to be inserted into the document
@@ -63,6 +64,8 @@ import java.net.URL;
 public class Jpeg2000 extends Image {
 
     // public static final membervariables
+
+    Logger logger = Logger.getLogger(Jpeg2000.class.getName());
 
     public static final int JP2_JP = 0x6a502020;
     public static final int JP2_IHDR = 0x69686472;
@@ -128,7 +131,7 @@ public class Jpeg2000 extends Image {
         scaledHeight = height;
     }
 
-    private int cio_read(int n) throws IOException {
+    private int cioRead(int n) throws IOException {
         int v = 0;
         for (int i = n - 1; i >= 0; i--) {
             v += inp.read() << (i << 3);
@@ -136,15 +139,15 @@ public class Jpeg2000 extends Image {
         return v;
     }
 
-    public void jp2_read_boxhdr() throws IOException {
-        boxLength = cio_read(4);
-        boxType = cio_read(4);
+    public void jp2ReadBoxhdr() throws IOException {
+        boxLength = cioRead(4);
+        boxType = cioRead(4);
         if (boxLength == 1) {
-            if (cio_read(4) != 0) {
+            if (cioRead(4) != 0) {
                 throw new IOException(
                         MessageLocalization.getComposedMessage("cannot.handle.box.sizes.higher.than.2.32"));
             }
-            boxLength = cio_read(4);
+            boxLength = cioRead(4);
             if (boxLength == 0) {
                 throw new IOException(MessageLocalization.getComposedMessage("unsupported.box.size.eq.eq.0"));
             }
@@ -163,73 +166,121 @@ public class Jpeg2000 extends Image {
         originalType = ORIGINAL_JPEG2000;
         inp = null;
         try {
-            String errorID;
-            if (rawData == null) {
-                inp = url.openStream();
-                errorID = url.toString();
-            } else {
-                inp = new java.io.ByteArrayInputStream(rawData);
-                errorID = "Byte array";
-            }
-            boxLength = cio_read(4);
-            if (boxLength == 0x0000000c) {
-                boxType = cio_read(4);
-                if (JP2_JP != boxType) {
-                    throw new IOException(MessageLocalization.getComposedMessage("expected.jp.marker"));
-                }
-                if (0x0d0a870a != cio_read(4)) {
-                    throw new IOException(MessageLocalization.getComposedMessage("error.with.jp.marker"));
-                }
+            initializeInput();
+            boxLength = cioRead(4);
 
-                jp2_read_boxhdr();
-                if (JP2_FTYP != boxType) {
-                    throw new IOException(MessageLocalization.getComposedMessage("expected.ftyp.marker"));
-                }
-                Utilities.skip(inp, boxLength - 8);
-                jp2_read_boxhdr();
-                do {
-                    if (JP2_JP2H != boxType) {
-                        if (boxType == JP2_JP2C) {
-                            throw new IOException(MessageLocalization.getComposedMessage("expected.jp2h.marker"));
-                        }
-                        Utilities.skip(inp, boxLength - 8);
-                        jp2_read_boxhdr();
-                    }
-                } while (JP2_JP2H != boxType);
-                jp2_read_boxhdr();
-                if (JP2_IHDR != boxType) {
-                    throw new IOException(MessageLocalization.getComposedMessage("expected.ihdr.marker"));
-                }
-                scaledHeight = cio_read(4);
-                setTop(scaledHeight);
-                scaledWidth = cio_read(4);
-                setRight(scaledWidth);
-                bpc = -1;
+            if (boxLength == 0x0000000c) {
+                processJP2File();
             } else if (boxLength == 0xff4fff51) {
-                Utilities.skip(inp, 4);
-                int x1 = cio_read(4);
-                int y1 = cio_read(4);
-                int x0 = cio_read(4);
-                int y0 = cio_read(4);
-                Utilities.skip(inp, 16);
-                colorspace = cio_read(2);
-                bpc = 8;
-                scaledHeight = y1 - y0;
-                setTop(scaledHeight);
-                scaledWidth = x1 - x0;
-                setRight(scaledWidth);
+                processCodestreamBox();
             } else {
                 throw new IOException(MessageLocalization.getComposedMessage("not.a.valid.jpeg2000.file"));
             }
         } finally {
-            if (inp != null) {
-                try {
-                    inp.close();
-                }
+            closeInputStream();
+        }
+
+        plainWidth = getWidth();
+        plainHeight = getHeight();
+    }
+
+    private void initializeInput() throws IOException {
+        if (rawData == null) {
+            inp = url.openStream();
+        } else {
+            inp = new java.io.ByteArrayInputStream(rawData);
+        }
+    }
+
+    private void processJP2File() throws IOException {
+        validateJPMarker();
+        processBoxesUntilJP2H();
+        validateIHDRBox();
+        scaledHeight = cioRead(4);
+        setTop(scaledHeight);
+        scaledWidth = cioRead(4);
+        setRight(scaledWidth);
+        bpc = -1;
+    }
+
+    private void validateJPMarker() throws IOException {
+        boxType = cioRead(4);
+        if (JP2_JP != boxType) {
+            throw new IOException(MessageLocalization.getComposedMessage("expected.jp.marker"));
+        }
+        if (0x0d0a870a != cioRead(4)) {
+            throw new IOException(MessageLocalization.getComposedMessage("error.with.jp.marker"));
+        }
+    }
+
+    private void processBoxesUntilJP2H() throws IOException {
+        jp2ReadBoxhdr();
+        if (JP2_FTYP != boxType) {
+            throw new IOException(MessageLocalization.getComposedMessage("expected.ftyp.marker"));
+        }
+        Utilities.skip(inp, boxLength - 8);
+        jp2ReadBoxhdr();
+        while (JP2_JP2H != boxType) {
+            if (boxType == JP2_JP2C) {
+                throw new IOException(MessageLocalization.getComposedMessage("expected.jp2h.marker"));
+            }
+            Utilities.skip(inp, boxLength - 8);
+            jp2ReadBoxhdr();
+        }
+    }
+
+    private void validateIHDRBox() throws IOException {
+        jp2ReadBoxhdr();
+        if (JP2_IHDR != boxType) {
+            throw new IOException(MessageLocalization.getComposedMessage("expected.ihdr.marker"));
+        }
+    }
+
+    private void processCodestreamBox() throws IOException {
+        Utilities.skip(inp, 4);
+        int x1 = cioRead(4);
+        int y1 = cioRead(4);
+        int x0 = cioRead(4);
+        int y0 = cioRead(4);
+        Utilities.skip(inp, 16);
+        colorspace = cioRead(2);
+        bpc = 8;
+        scaledHeight = y1 - (float) y0;
+        setTop(scaledHeight);
+        scaledWidth = x1 - (float) x0;
+        setRight(scaledWidth);
+    }
+
+    private void closeInputStream() {
+        if (inp != null) {
+            try {
+                inp.close();
+            } catch (IOException e) {
+                logger.info("Error closing input stream: " + e.getMessage());
+            } finally {
                 inp = null;
             }
         }
-        plainWidth = getWidth();
-        plainHeight = getHeight();
+    }
+
+
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
     }
 }

@@ -63,7 +63,6 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.InvalidColorTypeException;
 import com.lowagie.text.exceptions.InvalidPatternTemplateException;
 import com.lowagie.text.exceptions.InvalidRunDirectionException;
-import com.lowagie.text.pdf.TextDrawingConfig.PdfAcroForm;
 import com.lowagie.text.pdf.collection.PdfCollection;
 import com.lowagie.text.pdf.events.PdfPageEventForwarder;
 import com.lowagie.text.pdf.interfaces.PdfAnnotations;
@@ -77,7 +76,6 @@ import com.lowagie.text.pdf.interfaces.PdfXConformance;
 import com.lowagie.text.pdf.internal.PdfVersionImp;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import com.lowagie.text.xml.xmp.XmpWriter;
-import org.apache.fop.pdf.PDFFilterException;
 import java.awt.Color;
 import java.awt.color.ICC_Profile;
 import java.io.ByteArrayOutputStream;
@@ -116,31 +114,31 @@ public class PdfWriter extends DocWriter implements
         PdfAnnotations {
 
     private static final String NOT_OPEN_DOCUMENT_KEY = "the.document.is.not.open";
-    public static int PageLayoutSinglePage;
-    public static int PageLayoutOneColumn;
-    public static int PageLayoutTwoColumnLeft;
-    public static int PageLayoutTwoColumnRight;
-    public static int PageLayoutTwoPageLeft;
-    public static int PageLayoutTwoPageRight;
-    public static int PageModeUseNone;
-    public static int PageModeUseOutlines;
-    public static int PageModeUseThumbs;
-    public static int PageModeFullScreen;
-    public static int PageModeUseOC;
-    public static int PageModeUseAttachments;
-    public static int HideToolbar;
-    public static int HideMenubar;
-    public static int HideWindowUI;
-    public static int FitWindow;
-    public static int CenterWindow;
-    public static int DisplayDocTitle;
-    public static int NonFullScreenPageModeUseNone;
-    public static int NonFullScreenPageModeUseOutlines;
-    public static int NonFullScreenPageModeUseThumbs;
-    public static int NonFullScreenPageModeUseOC;
-    public static int DirectionL2R;
-    public static int DirectionR2L;
-    public static int PrintScalingNone;
+    private static int pageLayoutSinglePage;
+    private static int pageLayoutOneColumn;
+    private static int pageLayoutTwoColumnLeft;
+    private static int pageLayoutTwoColumnRight;
+    private static int pageLayoutTwoPageLeft;
+    private static int pageLayoutTwoPageRight;
+    private static int pageModeUseNone;
+    private static int pageModeUseOutlines;
+    private static int pageModeUseThumbs;
+    private static int pageModeFullScreen;
+    private static int pageModeUseOC;
+    private static int pageModeUseAttachments;
+    private static int hideToolbar;
+    private static int hideMenubar;
+    private static int hideWindowUI;
+    private static int fitWindow;
+    private static int centerWindow;
+    private static int displayDocTitle;
+    private static int nonFullScreenPageModeUseNone;
+    private static int nonFullScreenPageModeUseOutlines;
+    private static int nonFullScreenPageModeUseThumbs;
+    private static int nonFullScreenPageModeUseOC;
+    private static int directionL2R;
+    private static int directionR2L;
+    private static int printScalingNone;
 
     static Logger logger = Logger.getLogger(PdfWriter.class.getName());
 
@@ -814,6 +812,206 @@ public class PdfWriter extends DocWriter implements
         }
     }
 
+    public static int getPageLayoutSinglePage() {
+        return pageLayoutSinglePage;
+    }
+
+    public static void setPageLayoutSinglePage(int pageLayoutSinglePage) {
+        PdfWriter.pageLayoutSinglePage = pageLayoutSinglePage;
+    }
+
+    public static int getPageLayoutOneColumn() {
+        return pageLayoutOneColumn;
+    }
+
+    public static void setPageLayoutOneColumn(int pageLayoutOneColumn) {
+        PdfWriter.pageLayoutOneColumn = pageLayoutOneColumn;
+    }
+
+    public static int getPageLayoutTwoColumnLeft() {
+        return pageLayoutTwoColumnLeft;
+    }
+
+    public static void setPageLayoutTwoColumnLeft(int pageLayoutTwoColumnLeft) {
+        PdfWriter.pageLayoutTwoColumnLeft = pageLayoutTwoColumnLeft;
+    }
+
+    public static int getPageLayoutTwoColumnRight() {
+        return pageLayoutTwoColumnRight;
+    }
+
+    public static void setPageLayoutTwoColumnRight(int pageLayoutTwoColumnRight) {
+        PdfWriter.pageLayoutTwoColumnRight = pageLayoutTwoColumnRight;
+    }
+
+    public static int getPageLayoutTwoPageLeft() {
+        return pageLayoutTwoPageLeft;
+    }
+
+    public static void setPageLayoutTwoPageLeft(int pageLayoutTwoPageLeft) {
+        PdfWriter.pageLayoutTwoPageLeft = pageLayoutTwoPageLeft;
+    }
+
+    public static int getPageLayoutTwoPageRight() {
+        return pageLayoutTwoPageRight;
+    }
+
+    public static void setPageLayoutTwoPageRight(int pageLayoutTwoPageRight) {
+        PdfWriter.pageLayoutTwoPageRight = pageLayoutTwoPageRight;
+    }
+
+    public static int getPageModeUseNone() {
+        return pageModeUseNone;
+    }
+
+    public static void setPageModeUseNone(int pageModeUseNone) {
+        PdfWriter.pageModeUseNone = pageModeUseNone;
+    }
+
+    public static int getPageModeUseOutlines() {
+        return pageModeUseOutlines;
+    }
+
+    public static void setPageModeUseOutlines(int pageModeUseOutlines) {
+        PdfWriter.pageModeUseOutlines = pageModeUseOutlines;
+    }
+
+    public static int getPageModeUseThumbs() {
+        return pageModeUseThumbs;
+    }
+
+    public static void setPageModeUseThumbs(int pageModeUseThumbs) {
+        PdfWriter.pageModeUseThumbs = pageModeUseThumbs;
+    }
+
+    public static int getPageModeFullScreen() {
+        return pageModeFullScreen;
+    }
+
+    public static void setPageModeFullScreen(int pageModeFullScreen) {
+        PdfWriter.pageModeFullScreen = pageModeFullScreen;
+    }
+
+    public static int getPageModeUseOC() {
+        return pageModeUseOC;
+    }
+
+    public static void setPageModeUseOC(int pageModeUseOC) {
+        PdfWriter.pageModeUseOC = pageModeUseOC;
+    }
+
+    public static int getPageModeUseAttachments() {
+        return pageModeUseAttachments;
+    }
+
+    public static void setPageModeUseAttachments(int pageModeUseAttachments) {
+        PdfWriter.pageModeUseAttachments = pageModeUseAttachments;
+    }
+
+    public static int getHideToolbar() {
+        return hideToolbar;
+    }
+
+    public static void setHideToolbar(int hideToolbar) {
+        PdfWriter.hideToolbar = hideToolbar;
+    }
+
+    public static int getHideMenubar() {
+        return hideMenubar;
+    }
+
+    public static void setHideMenubar(int hideMenubar) {
+        PdfWriter.hideMenubar = hideMenubar;
+    }
+
+    public static int getHideWindowUI() {
+        return hideWindowUI;
+    }
+
+    public static void setHideWindowUI(int hideWindowUI) {
+        PdfWriter.hideWindowUI = hideWindowUI;
+    }
+
+    public static int getFitWindow() {
+        return fitWindow;
+    }
+
+    public static void setFitWindow(int fitWindow) {
+        PdfWriter.fitWindow = fitWindow;
+    }
+
+    public static int getCenterWindow() {
+        return centerWindow;
+    }
+
+    public static void setCenterWindow(int centerWindow) {
+        PdfWriter.centerWindow = centerWindow;
+    }
+
+    public static int getDisplayDocTitle() {
+        return displayDocTitle;
+    }
+
+    public static void setDisplayDocTitle(int displayDocTitle) {
+        PdfWriter.displayDocTitle = displayDocTitle;
+    }
+
+    public static int getNonFullScreenPageModeUseNone() {
+        return nonFullScreenPageModeUseNone;
+    }
+
+    public static void setNonFullScreenPageModeUseNone(int nonFullScreenPageModeUseNone) {
+        PdfWriter.nonFullScreenPageModeUseNone = nonFullScreenPageModeUseNone;
+    }
+
+    public static int getNonFullScreenPageModeUseOutlines() {
+        return nonFullScreenPageModeUseOutlines;
+    }
+
+    public static void setNonFullScreenPageModeUseOutlines(int nonFullScreenPageModeUseOutlines) {
+        PdfWriter.nonFullScreenPageModeUseOutlines = nonFullScreenPageModeUseOutlines;
+    }
+
+    public static int getNonFullScreenPageModeUseThumbs() {
+        return nonFullScreenPageModeUseThumbs;
+    }
+
+    public static void setNonFullScreenPageModeUseThumbs(int nonFullScreenPageModeUseThumbs) {
+        PdfWriter.nonFullScreenPageModeUseThumbs = nonFullScreenPageModeUseThumbs;
+    }
+
+    public static int getNonFullScreenPageModeUseOC() {
+        return nonFullScreenPageModeUseOC;
+    }
+
+    public static void setNonFullScreenPageModeUseOC(int nonFullScreenPageModeUseOC) {
+        PdfWriter.nonFullScreenPageModeUseOC = nonFullScreenPageModeUseOC;
+    }
+
+    public static int getDirectionL2R() {
+        return directionL2R;
+    }
+
+    public static void setDirectionL2R(int directionL2R) {
+        PdfWriter.directionL2R = directionL2R;
+    }
+
+    public static int getDirectionR2L() {
+        return directionR2L;
+    }
+
+    public static void setDirectionR2L(int directionR2L) {
+        PdfWriter.directionR2L = directionR2L;
+    }
+
+    public static int getPrintScalingNone() {
+        return printScalingNone;
+    }
+
+    public static void setPrintScalingNone(int printScalingNone) {
+        PdfWriter.printScalingNone = printScalingNone;
+    }
+
 //  [C10] PDFX Conformance
 
     /**
@@ -1230,8 +1428,8 @@ public class PdfWriter extends DocWriter implements
             this.pageEvent = null;
         } else if (this.pageEvent == null) {
             this.pageEvent = event;
-        } else if (this.pageEvent instanceof PdfPageEventForwarder) {
-            ((PdfPageEventForwarder) this.pageEvent).addPageEvent(event);
+        } else if (this.pageEvent instanceof PdfPageEventForwarder pdfpageeventforwarder) {
+            pdfpageeventforwarder.addPageEvent(event);
         } else {
             PdfPageEventForwarder forward = new PdfPageEventForwarder();
             forward.addPageEvent(this.pageEvent);
@@ -1459,8 +1657,8 @@ public class PdfWriter extends DocWriter implements
             PdfObject[] obj = entry.getValue();
             if (prop instanceof PdfLayerMembership layer) {
                 addToBody(layer.getPdfObject(), layer.getRef());
-            } else if (prop instanceof PdfDictionary && !(prop instanceof PdfLayer)) {
-                addToBody((PdfDictionary) prop, (PdfIndirectReference) obj[1]);
+            } else if (prop instanceof PdfDictionary pdfDictionary && !(prop instanceof PdfLayer)) {
+                addToBody(pdfDictionary, (PdfIndirectReference) obj[1]);
             }
         }
     }
@@ -1950,7 +2148,7 @@ public class PdfWriter extends DocWriter implements
      * otherwise
      * @throws IOException on error
      */
-    public boolean setOutputIntents(PdfReader reader, boolean checkExistence) throws IOException, PDFFilterException {
+    public boolean setOutputIntents(PdfReader reader, boolean checkExistence) throws IOException {
         PdfDictionary catalog = reader.getCatalog();
         PdfArray outs = catalog.getAsArray(PdfName.OUTPUTINTENTS);
         if (outs == null) {
@@ -2201,7 +2399,7 @@ public class PdfWriter extends DocWriter implements
         return body.offset() + body.size() * 20L + 0x48;
     }
 
-    protected int getNewObjectNumber(PdfReader reader, int number, int generation) {
+    protected int getNewObjectNumber(PdfReader reader, int number) {
         if (currentPdfReaderInstance == null && importedPages.get(reader) == null) {
             importedPages.put(reader, reader.getPdfReaderInstance(this));
         }
@@ -2830,8 +3028,8 @@ public class PdfWriter extends DocWriter implements
 
     private PdfName processImgTemplate(Image image) throws DocumentException {
         PdfName name = new PdfName("img" + images.size());
-        if (image instanceof ImgWMF) {
-            processImgWMF((ImgWMF) image);
+        if (image instanceof ImgWMF imgWMF) {
+            processImgWMF(imgWMF);
         }
         return name;
     }
@@ -2871,8 +3069,8 @@ public class PdfWriter extends DocWriter implements
     private PdfImage createPdfImage(Image image, PdfIndirectReference maskRef) throws DocumentException {
         PdfImage pdfImage = new PdfImage(image, "img" + images.size(), maskRef);
 
-        if (image instanceof ImgJBIG2) {
-            addJBIG2Globals((ImgJBIG2) image, pdfImage);
+        if (image instanceof ImgJBIG2 imgJBIG2) {
+            addJBIG2Globals(imgJBIG2, pdfImage);
         }
         addICCProfile(image, pdfImage);
 
@@ -2922,7 +3120,7 @@ public class PdfWriter extends DocWriter implements
             PdfXConformanceImp.checkPDFXConformance(this, PdfXConformanceImp.PDFXKEY_IMAGE, pdfImage);
             if (fixedRef instanceof PRIndirectReference r2) {
                 fixedRef = new PdfIndirectReference(0,
-                        getNewObjectNumber(r2.getReader(), r2.getNumber(), r2.getGeneration()));
+                        getNewObjectNumber(r2.getReader(), r2.getNumber()), r2.getGeneration());
             }
             try {
                 if (fixedRef == null) {
@@ -3438,7 +3636,7 @@ public class PdfWriter extends DocWriter implements
              * @throws IOException If any I/O error occurs
              */
             public void toPdf(OutputStream os) throws IOException {
-                // TODO: are generation number and 'In use' keyword bound that way?
+                // are generation number and 'In use' keyword bound that way?
                 final char inUse = generation == GENERATION_MAX ? 'f' : 'n';
                 os.write(getISOBytes(String.format(CROSS_REFERENCE_ENTRY_FORMAT, offset, generation, inUse)));
             }
@@ -3446,7 +3644,7 @@ public class PdfWriter extends DocWriter implements
             /**
              * Writes PDF syntax to the OutputStream
              *
-             * @param midSize the mid size
+             * @param midSize the mid-size
              * @param os      the OutputStream
              * @throws IOException on error
              */

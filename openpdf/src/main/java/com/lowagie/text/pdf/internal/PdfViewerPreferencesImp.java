@@ -130,8 +130,8 @@ public class PdfViewerPreferencesImp implements PdfViewerPreferences {
      */
     private PdfDictionary viewerPreferences = new PdfDictionary();
 
-    public static PdfViewerPreferencesImp getViewerPreferences(PdfDictionary catalog) {
-        PdfViewerPreferencesImp preferences = new PdfViewerPreferencesImp();
+    public static com.lowagie.text.pdf.internal.PdfViewerPreferencesImp getViewerPreferences(PdfDictionary catalog) {
+        com.lowagie.text.pdf.internal.PdfViewerPreferencesImp preferences = new com.lowagie.text.pdf.internal.PdfViewerPreferencesImp();
         int prefs = 0;
 
         prefs |= getPageLayoutPreferences(catalog);
@@ -155,17 +155,17 @@ public class PdfViewerPreferencesImp implements PdfViewerPreferences {
 
     private static int getPageLayoutPreference(PdfName name) {
         if (name.equals(PdfName.SINGLEPAGE)) {
-            return PdfWriter.PageLayoutSinglePage;
+            return PdfWriter.getPageLayoutSinglePage();
         } else if (name.equals(PdfName.ONECOLUMN)) {
-            return PdfWriter.PageLayoutOneColumn;
+            return PdfWriter.getPageLayoutOneColumn();
         } else if (name.equals(PdfName.TWOCOLUMNLEFT)) {
-            return PdfWriter.PageLayoutTwoColumnLeft;
+            return PdfWriter.getPageLayoutTwoColumnLeft();
         } else if (name.equals(PdfName.TWOCOLUMNRIGHT)) {
-            return PdfWriter.PageLayoutTwoColumnRight;
+            return PdfWriter.getPageLayoutTwoColumnRight();
         } else if (name.equals(PdfName.TWOPAGELEFT)) {
-            return PdfWriter.PageLayoutTwoPageLeft;
+            return PdfWriter.getPageLayoutTwoPageLeft();
         } else if (name.equals(PdfName.TWOPAGERIGHT)) {
-            return PdfWriter.PageLayoutTwoPageRight;
+            return PdfWriter.getPageLayoutTwoPageRight();
         }
         return 0;
     }
@@ -182,22 +182,22 @@ public class PdfViewerPreferencesImp implements PdfViewerPreferences {
 
     private static int getPageModePreference(PdfName name) {
         if (name.equals(PdfName.USENONE)) {
-            return PdfWriter.PageModeUseNone;
+            return PdfWriter.getPageModeUseNone();
         } else if (name.equals(PdfName.USEOUTLINES)) {
-            return PdfWriter.PageModeUseOutlines;
+            return PdfWriter.getPageModeUseOutlines();
         } else if (name.equals(PdfName.USETHUMBS)) {
-            return PdfWriter.PageModeUseThumbs;
+            return PdfWriter.getPageModeUseThumbs();
         } else if (name.equals(PdfName.FULLSCREEN)) {
-            return PdfWriter.PageModeFullScreen;
+            return PdfWriter.getPageModeFullScreen();
         } else if (name.equals(PdfName.USEOC)) {
-            return PdfWriter.PageModeUseOC;
+            return PdfWriter.getPageModeUseOC();
         } else if (name.equals(PdfName.USEATTACHMENTS)) {
-            return PdfWriter.PageModeUseAttachments;
+            return PdfWriter.getPageModeUseAttachments();
         }
         return 0;
     }
 
-    private static void addOtherViewerPreferences(PdfViewerPreferencesImp preferences, PdfDictionary catalog) {
+    private static void addOtherViewerPreferences(com.lowagie.text.pdf.internal.PdfViewerPreferencesImp preferences, PdfDictionary catalog) {
         PdfObject obj = PdfReader.getPdfObjectRelease(catalog.get(PdfName.VIEWERPREFERENCES));
         if (obj != null && obj.isDictionary()) {
             PdfDictionary vp = (PdfDictionary) obj;
@@ -247,48 +247,48 @@ public class PdfViewerPreferencesImp implements PdfViewerPreferences {
     }
 
     private void setBooleanViewerPreferences(int preferences) {
-        if ((preferences & PdfWriter.HideToolbar) != 0) {
+        if ((preferences & PdfWriter.getHideToolbar()) != 0) {
             viewerPreferences.put(PdfName.HIDETOOLBAR, PdfBoolean.PDFTRUE);
         }
-        if ((preferences & PdfWriter.HideMenubar) != 0) {
+        if ((preferences & PdfWriter.getHideMenubar()) != 0) {
             viewerPreferences.put(PdfName.HIDEMENUBAR, PdfBoolean.PDFTRUE);
         }
-        if ((preferences & PdfWriter.HideWindowUI) != 0) {
+        if ((preferences & PdfWriter.getHideWindowUI()) != 0) {
             viewerPreferences.put(PdfName.HIDEWINDOWUI, PdfBoolean.PDFTRUE);
         }
-        if ((preferences & PdfWriter.FitWindow) != 0) {
+        if ((preferences & PdfWriter.getFitWindow()) != 0) {
             viewerPreferences.put(PdfName.FITWINDOW, PdfBoolean.PDFTRUE);
         }
-        if ((preferences & PdfWriter.CenterWindow) != 0) {
+        if ((preferences & PdfWriter.getCenterWindow()) != 0) {
             viewerPreferences.put(PdfName.CENTERWINDOW, PdfBoolean.PDFTRUE);
         }
-        if ((preferences & PdfWriter.DisplayDocTitle) != 0) {
+        if ((preferences & PdfWriter.getDisplayDocTitle()) != 0) {
             viewerPreferences.put(PdfName.DISPLAYDOCTITLE, PdfBoolean.PDFTRUE);
         }
     }
 
     private void setNonFullScreenPageMode(int preferences) {
-        if ((preferences & PdfWriter.NonFullScreenPageModeUseNone) != 0) {
+        if ((preferences & PdfWriter.getNonFullScreenPageModeUseNone()) != 0) {
             viewerPreferences.put(PdfName.NONFULLSCREENPAGEMODE, PdfName.USENONE);
-        } else if ((preferences & PdfWriter.NonFullScreenPageModeUseOutlines) != 0) {
+        } else if ((preferences & PdfWriter.getNonFullScreenPageModeUseOutlines()) != 0) {
             viewerPreferences.put(PdfName.NONFULLSCREENPAGEMODE, PdfName.USEOUTLINES);
-        } else if ((preferences & PdfWriter.NonFullScreenPageModeUseThumbs) != 0) {
+        } else if ((preferences & PdfWriter.getNonFullScreenPageModeUseThumbs()) != 0) {
             viewerPreferences.put(PdfName.NONFULLSCREENPAGEMODE, PdfName.USETHUMBS);
-        } else if ((preferences & PdfWriter.NonFullScreenPageModeUseOC) != 0) {
+        } else if ((preferences & PdfWriter.getNonFullScreenPageModeUseOC()) != 0) {
             viewerPreferences.put(PdfName.NONFULLSCREENPAGEMODE, PdfName.USEOC);
         }
     }
 
     private void setDirectionPreferences(int preferences) {
-        if ((preferences & PdfWriter.DirectionL2R) != 0) {
+        if ((preferences & PdfWriter.getDirectionL2R()) != 0) {
             viewerPreferences.put(PdfName.DIRECTION, PdfName.L2R);
-        } else if ((preferences & PdfWriter.DirectionR2L) != 0) {
+        } else if ((preferences & PdfWriter.getDirectionR2L()) != 0) {
             viewerPreferences.put(PdfName.DIRECTION, PdfName.R2L);
         }
     }
 
     private void setPrintScaling(int preferences) {
-        if ((preferences & PdfWriter.PrintScalingNone) != 0) {
+        if ((preferences & PdfWriter.getPrintScalingNone()) != 0) {
             viewerPreferences.put(PdfName.PRINTSCALING, PdfName.NONE);
         }
     }
@@ -371,33 +371,33 @@ public class PdfViewerPreferencesImp implements PdfViewerPreferences {
     public void addToCatalog(PdfDictionary catalog) {
         // Page Layout
         catalog.remove(PdfName.PAGELAYOUT);
-        if ((pageLayoutAndMode & PdfWriter.PageLayoutSinglePage) != 0) {
+        if ((pageLayoutAndMode & PdfWriter.getPageLayoutSinglePage()) != 0) {
             catalog.put(PdfName.PAGELAYOUT, PdfName.SINGLEPAGE);
-        } else if ((pageLayoutAndMode & PdfWriter.PageLayoutOneColumn) != 0) {
+        } else if ((pageLayoutAndMode & PdfWriter.getPageLayoutOneColumn()) != 0) {
             catalog.put(PdfName.PAGELAYOUT, PdfName.ONECOLUMN);
-        } else if ((pageLayoutAndMode & PdfWriter.PageLayoutTwoColumnLeft) != 0) {
+        } else if ((pageLayoutAndMode & PdfWriter.getPageLayoutTwoColumnLeft()) != 0) {
             catalog.put(PdfName.PAGELAYOUT, PdfName.TWOCOLUMNLEFT);
-        } else if ((pageLayoutAndMode & PdfWriter.PageLayoutTwoColumnRight) != 0) {
+        } else if ((pageLayoutAndMode & PdfWriter.getPageLayoutTwoColumnRight()) != 0) {
             catalog.put(PdfName.PAGELAYOUT, PdfName.TWOCOLUMNRIGHT);
-        } else if ((pageLayoutAndMode & PdfWriter.PageLayoutTwoPageLeft) != 0) {
+        } else if ((pageLayoutAndMode & PdfWriter.getPageLayoutTwoPageLeft()) != 0) {
             catalog.put(PdfName.PAGELAYOUT, PdfName.TWOPAGELEFT);
-        } else if ((pageLayoutAndMode & PdfWriter.PageLayoutTwoPageRight) != 0) {
+        } else if ((pageLayoutAndMode & PdfWriter.getPageLayoutTwoPageRight()) != 0) {
             catalog.put(PdfName.PAGELAYOUT, PdfName.TWOPAGERIGHT);
         }
 
         // Page Mode
         catalog.remove(PdfName.PAGEMODE);
-        if ((pageLayoutAndMode & PdfWriter.PageModeUseNone) != 0) {
+        if ((pageLayoutAndMode & PdfWriter.getPageModeUseNone()) != 0) {
             catalog.put(PdfName.PAGEMODE, PdfName.USENONE);
-        } else if ((pageLayoutAndMode & PdfWriter.PageModeUseOutlines) != 0) {
+        } else if ((pageLayoutAndMode & PdfWriter.getPageModeUseOutlines()) != 0) {
             catalog.put(PdfName.PAGEMODE, PdfName.USEOUTLINES);
-        } else if ((pageLayoutAndMode & PdfWriter.PageModeUseThumbs) != 0) {
+        } else if ((pageLayoutAndMode & PdfWriter.getPageModeUseThumbs()) != 0) {
             catalog.put(PdfName.PAGEMODE, PdfName.USETHUMBS);
-        } else if ((pageLayoutAndMode & PdfWriter.PageModeFullScreen) != 0) {
+        } else if ((pageLayoutAndMode & PdfWriter.getPageModeFullScreen()) != 0) {
             catalog.put(PdfName.PAGEMODE, PdfName.FULLSCREEN);
-        } else if ((pageLayoutAndMode & PdfWriter.PageModeUseOC) != 0) {
+        } else if ((pageLayoutAndMode & PdfWriter.getPageModeUseOC()) != 0) {
             catalog.put(PdfName.PAGEMODE, PdfName.USEOC);
-        } else if ((pageLayoutAndMode & PdfWriter.PageModeUseAttachments) != 0) {
+        } else if ((pageLayoutAndMode & PdfWriter.getPageModeUseAttachments()) != 0) {
             catalog.put(PdfName.PAGEMODE, PdfName.USEATTACHMENTS);
         }
 

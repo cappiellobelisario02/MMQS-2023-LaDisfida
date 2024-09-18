@@ -53,10 +53,8 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.awt.Color;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,47 +62,6 @@ import java.util.Map;
  *
  * @author Paulo Soares (psoares@consiste.pt)
  */
-
-public class AppearanceSettings {
-    private Color backgroundColor;
-    private int borderStyle;
-    private float borderWidth;
-    private Color borderColor;
-    private int options;
-    private int maxCharacterLength;
-
-    public AppearanceSettings(Color backgroundColor, int borderStyle, float borderWidth, Color borderColor, int options, int maxCharacterLength) {
-        this.backgroundColor = backgroundColor;
-        this.borderStyle = borderStyle;
-        this.borderWidth = borderWidth;
-        this.borderColor = borderColor;
-        this.options = options;
-        this.maxCharacterLength = maxCharacterLength;
-    }
-
-    public Color getBackgroundColor() { return backgroundColor; }
-    public int getBorderStyle() { return borderStyle; }
-    public float getBorderWidth() { return borderWidth; }
-    public Color getBorderColor() { return borderColor; }
-    public int getOptions() { return options; }
-    public int getMaxCharacterLength() { return maxCharacterLength; }
-}
-
-import com.itextpdf.text.Rectangle;
-
-public class BoxSettings {
-    private Rectangle box;
-    private int rotation;
-
-    public BoxSettings(Rectangle box, int rotation) {
-        this.box = box;
-        this.rotation = rotation;
-    }
-
-    public Rectangle getBox() { return box; }
-    public int getRotation() { return rotation; }
-}
-
 
 public abstract class BaseField {
 
@@ -127,7 +84,7 @@ public abstract class BaseField {
     /**
      * The field is hidden.
      */
-    public static final int hidden = 1;
+    public static final int HIDDEN1 = 1;
     /**
      * The field is visible but does not print.
      */
@@ -204,7 +161,7 @@ public abstract class BaseField {
      * combo box flag.
      */
     public static final int COMB = PdfFormField.FF_COMB;
-    private final static Map<PdfName, Integer> fieldKeys = new HashMap<>();
+    private static final Map<PdfName, Integer> fieldKeys = new HashMap<>();
 
     static {
         fieldKeys.putAll(PdfCopyFieldsImp.fieldKeys);
@@ -276,208 +233,93 @@ public abstract class BaseField {
         int maxCharacterLength = appearanceSettings.getMaxCharacterLength();
 
         PdfAppearance app = PdfAppearance.createAppearance(writer, box.getWidth(), box.getHeight());
-
-        switch (rotation) {
-            case 90:
-                app.setMatrix(0, 1, -1, 0, box.getHeight(), 0);
-                break;
-            case 180:
-                app.setMatrix(-1, 0, 0, -1, box.getWidth(), box.getHeight());
-                break;
-            case 270:
-                app.setMatrix(0, -1, 1, 0, 0, box.getWidth());
-                break;
-        }
-
+        applyRotation(app, rotation, box);
         app.saveState();
+        drawBackground(app, backgroundColor, box);
+        drawBorder(app, borderStyle, borderWidth, borderColor, box, options, maxCharacterLength);
+        app.restoreState();
+        return app;
+    }
 
-        // background
+    private static void applyRotation(PdfAppearance app, int rotation, Rectangle box) {
+        switch (rotation) {
+            case 90 -> app.setMatrix(0, 1, -1, 0, box.getHeight(), 0);
+            case 180 -> app.setMatrix(-1, 0, 0, -1, box.getWidth(), box.getHeight());
+            case 270 -> app.setMatrix(0, -1, 1, 0, 0, box.getWidth());
+            default -> throw new IllegalStateException("Unexpected value: " + rotation);
+        }
+    }
+
+    private static void drawBackground(PdfAppearance app, Color backgroundColor, Rectangle box) {
         if (backgroundColor != null) {
             app.setColorFill(backgroundColor);
             app.rectangle(0, 0, box.getWidth(), box.getHeight());
             app.fill();
         }
-
-        // border
-        if (borderStyle == PdfBorderDictionary.STYLE_UNDERLINE) {
-            if (borderWidth != 0 && borderColor != null) {
-                app.setColorStroke(borderColor);
-                app.setLineWidth(borderWidth);
-                app.moveTo(0, borderWidth / 2);
-                app.lineTo(box.getWidth(), borderWidth / 2);
-                app.stroke();
-            }
-        } else if (borderStyle == PdfBorderDictionary.STYLE_BEVELED) {
-            if (borderWidth != 0 && borderColor != null) {
-                app.setColorStroke(borderColor);
-                app.setLineWidth(borderWidth);
-                app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth, box.getHeight() - borderWidth);
-                app.stroke();
-            }
-            Color actual = backgroundColor != null ? backgroundColor : Color.white;
-            app.setGrayFill(1);
-            drawTopFrame(app, borderWidth, box);
-            app.setColorFill(actual.darker());
-            drawBottomFrame(app, borderWidth, box);
-        } else if (borderStyle == PdfBorderDictionary.STYLE_INSET) {
-            if (borderWidth != 0 && borderColor != null) {
-                app.setColorStroke(borderColor);
-                app.setLineWidth(borderWidth);
-                app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth, box.getHeight() - borderWidth);
-                app.stroke();
-            }
-            app.setGrayFill(0.5f);
-            drawTopFrame(app, borderWidth, box);
-            app.setGrayFill(0.75f);
-            drawBottomFrame(app, borderWidth, box);
-        } else {
-            if (borderWidth != 0 && borderColor != null) {
-                if (borderStyle == PdfBorderDictionary.STYLE_DASHED) {
-                    app.setLineDash(3, 0);
-                }
-                app.setColorStroke(borderColor);
-                app.setLineWidth(borderWidth);
-                app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth, box.getHeight() - borderWidth);
-                app.stroke();
-                if ((options & COMB) != 0 && maxCharacterLength > 1) {
-                    float step = box.getWidth() / maxCharacterLength;
-                    float yb = borderWidth / 2;
-                    float yt = box.getHeight() - borderWidth / 2;
-                    for (int k = 1; k < maxCharacterLength; ++k) {
-                        float x = step * k;
-                        app.moveTo(x, yb);
-                        app.lineTo(x, yt);
-                    }
-                    app.stroke();
-                }
-            }
-        }
-
-        app.restoreState();
-        return app;
     }
 
-
-    protected static List<String> getAllHardBreaks(String text) {
-        List<String> arr = new ArrayList<>();
-        char[] cs = text.toCharArray();
-        int len = cs.length;
-        StringBuilder buf = new StringBuilder();
-        for (int k = 0; k < len; ++k) {
-            char c = cs[k];
-            if (c == '\r') {
-                if (k + 1 < len && cs[k + 1] == '\n') {
-                    ++k;
-                }
-                arr.add(buf.toString());
-                buf = new StringBuilder();
-            } else if (c == '\n') {
-                arr.add(buf.toString());
-                buf = new StringBuilder();
-            } else {
-                buf.append(c);
-            }
+    private static void drawBorder(PdfAppearance app, int borderStyle, float borderWidth, Color borderColor, Rectangle box, int options, int maxCharacterLength) {
+        if (borderWidth == 0 || borderColor == null) {
+            return;
         }
-        arr.add(buf.toString());
-        return arr;
-    }
 
-    protected static void trimRight(StringBuilder buf) {
-        int len = buf.length();
-        while (true) {
-            if (len == 0) {
-                return;
-            }
-            if (buf.charAt(--len) != ' ') {
-                return;
-            }
-            buf.setLength(len);
+        app.setColorStroke(borderColor);
+        app.setLineWidth(borderWidth);
+
+        switch (borderStyle) {
+            case PdfBorderDictionary.STYLE_UNDERLINE -> drawUnderlineBorder(app, borderWidth, box);
+            case PdfBorderDictionary.STYLE_BEVELED -> drawBeveledBorder(app, borderWidth, box, backgroundColor);
+            case PdfBorderDictionary.STYLE_INSET -> drawInsetBorder(app, borderWidth, box);
+            default -> drawDefaultBorder(app, borderStyle, borderWidth, box, options, maxCharacterLength);
         }
     }
 
-    protected static List<String> breakLines(List<String> breaks, BaseFont font, float fontSize, float width) {
-        List<String> lines = new ArrayList<>();
-        StringBuilder buf = new StringBuilder();
-        for (String aBreak : breaks) {
-            buf.setLength(0);
-            float w = 0;
-            char[] cs = aBreak.toCharArray();
-            int len = cs.length;
-            // 0 inline first, 1 inline, 2 spaces
-            int state = 0;
-            int lastspace = -1;
-            char c = 0;
-            int refk = 0;
-            for (int k = 0; k < len; ++k) {
-                c = cs[k];
-                switch (state) {
-                    case 0:
-                        w += font.getWidthPoint(c, fontSize);
-                        buf.append(c);
-                        if (w > width) {
-                            w = 0;
-                            if (buf.length() > 1) {
-                                --k;
-                                buf.setLength(buf.length() - 1);
-                            }
-                            lines.add(buf.toString());
-                            buf.setLength(0);
-                            refk = k;
-                            if (c == ' ') {
-                                state = 2;
-                            } else {
-                                state = 1;
-                            }
-                        } else {
-                            if (c != ' ') {
-                                state = 1;
-                            }
-                        }
-                        break;
-                    case 1:
-                        w += font.getWidthPoint(c, fontSize);
-                        buf.append(c);
-                        if (c == ' ') {
-                            lastspace = k;
-                        }
-                        if (w > width) {
-                            w = 0;
-                            if (lastspace >= 0) {
-                                k = lastspace;
-                                buf.setLength(lastspace - refk);
-                                trimRight(buf);
-                                lines.add(buf.toString());
-                                buf.setLength(0);
-                                refk = k;
-                                lastspace = -1;
-                                state = 2;
-                            } else {
-                                if (buf.length() > 1) {
-                                    --k;
-                                    buf.setLength(buf.length() - 1);
-                                }
-                                lines.add(buf.toString());
-                                buf.setLength(0);
-                                refk = k;
-                                if (c == ' ') {
-                                    state = 2;
-                                }
-                            }
-                        }
-                        break;
-                    case 2:
-                        if (c != ' ') {
-                            w = 0;
-                            --k;
-                            state = 1;
-                        }
-                        break;
-                }
-            }
-            trimRight(buf);
-            lines.add(buf.toString());
+    private static void drawUnderlineBorder(PdfAppearance app, float borderWidth, Rectangle box) {
+        app.moveTo(0, borderWidth / 2);
+        app.lineTo(box.getWidth(), borderWidth / 2);
+        app.stroke();
+    }
+
+    private static void drawBeveledBorder(PdfAppearance app, float borderWidth, Rectangle box, Color backgroundColor) {
+        app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth, box.getHeight() - borderWidth);
+        app.stroke();
+        Color actual = backgroundColor != null ? backgroundColor : Color.white;
+        app.setGrayFill(1);
+        drawTopFrame(app, borderWidth, box);
+        app.setColorFill(actual.darker());
+        drawBottomFrame(app, borderWidth, box);
+    }
+
+    private static void drawInsetBorder(PdfAppearance app, float borderWidth, Rectangle box) {
+        app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth, box.getHeight() - borderWidth);
+        app.stroke();
+        app.setGrayFill(0.5f);
+        drawTopFrame(app, borderWidth, box);
+        app.setGrayFill(0.75f);
+        drawBottomFrame(app, borderWidth, box);
+    }
+
+    private static void drawDefaultBorder(PdfAppearance app, int borderStyle, float borderWidth, Rectangle box, int options, int maxCharacterLength) {
+        if (borderStyle == PdfBorderDictionary.STYLE_DASHED) {
+            app.setLineDash(3, 0);
         }
-        return lines;
+        app.rectangle(borderWidth / 2, borderWidth / 2, box.getWidth() - borderWidth, box.getHeight() - borderWidth);
+        app.stroke();
+        if ((options & COMB) != 0 && maxCharacterLength > 1) {
+            drawCombBorder(app, borderWidth, box, maxCharacterLength);
+        }
+    }
+
+    private static void drawCombBorder(PdfAppearance app, float borderWidth, Rectangle box, int maxCharacterLength) {
+        float step = box.getWidth() / maxCharacterLength;
+        float yb = borderWidth / 2;
+        float yt = box.getHeight() - borderWidth / 2;
+        for (int k = 1; k < maxCharacterLength; ++k) {
+            float x = step * k;
+            app.moveTo(x, yb);
+            app.lineTo(x, yt);
+        }
+        app.stroke();
     }
 
     private static void drawTopFrame(PdfAppearance app, float borderWidth, Rectangle box) {
@@ -750,7 +592,7 @@ public abstract class BaseField {
      * @param page the page
      */
     public void setRotationFromPage(Rectangle page) {
-        setRotation(page.getRotation());
+        setRotation(page.getRotationPdfPCell());
     }
 
     /**

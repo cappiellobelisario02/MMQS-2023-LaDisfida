@@ -55,7 +55,6 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -548,6 +547,7 @@ public class FontFactoryImp implements FontProvider {
 
     public void register(String path, String alias) throws Exception {
         String lowerCasePath = path.toLowerCase();
+        String stringToLog;
 
         if (isTtfOrOtf(lowerCasePath)) {
             registerTrueTypeFont(path, alias);
@@ -556,8 +556,9 @@ public class FontFactoryImp implements FontProvider {
         } else if (isAfmOrPfm(lowerCasePath)) {
             registerAFMOrPFMFont(path);
         } else {
+            stringToLog = "Unsupported file type: " + path;
             // Handle unsupported file types
-            logger.warning("Unsupported file type: " + path);
+            logger.warning(stringToLog);
         }
     }
 
@@ -573,7 +574,7 @@ public class FontFactoryImp implements FontProvider {
         return path.endsWith(".afm") || path.endsWith(".pfm");
     }
 
-    private void registerTrueTypeFont(String path, String alias) throws Exception {
+    private void registerTrueTypeFont(String path, String alias) throws IOException, DocumentException {
         Object[] allNames = BaseFont.getAllFontNames(path, BaseFont.WINANSI, null);
         String[][] names = (String[][]) allNames[2]; // full name
 
@@ -643,7 +644,7 @@ public class FontFactoryImp implements FontProvider {
         }
     }
 
-    private void registerAFMOrPFMFont(String path) throws Exception {
+    private void registerAFMOrPFMFont(String path) throws IOException, DocumentException {
         BaseFont bf = BaseFont.createFont(path, BaseFont.CP1252, false);
         String fullName = bf.getFullFontName()[0][3].toLowerCase();
         String familyName = bf.getFamilyFontName()[0][3].toLowerCase();
