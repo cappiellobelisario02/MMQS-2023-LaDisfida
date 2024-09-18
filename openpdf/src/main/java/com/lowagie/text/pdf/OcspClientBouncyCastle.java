@@ -110,10 +110,10 @@ import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
 import java.security.Provider;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.Random;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
@@ -154,7 +154,7 @@ public class OcspClientBouncyCastle implements OcspClient {
      */
     private Proxy proxy;
 
-    private static final Random rand = new Random();
+    private static final SecureRandom rand = new SecureRandom();
 
     /**
      * Creates an instance of an OcspClient that will be using BouncyCastle.
