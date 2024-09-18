@@ -361,7 +361,7 @@ public class BarcodeDatamatrix {
     private static void finalizeEncoding(byte[] data, int dataOffset, int dataLength, byte[] x, int textLength, int ptrOut) {
         byte c = x[textLength - 1];
         if (c < 40 && ptrOut < dataLength) {
-            data[dataOffset + ptrOut++] = (byte) 254;
+            data[dataOffset] = (byte) 254;
         }
     }
 
