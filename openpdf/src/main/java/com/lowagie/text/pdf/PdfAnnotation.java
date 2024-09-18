@@ -283,7 +283,7 @@ public class PdfAnnotation extends PdfDictionary {
         PdfAnnotation ann = new PdfAnnotation(writer, rect);
         ann.put(PdfName.SUBTYPE, PdfName.SCREEN);
         ann.put(PdfName.F, new PdfNumber(FLAGS_PRINT));
-        ann.put(PdfName.TYPE, PdfName.ANNOT);
+        ann.put(PdfName.TYPE0, PdfName.ANNOT);
         ann.setPage();
         PdfIndirectReference ref = ann.getIndirectReference();
         PdfAction action = PdfAction.rendition(clipTitle, fs, mimeType, ref);
