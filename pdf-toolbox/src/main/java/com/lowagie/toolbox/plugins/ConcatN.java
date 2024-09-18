@@ -199,20 +199,51 @@ public class ConcatN extends AbstractTool {
         logger.info(message);
     }
 
-    private void closeResources(PdfReader reader, Document document, FileOutputStream fos, PdfCopy writer) throws Exception {
-        if (reader != null) {
-            reader.close();
+    public class ResourceClosingException extends Exception {
+        public ResourceClosingException(String message) {
+            super(message);
         }
-        if (document != null) {
-            document.close();
-        }
-        if (fos != null) {
-            fos.close();
-        }
-        if (writer != null) {
-            writer.close();
+
+        public ResourceClosingException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
+
+
+    private void closeResources(PdfReader reader, Document document, FileOutputStream fos, PdfCopy writer) throws ResourceClosingException {
+        try {
+            if (reader != null) {
+                reader.close();
+            }
+        } catch (Exception e) {
+            throw new ResourceClosingException("Failed to close PdfReader", e);
+        }
+
+        try {
+            if (document != null) {
+                document.close();
+            }
+        } catch (Exception e) {
+            throw new ResourceClosingException("Failed to close Document", e);
+        }
+
+        try {
+            if (fos != null) {
+                fos.close();
+            }
+        } catch (Exception e) {
+            throw new ResourceClosingException("Failed to close FileOutputStream", e);
+        }
+
+        try {
+            if (writer != null) {
+                writer.close();
+            }
+        } catch (Exception e) {
+            throw new ResourceClosingException("Failed to close PdfCopy", e);
+        }
+    }
+
 
 
 

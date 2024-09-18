@@ -298,7 +298,6 @@ public class HtmlBookmarks extends AbstractTool {
     }
 
     private void handleException(Exception e) {
-        e.printStackTrace();
         JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
         logger.info(e.getMessage());
     }
