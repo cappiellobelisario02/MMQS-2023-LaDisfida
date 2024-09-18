@@ -112,7 +112,7 @@ public class SelectedPages extends AbstractTool {
 
         try {
             if (getValue(SRCFILE) == null) {
-                throw new InstantiationException("You need to choose a sourcefile");
+                throw new InstantiationException("You need to choose a source file");
             }
             File src = (File) getValue(SRCFILE);
             if (getValue(DESTFILE) == null) {
@@ -121,12 +121,7 @@ public class SelectedPages extends AbstractTool {
             File dest = (File) getValue(DESTFILE);
             String selection = (String) getValue("selection");
 
-            // Create a reader for a certain document
-            try {
-                reader = new PdfReader(src.getAbsolutePath());
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
+            reader = createPdfReader(src);
             logger.info("The original file had " + reader.getNumberOfPages() + " pages.");
             reader.selectPages(selection);
 
@@ -134,28 +129,13 @@ public class SelectedPages extends AbstractTool {
             stringToLog = "The new file has " + pages + " pages.";
             logger.severe(stringToLog);
 
-            try {
-                document = new Document(reader.getPageSizeWithRotation(1));
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
-
-            try {
-                fouts = new FileOutputStream(dest.getAbsolutePath());
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
-
-            try {
-                copy = new PdfCopy(document, fouts);
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
+            document = createDocument(reader);
+            fouts = createFileOutputStream(dest);
+            copy = createPdfCopy(document, fouts);
 
             document.open();
             PdfImportedPage page;
 
-            // Use the standard for-loop increment syntax
             for (int i = 1; i <= pages; i++) {
                 stringToLog = "Processed page " + i;
                 logger.info(stringToLog);
@@ -184,6 +164,46 @@ public class SelectedPages extends AbstractTool {
             }
         }
     }
+
+    private PdfReader createPdfReader(File src) {
+        PdfReader reader = null;
+        try {
+            reader = new PdfReader(src.getAbsolutePath());
+        } catch (Exception e) {
+            // Log error
+        }
+        return reader;
+    }
+    private Document createDocument(PdfReader reader) {
+        Document document = null;
+        try {
+            document = new Document(reader.getPageSizeWithRotation(1));
+        } catch (Exception e) {
+            // Log error
+        }
+        return document;
+    }
+
+    private FileOutputStream createFileOutputStream(File dest) {
+        FileOutputStream fouts = null;
+        try {
+            fouts = new FileOutputStream(dest.getAbsolutePath());
+        } catch (Exception e) {
+            // Log error
+        }
+        return fouts;
+    }
+
+    private PdfCopy createPdfCopy(Document document, FileOutputStream fouts) {
+        PdfCopy copy = null;
+        try {
+            copy = new PdfCopy(document, fouts);
+        } catch (Exception e) {
+            // Log error
+        }
+        return copy;
+    }
+
 
 
     /**

@@ -112,21 +112,16 @@ public class Decrypt extends AbstractTool {
             if (getValue(DEST) == null) {
                 throw new InstantiationException("You need to choose a destination file");
             }
+
             byte[] ownerpassword = null;
             if (getValue(OP) != null) {
                 ownerpassword = ((String) getValue(OP)).getBytes();
             }
-            try {
-                reader = new PdfReader(((File) getValue(SRCFILE_ARG)).getAbsolutePath(), ownerpassword);
-                // Rest of your code here...
-            } catch (Exception e) {
-                // Handle the exception here...
-            }
-            try{
-                fos = new FileOutputStream((File) getValue(DEST));
-            } catch(Exception e){
-                e.printStackTrace();
-            }
+
+            reader = initializePdfReader((File) getValue(SRCFILE_ARG), ownerpassword);
+
+            fos = createFileOutputStream((File) getValue(DEST));  // Use the new method to get the FileOutputStream
+
             PdfStamper stamper = new PdfStamper(reader, fos);
             stamper.close();
         } catch (Exception e) {
@@ -135,17 +130,41 @@ public class Decrypt extends AbstractTool {
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
             logger.info(e.getMessage());
-        } finally{
-            if(reader != null && fos != null){
-                try{
+        } finally {
+            if (reader != null && fos != null) {
+                try {
                     reader.close();
                     fos.close();
-                }catch(Exception e){
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    logger.info("Error1"+ e.getMessage());
                 }
             }
         }
     }
+
+    // New method to handle FileOutputStream creation
+    private FileOutputStream createFileOutputStream(File destFile) {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(destFile);
+        } catch (Exception e) {
+            logger.info("Error2"+ e.getMessage());
+        }
+        return fos;
+    }
+
+    // New method to initialize PdfReader
+    private PdfReader initializePdfReader(File sourceFile, byte[] ownerpassword) {
+        PdfReader reader = null;
+        try {
+            reader = new PdfReader(sourceFile.getAbsolutePath(), ownerpassword);
+            // You can add more processing logic here if needed...
+        } catch (Exception e) {
+            logger.info("Error3"+ e.getMessage());  // Handle the exception or log it as necessary
+        }
+        return reader;
+    }
+
 
     /**
      * @param arg StringArgument
