@@ -100,14 +100,14 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     /**
      * This is the font of this phrase.
      */
-    protected Font fontAttr;
+    protected transient Font fontAttr;
 
     /**
      * Null, unless the Phrase has to be hyphenated.
      *
      * @since 2.1.2
      */
-    protected HyphenationEvent hyphenation = null;
+    protected transient HyphenationEvent hyphenation = null;
 
     // constructors
 
