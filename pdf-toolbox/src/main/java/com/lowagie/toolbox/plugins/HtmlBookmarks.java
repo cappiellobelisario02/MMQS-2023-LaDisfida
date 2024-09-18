@@ -91,7 +91,7 @@ public class HtmlBookmarks extends AbstractTool {
         addVersion("$Id: HtmlBookmarks.java 3373 2008-05-12 16:21:24Z xlv $");
     }
 
-    static Logger logger = Logger.getLogger(com.lowagie.toolbox.plugins.HtmlBookmarks.class.getName());
+    static Logger logger = Logger.getLogger(HtmlBookmarks.class.getName());
 
     /**
      * Constructs an HtmlBookmarks object.
@@ -298,12 +298,6 @@ public class HtmlBookmarks extends AbstractTool {
     }
 
     private void handleException(Exception e) {
-<<<<<<< .mine
-        //da vedere come effettuare il log
-||||||| .r596
-        //da vedere come effettuare il log
-=======
->>>>>>> .r600
         JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
         logger.info(e.getMessage());
     }

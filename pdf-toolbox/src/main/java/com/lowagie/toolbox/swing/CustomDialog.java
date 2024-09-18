@@ -65,7 +65,7 @@ public class CustomDialog {
         try {
             jbInit();
         } catch (Exception ex) {
-            ex.printStackTrace();
+//da vedere come effettuare il log
         }
     }
 

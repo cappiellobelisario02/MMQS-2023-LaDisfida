@@ -94,7 +94,7 @@ public class PdfInformationPanel extends JPanel implements PropertyChangeListene
             panel.add(scrollpane, BorderLayout.CENTER);
             scrollpane.setViewportView(label);
         } catch (Exception ex) {
-            ex.printStackTrace();
+//da vedere come effettuare il log
         }
     }
 

@@ -25,14 +25,14 @@ import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * An example using MultiColumnText with irregular columns.
  */
 public class MultiColumnR2L {
 
-    static Random rand = new Random();
+    static SecureRandom rand = new SecureRandom();
     static String[] verb = {"flows", "draws", "renders", "throws exception", "runs",
             "crashes", "downloads", "usurps", "vexes", "whispers", "boils",
             "capitulates", "crashes", "craves", "looks", "defies", "defers",
@@ -114,16 +114,14 @@ public class MultiColumnR2L {
      * @return a poem that is generated with some keywords.
      */
     public static String poemLine() {
-        StringBuilder results = new StringBuilder(150);
-        results.append(randomWord(adjective));
-        results.append(' ');
-        results.append(randomWord(noun));
-        results.append(' ');
-        results.append(randomWord(verb));
-        results.append(' ');
-        results.append(randomWord(adverb));
-        results.append(", ");
-        return results.toString();
+        return randomWord(adjective)
+                + ' '
+                + randomWord(noun)
+                + ' '
+                + randomWord(verb)
+                + ' '
+                + randomWord(adverb)
+                + ", ";
     }
 
 }

@@ -318,7 +318,7 @@ public class MultiColumnText implements Element {
                 }
             }
         } catch (DocumentException ex) {
-            ex.printStackTrace();
+//da vedere come effettuare il log
             throw ex;
         }
 

@@ -2286,7 +2286,7 @@ public class AcroFields {
             try {
                 rf.close();
             } catch(IOException ignored) {
-                ignored.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }

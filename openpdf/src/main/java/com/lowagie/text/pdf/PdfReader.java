@@ -1048,7 +1048,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (Exception ignored) {
-                ignored.printStackTrace();
+//da vedere come effettuare il log
             }
         }
     }
@@ -2203,7 +2203,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 return;
             }
         } catch (Exception ignored) {
-            ignored.printStackTrace();
+            //da vedere come effettuare il log
         }
         xref = null;
         tokens.seek(startxref);
@@ -3911,7 +3911,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (Exception ignored) {
-                ignored.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }

@@ -187,7 +187,7 @@ public class Toolbox extends JFrame implements ActionListener {
                 tool.execute();
             } catch (PropertyVetoException | InstantiationException | IllegalAccessException
                      | ClassNotFoundException ex) {
-                ex.printStackTrace();
+//da vedere come effettuare il log
             }
         }
     }
@@ -521,7 +521,7 @@ public class Toolbox extends JFrame implements ActionListener {
                         oriout.print(snippet);
                         textArea.setCaretPosition(textArea.getDocument().getLength());
                     } catch (BadLocationException | IOException ex) {
-                        ex.printStackTrace();
+//da vedere come effettuare il log
                     }
                 }
             }

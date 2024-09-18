@@ -247,6 +247,13 @@ public class PdfPublicKeySecurityHandler {
         // Wrap the encrypted data and parameters in ASN.1 structures
         DEROctetString derOctetString = new DEROctetString(encryptedData);
         KeyTransRecipientInfo keyTransRecipientInfo = computeRecipientInfo(cert, secretKey.getEncoded());
+        ContentInfo contentInfo = getContentInfo(keyTransRecipientInfo, iv, derOctetString);
+
+        return contentInfo.toASN1Primitive();
+    }
+
+    private static ContentInfo getContentInfo(KeyTransRecipientInfo keyTransRecipientInfo, byte[] iv,
+            DEROctetString derOctetString) {
         DERSet derSet = new DERSet(new RecipientInfo(keyTransRecipientInfo));
 
         // Prepare AlgorithmIdentifier with AES-GCM
@@ -259,9 +266,7 @@ public class PdfPublicKeySecurityHandler {
 
         ASN1Set asn1Set = null;
         EnvelopedData envelopedData = new EnvelopedData(null, derSet, encryptedContentInfo, asn1Set);
-        ContentInfo contentInfo = new ContentInfo(PKCSObjectIdentifiers.envelopedData, envelopedData);
-
-        return contentInfo.toASN1Primitive();
+        return new ContentInfo(PKCSObjectIdentifiers.envelopedData, envelopedData);
     }
 
 

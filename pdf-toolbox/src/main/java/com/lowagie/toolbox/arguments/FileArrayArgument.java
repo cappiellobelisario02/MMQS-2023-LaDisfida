@@ -58,7 +58,7 @@ public class FileArrayArgument extends AbstractArgument {
         try {
             jbInit();
         } catch (Exception ex) {
-            ex.printStackTrace();
+//da vedere come effettuare il log
         }
     }
 
@@ -67,7 +67,7 @@ public class FileArrayArgument extends AbstractArgument {
         try {
             jbInit();
         } catch (Exception ex) {
-            ex.printStackTrace();
+//da vedere come effettuare il log
         }
     }
 
