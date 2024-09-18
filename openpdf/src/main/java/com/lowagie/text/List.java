@@ -102,6 +102,26 @@ public class List implements TextElementArray {
 
     // constants
 
+    @Override
+    public float llx() {
+        return 0.0f;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
+    }
+
     /**
      * a possible value for the numbered parameter
      */
@@ -324,7 +344,7 @@ public class List implements TextElementArray {
             }
             item.setIndentationLeft(symbolIndent, autoindent);
             item.setIndentationRight(0);
-            return listOfListItems.add(item);
+            return listOfListItems.add((Element) item);
         }
         return false;
     }
@@ -348,7 +368,7 @@ public class List implements TextElementArray {
      * @return true if adding the string succeeded
      */
     public boolean add(String s) {
-        return this.add(new ListItem(s));
+        return this.add((Element) new ListItem(s));
     }
 
     // extra methods
@@ -482,7 +502,7 @@ public class List implements TextElementArray {
     /**
      * @param uppercase the uppercase to set
      */
-    public void setLowercase(boolean uppercase) {
+    public static void setLowercase(boolean uppercase) {
         List.lowercase = uppercase;
     }
 
