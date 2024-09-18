@@ -76,6 +76,7 @@ import com.lowagie.text.Section;
 import com.lowagie.text.Table;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.ActionException;
+import com.lowagie.text.exceptions.AddCellException;
 import com.lowagie.text.pdf.collection.PdfCollection;
 import com.lowagie.text.pdf.draw.DrawInterface;
 import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
@@ -639,10 +640,10 @@ public class PdfDocument extends Document {
     }
 
     private boolean handleMarkedElement(MarkedObject mo) {
-            MarkedObject title = ((MarkedSection) mo).getTitle();
-            if (title != null) {
-                title.process(this);
-            }
+        MarkedObject title = ((MarkedSection) mo).getTitle();
+        if (title != null) {
+            title.process(this);
+        }
         mo.process(this);
         return true;
     }
@@ -650,7 +651,8 @@ public class PdfDocument extends Document {
 // Handle additional cases or default behavior as needed
 
 
-    private boolean handleTableElement(Table element) throws BadElementException, DocumentException {
+    private boolean handleTableElement(Table element)
+            throws DocumentException, AddCellException, IOException {
         PdfPTable ptable = element.createPdfPTable();
         if (ptable.size() <= ptable.getHeaderRows()) {
             return false; //nothing to do
@@ -2530,10 +2532,10 @@ public class PdfDocument extends Document {
         for (Element element : footer.getSpecialContent()) {
             switch (element.type()) {
                 case Element.JPEG,
-                Element.JPEG2000,
-                Element.JBIG2,
-                Element.IMGRAW,
-                Element.IMGTEMPLATE:
+                     Element.JPEG2000,
+                     Element.JBIG2,
+                     Element.IMGRAW,
+                     Element.IMGTEMPLATE:
                     processImage((Image) element);
                     break;
                 case Element.PTABLE:

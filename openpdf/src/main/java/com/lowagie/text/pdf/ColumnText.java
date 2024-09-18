@@ -66,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Formats text in a columnwise form. The text is bound on the left and on the right by a sequence of lines. This allows
@@ -90,6 +91,8 @@ import java.util.List;
  */
 
 public class ColumnText {
+
+    Logger logger = Logger.getLogger(ColumnText.class.getName());
 
     /**
      * Eliminate the arabic vowels
@@ -167,6 +170,9 @@ public class ColumnText {
      */
     protected static final int LINE_STATUS_NOLINE = 2;
     protected int runDirection = PdfWriter.RUN_DIRECTION_DEFAULT;
+
+    Object[] currentValues = new Object[2];
+    PdfFont currentFont = null;
     /**
      * Upper bound of the column.
      */
@@ -989,21 +995,55 @@ public class ColumnText {
         if (bidiLine == null) {
             return NO_MORE_TEXT;
         }
-        descender = 0;
-        linesWritten = 0;
-        boolean dirty = false;
-        float ratio = spaceCharRatio;
-        Object[] currentValues = new Object[2];
-        PdfFont currentFont = null;
+
+
+        PdfDocument pdf = (PdfDocument) initialize(simulate)[0];
+        PdfContentByte graphics = (PdfContentByte) initialize(simulate)[1];
+        PdfContentByte text = (PdfContentByte) initialize(simulate)[2];
+        float ratio = (float) initialize(simulate)[3];
+        int localRunDirection = (int) initialize(simulate)[4];
         currentValues[1] = 0.0F;
+        PdfLine line;
+
+        int status = 0;
+        boolean dirty = false;
+        while (true) {
+            float firstIndent = calculateFirstIndent();
+            if (rectangularMode) {
+                status = (int) handleRectangularMode(simulate, firstIndent, text, dirty, localRunDirection)[0];
+                dirty = (boolean) handleRectangularMode(simulate, firstIndent, text, dirty, localRunDirection)[1];
+                line = (PdfLine) handleRectangularMode(simulate, firstIndent, text, dirty, localRunDirection)[2];
+            } else {
+                status = (int) handleNonRectangularMode(simulate, firstIndent, text, dirty, localRunDirection)[0];
+                dirty = (boolean) handleNonRectangularMode(simulate, firstIndent, text, dirty, localRunDirection)[1];
+                line = (PdfLine) handleNonRectangularMode(simulate, firstIndent, text, dirty, localRunDirection)[2];
+            }
+
+            if (status != 0) {
+                break;
+            }
+
+            processLine(simulate, firstIndent, pdf, graphics, text, ratio, line);
+        }
+
+        finalizeText(text, dirty);
+        return status;
+    }
+
+    private Object[] initialize(boolean simulate) {
         PdfDocument pdf = null;
         PdfContentByte graphics = null;
         PdfContentByte text = null;
-        firstLineY = Float.NaN;
         int localRunDirection = PdfWriter.RUN_DIRECTION_NO_BIDI;
+        float ratio = spaceCharRatio;
+        descender = 0;
+        linesWritten = 0;
+        firstLineY = Float.NaN;
+
         if (runDirection != PdfWriter.RUN_DIRECTION_DEFAULT) {
             localRunDirection = runDirection;
         }
+
         if (canvas != null) {
             graphics = canvas;
             pdf = canvas.getPdfDocument();
@@ -1012,109 +1052,125 @@ public class ColumnText {
             throw new NullPointerException(MessageLocalization.getComposedMessage(
                     "columntext.go.with.simulate.eq.eq.false.and.text.eq.eq.null"));
         }
+
         if (!simulate) {
-            if (ratio == GLOBAL_SPACE_CHAR_RATIO) {
-                ratio = text.getPdfWriter().getSpaceCharRatio();
-            } else if (ratio < 0.001f) {
-                ratio = 0.001f;
-            }
+            ratio = (spaceCharRatio == GLOBAL_SPACE_CHAR_RATIO) ? text.getPdfWriter().getSpaceCharRatio() : Math.max(spaceCharRatio, 0.001f);
         }
-        float firstIndent = 0;
-        PdfLine line;
-        float x1;
-        int status = 0;
-        while (true) {
-            firstIndent = (lastWasNewline ? indent : followingIndent); //
-            if (rectangularMode) {
-                if (rectangularWidth <= firstIndent + rightIndent) {
-                    status = NO_MORE_COLUMN;
-                    if (bidiLine.isEmpty()) {
-                        status |= NO_MORE_TEXT;
-                    }
-                    break;
-                }
-                if (bidiLine.isEmpty()) {
-                    status = NO_MORE_TEXT;
-                    break;
-                }
-                line = bidiLine.processLine(leftX, rectangularWidth - firstIndent - rightIndent, alignment,
-                        localRunDirection, arabicOptions);
-                if (line == null) {
-                    status = NO_MORE_TEXT;
-                    break;
-                }
-                float[] maxSize = line.getMaxSize();
-                if (isUseAscender() && Float.isNaN(firstLineY)) {
-                    currentLeading = line.getAscender();
-                } else {
-                    currentLeading = Math.max(fixedLeading + maxSize[0] * multipliedLeading, maxSize[1]);
-                }
-                if (yLine > maxY || yLine - currentLeading < minY) {
-                    status = NO_MORE_COLUMN;
-                    bidiLine.restore();
-                    break;
-                }
-                yLine -= currentLeading;
-                if (!simulate && !dirty) {
-                    text.beginText();
-                    dirty = true;
-                }
-                if (Float.isNaN(firstLineY)) {
-                    firstLineY = yLine;
-                }
-                updateFilledWidth(rectangularWidth - line.widthLeft());
-                x1 = leftX;
-            } else {
-                float yTemp = yLine;
-                float[] xx = findLimitsTwoLines();
-                if (xx == null) {
-                    status = NO_MORE_COLUMN;
-                    if (bidiLine.isEmpty()) {
-                        status |= NO_MORE_TEXT;
-                    }
-                    yLine = yTemp;
-                    break;
-                }
-                if (bidiLine.isEmpty()) {
-                    status = NO_MORE_TEXT;
-                    yLine = yTemp;
-                    break;
-                }
-                x1 = Math.max(xx[0], xx[2]);
-                float x2 = Math.min(xx[1], xx[3]);
-                if (x2 - x1 <= firstIndent + rightIndent) {
-                    continue;
-                }
-                if (!simulate && !dirty) {
-                    text.beginText();
-                    dirty = true;
-                }
-                line = bidiLine.processLine(x1, x2 - x1 - firstIndent - rightIndent, alignment, localRunDirection,
-                        arabicOptions);
-                if (line == null) {
-                    status = NO_MORE_TEXT;
-                    yLine = yTemp;
-                    break;
-                }
-            }
-            if (!simulate) {
-                currentValues[0] = currentFont;
-                text.setTextMatrix(x1 + (line.isRTL() ? rightIndent : firstIndent) + line.indentLeft(), yLine);
-                pdf.writeLineToContent(line, text, graphics, currentValues, ratio);
-                currentFont = (PdfFont) currentValues[0];
-            }
-            lastWasNewline = line.isNewlineSplit();
-            yLine -= line.isNewlineSplit() ? extraParagraphSpace : 0;
-            ++linesWritten;
-            descender = line.getDescender();
+
+        return new Object[]{pdf, graphics, text, ratio, localRunDirection};
+    }
+
+    private float calculateFirstIndent() {
+        return lastWasNewline ? indent : followingIndent;
+    }
+
+    private Object[] handleRectangularMode(boolean simulate, float firstIndent,
+            PdfContentByte text, boolean dirty, int localRunDirection) throws DocumentException {
+        if (rectangularWidth <= firstIndent + rightIndent) {
+            return new Object[]{handleNoMoreColumn(), dirty, null};
         }
+        if (bidiLine.isEmpty()) {
+            return new Object[]{NO_MORE_TEXT, dirty, null};
+        }
+
+        PdfLine line = bidiLine.processLine(leftX, rectangularWidth - firstIndent - rightIndent, alignment, localRunDirection, arabicOptions);
+        if (line == null) {
+            return new Object[]{NO_MORE_TEXT, dirty, null};
+        }
+
+        if (isOutOfBounds(line)) {
+            bidiLine.restore();
+            return new Object[]{NO_MORE_COLUMN, dirty, line};
+        }
+
+        updateYLine();
+        dirty = beginTextIfNeeded(simulate, text, dirty);
+        updateFilledWidth(rectangularWidth - line.widthLeft());
+
+        return new Object[]{0, dirty, line};
+    }
+
+    private Object[] handleNonRectangularMode(boolean simulate, float firstIndent,
+            PdfContentByte text, boolean dirty, int localRunDirection) throws DocumentException {
+        float[] xx = findLimitsTwoLines();
+        if (xx == null) {
+            return new Object[]{handleNoMoreColumn(), dirty, null};
+        }
+        if (bidiLine.isEmpty()) {
+            return new Object[]{NO_MORE_TEXT, dirty, null};
+        }
+
+        float x1 = Math.max(xx[0], xx[2]);
+        float x2 = Math.min(xx[1], xx[3]);
+
+        if (x2 - x1 <= firstIndent + rightIndent) {
+            return new Object[]{0, dirty, null};
+        }
+
+        dirty = beginTextIfNeeded(simulate, text, dirty);
+
+        PdfLine line = bidiLine.processLine(x1, x2 - x1 - firstIndent - rightIndent, alignment, localRunDirection, arabicOptions);
+        if (line == null) {
+            return new Object[]{NO_MORE_TEXT, dirty, null};
+        }
+
+        return new Object[]{0, dirty, line};
+    }
+
+    private void processLine(boolean simulate, float firstIndent, PdfDocument pdf,
+            PdfContentByte graphics, PdfContentByte text, float ratio, PdfLine line) throws DocumentException {
+        if (!simulate) {
+            currentValues[0] = currentFont;
+            text.setTextMatrix(leftX + (line.isRTL() ? rightIndent : firstIndent) + line.indentLeft(), yLine);
+            pdf.writeLineToContent(line, text, graphics, currentValues, ratio);
+            currentFont = (PdfFont) currentValues[0];
+        }
+        lastWasNewline = line.isNewlineSplit();
+        yLine -= line.isNewlineSplit() ? extraParagraphSpace : 0;
+        ++linesWritten;
+        descender = line.getDescender();
+    }
+
+    private boolean isOutOfBounds(PdfLine line) {
+        float[] maxSize = line.getMaxSize();
+        if (isUseAscender() && Float.isNaN(firstLineY)) {
+            currentLeading = line.getAscender();
+        } else {
+            currentLeading = Math.max(fixedLeading + maxSize[0] * multipliedLeading, maxSize[1]);
+        }
+        return yLine > maxY || yLine - currentLeading < minY;
+    }
+
+    private void updateYLine() {
+        yLine -= currentLeading;
+        if (Float.isNaN(firstLineY)) {
+            firstLineY = yLine;
+        }
+    }
+
+    private boolean beginTextIfNeeded(boolean simulate, PdfContentByte text, boolean dirty) {
+        if (!simulate && !dirty) {
+            text.beginText();
+            return true;
+        }
+        return false;
+    }
+
+    private int handleNoMoreColumn() {
+        int status = NO_MORE_COLUMN;
+        if (bidiLine.isEmpty()) {
+            status |= NO_MORE_TEXT;
+        }
+        return status;
+    }
+
+    private void finalizeText(PdfContentByte text, boolean dirty) throws DocumentException {
         if (dirty) {
             text.endText();
             if (canvas != null) {
                 canvas.add(text);
             }
         }
-        return status;
     }
 
     /**
