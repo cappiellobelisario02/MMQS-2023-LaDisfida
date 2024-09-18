@@ -10,18 +10,17 @@ public class EncodingParams {
     private final int options;
     private final boolean firstMatch;
 
-    public EncodingParams(byte[] text, int textOffset, int textSize, byte[] data, int dataOffset,
-                          int dataSize, int options, boolean firstMatch) {
-        this.text = text;
-        this.textOffset = textOffset;
-        this.textSize = textSize;
-        this.data = data;
-        this.dataOffset = dataOffset;
-        this.dataSize = dataSize;
-        this.options = options;
-        this.firstMatch = firstMatch;
+    private EncodingParams(Builder builder) {
+        this.text = builder.text;
+        this.textOffset = builder.textOffset;
+        this.textSize = builder.textSize;
+        this.data = builder.data;
+        this.dataOffset = builder.dataOffset;
+        this.dataSize = builder.dataSize;
+        this.options = builder.options;
+        this.firstMatch = builder.firstMatch;
     }
-    
+
     // Getters for all fields
     public byte[] getText() { return text; }
     public int getTextOffset() { return textOffset; }
@@ -31,4 +30,59 @@ public class EncodingParams {
     public int getDataSize() { return dataSize; }
     public int getOptions() { return options; }
     public boolean isFirstMatch() { return firstMatch; }
+
+    public static class Builder {
+        private byte[] text;
+        private int textOffset;
+        private int textSize;
+        private byte[] data;
+        private int dataOffset;
+        private int dataSize;
+        private int options;
+        private boolean firstMatch;
+
+        public Builder text(byte[] text) {
+            this.text = text;
+            return this;
+        }
+
+        public Builder textOffset(int textOffset) {
+            this.textOffset = textOffset;
+            return this;
+        }
+
+        public Builder textSize(int textSize) {
+            this.textSize = textSize;
+            return this;
+        }
+
+        public Builder data(byte[] data) {
+            this.data = data;
+            return this;
+        }
+
+        public Builder dataOffset(int dataOffset) {
+            this.dataOffset = dataOffset;
+            return this;
+        }
+
+        public Builder dataSize(int dataSize) {
+            this.dataSize = dataSize;
+            return this;
+        }
+
+        public Builder options(int options) {
+            this.options = options;
+            return this;
+        }
+
+        public Builder firstMatch(boolean firstMatch) {
+            this.firstMatch = firstMatch;
+            return this;
+        }
+
+        public EncodingParams build() {
+            return new EncodingParams(this);
+        }
+    }
 }
