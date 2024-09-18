@@ -1429,22 +1429,7 @@ class TrueTypeFont extends BaseFont {
         HashMap<Integer, int[]> glyphs = new HashMap<>();
         for (int k = firstChar; k <= lastChar; ++k) {
             if (shortTag[k] != 0) {
-                int[] metrics = null;
-                if (specialMap != null) {
-                    int[] cd = GlyphList.nameToUnicode(differences[k]);
-                    if (cd != null) {
-                        metrics = getMetricsTT(cd[0]);
-                    }
-                } else {
-                    if (fontSpecific) {
-                        metrics = getMetricsTT(k);
-                    } else {
-                        metrics = getMetricsTT(unicodeDifferences[k]);
-                    }
-                }
-                if (metrics != null) {
-                    glyphs.put(metrics[0], null);
-                }
+                calculateMetricsAndPutThemInGlyphs(glyphs, k);
             }
         }
         addRangeUni(glyphs, false, subsetp);
@@ -1454,6 +1439,25 @@ class TrueTypeFont extends BaseFont {
         PdfObject pobj = new StreamFont(b, new int[]{b.length}, compressionLevel);
         PdfIndirectObject obj = writer.addToBody(pobj);
         return obj.getIndirectReference();
+    }
+
+    private void calculateMetricsAndPutThemInGlyphs(HashMap<Integer, int[]> glyphs, int k){
+        int[] metrics = null;
+        if (specialMap != null) {
+            int[] cd = GlyphList.nameToUnicode(differences[k]);
+            if (cd != null) {
+                metrics = getMetricsTT(cd[0]);
+            }
+        } else {
+            if (fontSpecific) {
+                metrics = getMetricsTT(k);
+            } else {
+                metrics = getMetricsTT(unicodeDifferences[k]);
+            }
+        }
+        if (metrics != null) {
+            glyphs.put(metrics[0], null);
+        }
     }
 
     private PdfIndirectReference handleFontDescriptor(PdfWriter writer, PdfIndirectReference indFont,

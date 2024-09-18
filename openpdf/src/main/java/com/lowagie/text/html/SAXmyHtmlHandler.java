@@ -122,78 +122,90 @@ public class SAXmyHtmlHandler extends SAXiTextHandler<HtmlPeer> {
      */
     @Override
     public void startElement(String uri, String localName, String name, Attributes attrs) {
-        // super.handleStartingTags is replaced with handleStartingTags
-        // suggestion by Vu Ngoc Tan/Hop
         String lowerCaseName = name.toLowerCase();
-        if (HtmlTagMap.isHtml(lowerCaseName)) {
-            // we do nothing
+
+        if (isIgnoredTag(lowerCaseName)) {
             return;
         }
-        if (HtmlTagMap.isHead(lowerCaseName)) {
-            // we do nothing
-            return;
-        }
-        if (HtmlTagMap.isTitle(lowerCaseName)) {
-            // we do nothing
-            return;
-        }
+
         if (HtmlTagMap.isMeta(lowerCaseName)) {
-            // we look if we can change the body attributes
-            String meta = null;
-            String content = null;
-            if (attrs != null) {
-                for (int i = 0; i < attrs.getLength(); i++) {
-                    String attribute = attrs.getQName(i);
-                    if (attribute.equalsIgnoreCase(HtmlTags.CONTENT)) {
-                        content = attrs.getValue(i);
-                    } else if (attribute.equalsIgnoreCase(HtmlTags.NAME)) {
-                        meta = attrs.getValue(i);
-                    }
-                }
-            }
-            if (meta != null && content != null) {
-                bodyAttributes.put(meta, content);
-            }
+            handleMetaTag(attrs);
             return;
         }
-        if (HtmlTagMap.isLink(lowerCaseName)) {
-            // we do nothing for the moment, in a later version we could extract
-            // the style sheet
-            return;
-        }
+
         if (HtmlTagMap.isBody(lowerCaseName)) {
-            // maybe we could extract some info about the document: color,
-            // margins,...
-            // but that's for a later version...
-            HtmlPeer peer = new HtmlPeer(ElementTags.ITEXT, lowerCaseName);
-            peer.addAlias(ElementTags.TOP, HtmlTags.TOPMARGIN);
-            peer.addAlias(ElementTags.BOTTOM, HtmlTags.BOTTOMMARGIN);
-            peer.addAlias(ElementTags.RIGHT, HtmlTags.RIGHTMARGIN);
-            peer.addAlias(ElementTags.LEFT, HtmlTags.LEFTMARGIN);
-            bodyAttributes.putAll(peer.getAttributes(attrs));
-            handleStartingTags(peer.getTag(), bodyAttributes);
+            handleBodyTag(attrs, lowerCaseName);
             return;
         }
+
         if (myTags.containsKey(lowerCaseName)) {
-            HtmlPeer peer = myTags.get(lowerCaseName);
-            if (ElementTags.TABLE.equals(peer.getTag()) || ElementTags.CELL.equals(peer.getTag())) {
-                Properties p = peer.getAttributes(attrs);
-                String value;
-                if (ElementTags.TABLE.equals(peer.getTag()) && (value = p.getProperty(ElementTags.BORDERWIDTH)) != null && (Float.parseFloat(value + "f") > 0)){
-                        tableBorder = true;
-                }
-                if (tableBorder) {
-                    p.put(ElementTags.LEFT, String.valueOf(true));
-                    p.put(ElementTags.RIGHT, String.valueOf(true));
-                    p.put(ElementTags.TOP, String.valueOf(true));
-                    p.put(ElementTags.BOTTOM, String.valueOf(true));
-                }
-                handleStartingTags(peer.getTag(), p);
-                return;
-            }
-            handleStartingTags(peer.getTag(), peer.getAttributes(attrs));
+            handleCustomTag(lowerCaseName, attrs);
             return;
         }
+
+        handleDefaultTag(lowerCaseName, attrs);
+    }
+
+    private boolean isIgnoredTag(String lowerCaseName) {
+        return HtmlTagMap.isHtml(lowerCaseName) ||
+                HtmlTagMap.isHead(lowerCaseName) ||
+                HtmlTagMap.isTitle(lowerCaseName) ||
+                HtmlTagMap.isLink(lowerCaseName);
+    }
+
+    private void handleMetaTag(Attributes attrs) {
+        String meta = null;
+        String content = null;
+        if (attrs != null) {
+            for (int i = 0; i < attrs.getLength(); i++) {
+                String attribute = attrs.getQName(i);
+                if (attribute.equalsIgnoreCase(HtmlTags.CONTENT)) {
+                    content = attrs.getValue(i);
+                } else if (attribute.equalsIgnoreCase(HtmlTags.NAME)) {
+                    meta = attrs.getValue(i);
+                }
+            }
+        }
+        if (meta != null && content != null) {
+            bodyAttributes.put(meta, content);
+        }
+    }
+
+    private void handleBodyTag(Attributes attrs, String lowerCaseName) {
+        HtmlPeer peer = new HtmlPeer(ElementTags.ITEXT, lowerCaseName);
+        peer.addAlias(ElementTags.TOP, HtmlTags.TOPMARGIN);
+        peer.addAlias(ElementTags.BOTTOM, HtmlTags.BOTTOMMARGIN);
+        peer.addAlias(ElementTags.RIGHT, HtmlTags.RIGHTMARGIN);
+        peer.addAlias(ElementTags.LEFT, HtmlTags.LEFTMARGIN);
+        bodyAttributes.putAll(peer.getAttributes(attrs));
+        handleStartingTags(peer.getTag(), bodyAttributes);
+    }
+
+    private void handleCustomTag(String lowerCaseName, Attributes attrs) {
+        HtmlPeer peer = myTags.get(lowerCaseName);
+        Properties p = peer.getAttributes(attrs);
+        if (ElementTags.TABLE.equals(peer.getTag()) || ElementTags.CELL.equals(peer.getTag())) {
+            handleTableOrCellTag(peer.getTag(), p);
+        } else {
+            handleStartingTags(peer.getTag(), p);
+        }
+    }
+
+    private void handleTableOrCellTag(String tag, Properties p) {
+        String value;
+        if (ElementTags.TABLE.equals(tag) && (value = p.getProperty(ElementTags.BORDERWIDTH)) != null && (Float.parseFloat(value + "f") > 0)) {
+            tableBorder = true;
+        }
+        if (tableBorder) {
+            p.put(ElementTags.LEFT, String.valueOf(true));
+            p.put(ElementTags.RIGHT, String.valueOf(true));
+            p.put(ElementTags.TOP, String.valueOf(true));
+            p.put(ElementTags.BOTTOM, String.valueOf(true));
+        }
+        handleStartingTags(tag, p);
+    }
+
+    private void handleDefaultTag(String lowerCaseName, Attributes attrs) {
         Properties attributes = new Properties();
         if (attrs != null) {
             for (int i = 0; i < attrs.getLength(); i++) {
