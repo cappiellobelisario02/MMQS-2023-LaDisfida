@@ -288,4 +288,8 @@ public class ListItem {
     public float getTotalLeading(){
         return paragraph.getTotalLeading();
     }
+
+    public java.util.List<Element> getChunks() {
+        return paragraph.getChunks();
+    }
 }

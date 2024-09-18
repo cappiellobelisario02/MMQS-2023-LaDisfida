@@ -71,7 +71,6 @@ import com.lowagie.text.html.Markup;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.draw.LineSeparator;
-import com.lowagie.text.utils.NumberUtilities;
 import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
 import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
 import java.io.File;
@@ -84,7 +83,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
@@ -510,7 +508,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
                 break;
             case "td":
             case "th":
-                handleTableCellTag(tag, style);
+                handleTableCellTag(tag);
                 break;
             case TABLE_KEY:
                 handleTableTag(style);
@@ -567,7 +565,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
         cprops.addToChain("tr", style);
     }
 
-    private void handleTableCellTag(String tag, Map<String, String> style) {
+    private void handleTableCellTag(String tag) {
         if (pendingTD) {
             endElement(tag);
         }
@@ -584,16 +582,6 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
         tableState.push(new boolean[]{pendingTR, pendingTD});
         pendingTR = pendingTD = false;
         skipText = true;
-    }
-
-    private boolean setIndentationFromProperty(com.lowagie.text.List list, ChainedProperties cprops) {
-        try {
-            float indentation = Float.parseFloat(cprops.getProperty("indent"));
-            list.setIndentationLeft(indentation);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 
     private void setIndentationFromProperties(com.lowagie.text.List list, ChainedProperties cprops) {
@@ -740,7 +728,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
 
         Object list = stack.pop();
         if (list instanceof com.lowagie.text.List) {
-            ((com.lowagie.text.List) list).add((ListItem) obj);
+            ((com.lowagie.text.List) list).add((Element) obj);
             adjustListSymbol((ListItem) obj);
         }
         stack.push(list);
@@ -808,11 +796,6 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
         skipText = true;
     }
 
-    private void handleTableCellTag(String tag) {
-        pendingTD = false;
-        cprops.removeChain("td");
-        skipText = true;
-    }
 
     private void addElementToStackOrDocument(Element element) throws DocumentException {
         if (stack.isEmpty()) {
