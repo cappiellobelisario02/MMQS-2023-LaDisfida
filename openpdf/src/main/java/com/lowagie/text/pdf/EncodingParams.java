@@ -21,7 +21,7 @@ public class EncodingParams {
         this.options = options;
         this.firstMatch = firstMatch;
     }
-
+    
     // Getters for all fields
     public byte[] getText() { return text; }
     public int getTextOffset() { return textOffset; }

@@ -557,7 +557,7 @@ public class Font implements Comparable<Font> {
      * </CODE>
      */
     public int getCalculatedStyle() {
-        int Style = this.style;
+        int Style;
         if (style == UNDEFINED) {
             style = NORMAL;
         }
@@ -584,7 +584,7 @@ public class Font implements Comparable<Font> {
      * @return Font.NORMAL if no style can be detected from the font name.
      */
     public int getBaseFontStyle() {
-        int Style = Font.NORMAL;
+        int Style;
         if (baseFont != null) {
             final String baseFontName = baseFont.getPostscriptFontName();
             style = getFontStyleFromName(baseFontName);
@@ -696,16 +696,16 @@ public class Font implements Comparable<Font> {
         if (baseFont != null) {
             return baseFont;
         }
-        int style = this.style;
-        if (style == UNDEFINED) {
-            style = NORMAL;
+        int Style = this.style;
+        if (Style == UNDEFINED) {
+            Style = NORMAL;
         }
         String fontName = BaseFont.HELVETICA;
         String encoding = BaseFont.WINANSI;
         BaseFont cfont = null;
         switch (family) {
             case COURIER:
-                switch (style & BOLDITALIC) {
+                switch (Style & BOLDITALIC) {
                     case BOLD:
                         fontName = BaseFont.COURIER_BOLD;
                         break;
@@ -722,7 +722,7 @@ public class Font implements Comparable<Font> {
                 }
                 break;
             case TIMES_ROMAN:
-                switch (style & BOLDITALIC) {
+                switch (Style & BOLDITALIC) {
                     case BOLD:
                         fontName = BaseFont.TIMES_BOLD;
                         break;
@@ -752,7 +752,7 @@ public class Font implements Comparable<Font> {
                 break;
             default:
             case Font.HELVETICA:
-                switch (style & BOLDITALIC) {
+                switch (Style & BOLDITALIC) {
                     case BOLD:
                         fontName = BaseFont.HELVETICA_BOLD;
                         break;
