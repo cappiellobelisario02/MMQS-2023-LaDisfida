@@ -43,7 +43,7 @@ public class HTMLTableTest {
             worker.parse(new StringReader(html));
             assertNotNull(doc, () -> html + " was not parsed successfully");
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
             fail(() -> html + " resulted in " + e);
         }
     }

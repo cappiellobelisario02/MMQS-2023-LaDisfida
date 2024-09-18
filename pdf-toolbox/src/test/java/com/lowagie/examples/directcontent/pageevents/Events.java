@@ -87,7 +87,7 @@ public class Events {
             document.close();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
             System.err.println(e.getMessage());
         }
     }
@@ -111,7 +111,7 @@ public class Events {
         try {
             return new MyHandler(document, new RomeoJulietMap());
         } catch (IOException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
         return null;
     }

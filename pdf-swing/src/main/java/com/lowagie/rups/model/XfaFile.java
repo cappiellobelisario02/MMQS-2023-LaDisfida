@@ -21,14 +21,10 @@
 package com.lowagie.rups.model;
 
 import com.lowagie.rups.io.OutputStreamResource;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.io.Writer;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -68,7 +64,7 @@ public class XfaFile implements OutputStreamResource {
                 try {
                     resource.writeTo(pos);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }).start();
 

@@ -133,6 +133,7 @@ public class ReversePages
             // We create a reader for a certain document
             reader = getReader(src);
 
+            assert reader != null;
             stringToLog = "The original file had " + reader.getNumberOfPages() + " pages.";
             logger.info(stringToLog);
 
@@ -173,7 +174,7 @@ public class ReversePages
             document.close();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         } finally {
             closeReader(reader);
 
@@ -189,7 +190,7 @@ public class ReversePages
         try {
             return new PdfReader(src.getAbsolutePath());
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
             return null;
         }
     }
@@ -198,7 +199,7 @@ public class ReversePages
         try {
             return new Document(reader.getPageSizeWithRotation(1));
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
             return null;
         }
     }
@@ -207,7 +208,7 @@ public class ReversePages
         try {
             return new FileOutputStream(dest.getAbsolutePath());
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
             return null;
         }
     }
@@ -216,7 +217,7 @@ public class ReversePages
         try {
             return new PdfCopy(document, fos);
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
             return null;
         }
     }
@@ -226,7 +227,7 @@ public class ReversePages
             try {
                 reader.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }
@@ -236,7 +237,7 @@ public class ReversePages
             try {
                 document.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }
@@ -246,7 +247,7 @@ public class ReversePages
             try {
                 copy.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }
@@ -256,7 +257,7 @@ public class ReversePages
             try {
                 fos.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }

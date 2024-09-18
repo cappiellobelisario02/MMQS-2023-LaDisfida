@@ -142,9 +142,9 @@ public class Burst extends AbstractTool {
                         PdfWriter writer = PdfWriter.getInstance(document, fos)) {
 
                     // Create and open the document
-                    Document document = new Document(reader.getPageSizeWithRotation(pagenumber));
+                    Document document2 = new Document(reader.getPageSizeWithRotation(pagenumber));
                     try {
-                        document.open();
+                        document2.open();
                         PdfContentByte cb = writer.getDirectContent();
                         PdfImportedPage page = writer.getImportedPage(reader, pagenumber);
                         int rotation = reader.getPageRotation(pagenumber);
@@ -160,21 +160,21 @@ public class Burst extends AbstractTool {
                 }
             }
         } catch (InstantiationException | IOException e) {
-            logger.log("An error occurred", e);
+            logger.severe("An error occurred: " + e);
         }
         finally {
             if (reader != null) {
                 try{
                     reader.close();
                 } catch (Exception e){
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
             if (document != null) {
                 try {
                     document.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
         }
@@ -185,10 +185,6 @@ public class Burst extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

@@ -100,7 +100,7 @@ public class Vertical {
             }
             document.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

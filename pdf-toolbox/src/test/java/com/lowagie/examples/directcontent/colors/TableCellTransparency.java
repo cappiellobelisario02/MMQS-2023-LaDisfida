@@ -102,7 +102,7 @@ public class TableCellTransparency {
 
             cb.sanityCheck();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

@@ -130,7 +130,7 @@ public class Groups {
 
             cb.sanityCheck();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step 5: we close the document
         document.close();

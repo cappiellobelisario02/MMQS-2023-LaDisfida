@@ -119,7 +119,7 @@ public class Split extends AbstractTool {
 
             splitPdf(src, file1, file2, pagenumber);
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 
@@ -197,21 +197,21 @@ public class Split extends AbstractTool {
                 reader.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
         try {
             if (document1 != null) {
                 document1.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
         try {
             if (document2 != null) {
                 document2.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

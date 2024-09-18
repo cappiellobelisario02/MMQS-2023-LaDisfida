@@ -31,7 +31,7 @@ public class SpanTableHtml {
             worker.parse(new InputStreamReader(stream, UTF_8));
             assert (true);
         } catch (IOException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 
@@ -47,7 +47,7 @@ public class SpanTableHtml {
             worker.parse(new InputStreamReader(stream, UTF_8));
             assert (true);
         } catch (IOException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

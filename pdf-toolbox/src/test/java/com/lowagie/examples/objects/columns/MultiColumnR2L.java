@@ -91,7 +91,7 @@ public class MultiColumnR2L {
             document.add(mct);
             document.close();
         } catch (DocumentException | FileNotFoundException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
 
     }

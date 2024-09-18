@@ -82,7 +82,7 @@ public class AddWatermarkPageNumbers {
             // closing PdfStamper will generate the new PDF file
             stamp.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

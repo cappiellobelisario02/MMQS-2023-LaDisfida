@@ -52,7 +52,7 @@ public class LocalDestination {
             cb.localDestination("page2", new PdfDestination(PdfDestination.XYZ, -1, 10000, 0));
             writer.setOpenAction("page2");
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // step 5: we close the document

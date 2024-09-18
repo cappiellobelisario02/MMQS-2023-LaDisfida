@@ -268,7 +268,7 @@ public class DefaultFontMapper implements FontMapper {
                     ++count;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
         return count;

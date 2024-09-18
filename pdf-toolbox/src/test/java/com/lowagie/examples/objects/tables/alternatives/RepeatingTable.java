@@ -124,7 +124,7 @@ public class RepeatingTable {
             datatable.setConvert2pdfptable(true);
             document.add(datatable);
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // we close the document

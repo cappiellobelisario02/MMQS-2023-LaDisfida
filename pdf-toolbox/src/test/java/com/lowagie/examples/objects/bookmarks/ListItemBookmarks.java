@@ -67,7 +67,7 @@ public class ListItemBookmarks {
             new PdfOutline(rootOutline, PdfAction.gotoLocalPage("item3", false), "Apud Helvetios longe");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // close document

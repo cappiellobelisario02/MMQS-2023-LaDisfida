@@ -56,9 +56,11 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.ibm.icu.util.ULocale.getBaseName;
 
@@ -185,11 +187,11 @@ class TrueTypeFont extends BaseFont {
     /**
      * The content of table 'OS/2'.
      */
-    protected com.lowagie.text.pdf.TrueTypeFont.WindowsMetrics os_2 = new com.lowagie.text.pdf.TrueTypeFont.WindowsMetrics();
+    protected com.lowagie.text.pdf.TrueTypeFont.WindowsMetrics os2 = new com.lowagie.text.pdf.TrueTypeFont.WindowsMetrics();
     /**
      * The width of the glyphs. This is essentially the content of table 'hmtx' normalized to 1000 units.
      */
-    protected int[] GlyphWidths;
+    protected int[] glyphWidths;
 
     protected int[][] bboxes;
     /**
@@ -287,7 +289,7 @@ class TrueTypeFont extends BaseFont {
         if (fileName.toLowerCase().endsWith(".ttf") || fileName.toLowerCase().endsWith(".otf") || fileName.toLowerCase()
                 .endsWith(".ttc")) {
             process(ttfAfm, forceRead);
-            if (!justNames && embeddedBool && os_2.fsType == 2) {
+            if (!justNames && embeddedBool && os2.fsType == 2) {
                 throw new DocumentException(
                         MessageLocalization.getComposedMessage("1.cannot.be.embedded.due.to.licensing.restrictions",
                                 fileName + style));
@@ -374,12 +376,12 @@ class TrueTypeFont extends BaseFont {
     private static final String TABLE_NOT_EXIST_MESSAGE = "table.1.does.not.exist.in.2";
 
     void fillTables() throws DocumentException, IOException {
-        int[] table_location = tables.get("head");
-        if (table_location == null) {
+        int[] tableLocation = tables.get("head");
+        if (tableLocation == null) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "head", fileName + style));
         }
-        rf.seek(table_location[0] + 16);
+        rf.seek(tableLocation[0] + 16);
         head.flags = rf.readUnsignedShort();
         head.unitsPerEm = rf.readUnsignedShort();
         rf.skipBytes(16);
@@ -389,15 +391,15 @@ class TrueTypeFont extends BaseFont {
         head.yMax = rf.readShort();
         head.macStyle = rf.readUnsignedShort();
 
-        table_location = tables.get("hhea");
-        if (table_location == null) {
+        tableLocation = tables.get("hhea");
+        if (tableLocation == null) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "hhea", fileName + style));
         }
-        rf.seek(table_location[0] + 4);
-        hhea.Ascender = rf.readShort();
-        hhea.Descender = rf.readShort();
-        hhea.LineGap = rf.readShort();
+        rf.seek(tableLocation[0] + 4);
+        hhea.ascender = rf.readShort();
+        hhea.descender = rf.readShort();
+        hhea.lineGap = rf.readShort();
         hhea.advanceWidthMax = rf.readUnsignedShort();
         hhea.minLeftSideBearing = rf.readShort();
         hhea.minRightSideBearing = rf.readShort();
@@ -407,63 +409,60 @@ class TrueTypeFont extends BaseFont {
         rf.skipBytes(12);
         hhea.numberOfHMetrics = rf.readUnsignedShort();
 
-        table_location = tables.get("OS/2");
-        if (table_location == null) {
+        tableLocation = tables.get("OS/2");
+        if (tableLocation == null) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "OS/2", fileName + style));
         }
-        rf.seek(table_location[0]);
+        rf.seek(tableLocation[0]);
         int version = rf.readUnsignedShort();
-        os_2.xAvgCharWidth = rf.readShort();
-        os_2.usWeightClass = rf.readUnsignedShort();
-        os_2.usWidthClass = rf.readUnsignedShort();
-        os_2.fsType = rf.readShort();
-        os_2.ySubscriptXSize = rf.readShort();
-        os_2.ySubscriptYSize = rf.readShort();
-        os_2.ySubscriptXOffset = rf.readShort();
-        os_2.ySubscriptYOffset = rf.readShort();
-        os_2.ySuperscriptXSize = rf.readShort();
-        os_2.ySuperscriptYSize = rf.readShort();
-        os_2.ySuperscriptXOffset = rf.readShort();
-        os_2.ySuperscriptYOffset = rf.readShort();
-        os_2.yStrikeoutSize = rf.readShort();
-        os_2.yStrikeoutPosition = rf.readShort();
-        os_2.sFamilyClass = rf.readShort();
-        rf.readFully(os_2.panose);
+        os2.xAvgCharWidth = rf.readShort();
+        os2.usWeightClass = rf.readUnsignedShort();
+        os2.usWidthClass = rf.readUnsignedShort();
+        os2.fsType = rf.readShort();
+        os2.ySubscriptXSize = rf.readShort();
+        os2.ySubscriptYSize = rf.readShort();
+        os2.ySubscriptXOffset = rf.readShort();
+        os2.ySubscriptYOffset = rf.readShort();
+        os2.ySuperscriptXSize = rf.readShort();
+        os2.ySuperscriptYSize = rf.readShort();
+        os2.ySuperscriptXOffset = rf.readShort();
+        os2.ySuperscriptYOffset = rf.readShort();
+        os2.yStrikeoutSize = rf.readShort();
+        os2.yStrikeoutPosition = rf.readShort();
+        os2.sFamilyClass = rf.readShort();
+        rf.readFully(os2.panose);
         rf.skipBytes(16);
-        rf.readFully(os_2.achVendID);
-        os_2.fsSelection = rf.readUnsignedShort();
-        os_2.usFirstCharIndex = rf.readUnsignedShort();
-        os_2.usLastCharIndex = rf.readUnsignedShort();
-        os_2.sTypoAscender = rf.readShort();
-        os_2.sTypoDescender = rf.readShort();
-        if (os_2.sTypoDescender > 0) {
-            os_2.sTypoDescender = (short) (-os_2.sTypoDescender);
+        rf.readFully(os2.achVendID);
+        os2.fsSelection = rf.readUnsignedShort();
+        os2.usFirstCharIndex = rf.readUnsignedShort();
+        os2.usLastCharIndex = rf.readUnsignedShort();
+        os2.sTypoAscender = rf.readShort();
+        os2.sTypoDescender = rf.readShort();
+        if (os2.sTypoDescender > 0) {
+            os2.sTypoDescender = (short) (-os2.sTypoDescender);
         }
-        os_2.sTypoLineGap = rf.readShort();
-        os_2.usWinAscent = rf.readUnsignedShort();
-        os_2.usWinDescent = rf.readUnsignedShort();
-        os_2.ulCodePageRange1 = 0;
-        os_2.ulCodePageRange2 = 0;
+        os2.sTypoLineGap = rf.readShort();
+        os2.usWinAscent = rf.readUnsignedShort();
+        os2.usWinDescent = rf.readUnsignedShort();
+        os2.ulCodePageRange1 = 0;
+        os2.ulCodePageRange2 = 0;
         if (version > 0) {
-            os_2.ulCodePageRange1 = rf.readInt();
-            os_2.ulCodePageRange2 = rf.readInt();
+            os2.ulCodePageRange1 = rf.readInt();
+            os2.ulCodePageRange2 = rf.readInt();
         }
         if (version > 1) {
             rf.skipBytes(2);
-            os_2.sCapHeight = rf.readShort();
+            os2.sCapHeight = rf.readShort();
         } else {
-            os_2.sCapHeight = (int) (0.7 * head.unitsPerEm);
+            os2.sCapHeight = (int) (0.7 * head.unitsPerEm);
         }
 
-        table_location = tables.get("post");
-        if (table_location == null) {
-            double italicAngle = -Math.atan2(hhea.caretSlopeRun, hhea.caretSlopeRise) * 180 / Math.PI;
+        tableLocation = tables.get("post");
+        if (tableLocation == null) {
             return;
         }
-        rf.seek(table_location[0] + 4);
-        short mantissa = rf.readShort();
-        int fraction = rf.readUnsignedShort();
+        rf.seek(tableLocation[0] + 4);
         underlinePosition = rf.readShort();
         underlineThickness = rf.readShort();
         isFixedPitch = rf.readInt() != 0;
@@ -477,24 +476,22 @@ class TrueTypeFont extends BaseFont {
      * @throws IOException       the font file could not be read
      */
     String getBaseFont() throws DocumentException, IOException {
-        int[] table_location;
-        table_location = tables.get("name");
-        if (table_location == null) {
+        int[] tableLocation;
+        tableLocation = tables.get("name");
+        if (tableLocation == null) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "name", fileName + style));
         }
-        rf.seek(table_location[0] + 2);
+        rf.seek(tableLocation[0] + 2);
         int numRecords = rf.readUnsignedShort();
         int startOfStorage = rf.readUnsignedShort();
         for (int k = 0; k < numRecords; ++k) {
             int platformID = rf.readUnsignedShort();
-            int platformEncodingID = rf.readUnsignedShort();
-            int languageID = rf.readUnsignedShort();
             int nameID = rf.readUnsignedShort();
             int length = rf.readUnsignedShort();
             int offset = rf.readUnsignedShort();
             if (nameID == 6) {
-                rf.seek(table_location[0] + startOfStorage + offset);
+                rf.seek(tableLocation[0] + startOfStorage + offset);
                 if (platformID == 0 || platformID == 3) {
                     return readUnicodeString(length);
                 } else {
@@ -514,13 +511,13 @@ class TrueTypeFont extends BaseFont {
      * @throws IOException       on error
      */
     String[][] getNames(int id) throws DocumentException, IOException {
-        int[] table_location;
-        table_location = tables.get("name");
-        if (table_location == null) {
+        int[] tableLocation;
+        tableLocation = tables.get("name");
+        if (tableLocation == null) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "name", fileName + style));
         }
-        rf.seek(table_location[0] + 2);
+        rf.seek(tableLocation[0] + 2);
         int numRecords = rf.readUnsignedShort();
         int startOfStorage = rf.readUnsignedShort();
         List<String[]> names = new ArrayList<>();
@@ -533,7 +530,7 @@ class TrueTypeFont extends BaseFont {
             int offset = rf.readUnsignedShort();
             if (nameID == id) {
                 int pos = rf.getFilePointer();
-                rf.seek(table_location[0] + startOfStorage + offset);
+                rf.seek(tableLocation[0] + startOfStorage + offset);
                 String name;
                 if (platformID == 0 || platformID == 3 || (platformID == 2 && platformEncodingID == 1)) {
                     name = readUnicodeString(length);
@@ -559,12 +556,10 @@ class TrueTypeFont extends BaseFont {
      * @throws IOException       on error
      */
     String[][] getAllNames() throws DocumentException, IOException {
-        int[] table_location = tables.get("name");
-        if (table_location == null) {
-            throw new DocumentException(
-                    MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "name", fileName + style));
-        }
-        rf.seek(table_location[0] + 2);
+        int[] tableLocation = tables.get("name");
+        Objects.requireNonNull(tableLocation,
+                MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "name", fileName + style));
+        rf.seek(tableLocation[0] + 2);
         int numRecords = rf.readUnsignedShort();
         int startOfStorage = rf.readUnsignedShort();
         List<String[]> names = new ArrayList<>();
@@ -576,7 +571,7 @@ class TrueTypeFont extends BaseFont {
             int length = rf.readUnsignedShort();
             int offset = rf.readUnsignedShort();
             int pos = rf.getFilePointer();
-            rf.seek(table_location[0] + startOfStorage + offset);
+            rf.seek(tableLocation[0] + startOfStorage + offset);
             String name;
             if (platformID == 0 || platformID == 3 || (platformID == 2 && platformEncodingID == 1)) {
                 name = readUnicodeString(length);
@@ -595,12 +590,12 @@ class TrueTypeFont extends BaseFont {
     }
 
     void checkCff() {
-        int[] table_location;
-        table_location = tables.get("CFF ");
-        if (table_location != null) {
+        int[] tableLocation;
+        tableLocation = tables.get("CFF ");
+        if (tableLocation != null) {
             cff = true;
-            cffOffset = table_location[0];
-            cffLength = table_location[1];
+            cffOffset = tableLocation[0];
+            cffLength = tableLocation[1];
         }
     }
 
@@ -760,15 +755,15 @@ class TrueTypeFont extends BaseFont {
      * @throws IOException       the font file could not be read
      */
     protected void readGlyphWidths() throws DocumentException, IOException {
-        int[] table_location = tables.get("hmtx");
-        if (table_location == null) {
+        int[] tableLocation = tables.get("hmtx");
+        if (tableLocation == null) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "hmtx", fileName + style));
         }
-        rf.seek(table_location[0]);
-        GlyphWidths = new int[hhea.numberOfHMetrics];
+        rf.seek(tableLocation[0]);
+        glyphWidths = new int[hhea.numberOfHMetrics];
         for (int k = 0; k < hhea.numberOfHMetrics; ++k) {
-            GlyphWidths[k] = (rf.readUnsignedShort() * 1000) / head.unitsPerEm;
+            glyphWidths[k] = (rf.readUnsignedShort() * 1000) / head.unitsPerEm;
             rf.readUnsignedShort();
         }
     }
@@ -780,10 +775,10 @@ class TrueTypeFont extends BaseFont {
      * @return the width of the glyph in normalized 1000 units
      */
     protected int getGlyphWidth(int glyph) {
-        if (glyph >= GlyphWidths.length) {
-            glyph = GlyphWidths.length - 1;
+        if (glyph >= glyphWidths.length) {
+            glyph = glyphWidths.length - 1;
         }
-        return GlyphWidths[glyph];
+        return glyphWidths[glyph];
     }
 
     private void readBbox() throws DocumentException, IOException {
@@ -848,7 +843,7 @@ class TrueTypeFont extends BaseFont {
     private int[] getCmapTableLocation() throws DocumentException {
         int[] tableLocation = tables.get("cmap");
         if (tableLocation == null) {
-            throw new DocumentException(MessageLocalization.getComposedMessage("table.1.does.not.exist.in.2", "cmap", fileName + style));
+            throw new DocumentException(MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "cmap", fileName + style));
         }
         return tableLocation;
     }
@@ -858,7 +853,10 @@ class TrueTypeFont extends BaseFont {
         rf.skipBytes(2);
         int numTables = rf.readUnsignedShort();
 
-        int map10 = 0, map31 = 0, map30 = 0, mapExt = 0;
+        int map10 = 0;
+        int map31 = 0;
+        int map30 = 0;
+        int mapExt = 0;
         boolean isFontSpecific = false;
 
         for (int i = 0; i < numTables; i++) {
@@ -1035,7 +1033,7 @@ class TrueTypeFont extends BaseFont {
         return glyphId;
     }
 
-    private void fillHashMap(HashMap<Integer, int[]> h, int segCount, int[] endCount, int[] startCount, int[] idDelta, int[] idRO, int[] glyphId) throws IOException {
+    private void fillHashMap(HashMap<Integer, int[]> h, int segCount, int[] endCount, int[] startCount, int[] idDelta, int[] idRO, int[] glyphId){
         for (int i = 0; i < segCount; i++) {
             for (int j = startCount[i]; j <= endCount[i] && j != 0xFFFF; j++) {
                 int glyph = calculateGlyph(j, i, idDelta, idRO, segCount, startCount, glyphId);
@@ -1070,13 +1068,13 @@ class TrueTypeFont extends BaseFont {
     HashMap<Integer, int[]> readFormat6() throws IOException {
         HashMap<Integer, int[]> h = new HashMap<>();
         rf.skipBytes(4);
-        int start_code = rf.readUnsignedShort();
-        int code_count = rf.readUnsignedShort();
-        for (int k = 0; k < code_count; ++k) {
+        int startCode = rf.readUnsignedShort();
+        int codeCount = rf.readUnsignedShort();
+        for (int k = 0; k < codeCount; ++k) {
             int[] r = new int[2];
             r[0] = rf.readUnsignedShort();
             r[1] = getGlyphWidth(r[0]);
-            h.put(k + start_code, r);
+            h.put(k + startCode, r);
         }
         return h;
     }
@@ -1087,13 +1085,13 @@ class TrueTypeFont extends BaseFont {
      * @throws IOException the font file could not be read
      */
     void readKerning() throws IOException {
-        int[] table_location = tables.get("kern");
-        if (table_location == null) {
+        int[] tableLocation = tables.get("kern");
+        if (tableLocation == null) {
             return;
         }
-        rf.seek(table_location[0] + 2);
+        rf.seek(tableLocation[0] + 2);
         int nTables = rf.readUnsignedShort();
-        int checkpoint = table_location[0] + 4;
+        int checkpoint = tableLocation[0] + 4;
         int length = 0;
         for (int k = 0; k < nTables; ++k) {
             checkpoint += length;
@@ -1160,14 +1158,14 @@ class TrueTypeFont extends BaseFont {
     protected PdfDictionary getFontDescriptor(PdfIndirectReference fontStream, String subsetPrefix,
             PdfIndirectReference cidset) {
         PdfDictionary dic = new PdfDictionary(PdfName.FONTDESCRIPTOR);
-        dic.put(PdfName.ASCENT, new PdfNumber(os_2.sTypoAscender * 1000 / head.unitsPerEm));
-        dic.put(PdfName.CAPHEIGHT, new PdfNumber(os_2.sCapHeight * 1000 / head.unitsPerEm));
-        dic.put(PdfName.DESCENT, new PdfNumber(os_2.sTypoDescender * 1000 / head.unitsPerEm));
+        dic.put(PdfName.ASCENT, new PdfNumber(os2.sTypoAscender * 1000 / head.unitsPerEm));
+        dic.put(PdfName.CAPHEIGHT, new PdfNumber(os2.sCapHeight * 1000 / head.unitsPerEm));
+        dic.put(PdfName.DESCENT, new PdfNumber(os2.sTypoDescender * 1000 / head.unitsPerEm));
         dic.put(PdfName.FONTBBOX, new PdfRectangle(
-                head.xMin * 1000 / head.unitsPerEm,
-                head.yMin * 1000 / head.unitsPerEm,
-                head.xMax * 1000 / head.unitsPerEm,
-                head.yMax * 1000 / head.unitsPerEm));
+                (float) (head.xMin * 1000) / head.unitsPerEm,
+                (float) (head.yMin * 1000) / head.unitsPerEm,
+                (float) (head.xMax * 1000) / head.unitsPerEm,
+                (float) (head.yMax * 1000) / head.unitsPerEm));
         if (cidset != null) {
             dic.put(PdfName.CIDSET, cidset);
         }
@@ -1321,7 +1319,7 @@ class TrueTypeFont extends BaseFont {
                     rf2.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }
@@ -1396,31 +1394,27 @@ class TrueTypeFont extends BaseFont {
 
         updateForSubset(subsetp, new int[]{firstChar}, new int[]{lastChar}, shortTag);
 
-        PdfIndirectReference ind_font = null;
+        PdfIndirectReference indFont = null;
         String subsetPrefix = "";
 
         if (embeddedBool) {
             if (cff) {
-                ind_font = handleEmbeddedCff(writer);
+                indFont = handleEmbeddedCff(writer);
             } else {
                 if (subsetp) {
                     subsetPrefix = createSubsetPrefix();
                 }
-                ind_font = handleEmbeddedTrueType(writer, subsetp, subsetPrefix, firstChar, lastChar, shortTag);
+                indFont = handleEmbeddedTrueType(writer, subsetp, firstChar, lastChar, shortTag);
             }
         }
-
-        PdfIndirectReference fontDescriptorRef = handleFontDescriptor(writer, ind_font, subsetPrefix);
-        handleFontBaseType(writer, ref, ind_font, subsetPrefix, firstChar, lastChar, shortTag);
+        handleFontBaseType(writer, ref, indFont, subsetPrefix, firstChar, lastChar, shortTag);
     }
 
     private void updateForSubset(boolean subsetp, int[] firstChar, int[] lastChar, byte[] shortTag) {
         if (!subsetp) {
             firstChar[0] = 0;
             lastChar[0] = shortTag.length - 1;
-            for (int k = 0; k < shortTag.length; ++k) {
-                shortTag[k] = 1;
-            }
+            Arrays.fill(shortTag, (byte) 1);
         }
     }
 
@@ -1430,7 +1424,7 @@ class TrueTypeFont extends BaseFont {
         return obj.getIndirectReference();
     }
 
-    private PdfIndirectReference handleEmbeddedTrueType(PdfWriter writer, boolean subsetp, String subsetPrefix,
+    private PdfIndirectReference handleEmbeddedTrueType(PdfWriter writer, boolean subsetp,
             int firstChar, int lastChar, byte[] shortTag) throws IOException, DocumentException {
         HashMap<Integer, int[]> glyphs = new HashMap<>();
         for (int k = firstChar; k <= lastChar; ++k) {
@@ -1462,15 +1456,15 @@ class TrueTypeFont extends BaseFont {
         return obj.getIndirectReference();
     }
 
-    private PdfIndirectReference handleFontDescriptor(PdfWriter writer, PdfIndirectReference ind_font,
+    private PdfIndirectReference handleFontDescriptor(PdfWriter writer, PdfIndirectReference indFont,
             String subsetPrefix) throws DocumentException, IOException{
-        PdfObject pobj = getFontDescriptor(ind_font, subsetPrefix, null);
+        PdfObject pobj = getFontDescriptor(indFont, subsetPrefix, null);
         PdfIndirectObject obj = writer.addToBody(pobj);
         return obj.getIndirectReference();
     }
 
-    private void handleFontBaseType(PdfWriter writer, PdfIndirectReference ref, PdfIndirectReference ind_font, String subsetPrefix, int firstChar, int lastChar, byte[] shortTag) throws DocumentException, IOException {
-        PdfObject pobj = getFontBaseType(ind_font, subsetPrefix, firstChar, lastChar, shortTag);
+    private void handleFontBaseType(PdfWriter writer, PdfIndirectReference ref, PdfIndirectReference indFont, String subsetPrefix, int firstChar, int lastChar, byte[] shortTag) throws DocumentException, IOException {
+        PdfObject pobj = getFontBaseType(indFont, subsetPrefix, firstChar, lastChar, shortTag);
         writer.addToBody(pobj, ref);
     }
 
@@ -1526,11 +1520,11 @@ class TrueTypeFont extends BaseFont {
     public float getFontDescriptor(int key, float fontSize) {
         switch (key) {
             case ASCENT:
-                return os_2.sTypoAscender * fontSize / head.unitsPerEm;
+                return os2.sTypoAscender * fontSize / head.unitsPerEm;
             case CAPHEIGHT:
-                return os_2.sCapHeight * fontSize / head.unitsPerEm;
+                return os2.sCapHeight * fontSize / head.unitsPerEm;
             case DESCENT:
-                return os_2.sTypoDescender * fontSize / head.unitsPerEm;
+                return os2.sTypoDescender * fontSize / head.unitsPerEm;
             case BBOXLLX:
                 return fontSize * head.xMin / head.unitsPerEm;
             case BBOXLLY:
@@ -1540,29 +1534,29 @@ class TrueTypeFont extends BaseFont {
             case BBOXURY:
                 return fontSize * head.yMax / head.unitsPerEm;
             case AWT_ASCENT:
-                return fontSize * hhea.Ascender / head.unitsPerEm;
+                return fontSize * hhea.ascender / head.unitsPerEm;
             case AWT_DESCENT:
-                return fontSize * hhea.Descender / head.unitsPerEm;
+                return fontSize * hhea.descender / head.unitsPerEm;
             case AWT_LEADING:
-                return fontSize * hhea.LineGap / head.unitsPerEm;
+                return fontSize * hhea.lineGap / head.unitsPerEm;
             case AWT_MAXADVANCE:
                 return fontSize * hhea.advanceWidthMax / head.unitsPerEm;
             case UNDERLINE_POSITION:
-                return (underlinePosition - underlineThickness / 2) * fontSize / head.unitsPerEm;
+                return (underlinePosition - (float) underlineThickness / 2) * fontSize / head.unitsPerEm;
             case UNDERLINE_THICKNESS:
                 return underlineThickness * fontSize / head.unitsPerEm;
             case STRIKETHROUGH_POSITION:
-                return os_2.yStrikeoutPosition * fontSize / head.unitsPerEm;
+                return os2.yStrikeoutPosition * fontSize / head.unitsPerEm;
             case STRIKETHROUGH_THICKNESS:
-                return os_2.yStrikeoutSize * fontSize / head.unitsPerEm;
+                return os2.yStrikeoutSize * fontSize / head.unitsPerEm;
             case SUBSCRIPT_SIZE:
-                return os_2.ySubscriptYSize * fontSize / head.unitsPerEm;
+                return os2.ySubscriptYSize * fontSize / head.unitsPerEm;
             case SUBSCRIPT_OFFSET:
-                return -os_2.ySubscriptYOffset * fontSize / head.unitsPerEm;
+                return -os2.ySubscriptYOffset * fontSize / head.unitsPerEm;
             case SUPERSCRIPT_SIZE:
-                return os_2.ySuperscriptYSize * fontSize / head.unitsPerEm;
+                return os2.ySuperscriptYSize * fontSize / head.unitsPerEm;
             case SUPERSCRIPT_OFFSET:
-                return os_2.ySuperscriptYOffset * fontSize / head.unitsPerEm;
+                return os2.ySuperscriptYOffset * fontSize / head.unitsPerEm;
             default:
                 throw new IllegalArgumentException("Unsupported key: " + key);
         }
@@ -1619,7 +1613,7 @@ class TrueTypeFont extends BaseFont {
      */
     @Override
     public String[] getCodePagesSupported() {
-        long cp = (((long) os_2.ulCodePageRange2) << 32) + (os_2.ulCodePageRange1 & 0xffffffffL);
+        long cp = (((long) os2.ulCodePageRange2) << 32) + (os2.ulCodePageRange1 & 0xffffffffL);
         int count = 0;
         long bit = 1;
         for (int k = 0; k < 64; ++k) {
@@ -1768,15 +1762,15 @@ class TrueTypeFont extends BaseFont {
         /**
          * A variable.
          */
-        short Ascender;
+        short ascender;
         /**
          * A variable.
          */
-        short Descender;
+        short descender;
         /**
          * A variable.
          */
-        short LineGap;
+        short lineGap;
         /**
          * A variable.
          */

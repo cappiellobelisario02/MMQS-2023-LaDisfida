@@ -44,7 +44,7 @@ public class OpenTypeFont {
             String text = "Some text with the otf font LIZ.";
             document.add(new Paragraph(text, new Font(bf, 14)));
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step 5
         document.close();

@@ -298,12 +298,6 @@ public class HtmlBookmarks extends AbstractTool {
     }
 
     private void handleException(Exception e) {
-<<<<<<< .mine
-        //da vedere come effettuare il log
-||||||| .r596
-        //da vedere come effettuare il log
-=======
->>>>>>> .r600
         JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
         logger.info(e.getMessage());
     }

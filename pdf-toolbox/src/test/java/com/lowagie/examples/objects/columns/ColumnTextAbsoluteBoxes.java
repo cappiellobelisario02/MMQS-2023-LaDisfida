@@ -80,7 +80,7 @@ public class ColumnTextAbsoluteBoxes {
             } while (ct.go() == ColumnText.NO_MORE_COLUMN);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // close the document

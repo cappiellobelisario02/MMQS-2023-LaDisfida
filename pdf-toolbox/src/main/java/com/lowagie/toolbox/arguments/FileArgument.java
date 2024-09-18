@@ -140,7 +140,7 @@ public class FileArgument extends AbstractArgument {
         try {
             setValue(fc.getSelectedFile());
         } catch (NullPointerException npe) {
-            npe.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

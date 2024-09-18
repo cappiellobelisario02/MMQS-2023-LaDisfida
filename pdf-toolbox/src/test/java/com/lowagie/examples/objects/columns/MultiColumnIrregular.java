@@ -104,7 +104,7 @@ public class MultiColumnIrregular {
             } while (mct.isOverflow());
             document.close();
         } catch (DocumentException | FileNotFoundException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
 
     }

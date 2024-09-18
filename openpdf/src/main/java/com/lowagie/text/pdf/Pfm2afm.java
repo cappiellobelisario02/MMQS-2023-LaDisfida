@@ -542,7 +542,7 @@ public final class Pfm2afm {
                 in.close();
                 out.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
 
@@ -661,7 +661,7 @@ public final class Pfm2afm {
         printOtherMetrics();
     }
 
-    private void printCopyright() throws IOException {
+    private void printCopyright() {
         if (!copyright.isEmpty()) {
             out.print("Comment " + copyright + '\n');
         }
@@ -674,7 +674,7 @@ public final class Pfm2afm {
         out.print(fname);
     }
 
-    private void printEncodingScheme() throws IOException {
+    private void printEncodingScheme() {
         out.print("\nEncodingScheme ");
         if (charset != 0) {
             out.print("FontSpecific\n");
@@ -798,13 +798,13 @@ public final class Pfm2afm {
         }
     }
 
-    private void printHeader(int count) throws IOException {
+    private void printHeader(int count) {
         out.print("StartCharMetrics ");
         outval(count);
         out.print('\n');
     }
 
-    private void processNonStandardCharset(int[] ctabs) throws IOException {
+    private void processNonStandardCharset(int[] ctabs) {
         for (int i = firstchar; i <= lastchar; i++) {
             if (ctabs[i - firstchar] != 0) {
                 outchar(i, ctabs[i - firstchar], null);
@@ -812,7 +812,7 @@ public final class Pfm2afm {
         }
     }
 
-    private void processStandardCharset(int[] ctabs, int[] back) throws IOException {
+    private void processStandardCharset(int[] ctabs, int[] back) {
         for (int i = 0; i < 256; i++) {
             int j = back[i];
             if (j != 0) {
@@ -828,7 +828,7 @@ public final class Pfm2afm {
         }
     }
 
-    private void printTrailer() throws IOException {
+    private void printTrailer() {
         out.print("EndCharMetrics\n");
     }
 

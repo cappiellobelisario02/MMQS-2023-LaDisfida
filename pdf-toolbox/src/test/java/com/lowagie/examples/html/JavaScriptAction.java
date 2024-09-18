@@ -82,7 +82,7 @@ public class JavaScriptAction {
             document.add(anchor);
 
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // step 5: we close the document

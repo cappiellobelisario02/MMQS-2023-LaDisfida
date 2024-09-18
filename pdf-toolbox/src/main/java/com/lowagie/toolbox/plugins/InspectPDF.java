@@ -100,7 +100,7 @@ public class InspectPDF extends AbstractTool {
      */
     public void execute() {
         PdfReader reader = null;
-        String stringToLog = null;
+        String stringToLog;
         try {
             if (getValue(SRCFILE) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
@@ -152,7 +152,7 @@ public class InspectPDF extends AbstractTool {
                 try {
                     reader.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
         }
@@ -163,10 +163,6 @@ public class InspectPDF extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

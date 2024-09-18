@@ -1189,7 +1189,7 @@ public class AcroFields {
                 lastWasString = true;
                 return optionString.toUnicodeString();
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
         return "";

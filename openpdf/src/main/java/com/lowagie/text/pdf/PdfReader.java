@@ -976,7 +976,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
     }

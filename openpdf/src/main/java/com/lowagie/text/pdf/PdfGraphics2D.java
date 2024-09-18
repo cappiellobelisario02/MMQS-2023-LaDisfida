@@ -94,6 +94,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.RenderableImage;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -321,8 +322,8 @@ public class PdfGraphics2D extends Graphics2D {
      */
     public void drawRenderedImage(RenderedImage img, AffineTransform xform) {
         BufferedImage image = null;
-        if (img instanceof BufferedImage) {
-            image = (BufferedImage) img;
+        if (img instanceof BufferedImage buffImage) {
+            image = buffImage;
         } else {
             ColorModel cm = img.getColorModel();
             int mWidth = img.getWidth();
@@ -400,11 +401,11 @@ public class PdfGraphics2D extends Graphics2D {
     private void handleSizeAttribute(TextAttribute textAttribute, AttributedCharacterIterator iter) {
         if (textAttribute.equals(TextAttribute.SIZE)) {
             Object obj = iter.getAttributes().get(textAttribute);
-            if (obj instanceof Integer) {
-                int size = (Integer) obj;
+            if (obj instanceof Integer intObj) {
+                int size = intObj;
                 setFont(getFont().deriveFont(getFont().getStyle(), size));
-            } else if (obj instanceof Float) {
-                float size = (Float) obj;
+            } else if (obj instanceof Float floatObj) {
+                float size = floatObj;
                 setFont(getFont().deriveFont(getFont().getStyle(), size));
             }
         }
@@ -771,7 +772,7 @@ public class PdfGraphics2D extends Graphics2D {
             return;
         }
 
-        BasicStroke oStroke = (oldStroke instanceof BasicStroke) ? (BasicStroke) oldStroke : null;
+        BasicStroke oStroke = (oldStroke instanceof BasicStroke oldStrokeBasicStroke) ? oldStrokeBasicStroke : null;
         boolean oldOk = oStroke != null;
 
         setLineWidthIfDifferent(basicStroke, oStroke, oldOk);
@@ -991,8 +992,8 @@ public class PdfGraphics2D extends Graphics2D {
         }
         this.paint = paint;
 
-        if ((composite instanceof AlphaComposite co) && (paint instanceof Color) && (co.getRule() == 3)) {
-            Color c = (Color) paint;
+        if ((composite instanceof AlphaComposite co) && (paint instanceof Color paintColor) && (co.getRule() == 3)) {
+            Color c = paintColor;
             this.paint = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (c.getAlpha() * alpha));
             realPaint = paint;
         }
@@ -1093,8 +1094,8 @@ public class PdfGraphics2D extends Graphics2D {
      * @see Graphics#getColor()
      */
     public Color getColor() {
-        if (paint instanceof Color) {
-            return (Color) paint;
+        if (paint instanceof Color paintColor) {
+            return paintColor;
         } else {
             return Color.black;
         }
@@ -1633,7 +1634,8 @@ public class PdfGraphics2D extends Graphics2D {
         return result;
     }
 
-    private boolean drawImage(Image img, Image mask, AffineTransform xform, Color bgColor, ImageObserver obs) {
+    private boolean drawImage(Image img, Image mask, AffineTransform xform, Color bgColor, ImageObserver obs)
+            throws IOException, InterruptedException {
         if (xform == null) {
             xform = new AffineTransform();
         } else {
@@ -1659,47 +1661,43 @@ public class PdfGraphics2D extends Graphics2D {
             cb.setGState(gs);
         }
 
-        try {
-            com.lowagie.text.Image image = null;
-            if (!convertImagesToJPEG) {
-                image = com.lowagie.text.Image.getInstance(img, bgColor);
-            } else {
-                BufferedImage scaled = new BufferedImage(img.getWidth(null), img.getHeight(null),
-                        BufferedImage.TYPE_INT_RGB);
-                Graphics2D g3 = scaled.createGraphics();
-                g3.drawImage(img, 0, 0, img.getWidth(null), img.getHeight(null), null);
-                g3.dispose();
+        com.lowagie.text.Image image = null;
+        if (!convertImagesToJPEG) {
+            image = com.lowagie.text.Image.getInstance(img, bgColor);
+        } else {
+            BufferedImage scaled = new BufferedImage(img.getWidth(null), img.getHeight(null),
+                    BufferedImage.TYPE_INT_RGB);
+            Graphics2D g3 = scaled.createGraphics();
+            g3.drawImage(img, 0, 0, img.getWidth(null), img.getHeight(null), null);
+            g3.dispose();
 
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageWriteParam iwparam = new JPEGImageWriteParam(Locale.getDefault());
-                iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                iwparam.setCompressionQuality(jpegQuality); //Set here your compression rate
-                ImageWriter iw = ImageIO.getImageWritersByFormatName("jpg").next();
-                ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
-                iw.setOutput(ios);
-                iw.write(null, new IIOImage(scaled, null, null), iwparam);
-                iw.dispose();
-                ios.close();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageWriteParam iwparam = new JPEGImageWriteParam(Locale.getDefault());
+            iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            iwparam.setCompressionQuality(jpegQuality); //Set here your compression rate
+            ImageWriter iw = ImageIO.getImageWritersByFormatName("jpg").next();
+            ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
+            iw.setOutput(ios);
+            iw.write(null, new IIOImage(scaled, null, null), iwparam);
+            iw.dispose();
+            ios.close();
 
-                scaled.flush();
-                image = com.lowagie.text.Image.getInstance(baos.toByteArray());
+            scaled.flush();
+            image = com.lowagie.text.Image.getInstance(baos.toByteArray());
 
-            }
-            if (mask != null) {
-                com.lowagie.text.Image msk = com.lowagie.text.Image.getInstance(mask, null, true);
-                msk.makeMask();
-                msk.setInverted(true);
-                image.setImageMask(msk);
-            }
-            cb.addImage(image, (float) mx[0], (float) mx[1], (float) mx[2], (float) mx[3], (float) mx[4],
-                    (float) mx[5]);
-            Object url = getRenderingHint(HyperLinkKey.KEY_INSTANCE);
-            if (url != null && !url.equals(HyperLinkKey.VALUE_HYPERLINKKEY_OFF)) {
-                PdfAction action = new PdfAction(url.toString());
-                cb.setAction(action, (float) mx[4], (float) mx[5], (float) (mx[0] + mx[4]), (float) (mx[3] + mx[5]));
-            }
-        } catch (Exception ex) {
-            throw new IllegalArgumentException();
+        }
+        if (mask != null) {
+            com.lowagie.text.Image msk = com.lowagie.text.Image.getInstance(mask, null, true);
+            msk.makeMask();
+            msk.setInverted(true);
+            image.setImageMask(msk);
+        }
+        cb.addImage(image, (float) mx[0], (float) mx[1], (float) mx[2], (float) mx[3], (float) mx[4],
+                (float) mx[5]);
+        Object url = getRenderingHint(HyperLinkKey.KEY_INSTANCE);
+        if (url != null && !url.equals(HyperLinkKey.VALUE_HYPERLINKKEY_OFF)) {
+            PdfAction action = new PdfAction(url.toString());
+            cb.setAction(action, (float) mx[4], (float) mx[5], (float) (mx[0] + mx[4]), (float) (mx[3] + mx[5]));
         }
         if (currentFillGState != 255 && currentFillGState != -1) {
             PdfGState gs = fillGState[currentFillGState];
@@ -1786,55 +1784,48 @@ public class PdfGraphics2D extends Graphics2D {
         }
     }
 
-    private void handleTexturePaint(TexturePaint tp, boolean fill) {
-        try {
-            BufferedImage img = tp.getImage();
-            Rectangle2D rect = tp.getAnchorRect();
-            com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
-            PdfPatternPainter pattern = cb.createPattern(image.getWidth(), image.getHeight());
-            AffineTransform inverse = this.normalizeMatrix();
-            inverse.translate(rect.getX(), rect.getY());
-            inverse.scale(rect.getWidth() / image.getWidth(), -rect.getHeight() / image.getHeight());
-            double[] mx = new double[6];
-            inverse.getMatrix(mx);
-            pattern.setPatternMatrix((float) mx[0], (float) mx[1], (float) mx[2], (float) mx[3], (float) mx[4], (float) mx[5]);
-            image.setAbsolutePosition(0, 0);
-            pattern.addImage(image);
-            if (fill) {
-                cb.setPatternFill(pattern);
-            } else {
-                cb.setPatternStroke(pattern);
-            }
-        } catch (Exception ex) {
-            handlePaintException(fill);
+    private void handleTexturePaint(TexturePaint tp, boolean fill) throws IOException, InterruptedException {
+        BufferedImage img = tp.getImage();
+        Rectangle2D rect = tp.getAnchorRect();
+        com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
+        PdfPatternPainter pattern = cb.createPattern(image.getWidth(), image.getHeight());
+        AffineTransform inverse = this.normalizeMatrix();
+        inverse.translate(rect.getX(), rect.getY());
+        inverse.scale(rect.getWidth() / image.getWidth(), -rect.getHeight() / image.getHeight());
+        double[] mx = new double[6];
+        inverse.getMatrix(mx);
+        pattern.setPatternMatrix((float) mx[0], (float) mx[1], (float) mx[2], (float) mx[3], (float) mx[4], (float) mx[5]);
+        image.setAbsolutePosition(0, 0);
+        pattern.addImage(image);
+        if (fill) {
+            cb.setPatternFill(pattern);
+        } else {
+            cb.setPatternStroke(pattern);
         }
     }
 
-    private void handleDefaultPaint(boolean invert, double xoffset, double yoffset, boolean fill) {
-        try {
-            BufferedImage img = createBufferedImage();
-            Graphics2D g = (Graphics2D) img.getGraphics();
-            g.transform(transform);
-            AffineTransform inv = transform.createInverse();
-            Shape fillRect = new Rectangle2D.Double(0, 0, img.getWidth(), img.getHeight());
-            fillRect = inv.createTransformedShape(fillRect);
-            g.setPaint(paint);
-            g.fill(fillRect);
-            if (invert) {
-                AffineTransform tx = new AffineTransform();
-                tx.scale(1, -1);
-                tx.translate(-xoffset, -yoffset);
-                g.drawImage(img, tx, null);
-            }
-            g.dispose();
-            com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
-            PdfPatternPainter pattern = cb.createPattern(width, height);
-            image.setAbsolutePosition(0, 0);
-            pattern.addImage(image);
-            applyPatternFillOrStroke(fill, pattern);
-        } catch (Exception ex) {
-            handlePaintException(fill);
+    private void handleDefaultPaint(boolean invert, double xoffset, double yoffset, boolean fill)
+            throws IOException, NoninvertibleTransformException, InterruptedException {
+        BufferedImage img = createBufferedImage();
+        Graphics2D g = (Graphics2D) img.getGraphics();
+        g.transform(transform);
+        AffineTransform inv = transform.createInverse();
+        Shape fillRect = new Rectangle2D.Double(0, 0, img.getWidth(), img.getHeight());
+        fillRect = inv.createTransformedShape(fillRect);
+        g.setPaint(paint);
+        g.fill(fillRect);
+        if (invert) {
+            AffineTransform tx = new AffineTransform();
+            tx.scale(1, -1);
+            tx.translate(-xoffset, -yoffset);
+            g.drawImage(img, tx, null);
         }
+        g.dispose();
+        com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
+        PdfPatternPainter pattern = cb.createPattern(width, height);
+        image.setAbsolutePosition(0, 0);
+        pattern.addImage(image);
+        applyPatternFillOrStroke(fill, pattern);
     }
 
     private BufferedImage createBufferedImage() {
@@ -2048,14 +2039,14 @@ public class PdfGraphics2D extends Graphics2D {
                     return;
                 }
                 Object isOpened = isOpenMethod.invoke(targetModule, packageName, callerModule);
-                if (isOpened instanceof Boolean && ((Boolean) isOpened)) {
+                if (isOpened instanceof Boolean isOpenedBool && isOpenedBool) {
                     Method addOpensMethod = getMethod(moduleClass, ADD_OPENS_METHOD_NAME, String.class, moduleClass);
                     if (callerModule != null) {
                         addOpensMethod.invoke(targetModule, packageName, callerModule);
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
         }
 

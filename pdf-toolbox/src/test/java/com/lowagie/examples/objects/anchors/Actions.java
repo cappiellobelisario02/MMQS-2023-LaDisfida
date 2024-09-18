@@ -70,7 +70,7 @@ public class Actions {
             p.add(new Chunk("local destination").setLocalDestination("test"));
             remote.add(p);
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // step 5: we close the document

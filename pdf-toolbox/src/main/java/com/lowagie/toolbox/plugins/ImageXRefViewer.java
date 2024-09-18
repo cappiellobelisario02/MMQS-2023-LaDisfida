@@ -254,7 +254,7 @@ public class ImageXRefViewer extends AbstractTool {
                             try {
                                 reader.close();
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                //da vedere come effettuare il log
                             }
                         }
                     }

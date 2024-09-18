@@ -115,7 +115,7 @@ public class OptionalContent {
             // step 5: closing the document
             document.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

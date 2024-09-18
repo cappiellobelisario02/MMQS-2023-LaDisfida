@@ -52,7 +52,7 @@ public class Register {
             stamp2.setFormFlattening(true);
             stamp2.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

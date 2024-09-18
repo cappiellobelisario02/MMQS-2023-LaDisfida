@@ -125,7 +125,7 @@ public class SelectedPages extends AbstractTool {
             try {
                 reader = new PdfReader(src.getAbsolutePath());
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
             logger.info("The original file had " + reader.getNumberOfPages() + " pages.");
             reader.selectPages(selection);
@@ -137,19 +137,19 @@ public class SelectedPages extends AbstractTool {
             try {
                 document = new Document(reader.getPageSizeWithRotation(1));
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
 
             try {
                 fouts = new FileOutputStream(dest.getAbsolutePath());
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
 
             try {
                 copy = new PdfCopy(document, fouts);
             } catch (Exception e) {
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
 
             document.open();
@@ -170,7 +170,7 @@ public class SelectedPages extends AbstractTool {
 
             document.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         } finally {
             if (reader != null && document != null && fouts != null && copy != null) {
                 try {
@@ -179,7 +179,7 @@ public class SelectedPages extends AbstractTool {
                     fouts.close();
                     copy.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
         }

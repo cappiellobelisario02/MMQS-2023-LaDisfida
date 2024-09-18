@@ -56,7 +56,7 @@ public class OpenApplication {
                     null, null)));
             document.add(p);
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // step 5: we close the document

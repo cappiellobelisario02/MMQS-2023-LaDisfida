@@ -104,7 +104,7 @@ public class SplitPdf{
             }
         } catch (Exception e) {
             logger.severe("Error occurred: " + e.getMessage());
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

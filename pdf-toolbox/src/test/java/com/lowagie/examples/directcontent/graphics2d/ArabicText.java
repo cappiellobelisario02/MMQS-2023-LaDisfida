@@ -51,7 +51,7 @@ public class ArabicText {
             // step 5
             document.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

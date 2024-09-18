@@ -213,7 +213,7 @@ public class PdfFileSpecification extends PdfDictionary {
                     in.close();
                 } catch (Exception e) {
                     // Log exception (could use a logging framework)
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
         }

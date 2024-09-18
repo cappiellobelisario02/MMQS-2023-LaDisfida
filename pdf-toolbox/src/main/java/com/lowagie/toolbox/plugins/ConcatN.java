@@ -45,6 +45,7 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.FileArrayArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -61,7 +62,7 @@ import javax.swing.JInternalFrame;
  */
 public class ConcatN extends AbstractTool {
 
-    private static final Logger logger = Logger.getLogger(ConcatN.class.getName());
+    private static final Logger logger = Logger.getLogger(com.lowagie.toolbox.plugins.ConcatN.class.getName());
     public static final String SRCFILES = "srcfiles";
     public static final String DESTFILE = "destfile";
 
@@ -87,7 +88,7 @@ public class ConcatN extends AbstractTool {
      * @param args String[]
      */
     public static void main(String[] args) throws Exception {
-        ConcatN tool = new ConcatN();
+        com.lowagie.toolbox.plugins.ConcatN tool = new com.lowagie.toolbox.plugins.ConcatN();
         if (args.length < 2) {
             logger.severe(tool.getUsage());
         }
@@ -210,13 +211,13 @@ public class ConcatN extends AbstractTool {
     }
 
 
-    private void closeResources(PdfReader reader, Document document, FileOutputStream fos, PdfCopy writer) throws ResourceClosingException {
+    private void closeResources(PdfReader reader, Document document, FileOutputStream fos, PdfCopy writer) throws com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException {
         try {
             if (reader != null) {
                 reader.close();
             }
         } catch (Exception e) {
-            throw new ResourceClosingException("Failed to close PdfReader", e);
+            throw new com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException("Failed to close PdfReader", e);
         }
 
         try {
@@ -224,7 +225,7 @@ public class ConcatN extends AbstractTool {
                 document.close();
             }
         } catch (Exception e) {
-            throw new ResourceClosingException("Failed to close Document", e);
+            throw new com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException("Failed to close Document", e);
         }
 
         try {
@@ -232,7 +233,7 @@ public class ConcatN extends AbstractTool {
                 fos.close();
             }
         } catch (Exception e) {
-            throw new ResourceClosingException("Failed to close FileOutputStream", e);
+            throw new com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException("Failed to close FileOutputStream", e);
         }
 
         try {
@@ -240,7 +241,7 @@ public class ConcatN extends AbstractTool {
                 writer.close();
             }
         } catch (Exception e) {
-            throw new ResourceClosingException("Failed to close PdfCopy", e);
+            throw new com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException("Failed to close PdfCopy", e);
         }
     }
 

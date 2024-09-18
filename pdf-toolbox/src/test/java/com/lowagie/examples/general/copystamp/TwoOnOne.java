@@ -75,7 +75,7 @@ public class TwoOnOne {
             // step 5: we close the document
             document.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 }

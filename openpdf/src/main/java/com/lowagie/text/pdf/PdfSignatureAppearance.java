@@ -75,6 +75,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 /**
@@ -87,20 +88,20 @@ public class PdfSignatureAppearance {
     /**
      * The rendering mode is just the description
      */
-    public static final int SignatureRenderDescription = 0;
+    public static final int SIGNATURE_RENDER_DESCRIPTION = 0;
     /**
      * The rendering mode is the name of the signer and the description
      */
-    public static final int SignatureRenderNameAndDescription = 1;
+    public static final int SIGNATURE_RENDER_NAME_AND_DESCRIPTION = 1;
     /**
      * The rendering mode is an image and the description
      */
-    public static final int SignatureRenderGraphicAndDescription = 2;
+    public static final int SIGNATURE_RENDER_GRAPHIC_AND_DESCRIPTION = 2;
 
     /**
      * The rendering mode is an image and the description
      */
-    public static final int SignatureRenderGraphic = 3;
+    public static final int SIGNATURE_RENDER_GRAPHIC = 3;
 
     /**
      * The self signed filter.
@@ -123,7 +124,7 @@ public class PdfSignatureAppearance {
     /**
      * Commands to draw a yellow question mark in a stream content
      */
-    public static final String questionMark = """
+    public static final String QUESTION_MARK = """
             % DSUnknown
              q
              1 G
@@ -204,7 +205,7 @@ public class PdfSignatureAppearance {
 
     // ******************************************************************************
     private Certificate[] certChain;
-    private int render = SignatureRenderDescription;
+    private int render = SIGNATURE_RENDER_DESCRIPTION;
     private Image signatureGraphic = null;
     /**
      * Holds value of property contact.
@@ -613,7 +614,7 @@ public class PdfSignatureAppearance {
             PdfTemplate t = app[1] = new PdfTemplate(writer);
             t.setBoundingBox(new Rectangle(100, 100));
             writer.addDirectTemplateSimple(t, new PdfName("n1"));
-            t.setLiteral(questionMark);
+            t.setLiteral(QUESTION_MARK);
         }
         if (app[2] == null) {
             String text;
@@ -664,8 +665,8 @@ public class PdfSignatureAppearance {
             Rectangle dataRect = null;
             Rectangle signatureRect = null;
 
-            if (render == SignatureRenderNameAndDescription
-                    || (render == SignatureRenderGraphicAndDescription && this.signatureGraphic != null)) {
+            if (render == SIGNATURE_RENDER_NAME_AND_DESCRIPTION
+                    || (render == SIGNATURE_RENDER_GRAPHIC_AND_DESCRIPTION && this.signatureGraphic != null)) {
                 // origin is the bottom-left
                 signatureRect = new Rectangle(MARGIN, MARGIN, rect.getWidth() / 2
                         - MARGIN, rect.getHeight() - MARGIN);
@@ -678,7 +679,7 @@ public class PdfSignatureAppearance {
                     dataRect = new Rectangle(MARGIN, MARGIN, rect.getWidth() - MARGIN,
                             rect.getHeight() / 2 - MARGIN);
                 }
-            } else if (this.render == SignatureRenderGraphic) {
+            } else if (this.render == SIGNATURE_RENDER_GRAPHIC) {
                 if (this.signatureGraphic == null) {
                     throw new IllegalArgumentException("Missing signature image for renderingmode: " + this.render);
                 }
@@ -692,7 +693,7 @@ public class PdfSignatureAppearance {
                         rect.getHeight() * (1 - TOP_SECTION) - MARGIN);
             }
 
-            if (render == SignatureRenderNameAndDescription) {
+            if (render == SIGNATURE_RENDER_NAME_AND_DESCRIPTION) {
                 String signedBy = PdfPKCS7.getSubjectFields((X509Certificate) certChain[0]).getField("CN");
                 Rectangle sr2 = new Rectangle(signatureRect.getWidth() - MARGIN,
                         signatureRect.getHeight() - MARGIN);
@@ -706,7 +707,7 @@ public class PdfSignatureAppearance {
                         Element.ALIGN_LEFT);
 
                 ct2.go();
-            } else if (render == SignatureRenderGraphicAndDescription) {
+            } else if (render == SIGNATURE_RENDER_GRAPHIC_AND_DESCRIPTION) {
                 ColumnText ct2 = new ColumnText(t);
                 ct2.setRunDirection(runDirection);
                 ct2.setSimpleColumn(signatureRect.getLeft(), signatureRect.getBottom(),
@@ -731,7 +732,7 @@ public class PdfSignatureAppearance {
                         + (signatureRect.getWidth() - im.getScaledWidth()) / 2, y, false));
                 ct2.addElement(p);
                 ct2.go();
-            } else if (this.render == SignatureRenderGraphic) {
+            } else if (this.render == SIGNATURE_RENDER_GRAPHIC) {
                 ColumnText ct2 = new ColumnText(t);
                 ct2.setRunDirection(this.runDirection);
                 ct2.setSimpleColumn(signatureRect.getLeft(), signatureRect.getBottom(), signatureRect.getRight(),
@@ -751,7 +752,7 @@ public class PdfSignatureAppearance {
                 ct2.go();
             }
 
-            if (this.render != SignatureRenderGraphic) {
+            if (this.render != SIGNATURE_RENDER_GRAPHIC) {
                 if (size <= 0) {
                     Rectangle sr = new Rectangle(dataRect.getWidth(), dataRect.getHeight());
                     size = fitText(font, text, sr, 12, runDirection);
@@ -1151,7 +1152,6 @@ public class PdfSignatureAppearance {
                     field.setPage(i);
                     field.setFlags(PdfAnnotation.FLAGS_PRINT);
                     sigField.addKid(field);
-                    field = null;
                 }
             } else if (!isInvisible()) {
                 // Si es una pagina especifica
@@ -1229,10 +1229,9 @@ public class PdfSignatureAppearance {
             PdfLiteral lit = new PdfLiteral(80);
             exclusionLocations.put(PdfName.BYTERANGE, lit);
             cryptoDictionary.put(PdfName.BYTERANGE, lit);
-            for (Object o : exclusionSizes.entrySet()) {
-                Map.Entry<PdfName, Integer> entry = (Map.Entry<PdfName, Integer>) o;
-                PdfName key = (PdfName) entry.getKey();
-                Integer v = (Integer) entry.getValue();
+            for (Entry<PdfName, Integer> o : exclusionSizes.entrySet()) {
+                PdfName key = o.getKey();
+                Integer v = o.getValue();
                 lit = new PdfLiteral(v);
                 exclusionLocations.put(key, lit);
                 cryptoDictionary.put(key, lit);
@@ -1258,11 +1257,10 @@ public class PdfSignatureAppearance {
                 .get(PdfName.BYTERANGE).getPosition();
         exclusionLocations.remove(PdfName.BYTERANGE);
         int idx = 1;
-        for (Object o : exclusionLocations.values()) {
-            PdfLiteral lit = (PdfLiteral) o;
-            long n = lit.getPosition();
+        for (PdfLiteral o : exclusionLocations.values()) {
+            long n = o.getPosition();
             range[idx++] = n;
-            range[idx++] = lit.getPosLength() + n;
+            range[idx++] = o.getPosLength() + n;
         }
         Arrays.sort(range, 1, range.length - 1);
         for (int k = 3; k < range.length - 2; k += 2) {
@@ -1303,12 +1301,12 @@ public class PdfSignatureAppearance {
                 try {
                     raf.close();
                 } catch (Exception ee) {
-                    ee.printStackTrace();
+                    //da vedere come effettuare il log
                 }
                 try {
                     tempFile.delete();
                 } catch (Exception ee) {
-                    ee.printStackTrace();
+                    //da vedere come effettuare il log
                 }
                 throw e;
             }
@@ -1396,13 +1394,13 @@ public class PdfSignatureAppearance {
                 try {
                     raf.close();
                 } catch (Exception ee) {
-                    ee.printStackTrace();
+                    //da vedere come effettuare il log
                 }
                 if (originalout != null) {
                     try {
                         tempFile.delete();
                     } catch (Exception ee) {
-                        ee.printStackTrace();
+                        //da vedere come effettuare il log
                     }
                 }
             }
@@ -1410,7 +1408,7 @@ public class PdfSignatureAppearance {
                 try {
                     originalout.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
         }

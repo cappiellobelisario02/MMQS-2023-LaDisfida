@@ -21,10 +21,10 @@ import org.verapdf.pdfa.validation.validators.ValidatorFactory;
 /**
  * Validate PDF files created by OpenPDF using Vera.
  */
-public class PDFValidationTest {
+class PDFValidationTest {
 
     @Test
-    public void testValidatePDFWithVera() throws Exception {
+    void testValidatePDFWithVera() throws Exception {
         Document document = new Document(PageSize.A4);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PdfWriter pdfWriter = PdfWriter.getInstance(document, byteArrayOutputStream);
@@ -61,7 +61,7 @@ public class PDFValidationTest {
                 Assertions.assertTrue(result.isCompliant());
             }
         } catch (ModelParsingException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

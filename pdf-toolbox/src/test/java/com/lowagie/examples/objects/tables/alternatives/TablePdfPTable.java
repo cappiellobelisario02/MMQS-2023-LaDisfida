@@ -112,7 +112,7 @@ public class TablePdfPTable {
             }
             document.add(table);
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // we close the document

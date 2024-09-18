@@ -101,7 +101,7 @@ public class Bookmarks2XML extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        try (PdfReader reader = new PdfReader(((File) getValue(PDFFILE)).getAbsolutePath());){
+        try (PdfReader reader = new PdfReader(((File) getValue(PDFFILE)).getAbsolutePath())){
             if (getValue(XMLFILE) == null) {
                 throw new InstantiationException("You need to choose an xml file");
             }
@@ -115,7 +115,7 @@ public class Bookmarks2XML extends AbstractTool {
             SimpleBookmark.exportToXML(bookmarks, bmWriter, "UTF-8", false);
             bmWriter.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),
@@ -129,10 +129,6 @@ public class Bookmarks2XML extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

@@ -684,7 +684,7 @@ public class HtmlWriter extends DocWriter {
         try {
             add(element);
         } catch (DocumentException e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

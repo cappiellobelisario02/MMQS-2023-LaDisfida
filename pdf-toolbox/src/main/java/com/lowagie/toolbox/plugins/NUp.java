@@ -46,6 +46,7 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.OptionArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -174,15 +175,15 @@ public class NUp extends AbstractTool {
             }
             // step 5: we close the document
             document.close();
-        } catch (IOException | InstantiationException e) {
-            e.printStackTrace();
+        } catch (IOException | InstantiationException | PDFFilterException e) {
+            //da vedere come effettuare il log
         } finally {
             if (reader != null && document != null){
                 try {
                     reader.close();
                     document.close();
                 } catch (Exception e){
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
         }
@@ -193,10 +194,6 @@ public class NUp extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

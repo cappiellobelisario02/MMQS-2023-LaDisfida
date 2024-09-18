@@ -84,7 +84,7 @@ public class PageNumbersWatermark extends PdfPageEventHelper {
             // step 5: closing the document
             doc.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
     }
 

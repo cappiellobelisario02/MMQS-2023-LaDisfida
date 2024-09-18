@@ -126,7 +126,7 @@ public class TableBorders {
             p = new Paragraph("\nuseBorderPadding=true, useAscender=true, useDescender=false", font);
             document.add(p);
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step5
         document.close();

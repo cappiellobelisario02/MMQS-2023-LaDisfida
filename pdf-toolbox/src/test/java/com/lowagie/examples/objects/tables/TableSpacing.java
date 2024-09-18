@@ -78,7 +78,7 @@ public class TableSpacing {
             document.add(table);
             document.add(new Paragraph("This is much better, don't you think so?"));
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step5
         document.close();

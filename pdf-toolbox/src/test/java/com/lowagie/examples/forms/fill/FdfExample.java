@@ -49,7 +49,7 @@ public class FdfExample {
             form.setFields(fdfreader);
             stamp.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //da vedere come effettuare il log
         }
 
     }

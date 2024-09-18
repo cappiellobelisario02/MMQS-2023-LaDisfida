@@ -66,7 +66,7 @@ public class HelloWorldServlet extends HttpServlet {
             document.add(new Paragraph("Hello World"));
             document.add(new Paragraph(new Date().toString()));
         } catch (DocumentException de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
             System.err.println("document: " + de.getMessage());
         }
 

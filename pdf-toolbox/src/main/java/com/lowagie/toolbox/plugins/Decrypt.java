@@ -125,7 +125,7 @@ public class Decrypt extends AbstractTool {
             try{
                 fos = new FileOutputStream((File) getValue(DEST));
             } catch(Exception e){
-                e.printStackTrace();
+                //da vedere come effettuare il log
             }
             PdfStamper stamper = new PdfStamper(reader, fos);
             stamper.close();
@@ -141,7 +141,7 @@ public class Decrypt extends AbstractTool {
                     reader.close();
                     fos.close();
                 }catch(Exception e){
-                    e.printStackTrace();
+                    //da vedere come effettuare il log
                 }
             }
         }
@@ -152,10 +152,6 @@ public class Decrypt extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

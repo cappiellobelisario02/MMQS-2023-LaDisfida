@@ -117,7 +117,7 @@ public class SimpleAnnotations {
             cb2.rectangle(100, 250, 100, 100);
             cb2.stroke();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
 
         // step 5: we close the document

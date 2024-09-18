@@ -54,7 +54,7 @@ public class SplitTable {
             table.writeSelectedRows(5, -1, 0, -1, 50, 650, cb);
             document.close();
         } catch (Exception de) {
-            de.printStackTrace();
+            //da vedere come effettuare il log
         }
         // step5
         document.close();

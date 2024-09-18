@@ -1,5 +1,7 @@
 package com.lowagie.text.pdf;
 
+import com.lowagie.text.pdf.EncodingParams.Builder;
+
 public class EncodingParams {
     private final byte[] text;
     private final int textOffset;
@@ -10,7 +12,7 @@ public class EncodingParams {
     private final int options;
     private final boolean firstMatch;
 
-    private EncodingParams(Builder builder) {
+    private EncodingParams(com.lowagie.text.pdf.EncodingParams.Builder builder) {
         this.text = builder.text;
         this.textOffset = builder.textOffset;
         this.textSize = builder.textSize;
@@ -41,48 +43,48 @@ public class EncodingParams {
         private int options;
         private boolean firstMatch;
 
-        public Builder text(byte[] text) {
+        public com.lowagie.text.pdf.EncodingParams.Builder text(byte[] text) {
             this.text = text;
             return this;
         }
 
-        public Builder textOffset(int textOffset) {
+        public com.lowagie.text.pdf.EncodingParams.Builder textOffset(int textOffset) {
             this.textOffset = textOffset;
             return this;
         }
 
-        public Builder textSize(int textSize) {
+        public com.lowagie.text.pdf.EncodingParams.Builder textSize(int textSize) {
             this.textSize = textSize;
             return this;
         }
 
-        public Builder data(byte[] data) {
+        public com.lowagie.text.pdf.EncodingParams.Builder data(byte[] data) {
             this.data = data;
             return this;
         }
 
-        public Builder dataOffset(int dataOffset) {
+        public com.lowagie.text.pdf.EncodingParams.Builder dataOffset(int dataOffset) {
             this.dataOffset = dataOffset;
             return this;
         }
 
-        public Builder dataSize(int dataSize) {
+        public com.lowagie.text.pdf.EncodingParams.Builder dataSize(int dataSize) {
             this.dataSize = dataSize;
             return this;
         }
 
-        public Builder options(int options) {
+        public com.lowagie.text.pdf.EncodingParams.Builder options(int options) {
             this.options = options;
             return this;
         }
 
-        public Builder firstMatch(boolean firstMatch) {
+        public com.lowagie.text.pdf.EncodingParams.Builder firstMatch(boolean firstMatch) {
             this.firstMatch = firstMatch;
             return this;
         }
 
-        public EncodingParams build() {
-            return new EncodingParams(this);
+        public com.lowagie.text.pdf.EncodingParams build() {
+            return new com.lowagie.text.pdf.EncodingParams(this);
         }
     }
 }
