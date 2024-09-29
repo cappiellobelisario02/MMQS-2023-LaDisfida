@@ -113,8 +113,7 @@ public class PdfShading {
         int type = ExtendedColor.getType(color);
         switch (type) {
             case ExtendedColor.TYPE_GRAY: {
-                if (color instanceof GrayColor) {
-                    GrayColor grayColor = (GrayColor) color;
+                if (color instanceof GrayColor grayColor) {
                     return new float[]{grayColor.getGray()};
                 } else {
                     throwColorSpaceError();
@@ -122,8 +121,7 @@ public class PdfShading {
                 }
             }
             case ExtendedColor.TYPE_CMYK: {
-                if (color instanceof CMYKColor) {
-                    CMYKColor cmykColor = (CMYKColor) color;
+                if (color instanceof CMYKColor cmykColor) {
                     return new float[]{cmykColor.getCyan(), cmykColor.getMagenta(), cmykColor.getYellow(), cmykColor.getBlack()};
                 } else {
                     throwColorSpaceError();
@@ -131,8 +129,7 @@ public class PdfShading {
                 }
             }
             case ExtendedColor.TYPE_SEPARATION: {
-                if (color instanceof SpotColor) {
-                    SpotColor spotColor = (SpotColor) color;
+                if (color instanceof SpotColor spotColor) {
                     return new float[]{spotColor.getTint()};
                 } else {
                     throwColorSpaceError();
@@ -239,9 +236,8 @@ public class PdfShading {
                 break;
 
             case ExtendedColor.TYPE_SEPARATION:
-                if (color instanceof SpotColor) {
-                    SpotColor spot = (SpotColor) color;
-                    colorDetails = writer.addSimple(spot.getPdfSpotColor());
+                if (color instanceof SpotColor spotColor) {
+                    colorDetails = writer.addSimple(spotColor.getPdfSpotColor());
                     colorSpace = colorDetails.getIndirectReference();
                 } else {
                     throw new IllegalArgumentException("Color type is not a SpotColor for separation.");

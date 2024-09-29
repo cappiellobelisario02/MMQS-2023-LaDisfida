@@ -2660,8 +2660,9 @@ public class PdfContentByte {
      */
     public void setPatternFill(PdfPatternPainter p, Color color) {
         if (ExtendedColor.getType(color) == ExtendedColor.TYPE_SEPARATION) {
-            if(color instanceof SpotColor spotColor)
-            setPatternFill(p, color, spotColor.getTint());
+            if(color instanceof SpotColor spotColor) {
+                setPatternFill(p, color, spotColor.getTint());
+            }
         } else {
             setPatternFill(p, color, 0);
         }

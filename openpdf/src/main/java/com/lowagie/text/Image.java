@@ -585,9 +585,7 @@ public abstract class Image extends Rectangle {
      * @throws IOException         if image is not recognized
      */
     public static Image getInstance(byte[] imgb) throws BadElementException, IOException {
-        InputStream is = null;
-        try {
-            is = new ByteArrayInputStream(imgb);
+        try (InputStream is = new ByteArrayInputStream(imgb)) {
             byte[] headerBytes = new byte[8]; // Read 8 bytes for identification
             if (is.read(headerBytes) != 8) {
                 throw new IOException("Failed to read image header from byte array");
@@ -596,14 +594,11 @@ public abstract class Image extends Rectangle {
             Image img = identifyAndLoadImage(headerBytes, imgb);
 
             if (img == null) {
-                throw new IOException(MessageLocalization.getComposedMessage("the.byte.array.is.not.a.recognized.imageformat"));
+                throw new IOException(
+                        MessageLocalization.getComposedMessage("the.byte.array.is.not.a.recognized.imageformat"));
             }
 
             return img;
-        } finally {
-            if (is != null) {
-                is.close();
-            }
         }
     }
 
