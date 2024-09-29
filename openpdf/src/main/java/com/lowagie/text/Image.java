@@ -636,7 +636,12 @@ public abstract class Image extends Rectangle {
         }
 
         InputStream is = new ByteArrayInputStream(imageData);
-        is.skip(4); // Skip first 4 bytes already read
+        long skippedBytes = is.skip(4); // Skip first 4 bytes already read and check how many were skipped
+        if (skippedBytes != 4) {
+            is.close();
+            return false; // Less than 4 bytes skipped, invalid header
+        }
+
         int c5 = is.read();
         int c6 = is.read();
         int c7 = is.read();
@@ -645,6 +650,7 @@ public abstract class Image extends Rectangle {
 
         return c5 == '\r' && c6 == '\n' && c7 == 0x1a && c8 == '\n';
     }
+
 
 
     /**

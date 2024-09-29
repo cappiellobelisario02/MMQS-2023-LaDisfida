@@ -640,10 +640,10 @@ public class PdfDocument extends Document {
     }
 
     private boolean handleMarkedElement(MarkedObject mo) {
-        MarkedObject title = ((MarkedSection) mo).getTitle();
-        if (title != null) {
-            title.process(this);
-        }
+            MarkedObject title = ((MarkedSection) mo).getTitle();
+            if (title != null) {
+                title.process(this);
+            }
         mo.process(this);
         return true;
     }
@@ -2532,10 +2532,10 @@ public class PdfDocument extends Document {
         for (Element element : footer.getSpecialContent()) {
             switch (element.type()) {
                 case Element.JPEG,
-                     Element.JPEG2000,
-                     Element.JBIG2,
-                     Element.IMGRAW,
-                     Element.IMGTEMPLATE:
+                Element.JPEG2000,
+                Element.JBIG2,
+                Element.IMGRAW,
+                Element.IMGTEMPLATE:
                     processImage((Image) element);
                     break;
                 case Element.PTABLE:

@@ -90,7 +90,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
 
     // membervariables
 
-    private static Logger logger = Logger.getLogger(Phrase.class.getName());
+    private static Logger logger = Logger.getLogger(com.lowagie.text.Phrase.class.getName());
 
     /**
      * This is the leading of this phrase.
@@ -121,9 +121,9 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     /**
      * Copy constructor for <CODE>Phrase</CODE>.
      *
-     * @param phrase an object of {@link Phrase}, that you want to create a new object from
+     * @param phrase an object of {@link com.lowagie.text.Phrase}, that you want to create a new object from
      */
-    public Phrase(Phrase phrase) {
+    public Phrase(com.lowagie.text.Phrase phrase) {
         super();
         this.addAll(phrase);
         leading = phrase.getLeading();
@@ -225,7 +225,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      * @param string input
      * @return a newly constructed Phrase
      */
-    public static final Phrase getInstance(String string) {
+    public static final com.lowagie.text.Phrase getInstance(String string) {
         return getInstance(16, string, new Font());
     }
 
@@ -236,7 +236,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      * @param string  input
      * @return a newly constructed Phrase
      */
-    public static final Phrase getInstance(int leading, String string) {
+    public static final com.lowagie.text.Phrase getInstance(int leading, String string) {
         return getInstance(leading, string, new Font());
     }
 
@@ -248,8 +248,8 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      * @param fontAttr    font to be used
      * @return a newly constructed Phrase
      */
-    public static final Phrase getInstance(int leading, String string, Font fontAttr) {
-        Phrase p = new Phrase();
+    public static final com.lowagie.text.Phrase getInstance(int leading, String string, Font fontAttr) {
+        com.lowagie.text.Phrase p = new com.lowagie.text.Phrase();
         p.setLeading(leading);
         p.fontAttr = fontAttr;
         if (fontAttr.getFamily() != Font.SYMBOL && fontAttr.getFamily() != Font.ZAPFDINGBATS && fontAttr.getBaseFont() == null) {
@@ -430,7 +430,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
                     return addChunk((Chunk) element);
                 case Element.PHRASE:
                 case Element.PARAGRAPH:
-                    Phrase phrase = (Phrase) element;
+                    com.lowagie.text.Phrase phrase = (com.lowagie.text.Phrase) element;
                     boolean success = true;
                     Element e;
                     for (Object o1 : phrase) {

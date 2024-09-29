@@ -1,26 +1,5 @@
 package com.lowagie.text.pdf;
 
-// Class to hold the positional coordinates
-class Position {
-    private float llx;
-    private float lly;
-    private float urx;
-    private float ury;
-
-    public Position(float llx, float lly, float urx, float ury) {
-        this.llx = llx;
-        this.lly = lly;
-        this.urx = urx;
-        this.ury = ury;
-    }
-
-    public float getLlx() { return llx; }
-    public float getLly() { return lly; }
-    public float getUrx() { return urx; }
-    public float getUry() { return ury; }
-}
-
-// Updated ComboBoxParams class
 public class ComboBoxParams {
     private String name;
     private OptionsDataStructure options;
@@ -28,24 +7,31 @@ public class ComboBoxParams {
     private boolean editable;
     private BaseFont font;
     private float fontSize;
-    private Position position;
+    private float llx;
+    private float lly;
+    private float urx;
+    private float ury;
 
-    // Constructor with grouped parameters
-    public ComboBoxParams(String name, OptionsDataStructure options, String defaultValue, boolean editable, BaseFont font, float fontSize, Position position) {
+    // Costruttore
+    public ComboBoxParams(String name, OptionsDataStructure options, String defaultValue, boolean editable, BaseFont font, float fontSize, float llx, float lly, float urx, float ury)
+    {
         this.name = name;
         this.options = options;
         this.defaultValue = defaultValue;
         this.editable = editable;
         this.font = font;
         this.fontSize = fontSize;
-        this.position = position;
+        this.llx = llx;
+        this.lly = lly;
+        this.urx = urx;
+        this.ury = ury;
     }
 
-    // Setters and getters
-    public void setDefaultValue(String dValue) {
+    public void setDefaultValue(String dValue){
         defaultValue = dValue;
     }
 
+    // Getter per tutti i campi
     public String getName() {
         return name;
     }
@@ -58,6 +44,7 @@ public class ComboBoxParams {
         return options.getElement(row, col);
     }
 
+    // Metodo per ottenere le opzioni
     public Object getOptions() {
         return options.getOptions();
     }
@@ -78,7 +65,19 @@ public class ComboBoxParams {
         return fontSize;
     }
 
-    public Position getPosition() {
-        return position;
+    public float getLlx() {
+        return llx;
+    }
+
+    public float getLly() {
+        return lly;
+    }
+
+    public float getUrx() {
+        return urx;
+    }
+
+    public float getUry() {
+        return ury;
     }
 }
