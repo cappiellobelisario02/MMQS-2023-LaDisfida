@@ -49,6 +49,9 @@
 
 package com.lowagie.text.pdf.codec.wmf;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public class MetaObject {
 
     public static final int META_NOT_SUPPORTED = 0;
@@ -68,4 +71,6 @@ public class MetaObject {
         return type;
     }
 
+    public void init(InputMeta in) {
+    }
 }
