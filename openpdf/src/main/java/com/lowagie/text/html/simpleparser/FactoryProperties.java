@@ -223,10 +223,11 @@ public class FactoryProperties {
     }
 
     /**
-     * @deprecated This method is deprecated and should not be used.
-     *             Use {@link #insertStyle(Map<String, String>, boolean)} instead.
+     * @deprecated This method is deprecated since version 1.2 and is planned for removal in version 2.0.
+     * @deprecated since 1.2
+     * @deprecated forRemoval = true
      */
-    @Deprecated
+    @Deprecated(since = "1.2", forRemoval = true)
     public static void insertStyle(Map<String, String> h) {
         String style = h.get("style");
         if (style == null) {

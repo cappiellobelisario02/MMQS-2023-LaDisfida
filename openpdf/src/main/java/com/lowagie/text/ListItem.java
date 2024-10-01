@@ -49,6 +49,8 @@
 
 package com.lowagie.text;
 
+import java.util.ArrayList;
+
 /**
  * A <CODE>ListItem</CODE> is a <CODE>Paragraph</CODE> that can be added to a <CODE>List</CODE>.
  * <p>
@@ -93,7 +95,7 @@ package com.lowagie.text;
  * @see Paragraph
  */
 
-public class ListItem {
+public class ListItem extends Paragraph {
 
     // constants
     private static final long serialVersionUID = 1970670787169329006L;
@@ -289,7 +291,12 @@ public class ListItem {
         return paragraph.getTotalLeading();
     }
 
-    public java.util.List<Element> getChunks() {
+    public ArrayList<Element> getChunks() {
         return paragraph.getChunks();
+    }
+
+    @Override
+    public java.util.List<Element> reversed() {
+        return super.reversed();
     }
 }
