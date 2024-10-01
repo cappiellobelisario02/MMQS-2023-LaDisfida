@@ -92,6 +92,7 @@ public class PageNumbersWatermark extends PdfPageEventHelper {
      * @see com.lowagie.text.pdf.PdfPageEventHelper#onOpenDocument(com.lowagie.text.pdf.PdfWriter,
      * com.lowagie.text.Document)
      */
+    @Override
     public void onOpenDocument(PdfWriter writer, Document document) {
         try {
             // initialization of the header table
@@ -124,6 +125,7 @@ public class PageNumbersWatermark extends PdfPageEventHelper {
     /**
      * @see com.lowagie.text.pdf.PdfPageEventHelper#onEndPage(com.lowagie.text.pdf.PdfWriter, com.lowagie.text.Document)
      */
+    @Override
     public void onEndPage(PdfWriter writer, Document document) {
         PdfContentByte cb = writer.getDirectContent();
         cb.saveState();
@@ -180,6 +182,7 @@ public class PageNumbersWatermark extends PdfPageEventHelper {
      * @see com.lowagie.text.pdf.PdfPageEventHelper#onStartPage(com.lowagie.text.pdf.PdfWriter,
      * com.lowagie.text.Document)
      */
+    @Override
     public void onStartPage(PdfWriter writer, Document document) {
         if (writer.getPageNumber() < 3) {
             PdfContentByte cb = writer.getDirectContentUnder();
@@ -198,6 +201,7 @@ public class PageNumbersWatermark extends PdfPageEventHelper {
      * @see com.lowagie.text.pdf.PdfPageEventHelper#onCloseDocument(com.lowagie.text.pdf.PdfWriter,
      * com.lowagie.text.Document)
      */
+    @Override
     public void onCloseDocument(PdfWriter writer, Document document) {
         tpl.beginText();
         tpl.setFontAndSize(helv, 12);

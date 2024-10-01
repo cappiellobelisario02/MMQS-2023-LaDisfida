@@ -19,11 +19,13 @@
 package com.lowagie.text.pdf.hyphenation;
 
 import java.io.InputStream;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * This tree structure stores the hyphenation patterns in an efficient way for fast lookup. It provides the provides the
@@ -34,7 +36,9 @@ import java.util.Map;
 public class HyphenationTree extends TernaryTree
         implements PatternConsumer {
 
+    @Serial
     private static final long serialVersionUID = -7763254239309429432L;
+    private static final Logger logger = Logger.getLogger(HyphenationTree.class.getName());
 
     /**
      * value space: stores the interletter values
@@ -44,7 +48,7 @@ public class HyphenationTree extends TernaryTree
     /**
      * This map stores hyphenation exceptions
      */
-    protected Map<String, List<String>> stoplist;
+    protected transient Map<String, List<String>> stoplist;
 
     /**
      * This map stores the character classes
@@ -71,7 +75,8 @@ public class HyphenationTree extends TernaryTree
      * @return the index into the vspace array where the packed values are stored.
      */
     protected int packValues(String values) {
-        int i, n = values.length();
+        int i;
+        int n = values.length();
         int m = (n & 1) == 1 ? (n >> 1) + 2 : (n >> 1) + 1;
         int offset = vspace.alloc(m);
         byte[] va = vspace.getArray();
@@ -214,7 +219,7 @@ public class HyphenationTree extends TernaryTree
                 }
                 sp = word[++index];
                 p = eq[p];
-                searchForPatternEnding(word, index, il, sp, p);
+                searchForPatternEnding(index, il, p);
             } else {
                 p = d < 0 ? lo[p] : hi[p];
             }
@@ -238,14 +243,14 @@ public class HyphenationTree extends TernaryTree
         }
     }
 
-    private void searchForPatternEnding(char[] word, int index, byte[] il, char sp, char p) {
+    private void searchForPatternEnding(int index, byte[] il, char p) {
         char q = p;
         while (q > 0 && q < sc.length) {
             if (sc[q] == 0xFFFF) {
                 break;
             }
             if (sc[q] == 0) {
-                processPatternEnding(word, index, il, q);
+                processPatternEnding(index, il, q);
                 break;
             } else {
                 q = lo[q];
@@ -253,34 +258,11 @@ public class HyphenationTree extends TernaryTree
         }
     }
 
-    private void processPatternEnding(char[] word, int index, byte[] il, char q) {
+    private void processPatternEnding(int index, byte[] il, char q) {
         byte[] values = getValues(eq[q]);
         updateValues(il, index, values);
     }
 
-
-    /**
-     * w = "****nnllllllnnn*****",
-     * where n is a non-letter, l is a letter,
-     * all n may be absent, the first n is at offset,
-     * the first l is at offset + iIgnoreAtBeginning;
-     * word = ".llllll.'\0'***",
-     * where all l in w are copied into word.
-     * In the first part of the routine len = w.length,
-     * in the second part of the routine len = word.length.
-     * Three indices are used:
-     * index(w), the index in w,
-     * index(word), the index in word,
-     * letterindex(word), the index in the letter part of word.
-     * The following relations exist:
-     * index(w) = offset + i - 1
-     * index(word) = i - iIgnoreAtBeginning
-     * letterindex(word) = index(word) - 1
-     * (see first loop).
-     * It follows that:
-     * index(w) - index(word) = offset - 1 + iIgnoreAtBeginning
-     * index(w) = letterindex(word) + offset + iIgnoreAtBeginning
-     */
 
     /**
      * Hyphenate word and return an array of hyphenation points.
@@ -328,7 +310,7 @@ public class HyphenationTree extends TernaryTree
                 if (!endOfLetters) {
                     word[i - iIgnoreAtBeginning] = (char) nc;
                 } else {
-                    return null;
+                    return new char[0];
                 }
             }
         }
@@ -437,8 +419,8 @@ public class HyphenationTree extends TernaryTree
 
     @Override
     public void printStats() {
-        System.out.println("Value space size = "
-                + vspace.length());
+        String stringToLog = "Value space size = " + vspace.length();
+        logger.info(stringToLog);
         super.printStats();
     }
 }

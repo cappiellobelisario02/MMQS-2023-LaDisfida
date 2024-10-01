@@ -33,6 +33,7 @@ import com.lowagie.text.xml.XmlPeer;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.EmptyStackException;
 import java.util.Map;
 import java.util.TreeSet;
@@ -305,8 +306,9 @@ public class Events {
      * the other side an XmlPeer object that overrides the properties of one of the tags.
      */
 
-    class RomeoJulietMap extends TagMap {
+    static class RomeoJulietMap extends TagMap {
 
+        @Serial
         private static final long serialVersionUID = 1024517625414654121L;
 
         /**
@@ -326,7 +328,7 @@ public class Events {
      * This object contains a speaker and a number of occurrences in the play
      */
 
-    class Speaker implements Comparable {
+    static class Speaker implements Comparable {
 
         // name of the speaker
         private String name;
@@ -362,7 +364,7 @@ public class Events {
         /**
          * There is something odd going on in this compareTo. Do you see it?
          *
-         * @param o an other speaker object
+         * @param o another speaker object
          * @see java.lang.Comparable#compareTo(java.lang.Object)
          */
         public int compareTo(Object o) {

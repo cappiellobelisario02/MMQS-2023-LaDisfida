@@ -107,9 +107,6 @@ public class PdfXConformanceImp implements PdfXConformance {
     /**
      * Business logic that checks if a certain object is in conformance with PDF/X.
      *
-     * @param writer the writer that is supposed to write the PDF/X file
-     * @param key    the type of PDF/X conformance that has to be checked
-     * @param obj1   the object that is checked for conformance
      */
     private static final String COLORSPACE_RGB_NOT_ALLOWED = "colorspace.rgb.is.not.allowed";
 
@@ -122,7 +119,7 @@ public class PdfXConformanceImp implements PdfXConformance {
 
         switch (key) {
             case PDFXKEY_COLOR:
-                checkColorConformance(conf, obj1);
+                checkColorConformance(obj1);
                 break;
             case PDFXKEY_CMYK:
                 // Handle CMYK case if needed
@@ -150,31 +147,32 @@ public class PdfXConformanceImp implements PdfXConformance {
         }
     }
 
-    private static void checkColorConformance(int conf, Object obj1) {
-        if (obj1 instanceof ExtendedColor) {
-            ExtendedColor ec = (ExtendedColor) obj1;
-            switch (ec.getType()) {
-                case ExtendedColor.TYPE_CMYK:
-                case ExtendedColor.TYPE_GRAY:
+    private static void checkColorConformance(Object obj1) {
+        PdfWriter writer = null;
+        if (obj1 instanceof ExtendedColor extendedColor) {
+            switch (extendedColor.getType()) {
+                case ExtendedColor.TYPE_CMYK,
+                     ExtendedColor.TYPE_GRAY:
                     return;
                 case ExtendedColor.TYPE_RGB:
                     throw new PdfXConformanceException(
                             MessageLocalization.getComposedMessage(COLORSPACE_RGB_NOT_ALLOWED));
                 case ExtendedColor.TYPE_SEPARATION:
-                    SpotColor sc = (SpotColor) ec;
-                    PdfWriter writer = null;
+                    SpotColor sc = (SpotColor) extendedColor;
                     checkPDFXConformance(writer, PDFXKEY_COLOR,
                             sc.getPdfSpotColor().getAlternativeCS());
                     break;
                 case ExtendedColor.TYPE_SHADING:
-                    ShadingColor xc = (ShadingColor) ec;
+                    ShadingColor xc = (ShadingColor) extendedColor;
                     checkPDFXConformance(writer, PDFXKEY_COLOR,
                             xc.getPdfShadingPattern().getShading().getColorSpace());
                     break;
                 case ExtendedColor.TYPE_PATTERN:
-                    PatternColor pc = (PatternColor) ec;
+                    PatternColor pc = (PatternColor) extendedColor;
                     checkPDFXConformance(writer, PDFXKEY_COLOR, pc.getPainter().getDefaultColor());
                     break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + extendedColor.getType());
             }
         } else if (obj1 instanceof Color) {
             throw new PdfXConformanceException(
@@ -282,15 +280,6 @@ public class PdfXConformanceImp implements PdfXConformance {
      */
     public boolean isPdfA1() {
         return pdfxConformance == PdfWriter.PDFA1A || pdfxConformance == PdfWriter.PDFA1B;
-    }
-
-    /**
-     * Checks if the PDF has to be in conformance with PDFA1A
-     *
-     * @return true of the PDF has to be in conformance with PDFA1A
-     */
-    public boolean isPdfA1A() {
-        return pdfxConformance == PdfWriter.PDFA1A;
     }
 
     public void completeInfoDictionary(PdfDictionary info) {

@@ -102,8 +102,8 @@ public class TreeNodeFactory {
                     expandNode(leaf);
                 }
                 return;
-            case PdfObject.DICTIONARY:
-            case PdfObject.STREAM:
+            case PdfObject.DICTIONARY,
+                    PdfObject.STREAM:
                 PdfDictionary dict = (PdfDictionary) object;
                 for (PdfName pdfName : dict.getKeys()) {
                     leaf = PdfObjectTreeNode.getInstance(dict, pdfName);
@@ -111,6 +111,8 @@ public class TreeNodeFactory {
                     expandNode(leaf);
                 }
                 return;
+            default:
+                throw new IllegalStateException("Unexpected value: " + object.type());
         }
     }
 

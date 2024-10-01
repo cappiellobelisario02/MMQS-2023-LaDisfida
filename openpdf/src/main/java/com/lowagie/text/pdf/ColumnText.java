@@ -92,7 +92,7 @@ import java.util.logging.Logger;
 
 public class ColumnText {
 
-    Logger logger = Logger.getLogger(ColumnText.class.getName());
+    static Logger logger = Logger.getLogger(ColumnText.class.getName());
 
     /**
      * Eliminate the arabic vowels
@@ -1535,7 +1535,7 @@ public class ColumnText {
         }
 
         updateLineAndStatusForParagraph(status, para);
-        return checkStatusAndRemoveElement(status, Element.PARAGRAPH);
+        return checkStatusAndRemoveElement(status);
     }
 
     private ColumnText createCompositeColumnForParagraph(Paragraph para, boolean firstPass) {
@@ -1602,12 +1602,12 @@ public class ColumnText {
         }
     }
 
-    private int checkStatusAndRemoveElement(int status, int elementType) {
+    private int checkStatusAndRemoveElement(int status) {
         if ((status & NO_MORE_COLUMN) != 0) {
             return NO_MORE_COLUMN;
         }
 
-        if (elementType == Element.LIST || elementType == Element.PARAGRAPH && compositeColumn != null) {
+        if (compositeColumn != null) {
             yLine = compositeColumn.yLine;
             linesWritten += compositeColumn.linesWritten;
             descender = compositeColumn.descender;
@@ -1632,14 +1632,18 @@ public class ColumnText {
     }
 
     public static void main(String[] args) {
+        String stringToLog;
         PdfWriter writer = new PdfWriter();
         PdfContentByte canvas = new PdfContentByte(writer);
         ColumnText example = new ColumnText(canvas);
         ArrayDeque<Object[]> stack = new ArrayDeque<>();
         example.pushToStack(new Object[] {"first item"}, stack);
-        System.out.println(example.peekAtStack(stack)[0]);  // Output: first item
-        System.out.println(example.popFromStack(stack)[0]);  // Output: first item
-        System.out.println(example.isStackEmpty(stack));  // Output: true
+        stringToLog = example.peekAtStack(stack)[0].toString();
+        logger.info(stringToLog);  // Output: first item
+        stringToLog = example.popFromStack(stack)[0].toString();
+        logger.info(stringToLog);  // Output: first item
+        stringToLog = String.valueOf(example.isStackEmpty(stack));
+        logger.info(stringToLog);  // Output: true
     }
 
     /**

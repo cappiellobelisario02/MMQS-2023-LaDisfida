@@ -86,6 +86,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import com.lowagie.text.exceptions.InvalidTokenException;
+import com.lowagie.text.pdf.PdfPKCS7.X509Name;
+import com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -131,7 +133,7 @@ import org.bouncycastle.tsp.TimeStampTokenInfo;
  */
 public class PdfPKCS7 {
 
-    Logger logger = Logger.getLogger(PdfPKCS7.class.getName());
+    Logger logger = Logger.getLogger(com.lowagie.text.pdf.PdfPKCS7.class.getName());
 
     private static final String ID_PKCS7_DATA = "1.2.840.113549.1.7.1";
     private static final String ID_PKCS7_SIGNED_DATA = "1.2.840.113549.1.7.2";
@@ -478,7 +480,7 @@ public class PdfPKCS7 {
                 if (digestAttr == null) {
                     throw new IllegalArgumentException(
                             MessageLocalization
-                                .getComposedMessage("authenticated.attribute.is.missing.the.digest"));
+                                    .getComposedMessage("authenticated.attribute.is.missing.the.digest"));
                 }
                 ++next;
             }
@@ -790,7 +792,7 @@ public class PdfPKCS7 {
             X509Certificate certificate) {
         try{
             for (Enumeration<?> aliases = keyStore.aliases(); aliases
-                        .hasMoreElements(); ) {
+                    .hasMoreElements(); ) {
                 Object[] certificate1 = getObjects(keyStore, calendar, certificate, aliases);
                 if (certificate1 != null)
                     return certificate1;
@@ -849,10 +851,10 @@ public class PdfPKCS7 {
                 if (accessDescription.size() == 2 &&
                         (accessDescription.getObjectAt(0) instanceof ASN1ObjectIdentifier identifier)
                         && identifier.getId().equals("1.3.6.1.5.5.7.48.1")) {
-                    
-                        return getStringFromGeneralName((ASN1Primitive) accessDescription
-                                .getObjectAt(1));
-                    
+
+                    return getStringFromGeneralName((ASN1Primitive) accessDescription
+                            .getObjectAt(1));
+
                 }
             }
         } catch (Exception ignored) {
@@ -919,9 +921,9 @@ public class PdfPKCS7 {
      * @param cert an X509Certificate
      * @return an X509Name
      */
-    public static X509Name getIssuerFields(X509Certificate cert) {
+    public static com.lowagie.text.pdf.PdfPKCS7.X509Name getIssuerFields(X509Certificate cert) {
         try {
-            return new X509Name((ASN1Sequence) getIssuer(cert.getTBSCertificate()));
+            return new com.lowagie.text.pdf.PdfPKCS7.X509Name((ASN1Sequence) getIssuer(cert.getTBSCertificate()));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -933,9 +935,9 @@ public class PdfPKCS7 {
      * @param cert an X509Certificate
      * @return an X509Name
      */
-    public static X509Name getSubjectFields(X509Certificate cert) {
+    public static com.lowagie.text.pdf.PdfPKCS7.X509Name getSubjectFields(X509Certificate cert) {
         try {
-            return new X509Name((ASN1Sequence) getSubject(cert.getTBSCertificate()));
+            return new com.lowagie.text.pdf.PdfPKCS7.X509Name((ASN1Sequence) getSubject(cert.getTBSCertificate()));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -1244,7 +1246,7 @@ public class PdfPKCS7 {
             // OJO... Modificacion de
             // Felix--------------------------------------------------
             // CertificateID tis = new CertificateID(CertificateID.HASH_SHA1, isscer,
-            
+
             DigestCalculatorProvider digCalcProv = new JcaDigestCalculatorProviderBuilder()
                     .setProvider(provider).build();
             CertificateID id = new CertificateID(
@@ -1855,7 +1857,7 @@ public class PdfPKCS7 {
          * @param dirName a directory name
          */
         public X509Name(String dirName) {
-            X509NameTokenizer nTok = new X509NameTokenizer(dirName);
+            com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer nTok = new com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer(dirName);
 
             while (nTok.hasMoreTokens()) {
                 String token = nTok.nextToken();

@@ -70,6 +70,7 @@ import java.util.logging.Logger;
 @SuppressWarnings("WeakerAccess")
 public class PdfContentReaderTool {
 
+    public static final String STDOUT = "stdout";
     static Logger logger = Logger.getLogger(PdfContentReaderTool.class.getName());
 
     /**
@@ -106,12 +107,10 @@ public class PdfContentReaderTool {
         builder.setLength(builder.length() - 2);
         builder.append(')');
         PdfName pdfSubDictionaryName;
-        for (Object subDictionary : subDictionaries) {
-            pdfSubDictionaryName = (PdfName) subDictionary;
+        for (PdfName subDictionary : subDictionaries) {
+            pdfSubDictionaryName = subDictionary;
             builder.append('\n');
-            for (int i = 0; i < depth + 1; i++) {
-                builder.append('\t');
-            }
+            builder.append("\t".repeat(Math.max(0, depth + 1)));
             builder.append("Subdictionary ");
             builder.append(pdfSubDictionaryName);
             builder.append(" = ");
@@ -152,7 +151,7 @@ public class PdfContentReaderTool {
         PdfTextExtractor extractor = new PdfTextExtractor(reader,
                 new MarkedUpTextAssembler(reader));
         String extractedText = extractor.getTextFromPage(pageNum);
-        if (extractedText.length() != 0) {
+        if (!extractedText.isEmpty()) {
             out.println(extractedText);
         } else {
             out.println("No text found on page " + pageNum);
@@ -170,7 +169,7 @@ public class PdfContentReaderTool {
      * @throws IOException thrown when an I/O operation goes wrong
      * @since 2.1.5
      */
-    public static void listContentStream(File pdfFile, PrintWriter out) throws IOException {
+    public static void listContentStream(File pdfFile, PrintWriter out) throws IOException, PDFFilterException {
         try(PdfReader reader = new PdfReader(pdfFile.getCanonicalPath())){
         
             int maxPageNum = reader.getNumberOfPages();
@@ -179,7 +178,7 @@ public class PdfContentReaderTool {
                 listContentStreamForPage(reader, pageNum, out);
             }
         } catch (PDFFilterException e) {
-            throw new RuntimeException(e);
+            throw new PDFFilterException();
         }
     }
 
@@ -215,7 +214,7 @@ public class PdfContentReaderTool {
              handleContentStreaming(args);
 
             int pageNum = -1;
-            if (args.length >= 3) {
+            if (args.length == 3) {
                 pageNum = Integer.parseInt(args[2]);
             }
 
@@ -227,8 +226,9 @@ public class PdfContentReaderTool {
             writer.flush();
 
             if (args.length >= 2) {
+                String stringToLog = "Finished writing content to " + args[1];
                 writer.close();
-                logger.info("Finished writing content to " + args[1]);
+                logger.info(stringToLog);
             }
         } catch (Exception e) {
             logger.info(e.getMessage());
@@ -236,12 +236,13 @@ public class PdfContentReaderTool {
     }
 
     private static void handleContentStreaming(String[] args) {
-        try (PrintWriter writer = args.length >= 2 && !args[1].equalsIgnoreCase("stdout")
+        try (PrintWriter writer = args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)
                 ? new PrintWriter(new FileOutputStream(new File(args[1])))
                 : new PrintWriter(System.out)) {
 
-            if (args.length >= 2 && !args[1].equalsIgnoreCase("stdout")) {
-                logger.info("Writing PDF content to " + args[1]);
+            if (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) {
+                String stringToLog = "Writing PDF content to " + args[1];
+                logger.info(stringToLog);
             }
 
             int pageNum = -1;
@@ -256,8 +257,9 @@ public class PdfContentReaderTool {
             }
             writer.flush();
 
-            if (args.length >= 2 && !args[1].equalsIgnoreCase("stdout")) {
-                logger.info("Finished writing content to " + args[1]);
+            if (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) {
+                String stringToLog = "Finished writing content to " + args[1];
+                logger.info(stringToLog);
             }
         } catch (Exception e) {
             logger.info(e.getMessage());

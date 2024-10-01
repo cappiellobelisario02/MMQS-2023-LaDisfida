@@ -35,9 +35,6 @@
 
 package com.lowagie.toolbox;
 
-import com.lowagie.toolbox.Toolbox.Console;
-import com.lowagie.toolbox.Toolbox.Console.ErrorContext;
-import com.lowagie.toolbox.Toolbox.Console.ReaderThread;
 import com.lowagie.tools.Executable;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -53,10 +50,14 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.io.Serial;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -90,6 +91,7 @@ public class Toolbox extends JFrame implements ActionListener {
     /**
      * A serial version ID
      */
+    @Serial
     private static final long serialVersionUID = -3766198389452935073L;
     /**
      * The DesktopPane of the toolbox.
@@ -130,14 +132,14 @@ public class Toolbox extends JFrame implements ActionListener {
         desktop = new JDesktopPane();
         setJMenuBar(getMenubar());
         try {
-            setIconImage(new ImageIcon(com.lowagie.toolbox.Toolbox.class.getResource(
-                    "1t3xt.gif")).getImage());
+            setIconImage(new ImageIcon(Objects.requireNonNull(Toolbox.class.getResource(
+                    "1t3xt.gif"))).getImage());
         } catch (Exception err) {
             logger.info("Problem loading icon image.");
         }
         com.lowagie.toolbox.Toolbox.Console c;
         try {
-            c = new com.lowagie.toolbox.Toolbox.Console();
+            c = new Console();
             console = new JScrollPane(c.textArea);
         } catch (IOException e) {
             //da vedere come effettuare il log
@@ -323,7 +325,7 @@ public class Toolbox extends JFrame implements ActionListener {
     public AbstractTool createFrame(String name) throws InstantiationException,
             IllegalAccessException, ClassNotFoundException,
             PropertyVetoException {
-        AbstractTool ti = null;
+        AbstractTool ti;
         String classname = (String) toolmap.get(name);
         ti = (AbstractTool) Class.forName(classname).newInstance();
         toolarray.add(ti);
@@ -376,15 +378,34 @@ public class Toolbox extends JFrame implements ActionListener {
 
     private void handleAbout() {
         logger.info("The iText Toolbox is part of iText, a Free Java-PDF Library.\nVisit http://itexttoolbox.sourceforge.net/ for more info.");
+
         try {
+            // This might throw IOException, InterruptedException, or ReflectiveOperationException
             Executable.launchBrowser("http://itexttoolbox.sourceforge.net/");
         } catch (IOException ioe) {
+            // Handle IOException specifically
             JOptionPane.showMessageDialog(
                     this,
-                    "The iText Toolbox is part of iText, a Free Java-PDF Library.\nVisit http://itexttoolbox.sourceforge.net/ for more info."
+                    "An error occurred while trying to launch the browser. Please visit: http://itexttoolbox.sourceforge.net/ for more info."
+            );
+        } catch (InterruptedException ie) {
+            // Handle InterruptedException and reset the interrupt status
+            Thread.currentThread().interrupt();  // Reset the interrupt status
+            logger.log(Level.WARNING, "Thread was interrupted while trying to launch the browser.", ie);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "The process was interrupted. Please visit: http://itexttoolbox.sourceforge.net/ for more info."
+            );
+        } catch (ReflectiveOperationException roe) {
+            // Handle ReflectiveOperationException
+            logger.log(Level.SEVERE, "Reflective operation failed while trying to launch the browser.", roe);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "An internal error occurred. Please visit: http://itexttoolbox.sourceforge.net/ for more info."
             );
         }
     }
+
 
     private void handleReset() {
         JInternalFrame[] frameArray = desktop.getAllFrames();
@@ -429,14 +450,14 @@ public class Toolbox extends JFrame implements ActionListener {
     }
 
 
-    public ArrayList<String> getMenulist() {
+    public List<String> getMenulist() {
         return menulist;
     }
 
     /**
      * A Class that redirects output to System.out and System.err.
      */
-    public class Console {
+    public static class Console {
 
         PipedInputStream piOut;
         PipedInputStream piErr;

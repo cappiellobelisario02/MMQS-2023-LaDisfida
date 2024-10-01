@@ -50,6 +50,9 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.DrawingException;
+import com.lowagie.text.pdf.PdfGraphics2D.CompositeFontDrawer;
+import com.lowagie.text.pdf.PdfGraphics2D.CompositeFontDrawer.DrawStringFunction;
+import com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey;
 import com.lowagie.text.pdf.internal.PolylineShape;
 import com.lowagie.text.utils.SystemPropertyUtil;
 import java.awt.AlphaComposite;
@@ -131,7 +134,7 @@ public class PdfGraphics2D extends Graphics2D {
             new HashSet<>(Arrays.asList("Dialog", "DialogInput", "Monospaced", "Serif", "SansSerif")));
     private static final String BOLD_FONT_FACE_NAME_SUFFIX = ".bold";
     private static final String BOLD_ITALIC_FONT_FACE_NAME_SUFFIX = ".bolditalic";
-    private final CompositeFontDrawer compositeFontDrawer = new CompositeFontDrawer();
+    private final com.lowagie.text.pdf.PdfGraphics2D.CompositeFontDrawer compositeFontDrawer = new com.lowagie.text.pdf.PdfGraphics2D.CompositeFontDrawer();
     // Added by Jurij Bilas
     protected boolean underline;          // indicates if the font style is underlined
     protected PdfGState[] fillGState = new PdfGState[256];
@@ -181,7 +184,8 @@ public class PdfGraphics2D extends Graphics2D {
     private PdfGraphics2D() {
         dg2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        setRenderingHint(HyperLinkKey.KEY_INSTANCE, HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
+        setRenderingHint(
+                com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE, com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
     }
 
     /**
@@ -190,7 +194,7 @@ public class PdfGraphics2D extends Graphics2D {
      * @param parent the parent PdfGraphics2D
      * @see #create()
      */
-    protected PdfGraphics2D(PdfGraphics2D parent) {
+    protected PdfGraphics2D(com.lowagie.text.pdf.PdfGraphics2D parent) {
         this();
         rhints.putAll(parent.rhints);
         onlyShapes = parent.onlyShapes;
@@ -255,7 +259,8 @@ public class PdfGraphics2D extends Graphics2D {
         super();
         dg2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        setRenderingHint(HyperLinkKey.KEY_INSTANCE, HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
+        setRenderingHint(
+                com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE, com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
         this.convertImagesToJPEG = convertImagesToJPEG;
         this.jpegQuality = quality;
         this.onlyShapes = onlyShapes;
@@ -428,8 +433,8 @@ public class PdfGraphics2D extends Graphics2D {
 
     private void handleUnderlineAttribute(TextAttribute textAttribute, AttributedCharacterIterator iter) {
         if (textAttribute.equals(TextAttribute.UNDERLINE) && iter.getAttributes().get(textAttribute) == TextAttribute.UNDERLINE_ON) {
-                underline = true;
-            }
+            underline = true;
+        }
 
     }
 
@@ -498,7 +503,7 @@ public class PdfGraphics2D extends Graphics2D {
                 return;
             }
             double mWidth = 0;
-            if (isCompositeFontDrawerEnabled && CompositeFontDrawer.isSupported()
+            if (isCompositeFontDrawerEnabled && com.lowagie.text.pdf.PdfGraphics2D.CompositeFontDrawer.isSupported()
                     && compositeFontDrawer.isCompositeFont(font)) {
                 mWidth = compositeFontDrawer.drawString(s, font, x, y, this::getCachedBaseFont, this::drawString);
             } else {
@@ -716,8 +721,8 @@ public class PdfGraphics2D extends Graphics2D {
     }
 
     private void handleHyperlink(String s, double mWidth) {
-        Object url = getRenderingHint(HyperLinkKey.KEY_INSTANCE);
-        if (url != null && !url.equals(HyperLinkKey.VALUE_HYPERLINKKEY_OFF)) {
+        Object url = getRenderingHint(com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE);
+        if (url != null && !url.equals(com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF)) {
             applyHyperlink(url, s, mWidth);
         }
     }
@@ -939,8 +944,8 @@ public class PdfGraphics2D extends Graphics2D {
         if (arg1 != null) {
             rhints.put(arg0, arg1);
         } else {
-            if (arg0 instanceof HyperLinkKey) {
-                rhints.put(arg0, HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
+            if (arg0 instanceof com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey) {
+                rhints.put(arg0, com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
             } else {
                 rhints.remove(arg0);
             }
@@ -1148,7 +1153,7 @@ public class PdfGraphics2D extends Graphics2D {
      * @see Graphics#create()
      */
     public Graphics create() {
-        PdfGraphics2D g2 = createChild();
+        com.lowagie.text.pdf.PdfGraphics2D g2 = createChild();
         if (kids == null) {
             kids = new ArrayList<>();
         }
@@ -1157,8 +1162,8 @@ public class PdfGraphics2D extends Graphics2D {
         return g2;
     }
 
-    protected PdfGraphics2D createChild() {
-        return new PdfGraphics2D(this);
+    protected com.lowagie.text.pdf.PdfGraphics2D createChild() {
+        return new com.lowagie.text.pdf.PdfGraphics2D(this);
     }
 
     public PdfContentByte getContent() {
@@ -1563,7 +1568,7 @@ public class PdfGraphics2D extends Graphics2D {
         if (kids != null) {
             for (int k = 0; k < kids.size(); k += 2) {
                 pos = (Integer) kids.get(k);
-                PdfGraphics2D g2 = (PdfGraphics2D) kids.get(k + 1);
+                com.lowagie.text.pdf.PdfGraphics2D g2 = (com.lowagie.text.pdf.PdfGraphics2D) kids.get(k + 1);
                 g2.cb.restoreState();
                 g2.cb.restoreState();
                 buf.append(buf2.getBuffer(), last, pos - last);
@@ -1791,8 +1796,8 @@ public class PdfGraphics2D extends Graphics2D {
         }
         cb.addImage(image, (float) mx[0], (float) mx[1], (float) mx[2], (float) mx[3], (float) mx[4],
                 (float) mx[5]);
-        Object url = getRenderingHint(HyperLinkKey.KEY_INSTANCE);
-        if (url != null && !url.equals(HyperLinkKey.VALUE_HYPERLINKKEY_OFF)) {
+        Object url = getRenderingHint(com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE);
+        if (url != null && !url.equals(com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF)) {
             PdfAction action = new PdfAction(url.toString());
             cb.setAction(action, (float) mx[4], (float) mx[5], (float) (mx[0] + mx[4]), (float) (mx[3] + mx[5]));
         }
@@ -1963,7 +1968,7 @@ public class PdfGraphics2D extends Graphics2D {
 
     private synchronized void waitForImage(java.awt.Image image) {
         if (mediaTracker == null) {
-            mediaTracker = new MediaTracker(new PdfGraphics2D.FakeComponent());
+            mediaTracker = new MediaTracker(new com.lowagie.text.pdf.PdfGraphics2D.FakeComponent());
         }
         mediaTracker.addImage(image, 0);
         try {
@@ -2012,7 +2017,7 @@ public class PdfGraphics2D extends Graphics2D {
      */
     public static class HyperLinkKey extends RenderingHints.Key {
 
-        public static final HyperLinkKey KEY_INSTANCE = new HyperLinkKey(9999);
+        public static final com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey KEY_INSTANCE = new com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey(9999);
         public static final Object VALUE_HYPERLINKKEY_OFF = "0";
 
         protected HyperLinkKey(int arg0) {
@@ -2134,7 +2139,7 @@ public class PdfGraphics2D extends Graphics2D {
                     return;
                 }
                 Class<?> moduleClass = targetModule.getClass();
-                Object callerModule = getModuleMethod.invoke(CompositeFontDrawer.class);
+                Object callerModule = getModuleMethod.invoke(com.lowagie.text.pdf.PdfGraphics2D.CompositeFontDrawer.class);
                 Method isOpenMethod = getMethod(moduleClass, IS_OPEN_METHOD_NAME, String.class, moduleClass);
                 if (isOpenMethod == null) {
                     return;
@@ -2222,7 +2227,7 @@ public class PdfGraphics2D extends Graphics2D {
          * @return width of the drawn string.
          */
         double drawString(String s, Font compositeFont, double x, double y, Function<Font, BaseFont> fontConverter,
-                DrawStringFunction defaultDrawingFunction) {
+                com.lowagie.text.pdf.PdfGraphics2D.CompositeFontDrawer.DrawStringFunction defaultDrawingFunction) {
             String fontFamily = compositeFont.getFamily();
             if (!isSupported() || (fontFamily != null && !fontFamilyComposite.get(fontFamily))) {
                 assert false;

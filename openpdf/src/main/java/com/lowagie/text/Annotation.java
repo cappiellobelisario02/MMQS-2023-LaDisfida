@@ -49,6 +49,7 @@
 
 package com.lowagie.text;
 
+import com.lowagie.text.Annotation.AnnotationBuilder;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -235,9 +236,9 @@ public class Annotation implements Element {
     /**
      * Copy constructor.
      *
-     * @param an an object of type {@link Annotation} that will be copied
+     * @param an an object of type {@link com.lowagie.text.Annotation} that will be copied
      */
-    public Annotation(Annotation an) {
+    public Annotation(com.lowagie.text.Annotation an) {
         annotationtype = an.annotationtype;
         annotationAttributes = an.annotationAttributes;
         llx = an.llx;
@@ -327,10 +328,10 @@ public class Annotation implements Element {
     /**
      * Creates a Screen annotation to embed media clips
      *
-     * @param llx           {@link Annotation#llx}
-     * @param lly           {@link Annotation#lly}
-     * @param urx           {@link Annotation#urx}
-     * @param ury           {@link Annotation#ury}
+     * @param llx           {@link com.lowagie.text.Annotation#llx}
+     * @param lly           {@link com.lowagie.text.Annotation#lly}
+     * @param urx           {@link com.lowagie.text.Annotation#urx}
+     * @param ury           {@link com.lowagie.text.Annotation#ury}
      * @param moviePath     path to the media clip file
      * @param mimeType      mime type of the media
      * @param showOnDisplay if true play on display of the page
@@ -379,7 +380,7 @@ public class Annotation implements Element {
     }
 
     // Private constructor to enforce the use of the builder
-    private Annotation(AnnotationBuilder builder) {
+    private Annotation(com.lowagie.text.Annotation.AnnotationBuilder builder) {
         this.llx = builder.llx;
         this.lly = builder.lly;
         this.urx = builder.urx;
@@ -396,7 +397,7 @@ public class Annotation implements Element {
         private float llx, lly, urx, ury;
         private String application, parameters, operation, defaultdir;
 
-        public AnnotationBuilder setCoordinates(float llx, float lly, float urx, float ury) {
+        public com.lowagie.text.Annotation.AnnotationBuilder setCoordinates(float llx, float lly, float urx, float ury) {
             this.llx = llx;
             this.lly = lly;
             this.urx = urx;
@@ -404,28 +405,28 @@ public class Annotation implements Element {
             return this;
         }
 
-        public AnnotationBuilder setApplication(String application) {
+        public com.lowagie.text.Annotation.AnnotationBuilder setApplication(String application) {
             this.application = application;
             return this;
         }
 
-        public AnnotationBuilder setParameters(String parameters) {
+        public com.lowagie.text.Annotation.AnnotationBuilder setParameters(String parameters) {
             this.parameters = parameters;
             return this;
         }
 
-        public AnnotationBuilder setOperation(String operation) {
+        public com.lowagie.text.Annotation.AnnotationBuilder setOperation(String operation) {
             this.operation = operation;
             return this;
         }
 
-        public AnnotationBuilder setDefaultDir(String defaultdir) {
+        public com.lowagie.text.Annotation.AnnotationBuilder setDefaultDir(String defaultdir) {
             this.defaultdir = defaultdir;
             return this;
         }
 
-        public Annotation build() {
-            return new Annotation(this);
+        public com.lowagie.text.Annotation build() {
+            return new com.lowagie.text.Annotation(this);
         }
     }
 

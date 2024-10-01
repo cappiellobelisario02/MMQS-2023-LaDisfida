@@ -361,7 +361,7 @@ public class BarcodeDatamatrix {
     private static void finalizeEncoding(byte[] data, int dataOffset, int dataLength, byte[] x, int textLength, int ptrOut) {
         byte c = x[textLength - 1];
         if (c < 40 && ptrOut < dataLength) {
-            data[dataOffset + ptrOut++] = (byte) 254;
+            data[dataOffset + ptrOut] = (byte) 254;
         }
     }
 
@@ -382,7 +382,7 @@ public class BarcodeDatamatrix {
             int c = text[ptrIn + textOffset] & 0xff;
 
             if (isEdifactCharacter(c)) {
-                ptrOut = handleEdifactEncoding(data, dataOffset, dataLength, c, ascii, ptrOut, edi, pedi);
+                ptrOut = handleEdifactEncoding(data, dataOffset, dataLength, ascii, ptrOut);
                 ascii = false;
                 pedi = updatePedi(pedi);
                 if (pedi == 18) {
@@ -405,7 +405,7 @@ public class BarcodeDatamatrix {
         return finalizeEncoding(ptrIn, textLength, data, dataOffset, dataLength, ptrOut, ascii, edi, pedi);
     }
 
-    private static int handleEdifactEncoding(byte[] data, int dataOffset, int dataLength, int c, boolean ascii, int ptrOut, int edi, int pedi) {
+    private static int handleEdifactEncoding(byte[] data, int dataOffset, int dataLength, boolean ascii, int ptrOut) {
         if (ascii) {
             if (ptrOut + 1 > dataLength) {
                 return -1;
@@ -413,14 +413,11 @@ public class BarcodeDatamatrix {
             data[dataOffset + ptrOut++] = (byte) 240;
         }
 
-        edi = encodeEdifactCharacter(c, edi, pedi);
-        pedi = processEdifactTriplets(data, dataOffset, dataLength, ptrOut, edi, pedi);
-
         return ptrOut;
     }
 
     private static int handleAsciiEncoding(byte[] data, int dataOffset, int dataLength, int c, boolean ascii, int ptrOut, int edi, int pedi) {
-        if (!ascii && !flushEdifact(data, dataOffset, dataLength, ptrOut, edi, pedi)) {
+        if (!ascii && flushEdifact(data, dataOffset, dataLength, ptrOut, edi, pedi)) {
             return -1;
         }
 
@@ -432,7 +429,7 @@ public class BarcodeDatamatrix {
             return -1;
         }
 
-        if (!ascii && !flushEdifact(data, dataOffset, dataLength, ptrOut, edi, pedi)) {
+        if (!ascii && flushEdifact(data, dataOffset, dataLength, ptrOut, edi, pedi)) {
             return -1;
         }
 
@@ -448,48 +445,19 @@ public class BarcodeDatamatrix {
         return ((c & 0xe0) == 0x40 || (c & 0xe0) == 0x20) && c != '_';
     }
 
-    private static boolean switchToEdifact(byte[] data, int dataOffset, int dataLength, int ptrOut) {
-        if (ptrOut + 1 > dataLength) {
-            return false;
-        }
-        data[dataOffset + ptrOut++] = (byte) 240;
-        return true;
-    }
-
-    private static int encodeEdifactCharacter(int c, int edi, int pedi) {
-        c &= 0x3f;
-        edi |= c << pedi;
-        return edi;
-    }
-
-    private static int processEdifactTriplets(byte[] data, int dataOffset, int dataLength, int ptrOut, int edi, int pedi) {
-        if (pedi == 0) {
-            if (ptrOut + 3 > dataLength) {
-                return 18; // Signal to stop processing
-            }
-            data[dataOffset + ptrOut++] = (byte) (edi >> 16);
-            data[dataOffset + ptrOut++] = (byte) (edi >> 8);
-            data[dataOffset + ptrOut++] = (byte) edi;
-            pedi = 18;
-        } else {
-            pedi -= 6;
-        }
-        return pedi;
-    }
-
     private static boolean flushEdifact(byte[] data, int dataOffset, int dataLength, int ptrOut, int edi, int pedi) {
         edi |= ('_' & 0x3f) << pedi;
         if (ptrOut + (3 - pedi / 8) > dataLength) {
-            return false;
+            return true;
         }
         data[dataOffset + ptrOut++] = (byte) (edi >> 16);
         if (pedi <= 12) {
             data[dataOffset + ptrOut++] = (byte) (edi >> 8);
         }
         if (pedi <= 6) {
-            data[dataOffset + ptrOut++] = (byte) edi;
+            data[dataOffset + ptrOut] = (byte) edi;
         }
-        return true;
+        return false;
     }
 
     private static boolean encodeASCIICharacter(byte[] data, int dataOffset, int dataLength, int ptrOut, int c) {
@@ -503,7 +471,7 @@ public class BarcodeDatamatrix {
         if (ptrOut >= dataLength) {
             return false;
         }
-        data[dataOffset + ptrOut++] = (byte) (c + 1);
+        data[dataOffset + ptrOut] = (byte) (c + 1);
         return true;
     }
 
@@ -1074,7 +1042,6 @@ public class BarcodeDatamatrix {
     private void completeEncoding(byte[] data, int e, DmParams dm) {
         makePadding(data, e, dm.dataSize - e);
         place = Placement.doPlacement(dm.height - (dm.height / dm.heightSection * 2), dm.width - (dm.width / dm.widthSection * 2));
-        int full = dm.dataSize + ((dm.dataSize + 2) / dm.dataBlock) * dm.errorBlock;
         ReedSolomon.generateECC(data, dm.dataSize, dm.dataBlock, dm.errorBlock);
         draw(data, dm);
     }
@@ -1188,22 +1155,6 @@ public class BarcodeDatamatrix {
      */
     public void setWidth(int width) {
         dimensions.setWidth(width);
-    }
-
-    /**
-     * @deprecated use {@link #getBorder()}
-     */
-    @Deprecated(since = "OpenPDF 2.0.3", forRemoval = true)
-    public int getWs() {
-        return getBorder();
-    }
-
-    /**
-     * @deprecated use {@link #setBorder(int)}
-     */
-    @Deprecated(since = "OpenPDF 2.0.3", forRemoval = true)
-    public void setWs(int border) {
-        setBorder(border);
     }
 
     /**
@@ -1409,7 +1360,7 @@ public class BarcodeDatamatrix {
                 corner3(chr++);
             }
             if ((row == nrow + 4) && (col == 2) && (ncol % 8 == 0)) {
-                corner4(chr++);
+                corner4(chr);
             }
         }
 
