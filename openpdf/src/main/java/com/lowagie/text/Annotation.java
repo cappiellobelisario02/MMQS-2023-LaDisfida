@@ -378,28 +378,57 @@ public class Annotation implements Element {
         annotationAttributes.put(NAMED, named);
     }
 
-    /**
-     * Constructs an <CODE>Annotation</CODE>.
-     *
-     * @param llx         the lower left x-value
-     * @param lly         the lower left y-value
-     * @param urx         the upper right x-value
-     * @param ury         the upper right y-value
-     * @param application an external application
-     * @param parameters  parameters to pass to this application
-     * @param operation   the operation to pass to this application
-     * @param defaultdir  the default directory to run this application in
-     */
-    public Annotation(float llx, float lly, float urx, float ury,
-            String application, String parameters, String operation,
-            String defaultdir) {
-        this(llx, lly, urx, ury);
-        annotationtype = LAUNCH;
-        annotationAttributes.put(APPLICATION, application);
-        annotationAttributes.put(PARAMETERS, parameters);
-        annotationAttributes.put(OPERATION, operation);
-        annotationAttributes.put(DEFAULTDIR, defaultdir);
+    // Private constructor to enforce the use of the builder
+    private Annotation(AnnotationBuilder builder) {
+        this.llx = builder.llx;
+        this.lly = builder.lly;
+        this.urx = builder.urx;
+        this.ury = builder.ury;
+        this.annotationtype = LAUNCH;
+        this.annotationAttributes.put(APPLICATION, builder.application);
+        this.annotationAttributes.put(PARAMETERS, builder.parameters);
+        this.annotationAttributes.put(OPERATION, builder.operation);
+        this.annotationAttributes.put(DEFAULTDIR, builder.defaultdir);
     }
+
+    // Inner class AnnotationBuilder
+    public static class AnnotationBuilder {
+        private float llx, lly, urx, ury;
+        private String application, parameters, operation, defaultdir;
+
+        public AnnotationBuilder setCoordinates(float llx, float lly, float urx, float ury) {
+            this.llx = llx;
+            this.lly = lly;
+            this.urx = urx;
+            this.ury = ury;
+            return this;
+        }
+
+        public AnnotationBuilder setApplication(String application) {
+            this.application = application;
+            return this;
+        }
+
+        public AnnotationBuilder setParameters(String parameters) {
+            this.parameters = parameters;
+            return this;
+        }
+
+        public AnnotationBuilder setOperation(String operation) {
+            this.operation = operation;
+            return this;
+        }
+
+        public AnnotationBuilder setDefaultDir(String defaultdir) {
+            this.defaultdir = defaultdir;
+            return this;
+        }
+
+        public Annotation build() {
+            return new Annotation(this);
+        }
+    }
+
 
     // implementation of the Element-methods
 
