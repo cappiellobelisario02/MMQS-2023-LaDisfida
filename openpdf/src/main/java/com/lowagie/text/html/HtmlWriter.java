@@ -417,7 +417,7 @@ public class HtmlWriter extends DocWriter {
     protected void initHeader() {
         if (header != null) {
             try {
-                add(header.paragraph());
+                boolean add = add(header.paragraph());
             } catch (Exception e) {
                 throw new ExceptionConverter(e);
             }

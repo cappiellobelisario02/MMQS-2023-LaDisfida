@@ -11,20 +11,20 @@ public class SelectListParams {
     private float urx;
     private float ury;
 
-    // Costruttore
-    public SelectListParams(String name, OptionsDataStructure options, String defaultValue, BaseFont font, float fontSize, float llx, float lly, float urx, float ury) {
-        this.name = name;
-        this.options = options;
-        this.defaultValue = defaultValue;
-        this.font = font;
-        this.fontSize = fontSize;
-        this.llx = llx;
-        this.lly = lly;
-        this.urx = urx;
-        this.ury = ury;
+    // Private constructor so it can only be called from the builder
+    private SelectListParams(SelectListParamsBuilder builder) {
+        this.name = builder.name;
+        this.options = builder.options;
+        this.defaultValue = builder.defaultValue;
+        this.font = builder.font;
+        this.fontSize = builder.fontSize;
+        this.llx = builder.llx;
+        this.lly = builder.lly;
+        this.urx = builder.urx;
+        this.ury = builder.ury;
     }
 
-    // Getter per tutti i campi
+    // Getter methods
     public String getName() {
         return name;
     }
@@ -65,8 +65,72 @@ public class SelectListParams {
         return ury;
     }
 
-    // Metodo per ottenere le opzioni
+    // Method to obtain options
     public Object getOptions() {
         return options.getOptions();
+    }
+
+    // Inner class for building SelectListParams instances
+    public static class SelectListParamsBuilder {
+        private String name;
+        private OptionsDataStructure options;
+        private String defaultValue;
+        private BaseFont font;
+        private float fontSize;
+        private float llx;
+        private float lly;
+        private float urx;
+        private float ury;
+
+        // Setters for builder
+        public SelectListParamsBuilder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public SelectListParamsBuilder setOptions(OptionsDataStructure options) {
+            this.options = options;
+            return this;
+        }
+
+        public SelectListParamsBuilder setDefaultValue(String defaultValue) {
+            this.defaultValue = defaultValue;
+            return this;
+        }
+
+        public SelectListParamsBuilder setFont(BaseFont font) {
+            this.font = font;
+            return this;
+        }
+
+        public SelectListParamsBuilder setFontSize(float fontSize) {
+            this.fontSize = fontSize;
+            return this;
+        }
+
+        public SelectListParamsBuilder setLlx(float llx) {
+            this.llx = llx;
+            return this;
+        }
+
+        public SelectListParamsBuilder setLly(float lly) {
+            this.lly = lly;
+            return this;
+        }
+
+        public SelectListParamsBuilder setUrx(float urx) {
+            this.urx = urx;
+            return this;
+        }
+
+        public SelectListParamsBuilder setUry(float ury) {
+            this.ury = ury;
+            return this;
+        }
+
+        // Build method to create the object
+        public SelectListParams build() {
+            return new SelectListParams(this);
+        }
     }
 }
