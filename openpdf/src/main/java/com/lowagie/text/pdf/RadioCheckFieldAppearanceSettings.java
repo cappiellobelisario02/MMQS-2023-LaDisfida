@@ -34,4 +34,3 @@ public class RadioCheckFieldAppearanceSettings {
     public Color getRCFBackgroundColor() { return backgroundColor; }
     public BaseFont getRCF_Ufont() { return ufont; }
 }
-

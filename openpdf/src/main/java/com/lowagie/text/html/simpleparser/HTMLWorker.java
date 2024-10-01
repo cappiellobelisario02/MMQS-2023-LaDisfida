@@ -396,21 +396,21 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
     private Image tryResolveImageFromStaticMap(String src) throws IOException {
         Map<String, String> images = (HashMap<String, String>) interfaceProps.get("img_static");
         if (images != null) {
-            Image tim = (Image) images.get(src);
-            if (tim != null) {
-                return Image.getInstance(tim);
-            }
-        } else {
-            if (!src.startsWith("http")) {
-                String baseUrl = (String) interfaceProps.get("img_baseurl");
-                if (baseUrl != null) {
-                    src = baseUrl + src;
-                    return Image.getInstance(src);
-                }
+            String imagePath = images.get(src);  // Assuming this returns a String (path to the image)
+            if (imagePath != null) {
+                return Image.getInstance(imagePath);  // Create an Image instance from the path
             }
         }
-        return null;
+        // If the image is not found in the map and the src doesn't start with "http"
+        if (!src.startsWith("http")) {
+            String baseUrl = (String) interfaceProps.get("img_baseurl");
+            if (baseUrl != null) {
+                src = baseUrl + src;  // Concatenate the base URL with the src to form a full URL or path
+            }
+        }
+        return Image.getInstance(src);  // Create the Image from the final src
     }
+
 
     private Image tryResolveImageFromSource(String src) throws IOException {
         if (src.startsWith("data:image/")) {
@@ -571,7 +571,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
         }
         skipText = false;
         pendingTD = true;
-        cprops.addToChain(tag, style);
+        cprops.addToChain(tag, (Map<String, String>) style);
         stack.push(new IncCell(tag, cprops));
     }
 
