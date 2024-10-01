@@ -54,7 +54,9 @@ import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,8 +71,8 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
 
     // stuff used during parsing to handle state
     private boolean foundRoot = false;
-    private Stack<String> fieldNames = new Stack<>();
-    private Stack<String> fieldValues = new Stack<>();
+    private Deque<String> fieldNames = new ArrayDeque<>();
+    private Deque<String> fieldValues = new ArrayDeque<>();
 
     // storage for the field list and their values
     private Map<String, String> fields;
@@ -202,14 +204,22 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
     public void endElement(String tag) {
         if (tag.equals("value")) {
             StringBuilder fName = new StringBuilder();
-            for (int k = 0; k < fieldNames.size(); ++k) {
-                fName.append(".").append(fieldNames.elementAt(k));
+
+            // Use an Iterator to access elements in the Deque
+            for (String fieldName : fieldNames) {
+                fName.append(".").append(fieldName);
             }
+
+            // Remove leading dot if present
             if (fName.toString().startsWith(".")) {
                 fName = new StringBuilder(fName.substring(1));
             }
+
+            // Pop the last field value
             String fVal = fieldValues.pop();
             String old = fields.put(fName.toString(), fVal);
+
+            // Handle potential duplicate fields
             if (old != null) {
                 List<String> l = listFields.get(fName.toString());
                 if (l == null) {
@@ -223,6 +233,7 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
             fieldNames.pop();
         }
     }
+
 
     /**
      * Called when the document starts to be parsed.
