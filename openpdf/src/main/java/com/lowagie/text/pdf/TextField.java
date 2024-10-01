@@ -200,23 +200,29 @@ public class TextField extends BaseField {
         if (text.indexOf('\n') >= 0 || text.indexOf('\r') >= 0) {
             char[] p = text.toCharArray();
             StringBuilder sb = new StringBuilder(p.length);
-            for (int k = 0; k < p.length; ++k) {
+            int k = 0; // Initialize the counter outside the loop
+
+            while (k < p.length) {
                 char c = p[k];
                 if (c == '\n') {
                     sb.append(' ');
+                    k++; // Increment k after handling '\n'
                 } else if (c == '\r') {
                     sb.append(' ');
-                    if (k < p.length - 1 && p[k + 1] == '\n') {
-                        ++k;
+                    k++; // Increment k for '\r'
+                    if (k < p.length && p[k] == '\n') {
+                        k++; // Skip the next character if it's '\n'
                     }
                 } else {
                     sb.append(c);
+                    k++; // Increment k for other characters
                 }
             }
             return sb.toString();
         }
         return text;
     }
+
 
     /**
      * Obfuscates a password <code>String</code>. Every character is replaced by an asterisk (*).
