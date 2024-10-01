@@ -68,6 +68,8 @@ public class ImageLoader {
     private ImageLoader() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
+
+    private static final String THREAD_INTERRUPTED_MESSAGE = "Thread was interrupted";
     /**
      * Creates an Image from a PNG image file in an URL.
      *
@@ -78,6 +80,10 @@ public class ImageLoader {
         try (InputStream is = url.openStream()) {
             BufferedImage bufferedImage = ImageIO.read(is);
             return Image.getInstance(bufferedImage, null, false);
+        } catch (InterruptedException e) {
+            // Re-interrupt the thread and handle the interruption
+            Thread.currentThread().interrupt();
+            throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -87,15 +93,24 @@ public class ImageLoader {
         try (InputStream is = url.openStream()) {
             BufferedImage bufferedImage = ImageIO.read(is);
             return Image.getInstance(bufferedImage, null, false);
+        } catch (InterruptedException e) {
+            // Re-interrupt the thread to preserve the interrupted status
+            Thread.currentThread().interrupt();
+            throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
     }
 
+
     public static Image getTiffImage(URL url) {
         try (InputStream is = url.openStream()) {
             BufferedImage bufferedImage = ImageIO.read(is);
             return Image.getInstance(bufferedImage, null, false);
+        } catch (InterruptedException e) {
+            // Re-interrupt the thread to preserve the interrupted status
+            Thread.currentThread().interrupt();
+            throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -106,10 +121,15 @@ public class ImageLoader {
         try (InputStream is = url.openStream()) {
             BufferedImage bufferedImage = ImageIO.read(is);
             return Image.getInstance(bufferedImage, null, false);
+        } catch (InterruptedException e) {
+            // Re-interrupt the thread to preserve the interrupted status
+            Thread.currentThread().interrupt();
+            throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * Creates an Image from a JPEG image file in an URL.
@@ -139,30 +159,43 @@ public class ImageLoader {
         try (InputStream is = new ByteArrayInputStream(imageData)) {
             BufferedImage bufferedImage = ImageIO.read(is);
             return Image.getInstance(bufferedImage, null, false);
+        } catch (InterruptedException e) {
+            // Re-interrupt the thread to preserve the interrupted status
+            Thread.currentThread().interrupt();
+            throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     public static Image getPngImage(byte[] imageData) {
         try (InputStream is = new ByteArrayInputStream(imageData)) {
             BufferedImage bufferedImage = ImageIO.read(is);
             return Image.getInstance(bufferedImage, null, false);
-
+        } catch (InterruptedException e) {
+            // Re-interrupt the thread to preserve the interrupted status
+            Thread.currentThread().interrupt();
+            throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     public static Image getBmpImage(byte[] imageData) {
         try (InputStream is = new ByteArrayInputStream(imageData)) {
             BufferedImage bufferedImage = ImageIO.read(is);
             return Image.getInstance(bufferedImage, null, false);
-
+        } catch (InterruptedException e) {
+            // Re-interrupt the thread to preserve the interrupted status
+            Thread.currentThread().interrupt();
+            throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * Creates an Image from an array of tiff image bytes.
@@ -174,11 +207,15 @@ public class ImageLoader {
         try (InputStream is = new ByteArrayInputStream(imageData)) {
             BufferedImage bufferedImage = ImageIO.read(is);
             return Image.getInstance(bufferedImage, null, false);
-
+        } catch (InterruptedException e) {
+            // Re-interrupt the thread to preserve the interrupted status
+            Thread.currentThread().interrupt();
+            throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * Creates an Image from a JPEG image file in a byte array.
