@@ -375,44 +375,39 @@ public class Font implements Comparable<com.lowagie.text.Font> {
     /**
      * Compares this <CODE>Font</CODE> with another
      *
-     * @param object the other <CODE>Font</CODE>
+     * @param //object the other <CODE>Font</CODE>
      * @return a value
      */
-    public int compareTo(Object object) {
-        if (object == null) {
+    public int compareTo(com.lowagie.text.Font font) {
+        if (font == null) {
             return -1;
         }
-        com.lowagie.text.Font font;
-        try {
-            font = (com.lowagie.text.Font) object;
-            if (baseFont != null && !baseFont.equals(font.getBaseFont())) {
-                return -2;
-            }
-            if (this.family != font.getFamily()) {
-                return 1;
-            }
-            if (this.size != font.getSize()) {
-                return 2;
-            }
-            if (this.style != font.getStyle()) {
-                return 3;
-            }
-            if (this.color == null) {
-                if (font.color == null) {
-                    return 0;
-                }
-                return 4;
-            }
+
+        if (baseFont != null && !baseFont.equals(font.getBaseFont())) {
+            return -2;
+        }
+        if (this.family != font.getFamily()) {
+            return 1;
+        }
+        if (this.size != font.getSize()) {
+            return 2;
+        }
+        if (this.style != font.getStyle()) {
+            return 3;
+        }
+        if (this.color == null) {
             if (font.color == null) {
-                return 4;
-            }
-            if (this.color.equals(font.getColor())) {
                 return 0;
             }
             return 4;
-        } catch (ClassCastException cce) {
-            return -3;
         }
+        if (font.color == null) {
+            return 4;
+        }
+        if (this.color.equals(font.getColor())) {
+            return 0;
+        }
+        return 4;
     }
 
     /**
