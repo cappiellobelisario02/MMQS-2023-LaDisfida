@@ -68,6 +68,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -84,6 +85,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
+import com.lowagie.text.exceptions.InvalidTokenException;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -719,42 +721,73 @@ public class PdfPKCS7 {
      * <CODE>Object[]{cert,error}</CODE> where <CODE>cert</CODE> is the
      * failed certificate and <CODE>error</CODE> is the error message
      */
-    public static Object[] verifyCertificates(Certificate[] certs,
+    public Object[] verifyCertificates(Certificate[] certs,
             KeyStore keystore, Collection<?> crls, Calendar calendar) {
         if (calendar == null) {
             calendar = new GregorianCalendar();
         }
+
+        // Iterate through the certificates
         for (int k = 0; k < certs.length; ++k) {
             X509Certificate cert = (X509Certificate) certs[k];
-            String err = verifyCertificate(cert, crls, calendar);
-            if (err != null) {
-                return new Object[]{cert, err};
+
+            // Check for errors in certificate verification
+            Object[] errorResult = checkCertificate(cert, crls, calendar);
+            if (errorResult != null) {
+                return errorResult; // Return on error
             }
-            return certificateVerification(keystore, calendar, cert);
-            int j;
-            for (j = 0; j < certs.length; ++j) {
-                if (j == k) {
-                    continue;
-                }
-                X509Certificate certNext = (X509Certificate) certs[j];
-                try {
-                    cert.verify(certNext.getPublicKey());
-                    break;
-                } catch (Exception ignored) {
-//da vedere come effettuare il log
-                }
+
+            // Verify the certificate against the keystore
+            Object[] verificationResult = certificateVerification(keystore, calendar, cert);
+            if (verificationResult != null) {
+                return verificationResult; // Return the verification result if not null
             }
-            if (j == certs.length) {
-                return new Object[]{cert,
-                        "Cannot be verified against the KeyStore or the certificate chain"};
+
+            // Verify the certificate against other certificates
+            if (!isCertificateVerified(cert, certs, k)) {
+                return new Object[]{cert, "Cannot be verified against the KeyStore or the certificate chain"};
             }
         }
-        return new Object[]{null,
-                "Invalid state. Possible circular certificate chain"};
+
+        // If all certificates were processed and no issues found
+        return new Object[]{null, "Invalid state. Possible circular certificate chain"};
     }
 
-    private Object[] certificateVerification (KeyStore keyStore, Calendar calendar,
-        X509Certificate certificate) {
+    // Checks if there are any verification errors with the certificate
+    private Object[] checkCertificate(X509Certificate cert, Collection<?> crls, Calendar calendar) {
+        String err = verifyCertificate(cert, crls, calendar);
+        return (err != null) ? new Object[]{cert, err} : null;
+    }
+
+    // Verifies the certificate against the other certificates
+    private boolean isCertificateVerified(X509Certificate cert, Certificate[] certs, int currentIndex) {
+        for (int j = 0; j < certs.length; ++j) {
+            if (j == currentIndex) {
+                continue; // Skip the current certificate
+            }
+            X509Certificate certNext = (X509Certificate) certs[j];
+            if (tryVerify(cert, certNext)) {
+                return true; // Successfully verified
+            }
+        }
+        return false; // No verification successful
+    }
+
+    // Tries to verify the current certificate against the next one
+    private boolean tryVerify(X509Certificate cert, X509Certificate certNext) {
+        try {
+            cert.verify(certNext.getPublicKey());
+            return true; // Verified successfully
+        } catch (Exception ignored) {
+            // Handle logging or any other actions needed
+            return false; // Verification failed
+        }
+    }
+
+
+
+    private Object[] certificateVerification(KeyStore keyStore, Calendar calendar,
+            X509Certificate certificate) {
         try{
             for (Enumeration<?> aliases = keyStore.aliases(); aliases
                         .hasMoreElements(); ) {
@@ -1114,7 +1147,7 @@ public class PdfPKCS7 {
         while (found) {
             X509Certificate v = (X509Certificate) cc.get(cc.size() - 1);
             found = false;
-            for (int k = 0; k < oc.size(); ++k) {
+            for (int h = 0; h < oc.size(); ++h) {
                 try {
                     if (provider == null) {
                         v.verify(oc.get(k).getPublicKey());
@@ -1381,8 +1414,13 @@ public class PdfPKCS7 {
     private DERSet createCertificatesSet() throws IOException {
         ASN1EncodableVector v = new ASN1EncodableVector();
         for (Certificate cert : certs) {
-            ASN1InputStream tempStream = new ASN1InputStream(
-                    new ByteArrayInputStream(((X509Certificate) cert).getEncoded()));
+            ASN1InputStream tempStream = null;
+            try {
+                tempStream = new ASN1InputStream(
+                        new ByteArrayInputStream(((X509Certificate) cert).getEncoded()));
+            } catch (CertificateEncodingException e) {
+                throw new RuntimeException(e);
+            }
             v.add(tempStream.readObject());
         }
         return new DERSet(v);
@@ -1426,7 +1464,12 @@ public class PdfPKCS7 {
         // Add timestamp if TSAClient is available
         if (tsaClient != null) {
             byte[] tsImprint = tsaClient.getMessageDigest().digest(digest);
-            byte[] tsToken = tsaClient.getTimeStampToken(this, tsImprint);
+            byte[] tsToken = null;
+            try {
+                tsToken = tsaClient.getTimeStampToken(this, tsImprint);
+            } catch (InvalidTokenException e) {
+                throw new RuntimeException(e);
+            }
             if (tsToken != null) {
                 ASN1EncodableVector unauthAttributes = buildUnauthenticatedAttributes(tsToken);
                 if (unauthAttributes != null) {
