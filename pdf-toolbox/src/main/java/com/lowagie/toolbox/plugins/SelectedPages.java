@@ -57,7 +57,7 @@ import javax.swing.JInternalFrame;
  */
 public class SelectedPages extends AbstractTool {
 
-    public static final Logger logger = Logger.getLogger(SelectedPages.class.getName());
+    public static final Logger logger = Logger.getLogger(com.lowagie.toolbox.plugins.SelectedPages.class.getName());
     public static final String SRCFILE = "srcfile";
     public static final String DESTFILE = "destfile";
 
@@ -82,7 +82,7 @@ public class SelectedPages extends AbstractTool {
      * @param args String[]
      */
     public static void main(String[] args) {
-        SelectedPages tool = new SelectedPages();
+        com.lowagie.toolbox.plugins.SelectedPages tool = new com.lowagie.toolbox.plugins.SelectedPages();
         if (args.length < 4) {
             logger.severe(tool.getUsage());
         }

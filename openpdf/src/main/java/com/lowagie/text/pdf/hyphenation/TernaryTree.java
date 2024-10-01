@@ -16,6 +16,8 @@
 
 package com.lowagie.text.pdf.hyphenation;
 
+import com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator;
+import com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator.Item;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -422,7 +424,7 @@ public class TernaryTree implements Serializable {
 
 
     public Enumeration<Object> keys() {
-        return (Enumeration<Object>) new Iterator();
+        return (Enumeration<Object>) new com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator();
     }
 
     public void printStats() {
@@ -453,7 +455,7 @@ public class TernaryTree implements Serializable {
         /**
          * Node stack
          */
-        Deque<Item> ns;
+        Deque<com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator.Item> ns;
         /**
          * key stack implemented with a StringBuilder
          */
@@ -512,7 +514,7 @@ public class TernaryTree implements Serializable {
             boolean climb = true;
 
             while (climb) {
-                Item i = ns.pop();
+                com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator.Item i = ns.pop();
                 i.child++;
 
                 switch (i.child) {
@@ -524,13 +526,13 @@ public class TernaryTree implements Serializable {
                             i.child++;
                             res = hi[i.parent];
                         }
-                        ns.push(new Item(i));  // Use copy constructor
+                        ns.push(new com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator.Item(i));  // Use copy constructor
                         climb = false;
                         break;
 
                     case 2:
                         res = hi[i.parent];
-                        ns.push(new Item(i));  // Use copy constructor
+                        ns.push(new com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator.Item(i));  // Use copy constructor
                         if (!ks.isEmpty()) {
                             ks.setLength(ks.length() - 1);    // pop
                         }
@@ -575,7 +577,7 @@ public class TernaryTree implements Serializable {
                 if (isCompressedBranch() || isLeafNode()) {
                     return true;
                 }
-                ns.push(new Item((char) cur, '\u0000'));
+                ns.push(new com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator.Item((char) cur, '\u0000'));
                 cur = lo[cur];
             }
             return false;
@@ -614,7 +616,7 @@ public class TernaryTree implements Serializable {
                 child = c;
             }
 
-            public Item(Item item) {
+            public Item(com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator.Item item) {
                 this.parent = item.parent;
                 this.child = item.child;
             }

@@ -361,7 +361,7 @@ public class BarcodeDatamatrix {
     private static void finalizeEncoding(byte[] data, int dataOffset, int dataLength, byte[] x, int textLength, int ptrOut) {
         byte c = x[textLength - 1];
         if (c < 40 && ptrOut < dataLength) {
-            data[dataOffset] = (byte) 254;
+            data[dataOffset + ptrOut++] = (byte) 254;
         }
     }
 
@@ -448,6 +448,13 @@ public class BarcodeDatamatrix {
         return ((c & 0xe0) == 0x40 || (c & 0xe0) == 0x20) && c != '_';
     }
 
+    private static boolean switchToEdifact(byte[] data, int dataOffset, int dataLength, int ptrOut) {
+        if (ptrOut + 1 > dataLength) {
+            return false;
+        }
+        data[dataOffset + ptrOut++] = (byte) 240;
+        return true;
+    }
 
     private static int encodeEdifactCharacter(int c, int edi, int pedi) {
         c &= 0x3f;

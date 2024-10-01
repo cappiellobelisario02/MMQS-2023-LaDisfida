@@ -70,6 +70,7 @@ import com.lowagie.text.exceptions.ZeroValueException;
 import com.lowagie.text.pdf.PdfPrinterGraphics2D.Builder;
 import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
+import org.apache.xmlgraphics.image.codec.png.PNGEncodeParam.Gray;
 import java.awt.Color;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
@@ -1493,8 +1494,8 @@ public class PdfContentByte {
     }
 
     private void handleJBIG2Image(Image image, PdfImage pimage) {
-        if (image instanceof ImgJBIG2) {
-            byte[] globals = ((ImgJBIG2) image).getGlobalBytes();
+        if (image instanceof ImgJBIG2 imgJBIG2) {
+            byte[] globals = imgJBIG2.getGlobalBytes();
             if (globals != null) {
                 PdfDictionary decodeparms = new PdfDictionary();
                 decodeparms.put(PdfName.JBIG2GLOBALS, writer.getReferenceJBIG2Globals(globals));
@@ -2461,29 +2462,34 @@ public class PdfContentByte {
         int type = ExtendedColor.getType(color);
         switch (type) {
             case ExtendedColor.TYPE_GRAY: {
-                final GrayColor grayColor = (GrayColor) color;
-                setGrayStroke(grayColor.getGray(), grayColor.getAlpha());
+                if (color instanceof GrayColor grayColor){
+                    setGrayStroke(grayColor.getGray(), grayColor.getAlpha());
+                }
                 break;
             }
             case ExtendedColor.TYPE_CMYK: {
-                CMYKColor cmyk = (CMYKColor) color;
-                setCMYKColorStrokeF(cmyk.getCyan(), cmyk.getMagenta(), cmyk.getYellow(), cmyk.getBlack(),
-                        cmyk.getAlpha());
+                if(color instanceof CMYKColor cmykColor){
+                    setCMYKColorStrokeF(cmykColor.getCyan(), cmykColor.getMagenta(), cmykColor.getYellow(), cmykColor.getBlack(),
+                            cmykColor.getAlpha());
+                }
                 break;
             }
             case ExtendedColor.TYPE_SEPARATION: {
-                SpotColor spot = (SpotColor) color;
-                setColorStroke(spot.getPdfSpotColor(), spot.getTint());
+                if(color instanceof SpotColor spotColor){
+                    setColorStroke(spotColor.getPdfSpotColor(), spotColor.getTint());
+                }
                 break;
             }
             case ExtendedColor.TYPE_PATTERN: {
-                PatternColor pat = (PatternColor) color;
-                setPatternStroke(pat.getPainter());
+                if(color instanceof PatternColor patternColor){
+                    setPatternStroke(patternColor.getPainter());
+                }
                 break;
             }
             case ExtendedColor.TYPE_SHADING: {
-                ShadingColor shading = (ShadingColor) color;
-                setShadingStroke(shading.getPdfShadingPattern());
+                if(color instanceof ShadingColor shadingColor){
+                    setShadingStroke(shadingColor.getPdfShadingPattern());
+                }
                 break;
             }
             default:
@@ -2514,29 +2520,34 @@ public class PdfContentByte {
         int type = ExtendedColor.getType(color);
         switch (type) {
             case ExtendedColor.TYPE_GRAY: {
-                GrayColor grayColor = (GrayColor) color;
-                setGrayFill(grayColor.getGray(), color.getAlpha() / MAX_INT_COLOR_VALUE);
+                if (color instanceof GrayColor grayColor){
+                    setGrayFill(grayColor.getGray(), color.getAlpha() / MAX_INT_COLOR_VALUE);
+                }
                 break;
             }
             case ExtendedColor.TYPE_CMYK: {
-                CMYKColor cmyk = (CMYKColor) color;
-                setCMYKColorFillF(cmyk.getCyan(), cmyk.getMagenta(), cmyk.getYellow(), cmyk.getBlack(),
-                        cmyk.getAlpha() / MAX_INT_COLOR_VALUE);
+                if(color instanceof CMYKColor cmykColor){
+                    setCMYKColorFillF(cmykColor.getCyan(), cmykColor.getMagenta(), cmykColor.getYellow(), cmykColor.getBlack(),
+                            cmykColor.getAlpha() / MAX_INT_COLOR_VALUE);
+                }
                 break;
             }
             case ExtendedColor.TYPE_SEPARATION: {
-                SpotColor spot = (SpotColor) color;
-                setColorFill(spot.getPdfSpotColor(), spot.getTint());
+                if (color instanceof SpotColor spotColor) {
+                    setColorFill(spotColor.getPdfSpotColor(), spotColor.getTint());
+                }
                 break;
             }
             case ExtendedColor.TYPE_PATTERN: {
-                PatternColor pat = (PatternColor) color;
-                setPatternFill(pat.getPainter());
+                if (color instanceof PatternColor patternColor) {
+                    setPatternFill(patternColor.getPainter());
+                }
                 break;
             }
             case ExtendedColor.TYPE_SHADING: {
-                ShadingColor shading = (ShadingColor) color;
-                setShadingFill(shading.getPdfShadingPattern());
+                if(color instanceof ShadingColor shadingColor){
+                    setShadingFill(shadingColor.getPdfShadingPattern());
+                }
                 break;
             }
             default:
@@ -2649,7 +2660,9 @@ public class PdfContentByte {
      */
     public void setPatternFill(PdfPatternPainter p, Color color) {
         if (ExtendedColor.getType(color) == ExtendedColor.TYPE_SEPARATION) {
-            setPatternFill(p, color, ((SpotColor) color).getTint());
+            if(color instanceof SpotColor spotColor) {
+                setPatternFill(p, color, spotColor.getTint());
+            }
         } else {
             setPatternFill(p, color, 0);
         }
@@ -2687,11 +2700,17 @@ public class PdfContentByte {
      */
     public void setPatternStroke(PdfPatternPainter p, Color color) {
         if (ExtendedColor.getType(color) == ExtendedColor.TYPE_SEPARATION) {
-            setPatternStroke(p, color, ((SpotColor) color).getTint());
+            if (color instanceof SpotColor spotColor) {
+                setPatternStroke(p, color, spotColor.getTint());
+            } else {
+                // Handle this case appropriately, in case color is not a SpotColor
+                throw new IllegalArgumentException("Expected a SpotColor when TYPE_SEPARATION is used.");
+            }
         } else {
             setPatternStroke(p, color, 0);
         }
     }
+
 
     /**
      * Sets the stroke color to an uncolored pattern.
@@ -2856,8 +2875,8 @@ public class PdfContentByte {
         List<Object> arrayList = text.getArrayList();
         boolean lastWasNumber = false;
         for (Object obj : arrayList) {
-            if (obj instanceof String) {
-                showText2((String) obj);
+            if (obj instanceof String stringObj) {
+                showText2(stringObj);
                 lastWasNumber = false;
             } else {
                 if (lastWasNumber) {
@@ -3407,7 +3426,7 @@ public class PdfContentByte {
      * @param layer the layer
      */
     public void beginLayer(PdfOCG layer) {
-        if ((layer instanceof PdfLayer) && ((PdfLayer) layer).getTitle() != null) {
+        if ((layer instanceof PdfLayer pdfLayer) && pdfLayer.getTitle() != null) {
             throw new IllegalArgumentException(MessageLocalization.getComposedMessage("a.title.is.not.a.layer"));
         }
         if (layerDepth == null) {
@@ -3418,17 +3437,21 @@ public class PdfContentByte {
             beginLayer2(layer);
             return;
         }
+
         int n = 0;
-        PdfLayer la = (PdfLayer) layer;
-        while (la != null) {
-            if (la.getTitle() == null) {
-                beginLayer2(la);
-                ++n;
+        if (layer instanceof PdfLayer la) {  // Check if the layer is an instance of PdfLayer
+            while (la != null) {
+                if (la.getTitle() == null) {
+                    beginLayer2(la);
+                    ++n;
+                }
+                la = la.getParent();  // Navigate to the parent layer if it exists
             }
-            la = la.getParent();
         }
+
         layerDepth.add(n);
     }
+
 
     private void beginLayer2(PdfOCG layer) {
         PdfName name = (PdfName) writer.addSimpleProperty(layer, layer.getRef())[0];

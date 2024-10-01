@@ -53,6 +53,7 @@ import com.lowagie.text.Font;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.AnnotationException;
 import com.lowagie.text.exceptions.ColorParseException;
 import com.lowagie.text.exceptions.FontProcessingException;
 import com.lowagie.text.exceptions.InvalidColorValueException;
@@ -776,159 +777,195 @@ public class AcroFields {
     }
 
     public void decodeGenericDictionary(PdfDictionary merged, BaseField tx) throws DocumentException {
-        int flags = 0;
-        // the text size and color
+        setTextProperties(merged, tx);
+        setVisualProperties(merged, tx);
+        setFlags(merged, tx);
+        setMultilineAndMaxLength(merged, tx);
+        setAlignment(merged, tx);
+        setBorderStyles(merged, tx);
+    }
+
+    private void setTextProperties(PdfDictionary merged, BaseField tx) throws DocumentException {
         PdfString da = merged.getAsString(PdfName.DA);
         if (da != null) {
             Object[] dab = splitDAelements(da.toUnicodeString());
-            if (dab[DA_SIZE] != null) {
-                tx.setFontSize((Float) dab[DA_SIZE]);
-            }
-            if (dab[DA_COLOR] != null) {
-                tx.setTextColor((Color) dab[DA_COLOR]);
-            }
-            if (dab[DA_FONT] != null) {
-                PdfDictionary dr = merged.getAsDict(PdfName.DR);
-                if (dr != null) {
-                    PdfDictionary font = dr.getAsDict(PdfName.FONT);
-                    if (font != null) {
-                        PdfObject po = font.get(new PdfName((String) dab[DA_FONT]));
-                        if (po != null && po.type() == PdfObject.INDIRECT) {
-                            PRIndirectReference por = (PRIndirectReference) po;
-                            adjustFontEncoding(dr, por);
-                            BaseFont bp = new DocumentFont(por);
-                            tx.setFont(bp);
-                            Integer porkey = por.getNumber();
-                            BaseFont porf = extensionFonts.get(porkey);
-                            if (porf == null && !extensionFonts.containsKey(porkey)) {
-                                PdfDictionary fo = (PdfDictionary) PdfReader.getPdfObject(po);
-                                PdfDictionary fd = fo.getAsDict(PdfName.FONTDESCRIPTOR);
-                                if (fd != null) {
-                                    PRStream prs = (PRStream) PdfReader.getPdfObject(fd.get(PdfName.FONTFILE2));
-                                    if (prs == null) {
-                                        prs = (PRStream) PdfReader.getPdfObject(fd.get(PdfName.FONTFILE3));
-                                    }
-                                    if (prs == null) {
-                                        extensionFonts.put(porkey, null);
-                                    } else {
-                                        try {
-                                            porf = BaseFont.createFont("font.ttf", BaseFont.IDENTITY_H, true, false, PdfReader.getStreamBytes(prs), null);
-                                        } catch(IOException ignored){
-                                            //empty on purpose
-                                        } catch (PDFFilterException e) {
-                                            throw new IllegalArgumentException(e);
-                                        }
-                                        extensionFonts.put(porkey, porf);
-                                    }
-                                }
-                            }
-                            if (tx instanceof TextField textField) {
-                                textField.setExtensionFont(porf);
-                            }
-                        } else {
-                            BaseFont bf = localFonts.get(dab[DA_FONT]);
-                            if (bf == null) {
-                                String[] fn = stdFieldFontNames.get(dab[DA_FONT]);
-                                if (fn != null) {
-                                    try {
-                                        String enc = "winansi";
-                                        if (fn.length > 1) {
-                                            enc = fn[1];
-                                        }
-                                        bf = BaseFont.createFont(fn[0], enc, false);
-                                        tx.setFont(bf);
-                                    } catch (Exception e) {
-                                        // empty
-                                    }
-                                }
-                            } else {
-                                tx.setFont(bf);
-                            }
-                        }
-                    }
+            setFontSizeAndColor(dab, tx);
+            setFont(dab, merged, tx);
+        }
+    }
+
+    private void setFontSizeAndColor(Object[] dab, BaseField tx) {
+        if (dab[DA_SIZE] != null) {
+            tx.setFontSize((Float) dab[DA_SIZE]);
+        }
+        if (dab[DA_COLOR] != null) {
+            tx.setTextColor((Color) dab[DA_COLOR]);
+        }
+    }
+
+    private void setFont(Object[] dab, PdfDictionary merged, BaseField tx) throws DocumentException {
+        if (dab[DA_FONT] != null) {
+            PdfDictionary dr = merged.getAsDict(PdfName.DR);
+            if (dr != null) {
+                PdfDictionary font = dr.getAsDict(PdfName.FONT);
+                if (font != null) {
+                    PdfObject po = font.get(new PdfName((String) dab[DA_FONT]));
+                    handleFontObject(po, dr, tx, (String) dab[DA_FONT]);
                 }
             }
         }
-        //rotation, border and background color
+    }
+
+    private void handleFontObject(PdfObject po, PdfDictionary dr, BaseField tx, String fontName) throws DocumentException {
+        if (po != null && po.type() == PdfObject.INDIRECT) {
+            PRIndirectReference por = (PRIndirectReference) po;
+            adjustFontEncoding(dr, por);
+            BaseFont bp = new DocumentFont(por);
+            tx.setFont(bp);
+            handleExtensionFont(por, tx);
+        } else {
+            setLocalOrStandardFont(fontName, tx);
+        }
+    }
+
+    private void handleExtensionFont(PRIndirectReference por, BaseField tx) throws DocumentException {
+        Integer porkey = por.getNumber();
+        BaseFont porf = extensionFonts.get(porkey);
+        if (porf == null && !extensionFonts.containsKey(porkey)) {
+            loadExtensionFont(porkey, por);
+        }
+        if (tx instanceof TextField textField) {
+            textField.setExtensionFont(porf);
+        }
+    }
+
+    private void loadExtensionFont(Integer porkey, PRIndirectReference por) throws DocumentException {
+        PdfDictionary fo = (PdfDictionary) PdfReader.getPdfObject(por);
+        PdfDictionary fd = fo.getAsDict(PdfName.FONTDESCRIPTOR);
+        if (fd != null) {
+            PRStream prs = (PRStream) PdfReader.getPdfObject(fd.get(PdfName.FONTFILE2));
+            if (prs == null) {
+                prs = (PRStream) PdfReader.getPdfObject(fd.get(PdfName.FONTFILE3));
+            }
+            try {
+                BaseFont porf = (prs != null) ? BaseFont.createFont("font.ttf", BaseFont.IDENTITY_H, true, false, PdfReader.getStreamBytes(prs), null) : null;
+                extensionFonts.put(porkey, porf);
+            } catch (IOException | PDFFilterException e) {
+                extensionFonts.put(porkey, null);
+            }
+        }
+    }
+
+    private void setLocalOrStandardFont(String fontName, BaseField tx) {
+        BaseFont bf = localFonts.get(fontName);
+        if (bf == null) {
+            String[] fn = stdFieldFontNames.get(fontName);
+            if (fn != null) {
+                try {
+                    bf = BaseFont.createFont(fn[0], fn.length > 1 ? fn[1] : "winansi", false);
+                    tx.setFont(bf);
+                } catch (Exception ignored) {
+                    // Empty on purpose
+                }
+            }
+        } else {
+            tx.setFont(bf);
+        }
+    }
+
+    private void setVisualProperties(PdfDictionary merged, BaseField tx) {
         PdfDictionary mk = merged.getAsDict(PdfName.MK);
         if (mk != null) {
-            PdfArray ar = mk.getAsArray(PdfName.BC);
-            Color border = getMKColor(ar);
-            tx.setBorderColor(border);
-            if (border != null) {
-                tx.setBorderWidth(1);
-            }
-            ar = mk.getAsArray(PdfName.BG);
-            tx.setBackgroundColor(getMKColor(ar));
+            tx.setBorderColor(getMKColor(mk.getAsArray(PdfName.BC)));
+            tx.setBackgroundColor(getMKColor(mk.getAsArray(PdfName.BG)));
             PdfNumber rotation = mk.getAsNumber(PdfName.R);
             if (rotation != null) {
                 tx.setRotation(rotation.intValue());
             }
         }
-        //flags
+    }
+
+    private void setFlags(PdfDictionary merged, BaseField tx) {
         PdfNumber nfl = merged.getAsNumber(PdfName.F);
-        tx.setVisibility(BaseField.VISIBLE_BUT_DOES_NOT_PRINT);
         if (nfl != null) {
-            flags = nfl.intValue();
-            if ((flags & PdfAnnotation.FLAGS_PRINT) != 0 && (flags & PdfAnnotation.FLAGS_HIDDEN) != 0) {
-                tx.setVisibility(BaseField.HIDDEN);
-            } else if ((flags & PdfAnnotation.FLAGS_PRINT) != 0 && (flags & PdfAnnotation.FLAGS_NOVIEW) != 0) {
-                tx.setVisibility(BaseField.HIDDEN_BUT_PRINTABLE);
-            } else if ((flags & PdfAnnotation.FLAGS_PRINT) != 0) {
-                tx.setVisibility(BaseField.VISIBLE);
+            int flags = nfl.intValue();
+            if((flags & PdfAnnotation.FLAGS_PRINT) != 0){
+                if((flags & PdfAnnotation.FLAGS_HIDDEN) != 0){
+                    tx.setVisibility(BaseField.HIDDEN);
+                }
+                else{
+                    tx.setVisibility(BaseField.VISIBLE);
+                }
+            } else{
+                tx.setVisibility(BaseField.VISIBLE_BUT_DOES_NOT_PRINT);
             }
         }
-        //multiline
-        nfl = merged.getAsNumber(PdfName.FF);
-        flags = 0;
-        if (nfl != null) {
-            flags = nfl.intValue();
-        }
-        tx.setOptions(flags);
-        if ((flags & PdfFormField.FF_COMB) != 0) {
+    }
+
+    private void setMultilineAndMaxLength(PdfDictionary merged, BaseField tx) {
+        PdfNumber nfl = merged.getAsNumber(PdfName.FF);
+        if (nfl != null && (nfl.intValue() & PdfFormField.FF_COMB) != 0) {
             PdfNumber maxLen = merged.getAsNumber(PdfName.MAXLEN);
-            int len = 0;
-            if (maxLen != null) {
-                len = maxLen.intValue();
-            }
-            tx.setMaxCharacterLength(len);
+            tx.setMaxCharacterLength(maxLen != null ? maxLen.intValue() : 0);
         }
-        //alignment
-        nfl = merged.getAsNumber(PdfName.Q);
+    }
+
+    private void setAlignment(PdfDictionary merged, BaseField tx) {
+        PdfNumber nfl = merged.getAsNumber(PdfName.Q);
         if (nfl != null) {
-            if (nfl.intValue() == PdfFormField.Q_CENTER) {
+            if(nfl.intValue() == PdfFormField.Q_CENTER){
                 tx.setAlignment(Element.ALIGN_CENTER);
-            } else if (nfl.intValue() == PdfFormField.Q_RIGHT) {
+            }
+            if(nfl.intValue() == PdfFormField.Q_RIGHT){
                 tx.setAlignment(Element.ALIGN_RIGHT);
+            } else{
+                tx.setAlignment(Element.ALIGN_LEFT);
             }
         }
-        //border styles
+    }
+
+    private void setBorderStyles(PdfDictionary merged, BaseField tx) {
         PdfDictionary bs = merged.getAsDict(PdfName.BS);
         if (bs != null) {
-            PdfNumber w = bs.getAsNumber(PdfName.W);
-            if (w != null) {
-                tx.setBorderWidth(w.floatValue());
-            }
-            PdfName s = bs.getAsName(PdfName.S);
-            if (PdfName.D.equals(s)) {
-                tx.setBorderStyle(PdfBorderDictionary.STYLE_DASHED);
-            } else if (PdfName.B.equals(s)) {
-                tx.setBorderStyle(PdfBorderDictionary.STYLE_BEVELED);
-            } else if (PdfName.I.equals(s)) {
-                tx.setBorderStyle(PdfBorderDictionary.STYLE_INSET);
-            } else if (PdfName.U.equals(s)) {
-                tx.setBorderStyle(PdfBorderDictionary.STYLE_UNDERLINE);
-            }
+            setBorderStyle(bs, tx);
         } else {
             PdfArray bd = merged.getAsArray(PdfName.BORDER);
             if (bd != null) {
-                if (bd.size() >= 3) {
-                    tx.setBorderWidth(bd.getAsNumber(2).floatValue());
-                }
-                if (bd.size() >= 4) {
-                    tx.setBorderStyle(PdfBorderDictionary.STYLE_DASHED);
-                }
+                setBorderArrayStyle(bd, tx);
             }
+        }
+    }
+
+    private void setBorderStyle(PdfDictionary bs, BaseField tx) {
+        PdfNumber w = bs.getAsNumber(PdfName.W);
+        if (w != null) {
+            tx.setBorderWidth(w.floatValue());
+        }
+        PdfName s = bs.getAsName(PdfName.S);
+        if (s != null) {
+            tx.setBorderStyle(mapBorderStyle(s));
+        }
+    }
+
+    private int mapBorderStyle(PdfName s) {
+        if (PdfName.D.equals(s)) {
+            return PdfBorderDictionary.STYLE_DASHED;
+        } else if (PdfName.B.equals(s)) {
+            return PdfBorderDictionary.STYLE_BEVELED;
+        } else if (PdfName.I.equals(s)) {
+            return PdfBorderDictionary.STYLE_INSET;
+        } else if (PdfName.U.equals(s)) {
+            return PdfBorderDictionary.STYLE_UNDERLINE;
+        }
+        return PdfBorderDictionary.STYLE_SOLID;
+    }
+
+    private void setBorderArrayStyle(PdfArray bd, BaseField tx) {
+        if (bd.size() >= 3) {
+            tx.setBorderWidth(bd.getAsNumber(2).floatValue());
+        }
+        if (bd.size() >= 4) {
+            tx.setBorderStyle(PdfBorderDictionary.STYLE_DASHED);
         }
     }
 
@@ -1145,7 +1182,7 @@ public class AcroFields {
             return readStreamValue(stream);
         }
         if (PdfName.BTN.equals(mergedDict.getAsName(PdfName.FT))) {
-            return processButtonField(value, item);
+            return processButtonField(value, item, mergedDict);
         }
         return processOtherPdfValue(value);
     }
@@ -1161,7 +1198,7 @@ public class AcroFields {
         }
     }
 
-    private String processButtonField(PdfObject value, Item item) {
+    private String processButtonField(PdfObject value, Item item, PdfDictionary mergedDict) {
         PdfNumber ff = mergedDict.getAsNumber(PdfName.FF);
         int flags = (ff != null) ? ff.intValue() : 0;
         if ((flags & PdfFormField.FF_PUSHBUTTON) != 0) {
@@ -1272,152 +1309,192 @@ public class AcroFields {
                 return false;
             }
             InstHit hit = new InstHit(inst);
-            PdfDictionary merged;
-            PdfString da;
-            if (name.equalsIgnoreCase("textfont")) {
-                for (int k = 0; k < item.size(); ++k) {
-                    if (hit.isHit(k)) {
-                        merged = item.getMerged(k);
-                        da = merged.getAsString(PdfName.DA);
-                        PdfDictionary dr = merged.getAsDict(PdfName.DR);
-                        if (da != null && dr != null) {
-                            Object[] dao = splitDAelements(da.toUnicodeString());
-                            PdfAppearance cb = new PdfAppearance(this.writer);
-                            if (dao[DA_FONT] != null) {
-                                BaseFont bf = (BaseFont) value;
-                                PdfName psn = PdfAppearance.stdFieldFontNames.get(bf.getPostscriptFontName());
-                                if (psn == null) {
-                                    psn = new PdfName(bf.getPostscriptFontName());
-                                }
-                                PdfDictionary fonts = dr.getAsDict(PdfName.FONT);
-                                if (fonts == null) {
-                                    fonts = new PdfDictionary();
-                                    dr.put(PdfName.FONT, fonts);
-                                }
-                                PdfIndirectReference fref = (PdfIndirectReference) fonts.get(psn);
-                                PdfDictionary top = reader.getCatalog().getAsDict(PdfName.ACROFORM);
-                                markUsed(top);
-                                dr = top.getAsDict(PdfName.DR);
-                                if (dr == null) {
-                                    dr = new PdfDictionary();
-                                    top.put(PdfName.DR, dr);
-                                }
-                                markUsed(dr);
-                                PdfDictionary fontsTop = dr.getAsDict(PdfName.FONT);
-                                if (fontsTop == null) {
-                                    fontsTop = new PdfDictionary();
-                                    dr.put(PdfName.FONT, fontsTop);
-                                }
-                                markUsed(fontsTop);
-                                PdfIndirectReference frefTop = (PdfIndirectReference) fontsTop.get(psn);
-                                if (frefTop != null) {
-                                    if (fref == null) {
-                                        fonts.put(psn, frefTop);
-                                    }
-                                } else if (fref == null) {
-                                    FontDetails fd;
-                                    if (bf.getFontType() == BaseFont.FONT_TYPE_DOCUMENT) {
-                                        fd = new FontDetails(null, ((DocumentFont) bf).getIndirectReference(), bf);
-                                    } else {
-                                        bf.setSubset(false);
-                                        fd = writer.addSimple(bf);
-                                        localFonts.put(psn.toString().substring(1), bf);
-                                    }
-                                    fontsTop.put(psn, fd.getIndirectReference());
-                                    fonts.put(psn, fd.getIndirectReference());
-                                }
-                                ByteBuffer buf = cb.getInternalBuffer();
-                                buf.append(psn.getBytes()).append(' ').append((Float) dao[DA_SIZE]).append(" Tf ");
-                                if (dao[DA_COLOR] != null) {
-                                    cb.setColorFill((Color) dao[DA_COLOR]);
-                                }
-                                PdfString s = new PdfString(cb.toString());
-                                item.getMerged(k).put(PdfName.DA, s);
-                                item.getWidget(k).put(PdfName.DA, s);
-                                markUsed(item.getWidget(k));
-                            }
-                        }
-                    }
-                }
-            } else if (name.equalsIgnoreCase("textcolor")) {
-                for (int k = 0; k < item.size(); ++k) {
-                    if (hit.isHit(k)) {
-                        merged = item.getMerged(k);
-                        da = merged.getAsString(PdfName.DA);
-                        if (da != null) {
-                            Object[] dao = splitDAelements(da.toUnicodeString());
-                            PdfAppearance cb = new PdfAppearance(this.writer);
-                            if (dao[DA_FONT] != null) {
-                                ByteBuffer buf = cb.getInternalBuffer();
-                                buf.append(new PdfName((String) dao[DA_FONT]).getBytes()).append(' ')
-                                        .append((Float) dao[DA_SIZE])
-                                        .append(" Tf ");
-                                cb.setColorFill((Color) value);
-                                PdfString s = new PdfString(cb.toString());
-                                item.getMerged(k).put(PdfName.DA, s);
-                                item.getWidget(k).put(PdfName.DA, s);
-                                markUsed(item.getWidget(k));
-                            }
-                        }
-                    }
-                }
-            } else if (name.equalsIgnoreCase("textsize")) {
-                for (int k = 0; k < item.size(); ++k) {
-                    if (hit.isHit(k)) {
-                        merged = item.getMerged(k);
-                        da = merged.getAsString(PdfName.DA);
-                        if (da != null) {
-                            Object[] dao = splitDAelements(da.toUnicodeString());
-                            PdfAppearance cb = new PdfAppearance(this.writer);
-                            if (dao[DA_FONT] != null) {
-                                ByteBuffer buf = cb.getInternalBuffer();
-                                Float fontSize = (float) Font.DEFAULTSIZE;
-                                if (value != null) {
-                                    fontSize = (Float) value;
-                                }
-                                buf.append(new PdfName((String) dao[DA_FONT]).getBytes()).append(' ').append(fontSize)
-                                        .append(" Tf ");
-                                if (dao[DA_COLOR] != null) {
-                                    cb.setColorFill((Color) dao[DA_COLOR]);
-                                }
-                                PdfString s = new PdfString(cb.toString());
-                                item.getMerged(k).put(PdfName.DA, s);
-                                item.getWidget(k).put(PdfName.DA, s);
-                                markUsed(item.getWidget(k));
-                            }
-                        }
-                    }
-                }
-            } else if (name.equalsIgnoreCase(BGCOLOR) || name.equalsIgnoreCase("bordercolor")) {
-                PdfName dname = (name.equalsIgnoreCase(BGCOLOR) ? PdfName.BG : PdfName.BC);
-                for (int k = 0; k < item.size(); ++k) {
-                    if (hit.isHit(k)) {
-                        merged = item.getMerged(k);
-                        PdfDictionary mk = merged.getAsDict(PdfName.MK);
-                        if (mk == null) {
-                            if (value == null) {
-                                return true;
-                            }
-                            mk = new PdfDictionary();
-                            item.getMerged(k).put(PdfName.MK, mk);
-                            item.getWidget(k).put(PdfName.MK, mk);
-                            markUsed(item.getWidget(k));
-                        } else {
-                            markUsed(mk);
-                        }
-                        if (value == null) {
-                            mk.remove(dname);
-                        } else {
-                            mk.put(dname, PdfAnnotation.getMKColor((Color) value));
-                        }
-                    }
-                }
-            } else {
-                return false;
+
+            switch (name.toLowerCase()) {
+                case "textfont":
+                    handleTextFont(item, value, hit);
+                    break;
+                case "textcolor":
+                    handleTextColor(item, value, hit);
+                    break;
+                case "textsize":
+                    handleTextSize(item, value, hit);
+                    break;
+                case BGCOLOR, "bordercolor":
+                    handleColorProperty(item, value, hit, name);
+                    break;
+                default:
+                    return false;
             }
             return true;
         } catch (Exception e) {
             throw new ExceptionConverter(e);
+        }
+    }
+
+    private void handleTextFont(Item item, Object value, InstHit hit) throws DocumentException {
+        for (int k = 0; k < item.size(); ++k) {
+            if (hit.isHit(k)) {
+                PdfDictionary merged = item.getMerged(k);
+                PdfString da = merged.getAsString(PdfName.DA);
+                PdfDictionary dr = merged.getAsDict(PdfName.DR);
+                if (da != null && dr != null) {
+                    Object[] dao = splitDAelements(da.toUnicodeString());
+                    updateFont(item, k, dr, dao, (BaseFont) value);
+                }
+            }
+        }
+    }
+
+    private void handleTextColor(Item item, Object value, InstHit hit) {
+        for (int k = 0; k < item.size(); ++k) {
+            if (hit.isHit(k)) {
+                PdfDictionary merged = item.getMerged(k);
+                PdfString da = merged.getAsString(PdfName.DA);
+                if (da != null) {
+                    Object[] dao = splitDAelements(da.toUnicodeString());
+                    updateTextAppearance(item, k, dao, (Color) value, null);
+                }
+            }
+        }
+    }
+
+    private void handleTextSize(Item item, Object value, InstHit hit) {
+        for (int k = 0; k < item.size(); ++k) {
+            if (hit.isHit(k)) {
+                PdfDictionary merged = item.getMerged(k);
+                PdfString da = merged.getAsString(PdfName.DA);
+                if (da != null) {
+                    Object[] dao = splitDAelements(da.toUnicodeString());
+                    updateTextAppearance(item, k, dao, null, (Float) value);
+                }
+            }
+        }
+    }
+
+    private void handleColorProperty(Item item, Object value, InstHit hit, String name) throws AnnotationException {
+        PdfName dname = name.equalsIgnoreCase(BGCOLOR) ? PdfName.BG : PdfName.BC;
+        for (int k = 0; k < item.size(); ++k) {
+            if (hit.isHit(k)) {
+                PdfDictionary merged = item.getMerged(k);
+                PdfDictionary mk = merged.getAsDict(PdfName.MK);
+                updateColorDictionary(item, k, mk, value, dname);
+            }
+        }
+    }
+
+    private void updateFont(Item item, int index, PdfDictionary dr, Object[] dao, BaseFont bf) throws DocumentException {
+        PdfAppearance cb = new PdfAppearance(this.writer);
+        if (dao[DA_FONT] != null) {
+            PdfName psn = PdfAppearance.stdFieldFontNames.get(bf.getPostscriptFontName());
+            if (psn == null) {
+                psn = new PdfName(bf.getPostscriptFontName());
+            }
+            PdfDictionary fonts = dr.getAsDict(PdfName.FONT);
+            if (fonts == null) {
+                fonts = new PdfDictionary();
+                dr.put(PdfName.FONT, fonts);
+            }
+            PdfIndirectReference fref = (PdfIndirectReference) fonts.get(psn);
+            if (fref == null) {
+                handleFontReference(fonts, bf, psn);
+            }
+            ByteBuffer buf = cb.getInternalBuffer();
+            buf.append(psn.getBytes()).append(' ').append((Float) dao[DA_SIZE]).append(" Tf ");
+            if (dao[DA_COLOR] != null) {
+                cb.setColorFill((Color) dao[DA_COLOR]);
+            }
+            updateDA(item, index, cb);
+        }
+    }
+
+    private void handleFontReference(PdfDictionary fonts, BaseFont bf, PdfName psn) throws DocumentException {
+        PdfDictionary top = reader.getCatalog().getAsDict(PdfName.ACROFORM);
+        markUsed(top);
+
+        // Ottieni o crea il dizionario delle risorse (DR) all'interno di AcroForm
+        PdfDictionary drTop = top.getAsDict(PdfName.DR);
+        if (drTop == null) {
+            drTop = new PdfDictionary();
+            top.put(PdfName.DR, drTop);
+        }
+        markUsed(drTop);
+
+        // Ottieni o crea il dizionario dei font all'interno di DR
+        PdfDictionary fontsTop = drTop.getAsDict(PdfName.FONT);
+        if (fontsTop == null) {
+            fontsTop = new PdfDictionary();
+            drTop.put(PdfName.FONT, fontsTop);
+        }
+        markUsed(fontsTop);
+
+        // Cerca il riferimento indiretto al font nel dizionario globale
+        PdfIndirectReference frefTop = (PdfIndirectReference) fontsTop.get(psn);
+
+        if (frefTop != null) {
+            // Se esiste un riferimento nel dizionario globale, lo aggiungiamo anche a quello locale
+            fonts.put(psn, frefTop);
+        } else {
+            // Se non esiste, creiamo un nuovo font e aggiungiamo i riferimenti
+            FontDetails fd;
+            if (bf.getFontType() == BaseFont.FONT_TYPE_DOCUMENT) {
+                // Se il font è già presente nel documento
+                fd = new FontDetails(null, ((DocumentFont) bf).getIndirectReference(), bf);
+            } else {
+                // Se il font è nuovo, lo aggiungiamo come semplice font
+                bf.setSubset(false);
+                fd = writer.addSimple(bf);
+                localFonts.put(psn.toString().substring(1), bf);
+            }
+            // Aggiungiamo il riferimento indiretto ai dizionari
+            fontsTop.put(psn, fd.getIndirectReference());
+            fonts.put(psn, fd.getIndirectReference());
+        }
+    }
+
+    private void updateTextAppearance(Item item, int index, Object[] dao, Color color, Float size) {
+        PdfAppearance cb = new PdfAppearance(this.writer);
+        if (dao[DA_FONT] != null) {
+            ByteBuffer buf = cb.getInternalBuffer();
+            buf.append(new PdfName((String) dao[DA_FONT]).getBytes());
+            if (size != null) {
+                buf.append(' ').append(size).append(" Tf ");
+            } else {
+                buf.append(' ').append((Float) dao[DA_SIZE]).append(" Tf ");
+            }
+            if (color != null) {
+                cb.setColorFill(color);
+            } else {
+                cb.setColorFill((Color) dao[DA_COLOR]);
+            }
+            updateDA(item, index, cb);
+        }
+    }
+
+    private void updateDA(Item item, int index, PdfAppearance cb) {
+        PdfString s = new PdfString(cb.toString());
+        item.getMerged(index).put(PdfName.DA, s);
+        item.getWidget(index).put(PdfName.DA, s);
+        markUsed(item.getWidget(index));
+    }
+
+    private void updateColorDictionary(Item item, int index, PdfDictionary mk, Object value, PdfName dname)
+            throws AnnotationException {
+        if (mk == null) {
+            if (value == null) {
+                return;
+            }
+            mk = new PdfDictionary();
+            item.getMerged(index).put(PdfName.MK, mk);
+            item.getWidget(index).put(PdfName.MK, mk);
+            markUsed(item.getWidget(index));
+        } else {
+            markUsed(mk);
+        }
+        if (value == null) {
+            mk.remove(dname);
+        } else {
+            mk.put(dname, PdfAnnotation.getMKColor((Color) value));
         }
     }
 

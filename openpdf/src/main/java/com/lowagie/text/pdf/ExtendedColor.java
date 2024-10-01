@@ -50,6 +50,7 @@
 package com.lowagie.text.pdf;
 
 import java.awt.Color;
+import java.io.Serial;
 
 /**
  * @author Paulo Soares (psoares@consiste.pt)
@@ -92,6 +93,7 @@ public abstract class ExtendedColor extends Color {
      * the max float color value (1) expressed in float
      */
     public static final float MAX_FLOAT_COLOR_VALUE = 0x1;
+    @Serial
     private static final long serialVersionUID = 2722660170712380080L;
     protected int type;
 
@@ -132,36 +134,30 @@ public abstract class ExtendedColor extends Color {
     }
 
     /**
-     * Gets the type of a given color.
+     * Gets the type of given color.
      *
      * @param color an object of {@link Color}
      * @return one of the types (see constants)
      */
     public static int getType(Color color) {
-        if (color instanceof ExtendedColor) {
-            return ((ExtendedColor) color).getType();
+        if (color instanceof ExtendedColor extendedColor) {
+            return extendedColor.getType();
         }
         return TYPE_RGB;
     }
 
-    static final float normalize(float value) {
+    static float normalize(float value) {
         if (value < 0f) {
             return 0f;
         }
-        if (value > MAX_FLOAT_COLOR_VALUE) {
-            return MAX_FLOAT_COLOR_VALUE;
-        }
-        return value;
+        return Math.min(value, MAX_FLOAT_COLOR_VALUE);
     }
 
-    static final int normalize(int value) {
+    static int normalize(int value) {
         if (value < 0) {
             return 0;
         }
-        if (value > (int) MAX_INT_COLOR_VALUE) {
-            return (int) MAX_INT_COLOR_VALUE;
-        }
-        return value;
+        return Math.min(value, (int) MAX_INT_COLOR_VALUE);
     }
 
     /**

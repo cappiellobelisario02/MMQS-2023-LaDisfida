@@ -277,10 +277,10 @@ public class PdfAnnotation extends PdfDictionary {
      * @return a screen PdfAnnotation
      * @throws IOException on error
      */
-    public static PdfAnnotation createScreen(PdfWriter writer, Rectangle rect, String clipTitle,
+    public static com.lowagie.text.pdf.PdfAnnotation createScreen(PdfWriter writer, Rectangle rect, String clipTitle,
             PdfFileSpecification fs,
             String mimeType, boolean playOnDisplay) throws IOException {
-        PdfAnnotation ann = new PdfAnnotation(writer, rect);
+        com.lowagie.text.pdf.PdfAnnotation ann = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         ann.put(PdfName.SUBTYPE, PdfName.SCREEN);
         ann.put(PdfName.F, new PdfNumber(FLAGS_PRINT));
         ann.put(PdfName.TYPE0, PdfName.ANNOT);
@@ -307,9 +307,9 @@ public class PdfAnnotation extends PdfDictionary {
      * @param icon     icon
      * @return a PdfAnnotation
      */
-    public static PdfAnnotation createText(PdfWriter writer, Rectangle rect, String title, String contents,
+    public static com.lowagie.text.pdf.PdfAnnotation createText(PdfWriter writer, Rectangle rect, String title, String contents,
             boolean open, String icon) {
-        PdfAnnotation annot = new PdfAnnotation(writer, rect);
+        com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         annot.put(PdfName.SUBTYPE, PdfName.TEXT);
         if (title != null) {
             annot.put(PdfName.T, new PdfString(title, PdfObject.TEXT_UNICODE));
@@ -334,8 +334,8 @@ public class PdfAnnotation extends PdfDictionary {
      * @param highlight the highlight property
      * @return A PdfAnnotation
      */
-    protected static PdfAnnotation createLink(PdfWriter writer, Rectangle rect, PdfName highlight) {
-        PdfAnnotation annot = new PdfAnnotation(writer, rect);
+    protected static com.lowagie.text.pdf.PdfAnnotation createLink(PdfWriter writer, Rectangle rect, PdfName highlight) {
+        com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         annot.put(PdfName.SUBTYPE, PdfName.LINK);
         if (!highlight.equals(HIGHLIGHT_INVERT)) {
             annot.put(PdfName.H, highlight);
@@ -352,14 +352,14 @@ public class PdfAnnotation extends PdfDictionary {
      * @param action    action for annotation
      * @return A PdfAnnotation
      */
-    public static PdfAnnotation createLink(PdfWriter writer, Rectangle rect, PdfName highlight, PdfAction action) {
-        PdfAnnotation annot = createLink(writer, rect, highlight);
+    public static com.lowagie.text.pdf.PdfAnnotation createLink(PdfWriter writer, Rectangle rect, PdfName highlight, PdfAction action) {
+        com.lowagie.text.pdf.PdfAnnotation annot = createLink(writer, rect, highlight);
         annot.putEx(PdfName.A, action);
         return annot;
     }
 
     /**
-     * Creates an Annotation with an local destination.
+     * Creates an Annotation with a local destination.
      *
      * @param writer           {@link PdfWriter}
      * @param rect             dimensions {@link Rectangle}
@@ -367,9 +367,9 @@ public class PdfAnnotation extends PdfDictionary {
      * @param namedDestination destination for pdf annotation
      * @return A PdfAnnotation
      */
-    public static PdfAnnotation createLink(PdfWriter writer, Rectangle rect, PdfName highlight,
+    public static com.lowagie.text.pdf.PdfAnnotation createLink(PdfWriter writer, Rectangle rect, PdfName highlight,
             String namedDestination) {
-        PdfAnnotation annot = createLink(writer, rect, highlight);
+        com.lowagie.text.pdf.PdfAnnotation annot = createLink(writer, rect, highlight);
         annot.put(PdfName.DEST, new PdfString(namedDestination));
         return annot;
     }
@@ -384,9 +384,9 @@ public class PdfAnnotation extends PdfDictionary {
      * @param dest      destination for pdf annotation
      * @return A PdfAnnotation
      */
-    public static PdfAnnotation createLink(PdfWriter writer, Rectangle rect, PdfName highlight, int page,
+    public static com.lowagie.text.pdf.PdfAnnotation createLink(PdfWriter writer, Rectangle rect, PdfName highlight, int page,
             PdfDestination dest) {
-        PdfAnnotation annot = createLink(writer, rect, highlight);
+        com.lowagie.text.pdf.PdfAnnotation annot = createLink(writer, rect, highlight);
         PdfIndirectReference ref = writer.getPageReference(page);
         dest.addPage(ref);
         annot.put(PdfName.DEST, dest);
@@ -402,9 +402,9 @@ public class PdfAnnotation extends PdfDictionary {
      * @param defaultAppearance default appearance
      * @return A PdfAnnotation
      */
-    public static PdfAnnotation createFreeText(PdfWriter writer, Rectangle rect, String contents,
+    public static com.lowagie.text.pdf.PdfAnnotation createFreeText(PdfWriter writer, Rectangle rect, String contents,
             PdfContentByte defaultAppearance) {
-        PdfAnnotation annot = new PdfAnnotation(writer, rect);
+        com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         annot.put(PdfName.SUBTYPE, PdfName.FREETEXT);
         annot.put(PdfName.CONTENTS, new PdfString(contents, PdfObject.TEXT_UNICODE));
         annot.setDefaultAppearanceString(defaultAppearance);
@@ -423,9 +423,9 @@ public class PdfAnnotation extends PdfDictionary {
      * @param y2       y-coordinate
      * @return A PdfAnnotation
      */
-    public static PdfAnnotation createLine(PdfWriter writer, Rectangle rect, String contents, float x1, float y1,
+    public static com.lowagie.text.pdf.PdfAnnotation createLine(PdfWriter writer, Rectangle rect, String contents, float x1, float y1,
             float x2, float y2) {
-        PdfAnnotation annot = new PdfAnnotation(writer, rect);
+        com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         annot.put(PdfName.SUBTYPE, PdfName.LINE);
         annot.put(PdfName.CONTENTS, new PdfString(contents, PdfObject.TEXT_UNICODE));
         PdfArray array = new PdfArray(new PdfNumber(x1));
@@ -445,8 +445,8 @@ public class PdfAnnotation extends PdfDictionary {
      * @param square   true if you want a square, false if you want a circle
      * @return A PdfAnnotation
      */
-    public static PdfAnnotation createSquareCircle(PdfWriter writer, Rectangle rect, String contents, boolean square) {
-        PdfAnnotation annot = new PdfAnnotation(writer, rect);
+    public static com.lowagie.text.pdf.PdfAnnotation createSquareCircle(PdfWriter writer, Rectangle rect, String contents, boolean square) {
+        com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         if (square) {
             annot.put(PdfName.SUBTYPE, PdfName.SQUARE);
         } else {
@@ -456,9 +456,9 @@ public class PdfAnnotation extends PdfDictionary {
         return annot;
     }
 
-    public static PdfAnnotation createMarkup(PdfWriter writer, Rectangle rect, String contents, int type,
+    public static com.lowagie.text.pdf.PdfAnnotation createMarkup(PdfWriter writer, Rectangle rect, String contents, int type,
             float[] quadPoints) {
-        PdfAnnotation annot = new PdfAnnotation(writer, rect);
+        com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         PdfName name = switch (type) {
             case MARKUP_UNDERLINE -> PdfName.UNDERLINE;
             case MARKUP_STRIKEOUT -> PdfName.STRIKEOUT;
@@ -484,16 +484,16 @@ public class PdfAnnotation extends PdfDictionary {
      * @param name     name of the annotation
      * @return A PdfAnnotation
      */
-    public static PdfAnnotation createStamp(PdfWriter writer, Rectangle rect, String contents, String name) {
-        PdfAnnotation annot = new PdfAnnotation(writer, rect);
+    public static com.lowagie.text.pdf.PdfAnnotation createStamp(PdfWriter writer, Rectangle rect, String contents, String name) {
+        com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         annot.put(PdfName.SUBTYPE, PdfName.STAMP);
         annot.put(PdfName.CONTENTS, new PdfString(contents, PdfObject.TEXT_UNICODE));
         annot.put(PdfName.NAME, new PdfName(name));
         return annot;
     }
 
-    public static PdfAnnotation createInk(PdfWriter writer, Rectangle rect, String contents, float[][] inkList) {
-        PdfAnnotation annot = new PdfAnnotation(writer, rect);
+    public static com.lowagie.text.pdf.PdfAnnotation createInk(PdfWriter writer, Rectangle rect, String contents, float[][] inkList) {
+        com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         annot.put(PdfName.SUBTYPE, PdfName.INK);
         annot.put(PdfName.CONTENTS, new PdfString(contents, PdfObject.TEXT_UNICODE));
         PdfArray outer = new PdfArray();
@@ -522,7 +522,7 @@ public class PdfAnnotation extends PdfDictionary {
      * @return the annotation
      * @throws IOException on error
      */
-    public static PdfAnnotation createFileAttachment(PdfWriter writer, Rectangle rect, String contents,
+    public static com.lowagie.text.pdf.PdfAnnotation createFileAttachment(PdfWriter writer, Rectangle rect, String contents,
             byte[] fileStore, String file,
             String fileDisplay) throws IOException {
         return createFileAttachment(writer, rect, contents,
@@ -539,10 +539,10 @@ public class PdfAnnotation extends PdfDictionary {
      * @return the annotation
      * @throws IOException on error
      */
-    public static PdfAnnotation createFileAttachment(PdfWriter writer, Rectangle rect, String contents,
+    public static com.lowagie.text.pdf.PdfAnnotation createFileAttachment(PdfWriter writer, Rectangle rect, String contents,
             PdfFileSpecification fs)
             throws IOException {
-        PdfAnnotation annot = new PdfAnnotation(writer, rect);
+        com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         annot.put(PdfName.SUBTYPE, PdfName.FILEATTACHMENT);
         if (contents != null) {
             annot.put(PdfName.CONTENTS, new PdfString(contents, PdfObject.TEXT_UNICODE));
@@ -560,8 +560,8 @@ public class PdfAnnotation extends PdfDictionary {
      * @param open     if popup is open
      * @return A PdfAnnotation
      */
-    public static PdfAnnotation createPopup(PdfWriter writer, Rectangle rect, String contents, boolean open) {
-        PdfAnnotation annot = new PdfAnnotation(writer, rect);
+    public static com.lowagie.text.pdf.PdfAnnotation createPopup(PdfWriter writer, Rectangle rect, String contents, boolean open) {
+        com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
         annot.put(PdfName.SUBTYPE, PdfName.POPUP);
         if (contents != null) {
             annot.put(PdfName.CONTENTS, new PdfString(contents, PdfObject.TEXT_UNICODE));
@@ -577,21 +577,24 @@ public class PdfAnnotation extends PdfDictionary {
         int type = ExtendedColor.getType(color);
         switch (type) {
             case ExtendedColor.TYPE_GRAY: {
-                array.add(new PdfNumber(((GrayColor) color).getGray()));
+                if (color instanceof GrayColor grayColor) {  // Safe cast
+                    array.add(new PdfNumber(grayColor.getGray()));
+                }
                 break;
             }
             case ExtendedColor.TYPE_CMYK: {
-                CMYKColor cmyk = (CMYKColor) color;
-                array.add(new PdfNumber(cmyk.getCyan()));
-                array.add(new PdfNumber(cmyk.getMagenta()));
-                array.add(new PdfNumber(cmyk.getYellow()));
-                array.add(new PdfNumber(cmyk.getBlack()));
+                if (color instanceof CMYKColor cmykColor) {  // Safe cast
+                    array.add(new PdfNumber(cmykColor.getCyan()));
+                    array.add(new PdfNumber(cmykColor.getMagenta()));
+                    array.add(new PdfNumber(cmykColor.getYellow()));
+                    array.add(new PdfNumber(cmykColor.getBlack()));
+                }
                 break;
             }
             case ExtendedColor.TYPE_SEPARATION,
                  ExtendedColor.TYPE_PATTERN,
                  ExtendedColor.TYPE_SHADING:
-                    throw new AnnotationException(
+                throw new AnnotationException(
                         MessageLocalization.getComposedMessage(
                                 "separations.patterns.and.shadings.are.not.allowed.in.mk.dictionary"));
             default:
@@ -601,6 +604,7 @@ public class PdfAnnotation extends PdfDictionary {
         }
         return array;
     }
+
 
     /**
      * Returns an indirect reference to the annotation
@@ -736,7 +740,7 @@ public class PdfAnnotation extends PdfDictionary {
         put(PdfName.T, new PdfString(title, PdfObject.TEXT_UNICODE));
     }
 
-    public void setPopup(PdfAnnotation popup) {
+    public void setPopup(com.lowagie.text.pdf.PdfAnnotation popup) {
         put(PdfName.POPUP, popup.getIndirectReference());
         popup.put(PdfName.PARENT, getIndirectReference());
     }
@@ -1062,8 +1066,8 @@ public class PdfAnnotation extends PdfDictionary {
             ury = y;
         }
 
-        public PdfAnnotation createAnnotation(PdfWriter writer) {
-            PdfAnnotation annotation = new PdfAnnotation(writer, new Rectangle(llx, lly, urx, ury));
+        public com.lowagie.text.pdf.PdfAnnotation createAnnotation(PdfWriter writer) {
+            com.lowagie.text.pdf.PdfAnnotation annotation = new com.lowagie.text.pdf.PdfAnnotation(writer, new Rectangle(llx, lly, urx, ury));
             if (newPage != 0) {
                 PdfIndirectReference ref = writer.getPageReference(newPage);
                 destination.set(0, ref);
