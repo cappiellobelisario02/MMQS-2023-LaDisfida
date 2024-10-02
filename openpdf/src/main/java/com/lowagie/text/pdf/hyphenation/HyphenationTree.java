@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * This tree structure stores the hyphenation patterns in an efficient way for fast lookup. It provides the provides the
+ * This tree structure stores the hyphenation patterns in an efficient way for fast lookup. It provides the
  * method to hyphenate a word.
  *
  * @author <a href="cav@uniscope.co.jp">Carlos Villegas</a>
@@ -245,18 +245,20 @@ public class HyphenationTree extends TernaryTree
 
     private void searchForPatternEnding(int index, byte[] il, char p) {
         char q = p;
-        while (q > 0 && q < sc.length) {
+        boolean shouldBreak = false; // Flag to determine if we should exit the loop
+
+        while (q > 0 && q < sc.length && !shouldBreak) {
             if (sc[q] == 0xFFFF) {
-                break;
-            }
-            if (sc[q] == 0) {
+                shouldBreak = true; // Set flag to true instead of breaking
+            } else if (sc[q] == 0) {
                 processPatternEnding(index, il, q);
-                break;
+                shouldBreak = true; // Set flag to true instead of breaking
             } else {
                 q = lo[q];
             }
         }
     }
+
 
     private void processPatternEnding(int index, byte[] il, char q) {
         byte[] values = getValues(eq[q]);
@@ -320,7 +322,7 @@ public class HyphenationTree extends TernaryTree
     private int[] getHyphenationPoints(char[] word, int remainCharCount, int pushCharCount) {
         int len = word.length - 3; // Adjusted length considering markers
         int[] result = new int[len + 1];
-        int k = 0;
+        int k;
 
         if (checkStopList(word, remainCharCount, pushCharCount, result)) {
             k = result[0]; // Number of hyphenation points found in stoplist
@@ -377,10 +379,9 @@ public class HyphenationTree extends TernaryTree
      */
     @Override
     public void addClass(String chargroup) {
-        if (chargroup.length() > 0) {
+        if (!chargroup.isEmpty()) {
             char equivChar = chargroup.charAt(0);
             char[] key = new char[2];
-            key[1] = 0;
             for (int i = 0; i < chargroup.length(); i++) {
                 key[0] = chargroup.charAt(i);
                 classmap.insert(key, 0, equivChar);

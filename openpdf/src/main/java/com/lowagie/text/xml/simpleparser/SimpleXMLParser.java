@@ -701,7 +701,11 @@ public final class SimpleXMLParser {
     private void processTag(boolean start) {
         if (start) {
             nested++;
-            doc.startElement(tag, attributes);
+            try{
+                doc.startElement(tag, attributes);
+            }catch (IOException ioe){
+                //may need some logging
+            }
         } else {
             nested--;
             doc.endElement(tag);

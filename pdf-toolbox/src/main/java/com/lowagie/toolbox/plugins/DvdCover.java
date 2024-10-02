@@ -191,9 +191,7 @@ public class DvdCover extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-        }
+        // if the internal frame is null, the tool was called from the command line
         // represent the changes of the argument in the internal frame
     }
 
