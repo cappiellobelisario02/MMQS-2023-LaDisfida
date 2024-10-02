@@ -46,6 +46,7 @@
  */
 package com.lowagie.text.xml.simpleparser;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -61,7 +62,7 @@ public interface SimpleXMLDocHandler {
      * @param tag the tag name
      * @param h   the tag's attributes
      */
-    void startElement(String tag, Map<String, String> h);
+    void startElement(String tag, Map<String, String> h) throws IOException;
 
     /**
      * Called when an end tag is found.

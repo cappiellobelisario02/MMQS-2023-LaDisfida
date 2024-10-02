@@ -202,7 +202,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     /**
      * The current Position in the table.
      */
-    private Point curPosition = new Point(0, 0);
+    private Point curPosition;
     /**
      * This Empty Cell contains the DEFAULT layout of each Cell added with the method addCell(String content).
      */

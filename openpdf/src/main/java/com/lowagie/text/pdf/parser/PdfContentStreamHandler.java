@@ -88,7 +88,7 @@ public class PdfContentStreamHandler {
      */
     private final TextAssembler renderListener;
     /**
-     * A map with all supported operators operators (PDF syntax).
+     * A map with all supported operators (PDF syntax).
      */
     private Map<String, ContentOperator> operators;
     /**
@@ -211,8 +211,8 @@ public class PdfContentStreamHandler {
                 .ifPresent(contentOperator -> {
                     try {
                         contentOperator.invoke(operands, this, resources);
-                    } catch (ToUnicodeMapProcessingException e) {
-                        logger.info("invoke operator " + operatorName + " failed: " + e.getMessage());
+                    } catch (ToUnicodeMapProcessingException | PDFFilterException e) {
+                        logger.info("invoke operator " + operatorName + " failed: " + e);
                     }
                 });
     }
@@ -313,7 +313,7 @@ public class PdfContentStreamHandler {
      * @return result text
      */
     public String getResultantText() throws IOException {
-        if (contextNames.size() > 0) {
+        if (!contextNames.isEmpty()) {
             throw new IOException("can't get text with unprocessed stack items");
         }
         StringBuilder res = new StringBuilder();
@@ -340,8 +340,8 @@ public class PdfContentStreamHandler {
         public void invoke(List<PdfObject> operands, PdfContentStreamHandler handler, PdfDictionary resources) {
             PdfArray array = (PdfArray) operands.get(0);
             for (PdfObject entryObj : array.getElements()) {
-                if (entryObj instanceof PdfString) {
-                    handler.displayPdfString((PdfString) entryObj);
+                if (entryObj instanceof PdfString pdfString) {
+                    handler.displayPdfString(pdfString);
                 } else {
                     float tj = ((PdfNumber) entryObj).floatValue();
                     handler.applyTextAdjust(tj);
@@ -929,7 +929,7 @@ public class PdfContentStreamHandler {
                     // ignore rest of the content of this element
                     handler.pushContext(null);
                     return;
-                } else if (attrs.get(PdfName.TYPE) != null) {
+                } else if (attrs.get(PdfName.TYPE_CONST) != null) {
                     // ignore tag for non-tag marked content that sometimes
                     // shows up.
                     tagName = "";
@@ -969,10 +969,10 @@ public class PdfContentStreamHandler {
         }
 
         @Override
-        public void invoke(List<PdfObject> operands, PdfContentStreamHandler handler, PdfDictionary resources) {
+        public void invoke(List<PdfObject> operands, PdfContentStreamHandler handler, PdfDictionary resources)
+                throws PDFFilterException {
             PdfObject firstOperand = operands.get(0);
-            if (firstOperand instanceof PdfName) {
-                PdfName name = (PdfName) firstOperand;
+            if (firstOperand instanceof PdfName name) {
                 PdfDictionary dictionary = resources.getAsDict(PdfName.XOBJECT);
                 if (dictionary == null) {
                     return;
@@ -987,7 +987,7 @@ public class PdfContentStreamHandler {
                     } catch (IOException ex) {
                         throw new ExceptionConverter(ex);
                     } catch (PDFFilterException e) {
-                        throw new RuntimeException(e);
+                        throw new PDFFilterException(e.getMessage());
                     }
                     new PushGraphicsState().invoke(operands, handler, resources);
                     processContent(data, resources2);

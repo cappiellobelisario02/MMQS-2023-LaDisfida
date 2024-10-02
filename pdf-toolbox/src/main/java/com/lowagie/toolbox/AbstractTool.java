@@ -35,6 +35,8 @@
 
 package com.lowagie.toolbox;
 
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.exceptions.DocumentPrintingException;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.tools.Executable;
 import java.awt.Desktop;
@@ -42,6 +44,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
@@ -80,7 +83,7 @@ public abstract class AbstractTool implements ActionListener {
     /**
      * An array with the plugin_versions of the tool.
      */
-    public static ArrayList<String> versionsarray = new ArrayList<>();
+    protected static ArrayList<String> versionsarray = new ArrayList<>();
     /**
      * The internal frame of the tool.
      */
@@ -285,7 +288,7 @@ public abstract class AbstractTool implements ActionListener {
                 buf.append(" = null\n");
             } else {
                 buf.append(" = '");
-                buf.append(argument.toString());
+                buf.append(argument);
                 buf.append("'\n");
             }
         }
@@ -310,25 +313,40 @@ public abstract class AbstractTool implements ActionListener {
                 showArguments();
                 break;
             case ToolMenuItems.EXECUTE:
-                executeAndHandleException(() -> this.execute());
+                executeAndHandleException(this::execute);
                 break;
             case ToolMenuItems.EXECUTESHOW:
                 executeAndHandleException(() -> {
                     this.execute();
-                    openDocument();
+                    try {
+                        openDocument();
+                    } catch (Exception e) {
+                        throw new DocumentException(e);
+                    }
                 });
                 break;
             case ToolMenuItems.EXECUTEPRINT:
                 executeAndHandleException(() -> {
                     this.execute();
-                    printDocument();
+                    try {
+                        printDocument();
+                    } catch (Exception e) {
+                        throw new DocumentException(e);
+                    }
                 });
                 break;
             case ToolMenuItems.EXECUTEPRINTSILENT:
-                executeAndHandleException(() -> Executable.printDocumentSilent(getDestPathPDF()));
+                executeAndHandleException(() -> {
+                    try {
+                        Executable.printDocumentSilent(getDestPathPDF());
+                    } catch (IOException | InstantiationException e) {
+                        throw new DocumentPrintingException(e);
+                    }
+                });
                 break;
             default:
-                logger.warning("Unhandled action command: " + actionCommand);
+                String stringToLog = "Unhandled action command: " + actionCommand;
+                logger.warning(stringToLog);
                 break;
         }
     }
@@ -354,7 +372,7 @@ public abstract class AbstractTool implements ActionListener {
         }
     }
 
-    private void openDocument() throws Exception {
+    private void openDocument() throws IOException, InstantiationException {
         if (awtdesktop != null && awtdesktop.isSupported(Desktop.Action.OPEN)) {
             awtdesktop.open(getDestPathPDF());
         } else {
@@ -362,7 +380,7 @@ public abstract class AbstractTool implements ActionListener {
         }
     }
 
-    private void printDocument() throws Exception {
+    private void printDocument() throws IOException, InstantiationException {
         if (awtdesktop != null && awtdesktop.isSupported(Desktop.Action.PRINT)) {
             awtdesktop.print(getDestPathPDF());
         } else {

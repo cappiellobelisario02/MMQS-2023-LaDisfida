@@ -15,7 +15,7 @@ public final class Type3Glyph extends PdfContentByte {
     private Rectangle rectangle;
     private float wx;
 
-    private Type3Glyph(com.lowagie.text.pdf.Type3Glyph.Builder builder) {
+    Type3Glyph(com.lowagie.text.pdf.Type3Glyph.Builder builder) {
         super(builder.writer);
         this.pageResources = builder.pageResources;
         this.colorized = builder.colorized;
@@ -38,7 +38,6 @@ public final class Type3Glyph extends PdfContentByte {
         return pageResources;
     }
 
-    @Override
     public void addImage(Image image, float a, float b, float c, float d, float e, float f, boolean inlineImage)
             throws DocumentException {
         if (!colorized && (!image.isMask() || !(image.getBpc() == 1 || image.getBpc() > 0xff))) {
@@ -50,8 +49,7 @@ public final class Type3Glyph extends PdfContentByte {
 
     @Override
     public PdfContentByte getDuplicate() {
-        com.lowagie.text.pdf.Type3Glyph dup = new com.lowagie.text.pdf.Type3Glyph.Builder(writer, pageResources, wx, rectangle, colorized).build();
-        return dup;
+        return new com.lowagie.text.pdf.Type3Glyph.Builder(writer, pageResources, wx, rectangle, colorized).build();
     }
 
     public static class Builder {

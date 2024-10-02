@@ -86,8 +86,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import com.lowagie.text.exceptions.InvalidTokenException;
-import com.lowagie.text.pdf.PdfPKCS7.X509Name;
-import com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -132,8 +130,6 @@ import org.bouncycastle.tsp.TimeStampTokenInfo;
  * It's based in code found at org.bouncycastle.
  */
 public class PdfPKCS7 {
-
-    Logger logger = Logger.getLogger(com.lowagie.text.pdf.PdfPKCS7.class.getName());
 
     private static final String ID_PKCS7_DATA = "1.2.840.113549.1.7.1";
     private static final String ID_PKCS7_SIGNED_DATA = "1.2.840.113549.1.7.2";
@@ -1128,7 +1124,7 @@ public class PdfPKCS7 {
      * @since 2.1.6
      */
     public Certificate[] getSignCertificateChain() {
-        return signCerts.toArray(new X509Certificate[0]);
+        return signCerts.toArray(new Certificate[0]);
     }
 
     private void signCertificateChain() {
@@ -1413,15 +1409,15 @@ public class PdfPKCS7 {
     }
 
     // Create Certificates Set
-    private DERSet createCertificatesSet() throws IOException {
+    private DERSet createCertificatesSet() throws IOException, CertificateEncodingException {
         ASN1EncodableVector v = new ASN1EncodableVector();
         for (Certificate cert : certs) {
-            ASN1InputStream tempStream = null;
+            ASN1InputStream tempStream;
             try {
                 tempStream = new ASN1InputStream(
                         new ByteArrayInputStream(((X509Certificate) cert).getEncoded()));
             } catch (CertificateEncodingException e) {
-                throw new RuntimeException(e);
+                throw new CertificateEncodingException(e);
             }
             v.add(tempStream.readObject());
         }
@@ -1430,7 +1426,7 @@ public class PdfPKCS7 {
 
     // Create Signer Info
     private DERSet createSignerInfo(byte[] secondDigest, Calendar signingTime, byte[] ocsp,
-            byte[] digest, TSAClient tsaClient) throws IOException, GeneralSecurityException {
+            byte[] digest, TSAClient tsaClient) throws IOException, GeneralSecurityException, InvalidTokenException {
         ASN1EncodableVector signerInfo = new ASN1EncodableVector();
 
         // Add the signerInfo version
@@ -1466,11 +1462,11 @@ public class PdfPKCS7 {
         // Add timestamp if TSAClient is available
         if (tsaClient != null) {
             byte[] tsImprint = tsaClient.getMessageDigest().digest(digest);
-            byte[] tsToken = null;
+            byte[] tsToken;
             try {
                 tsToken = tsaClient.getTimeStampToken(this, tsImprint);
             } catch (InvalidTokenException e) {
-                throw new RuntimeException(e);
+                throw new InvalidTokenException(e.getMessage());
             }
             if (tsToken != null) {
                 ASN1EncodableVector unauthAttributes = buildUnauthenticatedAttributes(tsToken);
@@ -1513,7 +1509,6 @@ public class PdfPKCS7 {
      *
      * @param timeStampToken byte[] - time stamp token, DER encoded signedData
      * @return ASN1EncodableVector
-     * @throws IOException
      */
     private ASN1EncodableVector buildUnauthenticatedAttributes(
             byte[] timeStampToken) throws IOException {
@@ -1936,9 +1931,8 @@ public class PdfPKCS7 {
             }
 
             buf.setLength(0);
-            int end = processToken();
 
-            index = end;
+            index = processToken();
             return buf.toString().trim();
         }
 
@@ -1965,7 +1959,6 @@ public class PdfPKCS7 {
                         }
                         // fall through
                     default:
-                        end = handleOtherCharacters(end, c);
                         escaped = false;
                         break;
                 }
@@ -1989,11 +1982,6 @@ public class PdfPKCS7 {
             }
             // Move to the next character and re-evaluate
             end++;
-            return end;
-        }
-
-        private int handleOtherCharacters(int end, char c) {
-            buf.append(c);
             return end;
         }
 

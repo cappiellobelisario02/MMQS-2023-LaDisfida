@@ -60,7 +60,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 /**
  * Reads a XFDF.
@@ -162,10 +161,10 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
      * @param h   the tag's attributes
      */
     @Override
-    public void startElement(String tag, Map<String, String> h) {
+    public void startElement(String tag, Map<String, String> h) throws IOException {
         if (!foundRoot) {
             if (!tag.equals("xfdf")) {
-                throw new RuntimeException(MessageLocalization.getComposedMessage("root.element.is.not.xfdf.1", tag));
+                throw new IOException(MessageLocalization.getComposedMessage("root.element.is.not.xfdf.1", tag));
             } else {
                 foundRoot = true;
             }

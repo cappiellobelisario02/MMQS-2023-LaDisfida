@@ -1965,7 +1965,7 @@ public class PdfWriter extends DocWriter implements
     /**
      * @see com.lowagie.text.pdf.interfaces.PdfAnnotations#addAnnotation(com.lowagie.text.pdf.PdfAnnotation)
      */
-    public void addAnnotation(PdfAnnotation annot) {
+    public void addAnnotation(PdfAnnotation annot) throws IOException {
         pdf.addAnnotation(annot);
     }
 

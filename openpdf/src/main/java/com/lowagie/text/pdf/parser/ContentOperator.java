@@ -49,6 +49,7 @@ package com.lowagie.text.pdf.parser;
 import com.lowagie.text.exceptions.ToUnicodeMapProcessingException;
 import com.lowagie.text.pdf.PdfDictionary;
 import com.lowagie.text.pdf.PdfObject;
+import org.apache.fop.pdf.PDFFilterException;
 import java.util.List;
 
 /**
@@ -66,7 +67,7 @@ public interface ContentOperator {
      * @param resources Pdf Resources found in the file containing the stream.
      */
     void invoke(List<PdfObject> operands, PdfContentStreamHandler handler, PdfDictionary resources)
-            throws ToUnicodeMapProcessingException;
+            throws ToUnicodeMapProcessingException, PDFFilterException;
 
     /**
      * @return the name of the operator as it will be recognized in the pdf stream

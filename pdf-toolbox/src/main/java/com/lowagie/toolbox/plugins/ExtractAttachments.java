@@ -48,6 +48,7 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -96,18 +97,16 @@ public class ExtractAttachments extends AbstractTool {
     /**
      * Unpacks a file attachment.
      *
-     * @param reader
      * @param filespec The dictionary containing the file specifications
      * @param outPath  The path where the attachment has to be written
      * @throws IOException on error
      */
-    @lombok.SneakyThrows
-    public static void unpackFile(PdfReader reader, PdfDictionary filespec,
-            String outPath) throws IOException {
+    public static void unpackFile(PdfDictionary filespec,
+            String outPath) throws IOException, PDFFilterException {
         if (filespec == null) {
             return;
         }
-        PdfName type = filespec.getAsName(PdfName.TYPE);
+        PdfName type = filespec.getAsName(PdfName.TYPE_CONST);
         if (!PdfName.F.equals(type) && !PdfName.FILESPEC.equals(type)) {
             return;
         }
@@ -116,7 +115,8 @@ public class ExtractAttachments extends AbstractTool {
             return;
         }
         PdfString fn = filespec.getAsString(PdfName.F);
-        logger.info("Unpacking file '" + fn + "' to " + outPath);
+        String stringToLog = "Unpacking file '" + fn + "' to " + outPath;
+        logger.info(stringToLog);
         if (fn == null) {
             return;
         }
@@ -130,7 +130,7 @@ public class ExtractAttachments extends AbstractTool {
             return;
         }
         byte[] b = PdfReader.getStreamBytes(prs);
-        try (FileOutputStream fout = new FileOutputStream(fullPath);) {
+        try (FileOutputStream fout = new FileOutputStream(fullPath)) {
             fout.write(b);
         } catch (Exception e) {
             //da vedere come effettuare il log
@@ -152,20 +152,20 @@ public class ExtractAttachments extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        PdfReader reader = null;
         try {
             validateSourceFile();
             File src = (File) getValue(SRCFILE_ARGUMENT_NAME);
-            reader = new PdfReader(src.getAbsolutePath());
             String outPath = getOutputPath(src);
-            processEmbeddedFiles(reader, outPath);
-            processAnnotations(reader, outPath);
+
+            try (PdfReader reader = new PdfReader(src.getAbsolutePath())) {
+                processEmbeddedFiles(reader, outPath);
+                processAnnotations(reader, outPath);
+            }
         } catch (Exception e) {
-            //da vedere come effettuare il log
-        } finally {
-            closeReader(reader);
+            // Handle the exception (log it or rethrow)
         }
     }
+
 
     private void validateSourceFile() throws InstantiationException {
         if (getValue(SRCFILE_ARGUMENT_NAME) == null) {
@@ -178,7 +178,7 @@ public class ExtractAttachments extends AbstractTool {
         return (parentFile != null) ? parentFile.getAbsolutePath() : "";
     }
 
-    private void processEmbeddedFiles(PdfReader reader, String outPath) throws IOException {
+    private void processEmbeddedFiles(PdfReader reader, String outPath) throws IOException, PDFFilterException {
         PdfDictionary catalog = reader.getCatalog();
         PdfDictionary names = catalog.getAsDict(PdfName.NAMES);
         if (names != null) {
@@ -187,13 +187,13 @@ public class ExtractAttachments extends AbstractTool {
                 HashMap<String, PdfObject> embMap = PdfNameTree.readTree(embFiles);
                 for (PdfObject pdfObject : embMap.values()) {
                     PdfDictionary filespec = (PdfDictionary) PdfReader.getPdfObject(pdfObject);
-                    unpackFile(reader, filespec, outPath);
+                    unpackFile(filespec, outPath);
                 }
             }
         }
     }
 
-    private void processAnnotations(PdfReader reader, String outPath) throws IOException {
+    private void processAnnotations(PdfReader reader, String outPath) throws IOException, PDFFilterException {
         for (int k = 1; k <= reader.getNumberOfPages(); ++k) {
             PdfArray annots = reader.getPageN(k).getAsArray(PdfName.ANNOTS);
             if (annots == null) {
@@ -203,18 +203,8 @@ public class ExtractAttachments extends AbstractTool {
                 PdfDictionary annot = (PdfDictionary) PdfReader.getPdfObject(pdfObject);
                 if (PdfName.FILEATTACHMENT.equals(annot.getAsName(PdfName.SUBTYPE))) {
                     PdfDictionary filespec = annot.getAsDict(PdfName.FS);
-                    unpackFile(reader, filespec, outPath);
+                    unpackFile(filespec, outPath);
                 }
-            }
-        }
-    }
-
-    private void closeReader(PdfReader reader) {
-        if (reader != null) {
-            try {
-                reader.close();
-            } catch (Exception e) {
-                //da vedere come effettuare il log
             }
         }
     }
@@ -225,11 +215,6 @@ public class ExtractAttachments extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the
-            // command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

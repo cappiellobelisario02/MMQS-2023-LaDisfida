@@ -17,10 +17,6 @@ import com.lowagie.text.ExceptionConverter;
  */
 public class TTFCache {
 
-    private void TFFCache(){
-        //private constructor
-    }
-
     private static Map<String, TTFFile> ttfFileMap = new ConcurrentHashMap<>();
 
     public static TTFFile getTTFFile(String fileName, TrueTypeFontUnicode ttu) {

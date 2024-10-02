@@ -57,7 +57,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Stack;
 
 /**
  * A simple XML and HTML parser.  This parser is, like the SAX parser, an event based parser, but with much less
@@ -74,26 +73,26 @@ import java.util.Stack;
  * <li>It maps lines ending in <code>\r\n</code> and <code>\r</code> to <code>\n</code> on input, in accordance with the XML Specification, Section 2.11
  * </ul>
  */
-public final class SimpleXMLParser {
 
+public final class SimpleXMLParser {
     /**
      * possible states
      */
-    private final static int UNKNOWN = 0;
-    private final static int TEXT = 1;
-    private final static int TAG_ENCOUNTERED = 2;
-    private final static int EXAMIN_TAG = 3;
-    private final static int TAG_EXAMINED = 4;
-    private final static int IN_CLOSETAG = 5;
-    private final static int SINGLE_TAG = 6;
-    private final static int CDATA = 7;
-    private final static int COMMENT = 8;
-    private final static int PI = 9;
-    private final static int ENTITY = 10;
-    private final static int QUOTE = 11;
-    private final static int ATTRIBUTE_KEY = 12;
-    private final static int ATTRIBUTE_EQUAL = 13;
-    private final static int ATTRIBUTE_VALUE = 14;
+    private static final int UNKNOWN = 0;
+    private static final int TEXT = 1;
+    private static final int TAG_ENCOUNTERED = 2;
+    private static final int EXAMIN_TAG = 3;
+    private static final int TAG_EXAMINED = 4;
+    private static final int IN_CLOSETAG = 5;
+    private static final int SINGLE_TAG = 6;
+    private static final int CDATA = 7;
+    private static final int COMMENT = 8;
+    private static final int PI = 9;
+    private static final int ENTITY = 10;
+    private static final int QUOTE = 11;
+    private static final int ATTRIBUTE_KEY = 12;
+    private static final int ATTRIBUTE_EQUAL = 13;
+    private static final int ATTRIBUTE_VALUE = 14;
 
     /**
      * the state stack
@@ -325,18 +324,18 @@ public final class SimpleXMLParser {
     }
 
     private BufferedReader getBufferedReader(Reader r) {
-        return (r instanceof BufferedReader) ? (BufferedReader) r : new BufferedReader(r);
+        return (r instanceof BufferedReader bufferedReader) ? bufferedReader : new BufferedReader(r);
     }
 
     private void processDocument(BufferedReader reader) throws IOException {
         while (true) {
-            int character = getNextCharacter(reader);
-            if (isEndOfFile(character)) {
+            int mCharacter = getNextCharacter(reader);
+            if (isEndOfFile(mCharacter)) {
                 handleEndOfFile();
                 return;
             }
-            updateLineAndColumn(character);
-            processCharacter(reader, character);
+            updateLineAndColumn(mCharacter);
+            processCharacter(mCharacter);
         }
     }
 
@@ -344,9 +343,9 @@ public final class SimpleXMLParser {
         if (previousCharacter == -1) {
             return reader.read();
         } else {
-            int character = previousCharacter;
+            int mCharacter = previousCharacter;
             previousCharacter = -1;
-            return character;
+            return mCharacter;
         }
     }
 
@@ -381,7 +380,7 @@ public final class SimpleXMLParser {
         columns = 0;
     }
 
-    private void processCharacter(BufferedReader reader, int character) throws IOException {
+    private void processCharacter(int character) throws IOException {
         switch (state) {
             case UNKNOWN -> handleUnknown(character);
             case TEXT -> handleText(character);
@@ -441,7 +440,7 @@ public final class SimpleXMLParser {
         }
     }
 
-    private void handleExamineTag(int character) throws IOException {
+    private void handleExamineTag(int character) {
         if (character == '>') {
             processTagEnd();
         } else if (character == '/') {
@@ -463,7 +462,7 @@ public final class SimpleXMLParser {
         }
     }
 
-    private void handleTagExamined(int character) throws IOException {
+    private void handleTagExamined(int character) {
         if (character == '>') {
             processTag(true);
             initTag();
@@ -473,7 +472,7 @@ public final class SimpleXMLParser {
         }
     }
 
-    private void handleCloseTag(int character) throws IOException {
+    private void handleCloseTag(int character) {
         if (character == '>') {
             processTag(false);
             if (!html && nested == 0) return;
@@ -485,7 +484,7 @@ public final class SimpleXMLParser {
 
     private void handleSingleTag(int character) throws IOException {
         if (character != '>') {
-            throwException("expected.gt.for.tag.lt.1.gt", tag);
+            throwException("expected.gt.for.tag.lt.1.gt" + tag);
         }
         processTag(true);
         processTag(false);
@@ -521,7 +520,7 @@ public final class SimpleXMLParser {
         if (character == '>') state = restoreState();
     }
 
-    private void handleEntity(int character) throws IOException {
+    private void handleEntity(int character) {
         if (character == ';') {
             processEntity();
         } else if (!isValidEntityCharacter(character)) {
@@ -560,7 +559,7 @@ public final class SimpleXMLParser {
                 (character >= 'A' && character <= 'Z');
     }
 
-    private void handleQuote(int character) throws IOException {
+    private void handleQuote(int character) {
         if (quoteCharacter == ' ' && character == '>') {
             flush();
             processTag(true);
@@ -580,7 +579,7 @@ public final class SimpleXMLParser {
         return " \r\n\t".indexOf(character) >= 0 ? ' ' : (char) character;
     }
 
-    private void handleAttributeKey(int character) throws IOException {
+    private void handleAttributeKey(int character) {
         if (Character.isWhitespace((char) character)) {
             flush();
             state = ATTRIBUTE_EQUAL;
@@ -592,13 +591,13 @@ public final class SimpleXMLParser {
         }
     }
 
-    private void handleAttributeEqual(int character) throws IOException {
+    private void handleAttributeEqual(int character) {
         if (character == '=') {
             state = ATTRIBUTE_VALUE;
         }
     }
 
-    private void handleAttributeValue(int character) throws IOException {
+    private void handleAttributeValue(int character) {
         if (character == '"' || character == '\'') {
             quoteCharacter = character;
             state = QUOTE;
@@ -609,7 +608,7 @@ public final class SimpleXMLParser {
         }
     }
 
-    private void processTagEnd() throws IOException {
+    private void processTagEnd() {
         doTag();
         processTag(true);
         initTag();
@@ -645,9 +644,9 @@ public final class SimpleXMLParser {
      */
     private void flush() {
         switch (state) {
-            case TEXT:
-            case CDATA:
-                if (textSB.length() > 0) {
+            case TEXT,
+                 CDATA:
+                if (!textSB.isEmpty()) {
                     doc.text(textSB.toString());
                 }
                 break;
@@ -662,8 +661,8 @@ public final class SimpleXMLParser {
                     attributekey = attributekey.toLowerCase();
                 }
                 break;
-            case QUOTE:
-            case ATTRIBUTE_VALUE:
+            case QUOTE,
+                 ATTRIBUTE_VALUE:
                 attributevalue = textSB.toString();
                 attributes.put(attributekey, attributevalue);
                 break;

@@ -237,7 +237,7 @@ public class PdfContentReaderTool {
 
     private static void handleContentStreaming(String[] args) {
         try (PrintWriter writer = args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)
-                ? new PrintWriter(new FileOutputStream(new File(args[1])))
+                ? new PrintWriter(new FileOutputStream(args[1]))
                 : new PrintWriter(System.out)) {
 
             if (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) {

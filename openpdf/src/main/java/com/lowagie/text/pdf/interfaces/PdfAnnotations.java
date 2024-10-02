@@ -52,6 +52,7 @@ package com.lowagie.text.pdf.interfaces;
 import com.lowagie.text.pdf.PdfAcroForm;
 import com.lowagie.text.pdf.PdfAnnotation;
 import com.lowagie.text.pdf.PdfFormField;
+import java.io.IOException;
 
 public interface PdfAnnotations {
 
@@ -68,7 +69,7 @@ public interface PdfAnnotations {
      *
      * @param annot the <CODE>PdfAnnotation</CODE> or the <CODE>PdfFormField</CODE> to add
      */
-    void addAnnotation(PdfAnnotation annot);
+    void addAnnotation(PdfAnnotation annot) throws IOException;
 
     /**
      * Use this method to adds the <CODE>PdfAnnotation</CODE> to the calculation order array.

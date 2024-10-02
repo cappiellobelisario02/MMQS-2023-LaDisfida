@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
 
@@ -237,13 +238,6 @@ class TrueTypeFont extends BaseFont {
      */
     protected String[][] familyName;
     /**
-     * The italic angle. It is usually extracted from the 'post' table or in it's absence with the code:
-     * <p>
-     * <PRE>
-     * -Math.atan2(hhea.caretSlopeRun, hhea.caretSlopeRise) * 180 / Math.PI
-     * </PRE>
-     */
-    /**
      * <CODE>true</CODE> if all the glyphs have the same width.
      */
     protected boolean isFixedPitch = false;
@@ -340,17 +334,20 @@ class TrueTypeFont extends BaseFont {
     private static void mergeOverlappingRanges(List<int[]> simp) {
         for (int k1 = 0; k1 < simp.size() - 1; ++k1) {
             int[] r1 = simp.get(k1);
-            for (int k2 = k1 + 1; k2 < simp.size(); ++k2) {
-                int[] r2 = simp.get(k2);
-                if (rangesOverlap(r1, r2)) {
+            ListIterator<int[]> iter = simp.listIterator(simp.size()); // start from the end of the list
+            while (iter.hasPrevious()) {
+                int[] r2 = iter.previous();
+                int k2 = simp.indexOf(r2); // get the index of the element
+                if (k2 > k1 && rangesOverlap(r1, r2)) {
                     r1[0] = Math.min(r1[0], r2[0]);
                     r1[1] = Math.max(r1[1], r2[1]);
-                    simp.remove(k2);
-                    --k2;
+                    iter.remove(); // remove the element safely
                 }
             }
         }
     }
+
+
 
     private static boolean rangesOverlap(int[] r1, int[] r2) {
         return (r1[0] >= r2[0] && r1[0] <= r2[1]) || (r1[1] >= r2[0] && r1[0] <= r2[1]);
@@ -370,8 +367,6 @@ class TrueTypeFont extends BaseFont {
     /**
      * Reads the tables 'head', 'hhea', 'OS/2' and 'post' filling several variables.
      *
-     * @throws DocumentException the font is invalid
-     * @throws IOException       the font file could not be read
      */
     private static final String TABLE_NOT_EXIST_MESSAGE = "table.1.does.not.exist.in.2";
 
@@ -612,7 +607,7 @@ class TrueTypeFont extends BaseFont {
 
         try {
             initializeRandomAccessFileOrArray(ttfAfm, preload);
-            if (ttcIndex.length() > 0) {
+            if (!ttcIndex.isEmpty()) {
                 processTtcFile();
             } else {
                 rf.seek(directoryOffset);
@@ -908,18 +903,13 @@ class TrueTypeFont extends BaseFont {
     }
 
     private HashMap<Integer, int[]> readCMapByFormat(int format) throws IOException, DocumentException {
-        switch (format) {
-            case 0:
-                return readFormat0();
-            case 4:
-                return readFormat4();
-            case 6:
-                return readFormat6();
-            case 12:
-                return readFormat12();
-            default:
-                throw new IllegalArgumentException("Unsupported format: " + format);
-        }
+        return switch (format) {
+            case 0 -> readFormat0();
+            case 4 -> readFormat4();
+            case 6 -> readFormat6();
+            case 12 -> readFormat12();
+            default -> throw new IllegalArgumentException("Unsupported format: " + format);
+        };
     }
 
     private static class CMapEntry {
@@ -1306,23 +1296,14 @@ class TrueTypeFont extends BaseFont {
 
 
     protected byte[] getFullFont() throws IOException {
-        RandomAccessFileOrArray rf2 = null;
-        try {
-            rf2 = new RandomAccessFileOrArray(rf);
+        try (RandomAccessFileOrArray rf2 = new RandomAccessFileOrArray(rf)) {
             rf2.reOpen();
             byte[] b = new byte[rf2.length()];
             rf2.readFully(b);
             return b;
-        } finally {
-            try {
-                if (rf2 != null) {
-                    rf2.close();
-                }
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
         }
     }
+
 
     protected void addRangeUni(Map<Integer, int[]> longTag, boolean includeMetrics, boolean subsetp) {
         if (shouldProcess(subsetp)) {
@@ -1460,13 +1441,6 @@ class TrueTypeFont extends BaseFont {
         }
     }
 
-    private PdfIndirectReference handleFontDescriptor(PdfWriter writer, PdfIndirectReference indFont,
-            String subsetPrefix) throws DocumentException, IOException{
-        PdfObject pobj = getFontDescriptor(indFont, subsetPrefix, null);
-        PdfIndirectObject obj = writer.addToBody(pobj);
-        return obj.getIndirectReference();
-    }
-
     private void handleFontBaseType(PdfWriter writer, PdfIndirectReference ref, PdfIndirectReference indFont, String subsetPrefix, int firstChar, int lastChar, byte[] shortTag) throws DocumentException, IOException {
         PdfObject pobj = getFontBaseType(indFont, subsetPrefix, firstChar, lastChar, shortTag);
         writer.addToBody(pobj, ref);
@@ -1522,48 +1496,29 @@ class TrueTypeFont extends BaseFont {
      * @return the parameter in points
      */
     public float getFontDescriptor(int key, float fontSize) {
-        switch (key) {
-            case ASCENT:
-                return os2.sTypoAscender * fontSize / head.unitsPerEm;
-            case CAPHEIGHT:
-                return os2.sCapHeight * fontSize / head.unitsPerEm;
-            case DESCENT:
-                return os2.sTypoDescender * fontSize / head.unitsPerEm;
-            case BBOXLLX:
-                return fontSize * head.xMin / head.unitsPerEm;
-            case BBOXLLY:
-                return fontSize * head.yMin / head.unitsPerEm;
-            case BBOXURX:
-                return fontSize * head.xMax / head.unitsPerEm;
-            case BBOXURY:
-                return fontSize * head.yMax / head.unitsPerEm;
-            case AWT_ASCENT:
-                return fontSize * hhea.ascender / head.unitsPerEm;
-            case AWT_DESCENT:
-                return fontSize * hhea.descender / head.unitsPerEm;
-            case AWT_LEADING:
-                return fontSize * hhea.lineGap / head.unitsPerEm;
-            case AWT_MAXADVANCE:
-                return fontSize * hhea.advanceWidthMax / head.unitsPerEm;
-            case UNDERLINE_POSITION:
-                return (underlinePosition - (float) underlineThickness / 2) * fontSize / head.unitsPerEm;
-            case UNDERLINE_THICKNESS:
-                return underlineThickness * fontSize / head.unitsPerEm;
-            case STRIKETHROUGH_POSITION:
-                return os2.yStrikeoutPosition * fontSize / head.unitsPerEm;
-            case STRIKETHROUGH_THICKNESS:
-                return os2.yStrikeoutSize * fontSize / head.unitsPerEm;
-            case SUBSCRIPT_SIZE:
-                return os2.ySubscriptYSize * fontSize / head.unitsPerEm;
-            case SUBSCRIPT_OFFSET:
-                return -os2.ySubscriptYOffset * fontSize / head.unitsPerEm;
-            case SUPERSCRIPT_SIZE:
-                return os2.ySuperscriptYSize * fontSize / head.unitsPerEm;
-            case SUPERSCRIPT_OFFSET:
-                return os2.ySuperscriptYOffset * fontSize / head.unitsPerEm;
-            default:
-                throw new IllegalArgumentException("Unsupported key: " + key);
-        }
+        return switch (key) {
+            case ASCENT -> os2.sTypoAscender * fontSize / head.unitsPerEm;
+            case CAPHEIGHT -> os2.sCapHeight * fontSize / head.unitsPerEm;
+            case DESCENT -> os2.sTypoDescender * fontSize / head.unitsPerEm;
+            case BBOXLLX -> fontSize * head.xMin / head.unitsPerEm;
+            case BBOXLLY -> fontSize * head.yMin / head.unitsPerEm;
+            case BBOXURX -> fontSize * head.xMax / head.unitsPerEm;
+            case BBOXURY -> fontSize * head.yMax / head.unitsPerEm;
+            case AWT_ASCENT -> fontSize * hhea.ascender / head.unitsPerEm;
+            case AWT_DESCENT -> fontSize * hhea.descender / head.unitsPerEm;
+            case AWT_LEADING -> fontSize * hhea.lineGap / head.unitsPerEm;
+            case AWT_MAXADVANCE -> fontSize * hhea.advanceWidthMax / head.unitsPerEm;
+            case UNDERLINE_POSITION ->
+                    (underlinePosition - (float) underlineThickness / 2) * fontSize / head.unitsPerEm;
+            case UNDERLINE_THICKNESS -> underlineThickness * fontSize / head.unitsPerEm;
+            case STRIKETHROUGH_POSITION -> os2.yStrikeoutPosition * fontSize / head.unitsPerEm;
+            case STRIKETHROUGH_THICKNESS -> os2.yStrikeoutSize * fontSize / head.unitsPerEm;
+            case SUBSCRIPT_SIZE -> os2.ySubscriptYSize * fontSize / head.unitsPerEm;
+            case SUBSCRIPT_OFFSET -> -os2.ySubscriptYOffset * fontSize / head.unitsPerEm;
+            case SUPERSCRIPT_SIZE -> os2.ySuperscriptYSize * fontSize / head.unitsPerEm;
+            case SUPERSCRIPT_OFFSET -> os2.ySuperscriptYOffset * fontSize / head.unitsPerEm;
+            default -> throw new IllegalArgumentException("Unsupported key: " + key);
+        };
     }
 
     /**
@@ -1680,7 +1635,7 @@ class TrueTypeFont extends BaseFont {
      * @return <CODE>true</CODE> if the font has any kerning pairs
      */
     public boolean hasKernPairs() {
-        return kerning.size() > 0;
+        return !kerning.isEmpty();
     }
 
     /**

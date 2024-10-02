@@ -107,7 +107,7 @@ public class CMapAwareDocumentFont extends DocumentFont {
      *
      * @since 2.1.7
      */
-    private void processToUnicode() throws ToUnicodeMapProcessingException {
+    private void processToUnicode() throws ToUnicodeMapProcessingException, PDFFilterException {
 
         PdfObject toUni = fontDic.get(PdfName.TOUNICODE);
         if (toUni != null) {
@@ -122,7 +122,7 @@ public class CMapAwareDocumentFont extends DocumentFont {
             } catch (IOException e) {
                 throw new ToUnicodeMapProcessingException("Unable to process ToUnicode map - " + e.getMessage(), e);
             } catch (PDFFilterException e) {
-                throw new RuntimeException(e);
+                throw new PDFFilterException(e.getMessage());
             }
         }
     }
