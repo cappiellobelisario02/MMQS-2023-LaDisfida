@@ -21,9 +21,6 @@ public class Hyphenator {
 
     private static final String DEFAULT_HYPH_LOCATION = "com/lowagie/text/pdf/hyphenation/hyph/";
 
-    /**
-     * TODO: Don't use statics
-     */
     private static Map<String, HyphenationTree> hyphenTrees = new HashMap<>();
     /**
      * Holds value of property hyphenDir.
@@ -147,7 +144,7 @@ public class Hyphenator {
         if (hTree == null) {
             return null;
         }
-        return hTree.hyphenate(word, leftMin, rightMin);
+        return hTree.hyphenate(word.toCharArray(), leftMin, rightMin, 0, 0);
     }
 
     /**
@@ -232,7 +229,7 @@ public class Hyphenator {
         if (hyphenTree == null) {
             return null;
         }
-        return hyphenTree.hyphenate(word, remainCharCount, pushCharCount);
+        return hyphenTree.hyphenate(word.toCharArray(), remainCharCount, pushCharCount, 0, 0);
     }
 
 }

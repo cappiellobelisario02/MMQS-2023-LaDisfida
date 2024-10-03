@@ -199,8 +199,8 @@ public final class FontFactory {
      */
 
     public static Font getFont(Properties attributes) {
-        fontImp.defaultEmbedding = defaultEmbedding;
-        fontImp.defaultEncoding = defaultEncoding;
+        FontFactoryImp.DEFAULT_EMBEDDING = defaultEmbedding;
+        FontFactoryImp.DEFAULT_ENCODING = defaultEncoding;
         return fontImp.getFont(attributes);
     }
 
@@ -382,7 +382,11 @@ public final class FontFactory {
      */
 
     public static void register(String path, String alias) {
-        fontImp.register(path, alias);
+        try{
+            fontImp.register(path, alias);
+        }catch(Exception e){
+            //may need some logging
+        }
     }
 
     /**

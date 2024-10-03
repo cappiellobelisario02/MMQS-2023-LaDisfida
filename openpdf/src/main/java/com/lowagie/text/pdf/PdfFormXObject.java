@@ -82,7 +82,7 @@ public class PdfFormXObject extends PdfStream {
 
     PdfFormXObject(PdfTemplate template, int compressionLevel) {
         super();
-        put(PdfName.TYPE, PdfName.XOBJECT);
+        put(PdfName.TYPE_CONST, PdfName.XOBJECT);
         put(PdfName.SUBTYPE, PdfName.FORM);
         put(PdfName.RESOURCES, template.getResources());
         put(PdfName.BBOX, new PdfRectangle(template.getBoundingBox()));
