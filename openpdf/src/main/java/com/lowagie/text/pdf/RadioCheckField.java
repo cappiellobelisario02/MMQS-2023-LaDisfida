@@ -580,7 +580,7 @@ public class RadioCheckField extends BaseField {
         BorderSettings borderSettings = new BorderSettings(super.borderStyle, super.borderWidth, super.borderColor);
         RadioCheckFieldAppearanceSettings appearanceSettings = new RadioCheckFieldAppearanceSettings(
                 this.checkType, super.rotation, super.box, super.fontSize, super.text, super.textColor,
-                super.backgroundColor, super.getRealFont()
+                backgroundColor, super.getRealFont()
         );
 
         PdfAppearance tpon = getAppearance(true, super.writer, borderSettings, appearanceSettings);

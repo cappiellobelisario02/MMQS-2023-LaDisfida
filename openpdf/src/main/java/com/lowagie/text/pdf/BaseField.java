@@ -85,14 +85,15 @@ public abstract class BaseField {
      * The field is hidden.
      */
     public static final int HIDDEN1 = 1;
-    /**
-     * The field is visible but does not print.
-     */
-    public static final int VISIBLE_BUT_DOES_NOT_PRINT = 2;
+
     /**
      * The field is hidden but is printable.
      */
     public static final int HIDDEN_BUT_PRINTABLE = 3;
+    /**
+     * The field is visible but does not print.
+     */
+    public static final int VISIBLE_BUT_DOES_NOT_PRINT = 4;
 
     /**
      * The annotation flag: Invisible.
@@ -434,7 +435,7 @@ public abstract class BaseField {
      * @return the background color
      */
     public Color getBackgroundColor() {
-        return this.backgroundColor;
+        return backgroundColor;
     }
 
     /**

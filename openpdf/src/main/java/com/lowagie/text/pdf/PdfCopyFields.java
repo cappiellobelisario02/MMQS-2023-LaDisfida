@@ -52,8 +52,10 @@ import com.lowagie.text.pdf.interfaces.PdfEncryptionSettings;
 import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Concatenates PDF documents including form fields. The rules for the form field concatenation are the same as in
@@ -138,7 +140,7 @@ public class PdfCopyFields
      * @throws DocumentException if the document is already open
      */
     public void setEncryption(byte[] userPassword, byte[] ownerPassword, int permissions, boolean strength128Bits)
-            throws DocumentException {
+            throws DocumentException, NoSuchAlgorithmException {
         fc.setEncryption(userPassword, ownerPassword, permissions,
                 strength128Bits ? PdfWriter.STANDARD_ENCRYPTION_128 : PdfWriter.STANDARD_ENCRYPTION_40);
     }
@@ -156,7 +158,7 @@ public class PdfCopyFields
      * @throws DocumentException if the document is already open
      */
     public void setEncryption(boolean strength, String userPassword, String ownerPassword, int permissions)
-            throws DocumentException {
+            throws DocumentException, NoSuchAlgorithmException {
         setEncryption(DocWriter.getISOBytes(userPassword), DocWriter.getISOBytes(ownerPassword), permissions, strength);
     }
 
@@ -189,7 +191,7 @@ public class PdfCopyFields
      *
      * @param outlines the bookmarks or <CODE>null</CODE> to remove any
      */
-    public void setOutlines(List<PdfName> outlines) {
+    public void setOutlines(List<Map<String, Object>> outlines) {
         fc.setOutlines(outlines);
     }
 
@@ -225,7 +227,7 @@ public class PdfCopyFields
      * @see com.lowagie.text.pdf.interfaces.PdfEncryptionSettings#setEncryption(byte[], byte[], int, int)
      */
     public void setEncryption(byte[] userPassword, byte[] ownerPassword, int permissions, int encryptionType)
-            throws DocumentException {
+            throws DocumentException, NoSuchAlgorithmException {
         fc.setEncryption(userPassword, ownerPassword, permissions, encryptionType);
     }
 
@@ -248,7 +250,8 @@ public class PdfCopyFields
      * @see com.lowagie.text.pdf.interfaces.PdfEncryptionSettings#setEncryption(java.security.cert.Certificate[], int[],
      * int)
      */
-    public void setEncryption(Certificate[] certs, int[] permissions, int encryptionType) throws DocumentException {
+    public void setEncryption(Certificate[] certs, int[] permissions, int encryptionType)
+            throws DocumentException, NoSuchAlgorithmException {
         fc.setEncryption(certs, permissions, encryptionType);
     }
 }

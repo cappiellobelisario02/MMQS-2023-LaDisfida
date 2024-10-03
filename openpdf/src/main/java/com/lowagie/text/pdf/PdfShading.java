@@ -194,7 +194,7 @@ public class PdfShading {
 
     public static PdfShading simpleAxial(PdfWriter writer, Coordinates coords, ColorPair colors, boolean extendStart,
             boolean extendEnd) {
-        checkCompatibleColors(colors.getStartColor(), colors.getEndColor());
+        checkCompatibleColors(colors.getStartColorSpot(), colors.getEndColorSpot());
         PdfFunction function = PdfFunction.type2(writer, new float[]{0, 1}, null, getColorArray(colors.getStartColor()),
                 getColorArray(colors.getEndColor()), 1);
         return type2(writer, colors.getStartColor(), new float[]{coords.getX0(), coords.getY0(), coords.getX1(), coords.getY1()}, null, function,
@@ -206,7 +206,7 @@ public class PdfShading {
     }
 
     public static PdfShading simpleRadial(PdfWriter writer, RadialCoordinates coords, ColorPair colors, boolean extendStart, boolean extendEnd) {
-        checkCompatibleColors(colors.getStartColor(), colors.getEndColor());
+        checkCompatibleColors(colors.getStartColorSpot(), colors.getEndColorSpot());
         PdfFunction function = PdfFunction.type2(writer, new float[]{0, 1}, null, getColorArray(colors.getStartColor()),
                 getColorArray(colors.getEndColor()), 1);
         return type3(writer, colors.getStartColor(), new float[]{coords.getX0(), coords.getY0(), coords.getR0(), coords.getX1(), coords.getY1(), coords.getR1()}, null, function,

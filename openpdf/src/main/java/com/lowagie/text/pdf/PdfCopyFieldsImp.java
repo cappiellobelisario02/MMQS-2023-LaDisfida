@@ -354,7 +354,7 @@ class PdfCopyFieldsImp extends PdfWriter {
         if (parent != null) {
             dic.put(PdfName.PARENT, parent);
         }
-        dic.put(PpdfName.T, new PdfString(name, PdfObject.TEXT_UNICODE));
+        dic.put(PdfName.T, new PdfString(name, PdfObject.TEXT_UNICODE));
         return dic;
     }
 
@@ -442,8 +442,8 @@ class PdfCopyFieldsImp extends PdfWriter {
         }
         PdfArray co = new PdfArray();
         for (Object obj : calculationOrderRefs) {
-            if (obj instanceof PdfIndirectReference) {
-                co.add((PdfIndirectReference) obj);
+            if (obj instanceof PdfIndirectReference pdfIndirectReference) {
+                co.add(pdfIndirectReference);
             }
         }
         if (!co.isEmpty()) {
@@ -683,11 +683,11 @@ class PdfCopyFieldsImp extends PdfWriter {
     }
 
     protected PdfIndirectReference getNewReference(PRIndirectReference ref) {
-        return new PdfIndirectReference(0, getNewObjectNumber(ref.getReader(), ref.getNumber(), 0));
+        return new PdfIndirectReference(0, getNewObjectNumber(ref.getReader(), ref.getNumber()));
     }
 
     @Override
-    protected int getNewObjectNumber(PdfReader reader, int number, int generation) {
+    protected int getNewObjectNumber(PdfReader reader, int number) {
         IntHashtable refs = readers2intrefs.get(reader);
         int n = refs.get(number);
         if (n == 0) {

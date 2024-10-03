@@ -525,7 +525,7 @@ public final class Pfm2afm {
      */
     public static void convert(RandomAccessFileOrArray in, OutputStream out) throws IOException {
         Pfm2afm p = new Pfm2afm(in, out);
-        p.openpfm();
+        p.openPfm();
         p.putheader();
         p.putchartab();
         p.putkerntab();
@@ -599,7 +599,7 @@ public final class Pfm2afm {
         out.print(" ;\n");
     }
 
-    private void openpfm() throws IOException {
+    private void openPfm() throws IOException {
         in.seek(0);
         vers = in.readShortLE();
         hLen = in.readIntLE();
@@ -857,13 +857,13 @@ public final class Pfm2afm {
         out.print("StartKernData\nStartKernPairs");
         outval(nzero);
         out.print('\n');
-        for (int k = 0; k < kerns.length; k += 3) {
-            if (kerns[k + 2] != 0) {
+        for (int kk = 0; kk < kerns.length; kk += 3) {
+            if (kerns[kk + 2] != 0) {
                 out.print("KPX ");
-                out.print(winChars[kerns[k]]);
+                out.print(winChars[kerns[kk]]);
                 out.print(' ');
-                out.print(winChars[kerns[k + 1]]);
-                outval(kerns[k + 2]);
+                out.print(winChars[kerns[kk + 1]]);
+                outval(kerns[kk + 2]);
                 out.print('\n');
             }
         }

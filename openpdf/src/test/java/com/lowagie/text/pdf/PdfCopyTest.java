@@ -6,10 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PdfCopyTest {
+class PdfCopyTest {
 
     @Test
     void nullpointerExceptionTest() {
@@ -17,7 +18,7 @@ public class PdfCopyTest {
         Assertions.assertDoesNotThrow(this::pdfCopyTest);
     }
 
-    private void pdfCopyTest() throws IOException {
+    private void pdfCopyTest() throws IOException, PDFFilterException {
         InputStream stream = getClass().getResourceAsStream("/openpdf_bug_test.pdf");
 
         PdfReader reader = new PdfReader(stream);

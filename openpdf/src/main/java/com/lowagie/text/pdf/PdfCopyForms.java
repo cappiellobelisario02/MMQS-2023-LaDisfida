@@ -55,8 +55,12 @@ import com.lowagie.text.pdf.interfaces.PdfEncryptionSettings;
 import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Allows you to add one (or more) existing PDF document(s) to create a new PDF and add the form of another PDF document
@@ -139,13 +143,17 @@ public class PdfCopyForms
      * @param userPassword    the user password. Can be null or empty
      * @param ownerPassword   the owner password. Can be null or empty
      * @param permissions     the user permissions
-     * @param strength128Bits <code>true</code> for 128 bit key length, <code>false</code> for 40 bit key length
+     * @param strength128Bits <code>true</code> for 128 bits key length, <code>false</code> for 40 bit key length
      * @throws DocumentException if the document is already open
      */
     public void setEncryption(byte[] userPassword, byte[] ownerPassword, int permissions, boolean strength128Bits)
-            throws DocumentException {
-        fc.setEncryption(userPassword, ownerPassword, permissions,
-                strength128Bits ? PdfWriter.STANDARD_ENCRYPTION_128 : PdfWriter.STANDARD_ENCRYPTION_40);
+            throws DocumentException, NoSuchAlgorithmException {
+        try {
+            fc.setEncryption(userPassword, ownerPassword, permissions,
+                    strength128Bits ? PdfWriter.STANDARD_ENCRYPTION_128 : PdfWriter.STANDARD_ENCRYPTION_40);
+        } catch (NoSuchAlgorithmException e) {
+            throw new NoSuchAlgorithmException(e);
+        }
     }
 
     /**
@@ -154,15 +162,19 @@ public class PdfCopyForms
      * be AllowPrinting, AllowModifyContents, AllowCopy, AllowModifyAnnotations, AllowFillIn, AllowScreenReaders,
      * AllowAssembly and AllowDegradedPrinting. The permissions can be combined by ORing them.
      *
-     * @param strength      true for 128 bit key length. false for 40 bit key length
+     * @param strength      true for 128 bits key length. false for 40 bit key length
      * @param userPassword  the user password. Can be null or empty
      * @param ownerPassword the owner password. Can be null or empty
      * @param permissions   the user permissions
      * @throws DocumentException if the document is already open
      */
     public void setEncryption(boolean strength, String userPassword, String ownerPassword, int permissions)
-            throws DocumentException {
-        setEncryption(DocWriter.getISOBytes(userPassword), DocWriter.getISOBytes(ownerPassword), permissions, strength);
+            throws DocumentException, NoSuchAlgorithmException {
+        try {
+            setEncryption(DocWriter.getISOBytes(userPassword), DocWriter.getISOBytes(ownerPassword), permissions, strength);
+        } catch (NoSuchAlgorithmException e) {
+            throw new NoSuchAlgorithmException(e);
+        }
     }
 
     /**
@@ -195,7 +207,20 @@ public class PdfCopyForms
      * @param outlines the bookmarks or <CODE>null</CODE> to remove any
      */
     public void setOutlines(List<PdfName> outlines) {
-        fc.setOutlines(outlines);
+        List<Map<String, Object>> bookmarks = new ArrayList<>();
+
+        // Loop through the PdfName outlines and create the necessary map for each one
+        for (PdfName outline : outlines) {
+            Map<String, Object> outlineMap = new HashMap<>();
+            outlineMap.put("Title", outline.toString());  // Assuming you want to use the PdfName as a title
+            outlineMap.put("Action", outline.getIndRef());
+            outlineMap.put("Page", "1 Fit");  // This is an example page destination
+
+            bookmarks.add(outlineMap);
+        }
+
+        // Set the outlines (bookmarks) on the PdfWriter
+        fc.setOutlines(bookmarks);
     }
 
     /**
@@ -230,8 +255,12 @@ public class PdfCopyForms
      * @see com.lowagie.text.pdf.interfaces.PdfEncryptionSettings#setEncryption(byte[], byte[], int, int)
      */
     public void setEncryption(byte[] userPassword, byte[] ownerPassword, int permissions, int encryptionType)
-            throws DocumentException {
-        fc.setEncryption(userPassword, ownerPassword, permissions, encryptionType);
+            throws DocumentException, NoSuchAlgorithmException {
+        try {
+            fc.setEncryption(userPassword, ownerPassword, permissions, encryptionType);
+        } catch (NoSuchAlgorithmException e) {
+            throw new NoSuchAlgorithmException(e);
+        }
     }
 
     /**
@@ -253,7 +282,12 @@ public class PdfCopyForms
      * @see com.lowagie.text.pdf.interfaces.PdfEncryptionSettings#setEncryption(java.security.cert.Certificate[], int[],
      * int)
      */
-    public void setEncryption(Certificate[] certs, int[] permissions, int encryptionType) throws DocumentException {
-        fc.setEncryption(certs, permissions, encryptionType);
+    public void setEncryption(Certificate[] certs, int[] permissions, int encryptionType)
+            throws DocumentException, NoSuchAlgorithmException {
+        try {
+            fc.setEncryption(certs, permissions, encryptionType);
+        } catch (NoSuchAlgorithmException e) {
+            throw new NoSuchAlgorithmException(e);
+        }
     }
 }

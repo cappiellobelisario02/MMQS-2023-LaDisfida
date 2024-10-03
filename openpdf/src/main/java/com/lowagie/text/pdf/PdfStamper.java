@@ -64,6 +64,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.Calendar;
@@ -178,7 +179,7 @@ public class PdfStamper
      */
     public static PdfStamper createSignature(PdfReader reader, OutputStream os, char pdfVersion, File tempFile,
             boolean append) throws DocumentException, IOException {
-        PdfStamper stp;
+        PdfStamper stp = null;
         if (tempFile == null) {
             ByteBuffer bout = null;
             try{
@@ -373,7 +374,7 @@ public class PdfStamper
      * @throws DocumentException on error
      * @throws IOException       on error
      */
-    public void close() throws DocumentException, IOException {
+    public void close() throws DocumentException, IOException, NoSuchAlgorithmException {
         if (!hasSignature) {
             if (cleanMetadata && stamper.xmpMetadata == null) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -466,7 +467,7 @@ public class PdfStamper
      * @throws DocumentException if anything was already written to the output
      */
     public void setEncryption(byte[] userPassword, byte[] ownerPassword, int permissions, boolean strength128Bits)
-            throws DocumentException {
+            throws DocumentException, NoSuchAlgorithmException {
         if (stamper.isAppend()) {
             throw new DocumentException(MessageLocalization.getComposedMessage(
                     NOT_SUPPORT_CHANGING_THE_ENCRYPTION_STATUS));
@@ -494,7 +495,7 @@ public class PdfStamper
      * @throws DocumentException if the document is already open
      */
     public void setEncryption(byte[] userPassword, byte[] ownerPassword, int permissions, int encryptionType)
-            throws DocumentException {
+            throws DocumentException, NoSuchAlgorithmException {
         if (stamper.isAppend()) {
             throw new DocumentException(MessageLocalization.getComposedMessage(
                     NOT_SUPPORT_CHANGING_THE_ENCRYPTION_STATUS));
@@ -519,7 +520,7 @@ public class PdfStamper
      * @throws DocumentException if anything was already written to the output
      */
     public void setEncryption(boolean strength, String userPassword, String ownerPassword, int permissions)
-            throws DocumentException {
+            throws DocumentException, NoSuchAlgorithmException {
         setEncryption(DocWriter.getISOBytes(userPassword), DocWriter.getISOBytes(ownerPassword), permissions, strength);
     }
 
@@ -538,7 +539,7 @@ public class PdfStamper
      * @throws DocumentException if anything was already written to the output
      */
     public void setEncryption(int encryptionType, String userPassword, String ownerPassword, int permissions)
-            throws DocumentException {
+            throws DocumentException, NoSuchAlgorithmException {
         setEncryption(DocWriter.getISOBytes(userPassword), DocWriter.getISOBytes(ownerPassword), permissions,
                 encryptionType);
     }
@@ -556,7 +557,8 @@ public class PdfStamper
      *                       ENCRYPTION_AES128.
      * @throws DocumentException if the encryption was set too late
      */
-    public void setEncryption(Certificate[] certs, int[] permissions, int encryptionType) throws DocumentException {
+    public void setEncryption(Certificate[] certs, int[] permissions, int encryptionType)
+            throws DocumentException, NoSuchAlgorithmException {
         if (stamper.isAppend()) {
             throw new DocumentException(MessageLocalization.getComposedMessage(
                     NOT_SUPPORT_CHANGING_THE_ENCRYPTION_STATUS));
@@ -676,7 +678,7 @@ public class PdfStamper
      *
      * @param outlines the bookmarks or <CODE>null</CODE> to remove any
      */
-    public void setOutlines(List<PdfOutline> outlines) {
+    public void setOutlines(List<Map<String, Object>> outlines) {
         stamper.setOutlines(outlines);
     }
 

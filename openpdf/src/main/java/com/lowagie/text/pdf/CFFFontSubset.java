@@ -263,7 +263,6 @@ public class CFFFontSubset extends CFFFont {
         int nLeft;
         while (i < numofGlyphs) {
             num++;
-            sid = getCard16();
             if (type == 1) {
                 nLeft = getCard8();
             } else {
@@ -1041,7 +1040,7 @@ public class CFFFontSubset extends CFFFont {
         int place = 0;
         // Write the count field
         newIndex[place++] = (byte) ((count >>> 8) & 0xff);
-        newIndex[place++] = (byte) ((count >>> 0) & 0xff);
+        newIndex[place++] = (byte) (count & 0xff);
         // Write the offsize field
         newIndex[place++] = offsize;
         // Write the offset array according to the offsize
@@ -1185,7 +1184,6 @@ public class CFFFontSubset extends CFFFont {
 
         // now create the new CFF font
         int[] currentOffset = new int[1];
-        currentOffset[0] = 0;
         // Count and save the offset for each item
         Iterator<Item> listIter = outputList.iterator();
         while (listIter.hasNext()) {
