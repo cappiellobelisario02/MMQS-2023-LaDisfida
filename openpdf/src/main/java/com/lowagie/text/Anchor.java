@@ -143,20 +143,31 @@ public class Anchor extends Phrase {
     @Override
     public boolean process(ElementListener listener) {
         try {
-            Chunk chunk;
-            Iterator<Chunk> i = getChunks().iterator();
+            // Iterate over Elements, not directly over Chunks
+            Iterator<Element> i = getChunks().iterator();
             boolean localDestination = (reference != null && reference.startsWith("#"));
             boolean notGotoOK = true;
+
+            // Loop through each Element
             while (i.hasNext()) {
-                chunk = i.next();
-                if (name != null && notGotoOK && !chunk.isEmpty()) {
-                    chunk.setLocalDestination(name);
-                    notGotoOK = false;
+                Element element = i.next();
+
+                // Check if the element is a Chunk before casting
+                if (element instanceof Chunk) {
+                    Chunk chunk = (Chunk) element;
+
+                    // Apply anchor-specific logic to the Chunk
+                    if (name != null && notGotoOK && !chunk.isEmpty()) {
+                        chunk.setLocalDestination(name);
+                        notGotoOK = false;
+                    }
+                    if (localDestination) {
+                        chunk.setLocalGoto(reference.substring(1));
+                    }
+
+                    // Pass the chunk to the listener
+                    listener.add(chunk);
                 }
-                if (localDestination) {
-                    chunk.setLocalGoto(reference.substring(1));
-                }
-                listener.add(chunk);
             }
             return true;
         } catch (DocumentException de) {
@@ -164,33 +175,50 @@ public class Anchor extends Phrase {
         }
     }
 
+
     /**
      * Gets all the chunks in this element.
      *
      * @return an <CODE>ArrayList</CODE>
      */
     @Override
-    public ArrayList<Chunk> getChunks() {
-        ArrayList<Chunk> tmp = new ArrayList<>();
-        Chunk chunk;
-        Iterator<Element> i = iterator();
+    public ArrayList<Element> getChunks() {
+        ArrayList<Element> tmp = new ArrayList<>();
         boolean localDestination = (reference != null && reference.startsWith("#"));
         boolean notGotoOK = true;
-        while (i.hasNext()) {
-            chunk = (Chunk) i.next();
-            if (name != null && notGotoOK && !chunk.isEmpty()) {
-                chunk.setLocalDestination(name);
-                notGotoOK = false;
+
+        // Use an iterator to go through the elements of this class (likely Phrase or Anchor)
+        Iterator<Element> iterator = this.iterator();  // Ensure 'this' is iterable and returns Elements
+
+        while (iterator.hasNext()) {
+            Element element = iterator.next();  // Each element is of type 'Element'
+
+            // Check if the element is a Chunk before casting
+            if (element instanceof Chunk) {
+                Chunk chunk = (Chunk) element;
+
+                // Apply anchor-specific logic to the Chunk
+                if (name != null && notGotoOK && !chunk.isEmpty()) {
+                    chunk.setLocalDestination(name);
+                    notGotoOK = false;
+                }
+                if (localDestination) {
+                    chunk.setLocalGoto(reference.substring(1));
+                } else if (reference != null) {
+                    chunk.setAnchor(reference);
+                }
             }
-            if (localDestination) {
-                chunk.setLocalGoto(reference.substring(1));
-            } else if (reference != null) {
-                chunk.setAnchor(reference);
-            }
-            tmp.add(chunk);
+
+            // Add all chunks from the element, whether it's a Chunk or not
+            tmp.addAll(element.getChunks());
         }
+
         return tmp;
     }
+
+
+
+
 
     /**
      * Gets the type of the text element.
