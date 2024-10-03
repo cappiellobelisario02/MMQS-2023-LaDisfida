@@ -59,12 +59,17 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.InvalidRunDirectionException;
+import com.lowagie.text.pdf.AcroFields.Item;
+import com.lowagie.text.pdf.PdfSigGenericPKCS.PPKLite;
+import com.lowagie.text.pdf.PdfSigGenericPKCS.PPKMS;
+import com.lowagie.text.pdf.PdfSigGenericPKCS.VeriSign;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
@@ -474,7 +479,7 @@ public class PdfSignatureAppearance {
                                 .getComposedMessage("field.names.cannot.contain.a.dot"));
             }
             AcroFields af = writer.getAcroFields();
-            AcroFields.Item item = af.getFieldItem(fieldName);
+            Item item = af.getFieldItem(fieldName);
             if (item != null) {
                 throw new IllegalArgumentException(
                         MessageLocalization.getComposedMessage(
@@ -503,7 +508,7 @@ public class PdfSignatureAppearance {
      */
     public void setVisibleSignature(String fieldName) {
         AcroFields af = writer.getAcroFields();
-        AcroFields.Item item = af.getFieldItem(fieldName);
+        Item item = af.getFieldItem(fieldName);
         if (item == null) {
             throw new IllegalArgumentException(
                     MessageLocalization.getComposedMessage("the.field.1.does.not.exist",
@@ -542,6 +547,8 @@ public class PdfSignatureAppearance {
                         pageRect.getLeft(), pageSize.getRight() - pageRect.getTop(),
                         pageRect.getRight());
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + rotation);
         }
         if (rotation != 0) {
             pageRect.normalize();
@@ -838,16 +845,16 @@ public class PdfSignatureAppearance {
      * Sets the digest/signature to an external calculated value.
      *
      * @param digest                    the digest. This is the actual signature
-     * @param RSAdata                   the extra data that goes into the data tag in PKCS#7
+     * @param rsaData                   the extra data that goes into the data tag in PKCS#7
      * @param digestEncryptionAlgorithm the encryption algorithm. It may must be <CODE>null</CODE> if the
      *                                  <CODE>digest</CODE> is also <CODE>null</CODE>. If the
      *                                  <CODE>digest</CODE> is not <CODE>null</CODE> then it may be "RSA"
      *                                  or "DSA"
      */
-    public void setExternalDigest(byte[] digest, byte[] RSAdata,
+    public void setExternalDigest(byte[] digest, byte[] rsaData,
             String digestEncryptionAlgorithm) {
         externalDigest = digest;
-        externalRSAdata = RSAdata;
+        externalRSAdata = rsaData;
         this.digestEncryptionAlgorithm = digestEncryptionAlgorithm;
     }
 
@@ -912,7 +919,7 @@ public class PdfSignatureAppearance {
      *
      * @return the private key
      */
-    public java.security.PrivateKey getPrivKey() {
+    public PrivateKey getPrivKey() {
         return privKey;
     }
 
@@ -921,7 +928,7 @@ public class PdfSignatureAppearance {
      *
      * @return the certificate revocation list
      */
-    public java.security.cert.CRL[] getCrlList() {
+    public CRL[] getCrlList() {
         return this.crlList;
     }
 
@@ -930,7 +937,7 @@ public class PdfSignatureAppearance {
      *
      * @return the filter used to sign the document
      */
-    public com.lowagie.text.pdf.PdfName getFilter() {
+    public PdfName getFilter() {
         return filter;
     }
 
@@ -958,7 +965,7 @@ public class PdfSignatureAppearance {
      *
      * @return the field name
      */
-    public java.lang.String getFieldName() {
+    public String getFieldName() {
         return fieldName;
     }
 
@@ -976,7 +983,7 @@ public class PdfSignatureAppearance {
      *
      * @return the rectangle that represent the position and dimension of the signature in the page
      */
-    public com.lowagie.text.Rectangle getPageRect() {
+    public Rectangle getPageRect() {
         return pageRect;
     }
 
@@ -985,7 +992,7 @@ public class PdfSignatureAppearance {
      *
      * @return the signature date
      */
-    public java.util.Calendar getSignDate() {
+    public Calendar getSignDate() {
         return signDate;
     }
 
@@ -994,7 +1001,7 @@ public class PdfSignatureAppearance {
      *
      * @param signDate the signature date
      */
-    public void setSignDate(java.util.Calendar signDate) {
+    public void setSignDate(Calendar signDate) {
         this.signDate = signDate;
     }
 
@@ -1003,26 +1010,26 @@ public class PdfSignatureAppearance {
      *
      * @return the signature date
      */
-    public java.util.Calendar getSignDateNullSafe() {
+    public Calendar getSignDateNullSafe() {
         if (this.signDate == null) {
             return new GregorianCalendar();
         }
         return this.signDate;
     }
 
-    com.lowagie.text.pdf.ByteBuffer getSigout() {
+    ByteBuffer getSigout() {
         return sigout;
     }
 
-    void setSigout(com.lowagie.text.pdf.ByteBuffer sigout) {
+    void setSigout(ByteBuffer sigout) {
         this.sigout = sigout;
     }
 
-    java.io.OutputStream getOriginalout() {
+    OutputStream getOriginalout() {
         return originalout;
     }
 
-    void setOriginalout(java.io.OutputStream originalout) {
+    void setOriginalout(OutputStream originalout) {
         this.originalout = originalout;
     }
 
@@ -1031,11 +1038,11 @@ public class PdfSignatureAppearance {
      *
      * @return the temporary file or <CODE>null</CODE> is the document is created in memory
      */
-    public java.io.File getTempFile() {
+    public File getTempFile() {
         return tempFile;
     }
 
-    void setTempFile(java.io.File tempFile) {
+    void setTempFile(File tempFile) {
         this.tempFile = tempFile;
     }
 
@@ -1168,11 +1175,11 @@ public class PdfSignatureAppearance {
         exclusionLocations = new HashMap<>();
         if (cryptoDictionary == null) {
             if (PdfName.ADOBE_PPKLITE.equals(getFilter())) {
-                sigStandard = new PdfSigGenericPKCS.PPKLite(getProvider());
+                sigStandard = new PPKLite(getProvider());
             } else if (PdfName.ADOBE_PPKMS.equals(getFilter())) {
-                sigStandard = new PdfSigGenericPKCS.PPKMS(getProvider());
+                sigStandard = new PPKMS(getProvider());
             } else if (PdfName.VERISIGN_PPKVS.equals(getFilter())) {
-                sigStandard = new PdfSigGenericPKCS.VeriSign(getProvider());
+                sigStandard = new VeriSign(getProvider());
             } else {
                 throw new IllegalArgumentException(
                         MessageLocalization.getComposedMessage("unknown.filter.1",
@@ -1250,7 +1257,11 @@ public class PdfSignatureAppearance {
             docmdp.put(new PdfName("DocMDP"), refSig);
             writer.reader.getCatalog().put(new PdfName("Perms"), docmdp);
         }
-        writer.close(stamper.getInfoDictionary());
+        try{
+            writer.close(stamper.getInfoDictionary());
+        }catch(NoSuchAlgorithmException nsae){
+            //may need some logging
+        }
 
         range = new long[exclusionLocations.size() * 2];
         long byteRangePosition = exclusionLocations
@@ -1419,9 +1430,9 @@ public class PdfSignatureAppearance {
         PdfDictionary transformParams = new PdfDictionary();
         transformParams.put(PdfName.P, new PdfNumber(certificationLevel));
         transformParams.put(PdfName.V, new PdfName("1.2"));
-        transformParams.put(PdfName.TYPE, PdfName.TRANSFORMPARAMS);
+        transformParams.put(PdfName.TYPE_CONST, PdfName.TRANSFORMPARAMS);
         reference.put(PdfName.TRANSFORMMETHOD, PdfName.DOCMDP);
-        reference.put(PdfName.TYPE, PdfName.SIGREF);
+        reference.put(PdfName.TYPE_CONST, PdfName.SIGREF);
         reference.put(PdfName.TRANSFORMPARAMS, transformParams);
         reference.put(new PdfName("DigestValue"), new PdfString("aa"));
         PdfArray loc = new PdfArray();
@@ -1443,7 +1454,7 @@ public class PdfSignatureAppearance {
      * @return the document bytes that are hashable
      */
     public InputStream getRangeStream() {
-        return new PdfSignatureAppearance.RangeStream(raf, bout, range);
+        return new RangeStream(raf, bout, range);
     }
 
     /**
@@ -1451,7 +1462,7 @@ public class PdfSignatureAppearance {
      *
      * @return the user made signature dictionary
      */
-    public com.lowagie.text.pdf.PdfDictionary getCryptoDictionary() {
+    public PdfDictionary getCryptoDictionary() {
         return cryptoDictionary;
     }
 
@@ -1461,7 +1472,7 @@ public class PdfSignatureAppearance {
      * @param cryptoDictionary a user made signature dictionary
      */
     public void setCryptoDictionary(
-            com.lowagie.text.pdf.PdfDictionary cryptoDictionary) {
+            PdfDictionary cryptoDictionary) {
         this.cryptoDictionary = cryptoDictionary;
     }
 
@@ -1470,11 +1481,11 @@ public class PdfSignatureAppearance {
      *
      * @return the <CODE>PdfStamper</CODE> associated with this instance
      */
-    public com.lowagie.text.pdf.PdfStamper getStamper() {
+    public PdfStamper getStamper() {
         return stamper;
     }
 
-    void setStamper(com.lowagie.text.pdf.PdfStamper stamper) {
+    void setStamper(PdfStamper stamper) {
         this.stamper = stamper;
     }
 
@@ -1495,7 +1506,7 @@ public class PdfSignatureAppearance {
      *
      * @return the instance of the standard signature dictionary
      */
-    public com.lowagie.text.pdf.PdfSigGenericPKCS getSigStandard() {
+    public PdfSigGenericPKCS getSigStandard() {
         return sigStandard;
     }
 
@@ -1684,7 +1695,7 @@ public class PdfSignatureAppearance {
         }
 
         /**
-         * @see java.io.InputStream#read()
+         * @see InputStream#read()
          */
         @Override
         public int read() throws IOException {
@@ -1696,7 +1707,7 @@ public class PdfSignatureAppearance {
         }
 
         /**
-         * @see java.io.InputStream#read(byte[], int, int)
+         * @see InputStream#read(byte[], int, int)
          */
         @Override
         public int read(byte[] b, int off, int len) throws IOException {

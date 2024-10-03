@@ -101,12 +101,12 @@ public class FontFactoryImp implements FontProvider {
     /**
      * This is the default encoding to use.
      */
-    public static final String DEFAULT_ENCODING = BaseFont.WINANSI;
+    public static String DEFAULT_ENCODING = BaseFont.WINANSI;
 
     /**
      * This is the default value of the <VAR>embedded</VAR> variable.
      */
-    public static final boolean DEFAULT_EMBEDDING = BaseFont.NOT_EMBEDDED;
+    public static boolean DEFAULT_EMBEDDING = BaseFont.NOT_EMBEDDED;
 
     /**
      * Creates new FontFactory

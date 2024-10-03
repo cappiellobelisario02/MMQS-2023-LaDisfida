@@ -21,7 +21,7 @@ public class UnembedFontPdfSmartCopy extends PdfSmartCopy {
             throws IOException, BadPdfFormatException {
 
         PdfDictionary out = new PdfDictionary();
-        PdfObject type = PdfReader.getPdfObjectRelease(in.get(PdfName.TYPE));
+        PdfObject type = PdfReader.getPdfObjectRelease(in.get(PdfName.TYPE_CONST));
 
         for (PdfName key : in.getKeys()) {
             PdfObject value = in.get(key);
@@ -30,7 +30,7 @@ public class UnembedFontPdfSmartCopy extends PdfSmartCopy {
                     || PdfName.FONTFILE2.equals(key)
                     || PdfName.FONTFILE3.equals(key))
                     && !PdfReader.isFontSubset(PdfReader.getFontNameFromDescriptor(in))) {
-                continue;
+                //empty body, I don't know why
             } else {
                 out.put(key, copyObject(value));
             }

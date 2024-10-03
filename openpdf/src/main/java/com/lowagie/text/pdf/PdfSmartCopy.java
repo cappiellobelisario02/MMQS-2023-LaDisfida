@@ -73,7 +73,7 @@ public class PdfSmartCopy extends PdfCopy {
     /**
      * the cache with the streams and references.
      */
-    private Map<ByteStore, PdfIndirectReference> streamMap = null;
+    private Map<ByteStore, PdfIndirectReference> streamMap;
 
     /**
      * Creates a PdfSmartCopy instance.
@@ -131,7 +131,7 @@ public class PdfSmartCopy extends PdfCopy {
             indirects.put(key, iRef);
         }
         if (srcObj.isDictionary()) {
-            PdfObject type = PdfReader.getPdfObjectRelease(((PdfDictionary) srcObj).get(PdfName.TYPE));
+            PdfObject type = PdfReader.getPdfObjectRelease(((PdfDictionary) srcObj).get(PdfName.TYPE_CONST));
             if (PdfName.PAGE.equals(type)) {
                 return theRef;
             }
@@ -161,8 +161,7 @@ public class PdfSmartCopy extends PdfCopy {
                 throw new ExceptionConverter(e);
             }
             ByteBuffer bb = new ByteBuffer();
-            int level = MAX_LEVELS;
-            serObject(str, level, bb);
+            serObject(str, MAX_LEVELS, bb);
             this.b = bb.toByteArray();
             md5 = null;
         }

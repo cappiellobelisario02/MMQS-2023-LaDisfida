@@ -51,6 +51,7 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.Anchor;
 import com.lowagie.text.Cell;
+import com.lowagie.text.Chapter;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Element;
 import com.lowagie.text.Image;
@@ -59,6 +60,7 @@ import com.lowagie.text.ListItem;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.Section;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -175,7 +177,7 @@ public class PdfCell extends Rectangle {
      */
 
     public PdfCell(Cell cell, int rownumber, float left, float right, float top, float cellspacing, float cellpadding) {
-        // constructs a Rectangle (the bottomvalue will be changed afterwards)
+        // constructs a Rectangle (the bottomvalue will be changed afterward)
         super(left, top, right, top);
         // copying the other Rectangle attributes from class Cell
         cloneNonPositionParameters(cell);
@@ -516,7 +518,6 @@ public class PdfCell extends Rectangle {
      * @param i           the image to add
      * @param left        the left border
      * @param right       the right border
-     * @param extraHeight extra height to add above image
      * @param alignment   horizontal alignment (constant from Element class)
      * @return the height of the image
      */
@@ -617,8 +618,7 @@ public class PdfCell extends Rectangle {
     public float remainingHeight() {
         float result = 0f;
         for (Image image1 : images) {
-            Image image = image1;
-            result += image.getScaledHeight();
+            result += image1.getScaledHeight();
         }
         return remainingLinesHeight() + cellspacing + 2 * cellpadding + result;
     }
@@ -664,7 +664,7 @@ public class PdfCell extends Rectangle {
     }
 
     /**
-     * Gets the cellpadding of a cell..
+     * Gets the cellpadding of a cell.
      *
      * @return a value
      */
@@ -688,27 +688,42 @@ public class PdfCell extends Rectangle {
                 action = new PdfAction(url);
             }
         }
-        Iterator<String> i;
+
+        Iterator<Element> i;
         switch (element.type()) {
-            case Element.PHRASE, 
-                 Element.SECTION, 
-                 Element.ANCHOR, 
-                 Element.CHAPTER, 
-                 Element.LISTITEM, 
+            case Element.PHRASE,
+                 Element.SECTION,
+                 Element.ANCHOR,
+                 Element.CHAPTER,
+                 Element.LISTITEM,
                  Element.PARAGRAPH:
-                for (i = ((ArrayList) element).iterator(); i.hasNext(); ) {
-                    processActions((Element) i.next(), action, allActions);
+                // Check if element can be cast to a composite element like Section or Chapter
+                if (element instanceof Section sectionElement) {
+                    i = sectionElement.iterator(); // Safely iterate over Section elements
+                } else if (element instanceof Chapter chapterElement) {
+                    i = chapterElement.iterator(); // Safely iterate over Chapter elements
+                } else {
+                    // For other elements like Paragraph, check for chunks
+                    i = element.getChunks().iterator(); // Safely iterate over chunks of the element
+                }
+
+                while (i.hasNext()) {
+                    processActions(i.next(), action, allActions);
                 }
                 break;
+
             case Element.CHUNK:
                 allActions.add(action);
                 break;
+
             case Element.LIST:
-                for (i = ((List) element).getItems().iterator(); i.hasNext(); ) {
-                    processActions((Element) i.next(), action, allActions);
+                for (i = ((com.lowagie.text.List) element).getItems().iterator(); i.hasNext(); ) {
+                    processActions(i.next(), action, allActions);
                 }
                 break;
+
             default:
+                // Handle chunks for the default case
                 int n = element.getChunks().size();
                 while (n-- > 0) {
                     allActions.add(action);
@@ -716,6 +731,7 @@ public class PdfCell extends Rectangle {
                 break;
         }
     }
+
 
     /**
      * Gets the number of the group this cell is in..
@@ -735,29 +751,6 @@ public class PdfCell extends Rectangle {
 
     void setGroupNumber(int number) {
         groupNumber = number;
-    }
-
-    /**
-     * Gets a Rectangle that is altered to fit on the page.
-     *
-     * @param top    the top position
-     * @param bottom the bottom position
-     * @return a <CODE>Rectangle</CODE>
-     */
-
-    @Override
-    public Rectangle RECTANGLE(float top, float bottom) {
-        Rectangle tmp = new Rectangle(getLeft(), getBottom(), getRight(), getTop());
-        tmp.cloneNonPositionParameters(this);
-        if (getTop() > top) {
-            tmp.setTop(top);
-            tmp.setBorder(border - (border & TOP));
-        }
-        if (getBottom() < bottom) {
-            tmp.setBottom(bottom);
-            tmp.setBorder(border - (border & BOTTOM));
-        }
-        return tmp;
     }
 
     /**

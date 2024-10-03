@@ -54,6 +54,8 @@ import com.lowagie.text.Element;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Row;
 import com.lowagie.text.Table;
+import com.lowagie.text.exceptions.AddCellException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -92,6 +94,8 @@ public class PdfTable extends Rectangle {
      */
     private ArrayList<PdfCell> cells;
 
+    private int groupNumber = 0;
+
     // constructors
 
     /**
@@ -105,25 +109,30 @@ public class PdfTable extends Rectangle {
      */
 
     PdfTable(Table table, float left, float right, float top) {
-        // constructs a Rectangle (the bottom value will be changed afterwards)
+        // constructs a Rectangle (the bottom value will be changed afterward)
         super(left, top, right, top);
         this.table = table;
-        table.complete();
+        try{
+            table.complete();
 
-        // copying the attributes from class Table
-        cloneNonPositionParameters(table);
+            // copying the attributes from class Table
+            cloneNonPositionParameters(table);
 
-        this.columns = table.getColumns();
-        positions = table.getWidths(left, right - left);
+            this.columns = table.getColumns();
+            positions = table.getWidths(left, right - left);
 
-        // initialization of some parameters
-        setLeft(positions[0]);
-        setRight(positions[positions.length - 1]);
+            // initialization of some parameters
+            setLeft(positions[0]);
+            setRight(positions[positions.length - 1]);
 
-        headercells = new ArrayList<>();
-        cells = new ArrayList<>();
+            headercells = new ArrayList<>();
+            cells = new ArrayList<>();
 
-        updateRowAdditionsInternal();
+            updateRowAdditionsInternal();
+        }catch(AddCellException | IOException e){
+            //may need some logging
+        }
+
     }
 
     // methods
@@ -136,9 +145,13 @@ public class PdfTable extends Rectangle {
      */
 
     void updateRowAdditions() {
-        table.complete();
-        updateRowAdditionsInternal();
-        table.deleteAllRows();
+        try{
+            table.complete();
+            updateRowAdditionsInternal();
+            table.deleteAllRows();
+        }catch(AddCellException | IOException ioe){
+            //may need some logging
+        }
     }
 
     /**
@@ -170,7 +183,7 @@ public class PdfTable extends Rectangle {
 
     private void processRows(int prevRows, int firstDataRow, float[] offsets, ArrayList<PdfCell> newCells) {
         int rowNumber = 0;
-        int groupNumber = 0;
+        groupNumber = 0;
 
         for (Iterator<?> rowIterator = table.iterator(); rowIterator.hasNext(); ) {
             Row row = (Row) rowIterator.next();
