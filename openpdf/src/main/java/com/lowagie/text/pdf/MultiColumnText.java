@@ -57,6 +57,7 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.InvalidTopPositionException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -299,7 +300,12 @@ public class MultiColumnText implements Element {
             currentHeight = Math.max(currentHeight, getHeight(left, right));
             configureColumnText(currentDef, left, right);
 
-            int result = columnText.go();
+            int result;
+            try {
+                result = columnText.go();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             done = handleResult(result);
 
             if (!done && shiftCurrentColumn()) {

@@ -542,7 +542,12 @@ public class PdfContentStreamHandler {
             PdfArray fontParameter = gsDic.getAsArray(PdfName.FONT);
             if (fontParameter != null) {
                 PdfObject pdfObject = fontParameter.getPdfObject(0);
-                CMapAwareDocumentFont font = new CMapAwareDocumentFont((PRIndirectReference) pdfObject);
+                CMapAwareDocumentFont font;
+                try {
+                    font = new CMapAwareDocumentFont((PRIndirectReference) pdfObject);
+                } catch (PDFFilterException e) {
+                    throw new RuntimeException(e);
+                }
                 float size = fontParameter.getAsNumber(1).floatValue();
 
                 handler.graphicsState().setFont(font);
@@ -613,7 +618,12 @@ public class PdfContentStreamHandler {
 
             PdfDictionary fontsDictionary = resources.getAsDict(PdfName.FONT);
             PdfObject pdfObject = fontsDictionary.get(fontResourceName);
-            CMapAwareDocumentFont font = new CMapAwareDocumentFont((PRIndirectReference) pdfObject);
+            CMapAwareDocumentFont font;
+            try {
+                font = new CMapAwareDocumentFont((PRIndirectReference) pdfObject);
+            } catch (PDFFilterException e) {
+                throw new RuntimeException(e);
+            }
 
             handler.graphicsState().setFont(font);
             handler.graphicsState().setFontSize(size);

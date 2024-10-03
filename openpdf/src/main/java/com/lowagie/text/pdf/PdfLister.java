@@ -51,6 +51,7 @@
 
 package com.lowagie.text.pdf;
 
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.logging.Logger;
@@ -93,10 +94,10 @@ public class PdfLister {
                 listDict((PdfDictionary) object);
                 break;
             case PdfObject.STRING:
-                out.println("(" + object.toString() + ")");
+                out.println("(" + object + ")");
                 break;
             default:
-                out.println(object.toString());
+                out.println(object);
                 break;
         }
     }
@@ -141,7 +142,12 @@ public class PdfLister {
         try {
             listDict(stream);
             out.println("startstream");
-            byte[] b = PdfReader.getStreamBytes(stream);
+            byte[] b;
+            try {
+                b = PdfReader.getStreamBytes(stream);
+            } catch (PDFFilterException e) {
+                throw new RuntimeException(e);
+            }
             int len = b.length - 1;
             for (int k = 0; k < len; ++k) {
                 if (b[k] == '\r' && b[k + 1] != '\n') {

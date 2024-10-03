@@ -199,7 +199,11 @@ public class FieldPositioningEvents extends PdfPageEventHelper implements PdfPCe
                             rect.getTop(padding)));
         }
         if (parent == null) {
-            writer.addAnnotation(field);
+            try {
+                writer.addAnnotation(field);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             parent.addKid(field);
         }
@@ -218,7 +222,11 @@ public class FieldPositioningEvents extends PdfPageEventHelper implements PdfPCe
                 new PdfRectangle(rect.getLeft(padding), rect.getBottom(padding), rect.getRight(padding),
                         rect.getTop(padding)));
         if (parent == null) {
-            fieldWriter.addAnnotation(cellField);
+            try {
+                fieldWriter.addAnnotation(cellField);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             parent.addKid(cellField);
         }

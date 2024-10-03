@@ -50,6 +50,8 @@
 package com.lowagie.text.pdf;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.util.Arrays;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -195,9 +197,7 @@ public class PdfPRow {
      */
     public void initExtraHeights() {
         extraHeights = new float[cells.length];
-        for (int i = 0; i < extraHeights.length; i++) {
-            extraHeights[i] = 0;
-        }
+        Arrays.fill(extraHeights, 0);
     }
 
     /**
@@ -459,7 +459,7 @@ public class PdfPRow {
 
         try {
             ct.go(true);
-        } catch (DocumentException e) {
+        } catch (DocumentException | IOException e) {
             throw new ExceptionConverter(e);
         }
 
@@ -503,7 +503,7 @@ public class PdfPRow {
 
         try {
             ct.go();
-        } catch (DocumentException e) {
+        } catch (DocumentException | IOException e) {
             throw new ExceptionConverter(e);
         } finally {
             restoreCanvases(canvases);
@@ -536,7 +536,7 @@ public class PdfPRow {
             }
             try {
                 ct.go();
-            } catch (DocumentException e) {
+            } catch (DocumentException | IOException e) {
                 throw new ExceptionConverter(e);
             } finally {
                 if (cell.getRotationPdfPCell() == 180) {
@@ -707,6 +707,8 @@ public class PdfPRow {
             status = ct.go(true);
         } catch (DocumentException e) {
             throw new ExceptionConverter(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         return evaluateCellContent(cell, newCell, ct, y, status);

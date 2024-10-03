@@ -55,7 +55,9 @@ import com.lowagie.text.alignment.VerticalAlignment;
 import com.lowagie.text.alignment.WithHorizontalAlignment;
 import com.lowagie.text.alignment.WithVerticalAlignment;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.AddCellException;
 import com.lowagie.text.pdf.PdfPCell;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -675,7 +677,11 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
         Cell tmp = new Cell(element);
         tmp.setBorder(NO_BORDER);
         tmp.setColspan(table.getColumns());
-        table.addCell(tmp);
+        try {
+            table.addCell(tmp);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void handleListElement(List list) {
@@ -738,18 +744,22 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
 
     private void addElementsToTable(Table table) {
         Cell tmp;
-        if (arrayList.isEmpty()) {
-            table.addCell(getDummyCell());
-        } else {
-            tmp = new Cell();
-            tmp.setBorder(NO_BORDER);
-            tmp.setColspan(3);
-            for (Element o : arrayList) {
-                tmp.add(o);
+        try {
+            if (arrayList.isEmpty()) {
+                table.addCell(getDummyCell());
+            } else {
+                tmp = new Cell();
+                tmp.setBorder(NO_BORDER);
+                tmp.setColspan(3);
+                for (Element o : arrayList) {
+                    tmp.add(o);
+                }
+                table.addCell(tmp);
             }
-            table.addCell(tmp);
+            table.addCell(getDummyCell());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        table.addCell(getDummyCell());
     }
 
 
@@ -785,7 +795,11 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
                     MessageLocalization.getComposedMessage("pdfpcells.can.t.have.a.rowspan.gt.1"));
         }
         if (isTable()) {
-            return new PdfPCell(((Table) arrayList.get(0)).createPdfPTable());
+            try {
+                return new PdfPCell(((Table) arrayList.get(0)).createPdfPTable());
+            } catch (AddCellException | IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         PdfPCell cell = new PdfPCell();
         cell.setVerticalAlignment(verticalAlignment);

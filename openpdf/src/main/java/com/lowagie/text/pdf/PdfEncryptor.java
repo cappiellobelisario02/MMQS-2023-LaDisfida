@@ -51,6 +51,7 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.DocumentException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 /**
@@ -81,9 +82,12 @@ public final class PdfEncryptor {
      */
     public static void encrypt(PdfReader reader, OutputStream os, byte[] userPassword, byte[] ownerPassword,
             int permissions, boolean strength128Bits) throws DocumentException, IOException {
-        PdfStamper stamper = new PdfStamper(reader, os);
-        stamper.setEncryption(userPassword, ownerPassword, permissions, strength128Bits);
-        stamper.close();
+        try (PdfStamper stamper = new PdfStamper(reader, os)){
+
+            stamper.setEncryption(userPassword, ownerPassword, permissions, strength128Bits);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -108,10 +112,12 @@ public final class PdfEncryptor {
     public static void encrypt(PdfReader reader, OutputStream os, byte[] userPassword, byte[] ownerPassword,
             int permissions, boolean strength128Bits, Map<String, String> newInfo)
             throws DocumentException, IOException {
-        PdfStamper stamper = new PdfStamper(reader, os);
-        stamper.setEncryption(userPassword, ownerPassword, permissions, strength128Bits);
-        stamper.setInfoDictionary(newInfo);
-        stamper.close();
+        try (PdfStamper stamper = new PdfStamper(reader, os)){
+            stamper.setEncryption(userPassword, ownerPassword, permissions, strength128Bits);
+            stamper.setInfoDictionary(newInfo);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -133,9 +139,11 @@ public final class PdfEncryptor {
      */
     public static void encrypt(PdfReader reader, OutputStream os, boolean strength, String userPassword,
             String ownerPassword, int permissions) throws DocumentException, IOException {
-        PdfStamper stamper = new PdfStamper(reader, os);
-        stamper.setEncryption(strength, userPassword, ownerPassword, permissions);
-        stamper.close();
+        try (PdfStamper stamper = new PdfStamper(reader, os)){
+            stamper.setEncryption(strength, userPassword, ownerPassword, permissions);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -159,10 +167,13 @@ public final class PdfEncryptor {
      */
     public static void encrypt(PdfReader reader, OutputStream os, boolean strength, String userPassword,
             String ownerPassword, int permissions, Map<String, String> newInfo) throws DocumentException, IOException {
-        PdfStamper stamper = new PdfStamper(reader, os);
-        stamper.setEncryption(strength, userPassword, ownerPassword, permissions);
-        stamper.setInfoDictionary(newInfo);
-        stamper.close();
+
+        try (PdfStamper stamper = new PdfStamper(reader, os)){
+            stamper.setEncryption(strength, userPassword, ownerPassword, permissions);
+            stamper.setInfoDictionary(newInfo);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -189,10 +200,12 @@ public final class PdfEncryptor {
      */
     public static void encrypt(PdfReader reader, OutputStream os, int type, String userPassword, String ownerPassword,
             int permissions, Map<String, String> newInfo) throws DocumentException, IOException {
-        PdfStamper stamper = new PdfStamper(reader, os);
-        stamper.setEncryption(type, userPassword, ownerPassword, permissions);
-        stamper.setInfoDictionary(newInfo);
-        stamper.close();
+        try (PdfStamper stamper = new PdfStamper(reader, os)){
+            stamper.setEncryption(type, userPassword, ownerPassword, permissions);
+            stamper.setInfoDictionary(newInfo);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -216,9 +229,12 @@ public final class PdfEncryptor {
      */
     public static void encrypt(PdfReader reader, OutputStream os, int type, String userPassword, String ownerPassword,
             int permissions) throws DocumentException, IOException {
-        PdfStamper stamper = new PdfStamper(reader, os);
-        stamper.setEncryption(type, userPassword, ownerPassword, permissions);
-        stamper.close();
+
+        try (PdfStamper stamper = new PdfStamper(reader, os)){
+            stamper.setEncryption(type, userPassword, ownerPassword, permissions);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

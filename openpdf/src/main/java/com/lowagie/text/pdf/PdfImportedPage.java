@@ -53,6 +53,7 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.IllegalContentException;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.IOException;
 
 /**
@@ -141,7 +142,11 @@ public class PdfImportedPage extends com.lowagie.text.pdf.PdfTemplate {
      */
     @Override
     PdfStream getFormXObject(int compressionLevel) throws IOException {
-        return readerInstance.getFormXObject(pageNumber, compressionLevel);
+        try {
+            return readerInstance.getFormXObject(pageNumber, compressionLevel);
+        } catch (PDFFilterException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

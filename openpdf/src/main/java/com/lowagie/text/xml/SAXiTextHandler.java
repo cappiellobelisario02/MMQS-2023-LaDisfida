@@ -75,6 +75,7 @@ import com.lowagie.text.factories.ElementFactory;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.draw.LineSeparator;
 import com.lowagie.text.xml.simpleparser.EntitiesToSymbol;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -292,7 +293,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
     }
 
     private void handleTextElement(Properties attributes) {
-        Element element = (Element) ElementFactory.getListItem(attributes);
+        Element element = ElementFactory.getListItem(attributes);
         stack.push(element);  // Abstracted element creation logic
     }
 
@@ -670,7 +671,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
         if (ElementTags.LISTITEM.equals(name)) {
             ListItem listItem = (ListItem) stack.pop();
             List list = (List) stack.pop();
-            list.add((Element) listItem);
+            list.add(listItem);
             stack.push(list);
         }
     }
@@ -729,7 +730,11 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
                 calculateTotalAndUpdateCellNulls(total, width, cellWidths, cellNulls, j);
             }
             j += cell.getColspan();
-            table.addCell(cell);
+            try {
+                table.addCell(cell);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         updateTableColumnWidths(table, cellWidths, cellNulls, columns, total);

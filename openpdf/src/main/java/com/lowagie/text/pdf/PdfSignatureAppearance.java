@@ -713,7 +713,11 @@ public class PdfSignatureAppearance {
                         signatureRect.getRight(), signatureRect.getTop(), signedSize,
                         Element.ALIGN_LEFT);
 
-                ct2.go();
+                try {
+                    ct2.go();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             } else if (render == SIGNATURE_RENDER_GRAPHIC_AND_DESCRIPTION) {
                 ColumnText ct2 = new ColumnText(t);
                 ct2.setRunDirection(runDirection);
@@ -738,7 +742,11 @@ public class PdfSignatureAppearance {
                 p.add(new Chunk(im, x
                         + (signatureRect.getWidth() - im.getScaledWidth()) / 2, y, false));
                 ct2.addElement(p);
-                ct2.go();
+                try {
+                    ct2.go();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             } else if (this.render == SIGNATURE_RENDER_GRAPHIC) {
                 ColumnText ct2 = new ColumnText(t);
                 ct2.setRunDirection(this.runDirection);
@@ -756,7 +764,11 @@ public class PdfSignatureAppearance {
                 p.add(new Chunk(im, x, y, false));
 
                 ct2.addElement(p);
-                ct2.go();
+                try {
+                    ct2.go();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             if (this.render != SIGNATURE_RENDER_GRAPHIC) {
@@ -768,7 +780,11 @@ public class PdfSignatureAppearance {
                 ct.setRunDirection(runDirection);
                 ct.setSimpleColumn(new Phrase(text, font), dataRect.getLeft(), dataRect.getBottom(),
                         dataRect.getRight(), dataRect.getTop(), size, Element.ALIGN_LEFT);
-                ct.go();
+                try {
+                    ct.go();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         if (app[3] == null && !acro6Layers) {
@@ -800,7 +816,11 @@ public class PdfSignatureAppearance {
             ct.setRunDirection(runDirection);
             ct.setSimpleColumn(new Phrase(text, font), MARGIN, 0, rect.getWidth()
                     - MARGIN, rect.getHeight() - MARGIN, size, Element.ALIGN_LEFT);
-            ct.go();
+            try {
+                ct.go();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         int rotation = writer.reader.getPageRotation(page);
         Rectangle rotated = new Rectangle(rect);

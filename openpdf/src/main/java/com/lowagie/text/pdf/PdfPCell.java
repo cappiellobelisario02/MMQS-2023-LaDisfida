@@ -58,6 +58,7 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.pdf.events.PdfPCellEventForwarder;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -953,7 +954,7 @@ public class PdfPCell extends Rectangle {
         }
         try {
             column.go(true);
-        } catch (DocumentException e) {
+        } catch (DocumentException | IOException e) {
             // do nothing
         }
     }
@@ -1027,7 +1028,7 @@ public class PdfPCell extends Rectangle {
     private void processColumnText(ColumnText ct, boolean pivoted) {
         try {
             ct.go(true);
-        } catch (DocumentException e) {
+        } catch (DocumentException | IOException e) {
             throw new ExceptionConverter(e);
         }
 
