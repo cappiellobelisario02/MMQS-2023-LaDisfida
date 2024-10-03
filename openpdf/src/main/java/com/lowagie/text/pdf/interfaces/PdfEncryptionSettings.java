@@ -50,6 +50,7 @@
 package com.lowagie.text.pdf.interfaces;
 
 import com.lowagie.text.DocumentException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 
 /**
@@ -76,7 +77,7 @@ public interface PdfEncryptionSettings {
      * @throws DocumentException if the document is already open
      */
     void setEncryption(byte[] userPassword, byte[] ownerPassword, int permissions, int encryptionType)
-            throws DocumentException;
+            throws DocumentException, NoSuchAlgorithmException;
 
     /**
      * Sets the certificate encryption options for this document. An array of one or more public certificates must be
@@ -91,5 +92,6 @@ public interface PdfEncryptionSettings {
      *                       ENCRYPTION_AES128.
      * @throws DocumentException if the document is already open
      */
-    void setEncryption(Certificate[] certs, int[] permissions, int encryptionType) throws DocumentException;
+    void setEncryption(Certificate[] certs, int[] permissions, int encryptionType)
+            throws DocumentException, NoSuchAlgorithmException;
 }

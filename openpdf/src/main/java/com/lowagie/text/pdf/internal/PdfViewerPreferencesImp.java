@@ -66,7 +66,7 @@ import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
 
 public class PdfViewerPreferencesImp implements PdfViewerPreferences {
 
-    public static final PdfName[] VIEWER_PREFERENCES = {
+    protected static final PdfName[] VIEWER_PREFERENCES = {
             PdfName.HIDETOOLBAR,            // 0
             PdfName.HIDEMENUBAR,            // 1
             PdfName.HIDEWINDOWUI,           // 2
@@ -90,31 +90,31 @@ public class PdfViewerPreferencesImp implements PdfViewerPreferences {
     /**
      * A series of viewer preferences.
      */
-    public static final PdfName[] NONFULLSCREENPAGEMODE_PREFERENCES = {
+    protected static final PdfName[] NONFULLSCREENPAGEMODE_PREFERENCES = {
             PdfName.USENONE, PdfName.USEOUTLINES, PdfName.USETHUMBS, PdfName.USEOC
     };
     /**
      * A series of viewer preferences.
      */
-    public static final PdfName[] DIRECTION_PREFERENCES = {
+    protected static final PdfName[] DIRECTION_PREFERENCES = {
             PdfName.L2R, PdfName.R2L
     };
     /**
      * A series of viewer preferences.
      */
-    public static final PdfName[] PAGE_BOUNDARIES = {
+    protected static final PdfName[] PAGE_BOUNDARIES = {
             PdfName.MEDIABOX, PdfName.CROPBOX, PdfName.BLEEDBOX, PdfName.TRIMBOX, PdfName.ARTBOX
     };
     /**
      * A series of viewer preferences
      */
-    public static final PdfName[] PRINTSCALING_PREFERENCES = {
+    protected static final PdfName[] PRINTSCALING_PREFERENCES = {
             PdfName.APPDEFAULT, PdfName.NONE
     };
     /**
      * A series of viewer preferences.
      */
-    public static final PdfName[] DUPLEX_PREFERENCES = {
+    protected static final PdfName[] DUPLEX_PREFERENCES = {
             PdfName.SIMPLEX, PdfName.DUPLEXFLIPSHORTEDGE, PdfName.DUPLEXFLIPLONGEDGE
     };
     /**
@@ -128,7 +128,7 @@ public class PdfViewerPreferencesImp implements PdfViewerPreferences {
     /**
      * This dictionary holds the viewer preferences (other than page layout and page mode).
      */
-    private PdfDictionary viewerPreferences = new PdfDictionary();
+    private final PdfDictionary viewerPreferences = new PdfDictionary();
 
     public static com.lowagie.text.pdf.internal.PdfViewerPreferencesImp getViewerPreferences(PdfDictionary catalog) {
         com.lowagie.text.pdf.internal.PdfViewerPreferencesImp preferences = new com.lowagie.text.pdf.internal.PdfViewerPreferencesImp();
@@ -215,15 +215,6 @@ public class PdfViewerPreferencesImp implements PdfViewerPreferences {
      */
     public int getPageLayoutAndMode() {
         return pageLayoutAndMode;
-    }
-
-    /**
-     * Returns the viewer preferences.
-     *
-     * @return a PdfDictionary containing the viewer's preferences.
-     */
-    public PdfDictionary getViewerPreferences() {
-        return viewerPreferences;
     }
 
     /**
@@ -339,10 +330,10 @@ public class PdfViewerPreferencesImp implements PdfViewerPreferences {
             viewerPreferences.put(key, value);
         } else if (isNamePreference(index, value, DUPLEX_PREFERENCES, 13)) {
             viewerPreferences.put(key, value);
-        } else if (index == 15 && value instanceof PdfArray) {
-            viewerPreferences.put(key, value);
-        } else if (index == 16 && value instanceof PdfNumber) {
-            viewerPreferences.put(key, value);
+        } else if (index == 15 && value instanceof PdfArray pdfArray) {
+            viewerPreferences.put(key, pdfArray);
+        } else if (index == 16 && value instanceof PdfNumber pdfNumber) {
+            viewerPreferences.put(key, pdfNumber);
         }
     }
 
@@ -351,9 +342,9 @@ public class PdfViewerPreferencesImp implements PdfViewerPreferences {
     }
 
     private boolean isNamePreference(int index, PdfObject value, PdfName[] validValues, int... validIndices) {
-        if (value instanceof PdfName) {
+        if (value instanceof PdfName pdfName) {
             for (int i : validIndices) {
-                if (index == i && isPossibleValue((PdfName) value, validValues)) {
+                if (index == i && isPossibleValue(pdfName, validValues)) {
                     return true;
                 }
             }

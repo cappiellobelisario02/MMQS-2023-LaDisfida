@@ -91,6 +91,7 @@ public class Generic extends PdfPageEventHelper {
      * @see com.lowagie.text.pdf.PdfPageEventHelper#onGenericTag(com.lowagie.text.pdf.PdfWriter,
      * com.lowagie.text.Document, com.lowagie.text.Rectangle, java.lang.String)
      */
+    @Override
     public void onGenericTag(PdfWriter writer, Document document, Rectangle rect, String text) {
         if ("ellipse".equals(text)) {
             PdfContentByte cb = writer.getDirectContent();
@@ -101,7 +102,7 @@ public class Generic extends PdfPageEventHelper {
         } else if ("box".equals(text)) {
             PdfContentByte cb = writer.getDirectContentUnder();
             rect.setGrayFill(0.5f);
-            cb.rectangle(rect);
+            cb.rectangle(rect.llx(), rect.lly(), rect.urx(), rect.ury());
         }
     }
 }

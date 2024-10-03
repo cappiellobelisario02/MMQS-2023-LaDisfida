@@ -131,8 +131,6 @@ import org.bouncycastle.tsp.TimeStampTokenInfo;
  */
 public class PdfPKCS7 {
 
-    Logger logger = Logger.getLogger(PdfPKCS7.class.getName());
-
     private static final String ID_PKCS7_DATA = "1.2.840.113549.1.7.1";
     private static final String ID_PKCS7_SIGNED_DATA = "1.2.840.113549.1.7.2";
     private static final String ID_RSA = "1.2.840.113549.1.1.1";
@@ -478,7 +476,7 @@ public class PdfPKCS7 {
                 if (digestAttr == null) {
                     throw new IllegalArgumentException(
                             MessageLocalization
-                                .getComposedMessage("authenticated.attribute.is.missing.the.digest"));
+                                    .getComposedMessage("authenticated.attribute.is.missing.the.digest"));
                 }
                 ++next;
             }
@@ -790,7 +788,7 @@ public class PdfPKCS7 {
             X509Certificate certificate) {
         try{
             for (Enumeration<?> aliases = keyStore.aliases(); aliases
-                        .hasMoreElements(); ) {
+                    .hasMoreElements(); ) {
                 Object[] certificate1 = getObjects(keyStore, calendar, certificate, aliases);
                 if (certificate1 != null)
                     return certificate1;
@@ -849,10 +847,10 @@ public class PdfPKCS7 {
                 if (accessDescription.size() == 2 &&
                         (accessDescription.getObjectAt(0) instanceof ASN1ObjectIdentifier identifier)
                         && identifier.getId().equals("1.3.6.1.5.5.7.48.1")) {
-                    
-                        return getStringFromGeneralName((ASN1Primitive) accessDescription
-                                .getObjectAt(1));
-                    
+
+                    return getStringFromGeneralName((ASN1Primitive) accessDescription
+                            .getObjectAt(1));
+
                 }
             }
         } catch (Exception ignored) {
@@ -919,9 +917,9 @@ public class PdfPKCS7 {
      * @param cert an X509Certificate
      * @return an X509Name
      */
-    public static X509Name getIssuerFields(X509Certificate cert) {
+    public static com.lowagie.text.pdf.PdfPKCS7.X509Name getIssuerFields(X509Certificate cert) {
         try {
-            return new X509Name((ASN1Sequence) getIssuer(cert.getTBSCertificate()));
+            return new com.lowagie.text.pdf.PdfPKCS7.X509Name((ASN1Sequence) getIssuer(cert.getTBSCertificate()));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -933,9 +931,9 @@ public class PdfPKCS7 {
      * @param cert an X509Certificate
      * @return an X509Name
      */
-    public static X509Name getSubjectFields(X509Certificate cert) {
+    public static com.lowagie.text.pdf.PdfPKCS7.X509Name getSubjectFields(X509Certificate cert) {
         try {
-            return new X509Name((ASN1Sequence) getSubject(cert.getTBSCertificate()));
+            return new com.lowagie.text.pdf.PdfPKCS7.X509Name((ASN1Sequence) getSubject(cert.getTBSCertificate()));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -1126,7 +1124,7 @@ public class PdfPKCS7 {
      * @since 2.1.6
      */
     public Certificate[] getSignCertificateChain() {
-        return signCerts.toArray(new X509Certificate[0]);
+        return signCerts.toArray(new Certificate[0]);
     }
 
     private void signCertificateChain() {
@@ -1244,7 +1242,7 @@ public class PdfPKCS7 {
             // OJO... Modificacion de
             // Felix--------------------------------------------------
             // CertificateID tis = new CertificateID(CertificateID.HASH_SHA1, isscer,
-            
+
             DigestCalculatorProvider digCalcProv = new JcaDigestCalculatorProviderBuilder()
                     .setProvider(provider).build();
             CertificateID id = new CertificateID(
@@ -1411,15 +1409,15 @@ public class PdfPKCS7 {
     }
 
     // Create Certificates Set
-    private DERSet createCertificatesSet() throws IOException {
+    private DERSet createCertificatesSet() throws IOException, CertificateEncodingException {
         ASN1EncodableVector v = new ASN1EncodableVector();
         for (Certificate cert : certs) {
-            ASN1InputStream tempStream = null;
+            ASN1InputStream tempStream;
             try {
                 tempStream = new ASN1InputStream(
                         new ByteArrayInputStream(((X509Certificate) cert).getEncoded()));
             } catch (CertificateEncodingException e) {
-                throw new RuntimeException(e);
+                throw new CertificateEncodingException(e);
             }
             v.add(tempStream.readObject());
         }
@@ -1428,7 +1426,7 @@ public class PdfPKCS7 {
 
     // Create Signer Info
     private DERSet createSignerInfo(byte[] secondDigest, Calendar signingTime, byte[] ocsp,
-            byte[] digest, TSAClient tsaClient) throws IOException, GeneralSecurityException {
+            byte[] digest, TSAClient tsaClient) throws IOException, GeneralSecurityException, InvalidTokenException {
         ASN1EncodableVector signerInfo = new ASN1EncodableVector();
 
         // Add the signerInfo version
@@ -1464,11 +1462,11 @@ public class PdfPKCS7 {
         // Add timestamp if TSAClient is available
         if (tsaClient != null) {
             byte[] tsImprint = tsaClient.getMessageDigest().digest(digest);
-            byte[] tsToken = null;
+            byte[] tsToken;
             try {
                 tsToken = tsaClient.getTimeStampToken(this, tsImprint);
             } catch (InvalidTokenException e) {
-                throw new RuntimeException(e);
+                throw new InvalidTokenException(e.getMessage());
             }
             if (tsToken != null) {
                 ASN1EncodableVector unauthAttributes = buildUnauthenticatedAttributes(tsToken);
@@ -1511,7 +1509,6 @@ public class PdfPKCS7 {
      *
      * @param timeStampToken byte[] - time stamp token, DER encoded signedData
      * @return ASN1EncodableVector
-     * @throws IOException
      */
     private ASN1EncodableVector buildUnauthenticatedAttributes(
             byte[] timeStampToken) throws IOException {
@@ -1855,7 +1852,7 @@ public class PdfPKCS7 {
          * @param dirName a directory name
          */
         public X509Name(String dirName) {
-            X509NameTokenizer nTok = new X509NameTokenizer(dirName);
+            com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer nTok = new com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer(dirName);
 
             while (nTok.hasMoreTokens()) {
                 String token = nTok.nextToken();
@@ -1934,9 +1931,8 @@ public class PdfPKCS7 {
             }
 
             buf.setLength(0);
-            int end = processToken();
 
-            index = end;
+            index = processToken();
             return buf.toString().trim();
         }
 
@@ -1963,7 +1959,6 @@ public class PdfPKCS7 {
                         }
                         // fall through
                     default:
-                        end = handleOtherCharacters(end, c);
                         escaped = false;
                         break;
                 }
@@ -1987,11 +1982,6 @@ public class PdfPKCS7 {
             }
             // Move to the next character and re-evaluate
             end++;
-            return end;
-        }
-
-        private int handleOtherCharacters(int end, char c) {
-            buf.append(c);
             return end;
         }
 

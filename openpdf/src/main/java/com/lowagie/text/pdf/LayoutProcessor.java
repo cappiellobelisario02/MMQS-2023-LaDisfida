@@ -45,6 +45,7 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.FontCreationException;
+import java.awt.FontFormatException;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextAttribute;
@@ -326,7 +327,7 @@ public class LayoutProcessor {
                 || filename.startsWith("wsjar:");
     }
 
-    private static java.awt.Font createFontFromStream(InputStream inputStream) throws Exception {
+    private static java.awt.Font createFontFromStream(InputStream inputStream) throws FontFormatException, IOException {
         return java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, inputStream);
     }
 

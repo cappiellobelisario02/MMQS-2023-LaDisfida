@@ -267,7 +267,7 @@ public class PdfPRow {
                 newRect.setBackgroundColor(null);
                 // Write the borders on the line canvas
                 PdfContentByte lineCanvas = canvases[PdfPTable.LINECANVAS];
-                lineCanvas.rectangle(newRect);
+                lineCanvas.rectangle(left, bottom, right, top);
             }
         }
     }
@@ -371,7 +371,7 @@ public class PdfPRow {
         if (img != null) {
             handleImage(xPos, tly, currentMaxHeight, cell, img, canvases);
         } else {
-            handleText(xPos, tly, currentMaxHeight, cell, canvases);
+            handleText(xPos, yPos, tly, currentMaxHeight, cell, canvases);
         }
 
         PdfPCellEvent evt = cell.getCellEvent();
@@ -440,15 +440,17 @@ public class PdfPRow {
         return left;
     }
 
-    private void handleText(float xPos, float tly, float currentMaxHeight, PdfPCell cell, PdfContentByte[] canvases) {
+    private void handleText(float xPos, float yPos, float tly, float currentMaxHeight, PdfPCell cell,
+            PdfContentByte[] canvases) {
         if (cell.getRotationPdfPCell() == 90 || cell.getRotationPdfPCell() == 270) {
-            handleRotatedText(xPos, currentMaxHeight, cell, canvases);
+            handleRotatedText(xPos, yPos, currentMaxHeight, cell, canvases);
         } else {
-            handleNormalText(xPos, tly, currentMaxHeight, cell, canvases);
+            handleNormalText(xPos, yPos, tly, currentMaxHeight, cell, canvases);
         }
     }
 
-    private void handleRotatedText(float xPos, float currentMaxHeight, PdfPCell cell, PdfContentByte[] canvases) {
+    private void handleRotatedText(float xPos, float yPos, float currentMaxHeight, PdfPCell cell,
+            PdfContentByte[] canvases) {
         float netWidth = currentMaxHeight - cell.getEffectivePaddingTop() - cell.getEffectivePaddingBottom();
         float netHeight = cell.getWidth() - cell.getEffectivePaddingLeft() - cell.getEffectivePaddingRight();
         ColumnText ct = ColumnText.duplicate(cell.getColumn());
@@ -469,11 +471,12 @@ public class PdfPRow {
             if (cell.isUseDescender()) {
                 calcHeight -= ct.getDescender();
             }
-            handleRotatedTextAlignment(xPos, currentMaxHeight, cell, canvases, ct, calcHeight);
+            handleRotatedTextAlignment(xPos, yPos, currentMaxHeight, cell, canvases, ct, calcHeight);
         }
     }
 
-    private void handleRotatedTextAlignment(float xPos, float currentMaxHeight, PdfPCell cell, PdfContentByte[] canvases, ColumnText ct, float calcHeight) {
+    private void handleRotatedTextAlignment(float xPos, float yPos, float currentMaxHeight, PdfPCell cell,
+            PdfContentByte[] canvases, ColumnText ct, float calcHeight) {
         float pivotX;
         float pivotY;
         if (cell.getRotationPdfPCell() == 90) {
@@ -507,7 +510,8 @@ public class PdfPRow {
         }
     }
 
-    private void handleNormalText(float xPos, float tly, float currentMaxHeight, PdfPCell cell, PdfContentByte[] canvases) {
+    private void handleNormalText(float xPos, float yPos, float tly, float currentMaxHeight, PdfPCell cell,
+            PdfContentByte[] canvases) {
         float fixedHeight = cell.getFixedHeight();
         float rightLimit = cell.getRight() + xPos - cell.getEffectivePaddingRight();
         float leftLimit = cell.getLeft() + xPos + cell.getEffectivePaddingLeft();
@@ -684,8 +688,8 @@ public class PdfPRow {
     private PdfPCell createNewCell(PdfPCell cell, float newHeightLoop) {
         PdfPCell newCell = new PdfPCell(cell);
         if (cell.getImage() != null && newHeightLoop <= cell.getEffectivePaddingBottom() + cell.getEffectivePaddingTop() + 2) {
-                newCell.setPhrase(null);
-            }
+            newCell.setPhrase(null);
+        }
 
         return newCell;
     }

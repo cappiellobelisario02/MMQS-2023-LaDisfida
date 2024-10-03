@@ -50,6 +50,7 @@
 package com.lowagie.text;
 
 import com.lowagie.text.pdf.PdfWriter;
+import java.util.ArrayList;
 
 /**
  * A <CODE>Paragraph</CODE> is a series of <CODE>Chunk</CODE>s and/or <CODE>Phrases</CODE>.
@@ -254,7 +255,7 @@ public class Paragraph extends Phrase {
             return true;
         } else if (o instanceof Paragraph) {
             super.add(o);
-            java.util.List<Chunk> chunks = getChunks();
+            ArrayList<Element> chunks = getChunks();
             if (!chunks.isEmpty()) {
                 Chunk tmp = ((Chunk) chunks.get(chunks.size() - 1));
                 super.add(new Chunk("\n", tmp.getFont()));
@@ -376,7 +377,7 @@ public class Paragraph extends Phrase {
      *
      * @return the total leading (fixed and multiplied)
      */
-    public float getTotalLeading() {
+    public float getTotalLeading(Font font) {
         float m = font == null ?
                 Font.DEFAULTSIZE * multipliedLeading : font.getCalculatedLeading(multipliedLeading);
         if (m > 0 && !hasLeading()) {

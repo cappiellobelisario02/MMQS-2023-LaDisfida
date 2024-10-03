@@ -201,7 +201,7 @@ public class PdfAnnotationsImp {
 
     public PdfArray rotateAnnotations(PdfWriter writer, Rectangle pageSize) {
         PdfArray array = new PdfArray();
-        int rotation = pageSize.getRotation() % 360;
+        int rotation = pageSize.getRotationPdfPCell() % 360;
         int currentPage = writer.getCurrentPageNumber();
 
         for (Object annotation : annotations) {

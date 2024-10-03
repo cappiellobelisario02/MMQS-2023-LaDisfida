@@ -59,6 +59,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 /**
  * Reads a Type1 font
@@ -72,9 +73,13 @@ class Type1Font extends BaseFont {
      * sequence.
      */
     private static final int[] PFB_TYPES = {1, 2, 1};
+    public static final String NOTDEF1 = ".notdef";
+    public static final String UNEXPECTED_IDENTIFIER = "Unexpected identifier: ";
+    public static final String CP_1252 = "Cp1252";
     private static FontsResourceAnchor resourceAnchor;
     private float italicAngleVar;
     private float capHeightVar;
+    private static final Logger logger = Logger.getLogger(Type1Font.class.getName());
 
     /**
      * The PFB file if the input was made with a <CODE>byte</CODE> array.
@@ -105,10 +110,6 @@ class Type1Font extends BaseFont {
      * width.
      */
     private boolean isFixedPitch = false;
-    /**
-     * The character set of the font.
-     */
-    private String characterSet;
     /**
      * The llx of the FontBox.
      */
@@ -145,19 +146,12 @@ class Type1Font extends BaseFont {
     /**
      * A variable.
      */
-    private int xHeight = 480;
-    /**
-     * A variable.
-     */
     private int ascender = 800;
     /**
      * A variable.
      */
     private int descender = -200;
-    /**
-     * A variable.
-     */
-    private int stdHW;
+
     /**
      * A variable.
      */
@@ -306,7 +300,7 @@ class Type1Font extends BaseFont {
         if (name == null) { // font specific
             metrics = charMetrics.get(c);
         } else {
-            if (name.equals(".notdef")) {
+            if (name.equals(NOTDEF1)) {
                 return 0;
             }
             metrics = charMetrics.get(name);
@@ -364,6 +358,7 @@ class Type1Font extends BaseFont {
     private void readFontHeader(RandomAccessFileOrArray rf) throws DocumentException, IOException {
         String line;
         boolean isMetrics = false;
+        String stringToLog;
 
         while ((line = rf.readLine()) != null) {
             StringTokenizer tok = new StringTokenizer(line, " ,\n\r\t\f");
@@ -389,9 +384,6 @@ class Type1Font extends BaseFont {
                 case "IsFixedPitch":
                     isFixedPitch = tok.nextToken().equals("true");
                     break;
-                case "CharacterSet":
-                    characterSet = tok.nextToken(DELIMITER).substring(1);
-                    break;
                 case "FontBBox":
                     parseFontBBox(tok);
                     break;
@@ -407,9 +399,6 @@ class Type1Font extends BaseFont {
                 case "CapHeight":
                     capHeightVar = (int) Float.parseFloat(tok.nextToken());
                     break;
-                case "XHeight":
-                    xHeight = (int) Float.parseFloat(tok.nextToken());
-                    break;
                 case "Ascender":
                     ascender = (int) Float.parseFloat(tok.nextToken());
                     break;
@@ -417,7 +406,6 @@ class Type1Font extends BaseFont {
                     descender = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "StdHW":
-                    stdHW = (int) Float.parseFloat(tok.nextToken());
                     break;
                 case "StdVW":
                     stdVW = (int) Float.parseFloat(tok.nextToken());
@@ -426,8 +414,9 @@ class Type1Font extends BaseFont {
                     isMetrics = true;
                     break;
                 default:
+                    stringToLog = UNEXPECTED_IDENTIFIER + ident;
                     // Log a message or handle the unexpected identifier
-                    System.err.println("Unexpected identifier: " + ident);
+                    logger.warning(stringToLog);
                     // Optionally, you can choose to ignore or throw an exception depending on your needs
                     break;
             }
@@ -488,6 +477,7 @@ class Type1Font extends BaseFont {
 
     private Object[] parseCharMetrics(String line) {
         StringTokenizer tok = new StringTokenizer(line, ";");
+        String stringToLog;
         int c = -1;
         int wx = 250;
         String n = "";
@@ -517,8 +507,9 @@ class Type1Font extends BaseFont {
                     };
                     break;
                 default:
+                    stringToLog = UNEXPECTED_IDENTIFIER + ident;
                     // Log a message or handle the unexpected identifier
-                    System.err.println("Unexpected identifier: " + ident);
+                    logger.warning(stringToLog);
                     // Optionally, you can choose to ignore or throw an exception depending on your needs
                     break;
             }
@@ -536,18 +527,15 @@ class Type1Font extends BaseFont {
             if (!tok.hasMoreTokens()) continue;
 
             String ident = tok.nextToken();
-            if (ident.equals("EndFontMetrics")) {
-                return;
+            switch (ident) {
+                case "EndFontMetrics" -> {
+                    return;
+                }
+                case "StartKernPairs" -> isMetrics = true;
+                case "KPX" -> processKernPair(tok);
+                default -> throw new IllegalStateException("Unexpected value: " + ident);
             }
 
-            if (ident.equals("StartKernPairs")) {
-                isMetrics = true;
-                continue;
-            }
-
-            if (ident.equals("KPX")) {
-                processKernPair(tok);
-            }
         }
 
         if (isMetrics) {
@@ -730,12 +718,12 @@ class Type1Font extends BaseFont {
     }
 
     private boolean isStandardEncoding() {
-        return encoding.equals("Cp1252") || encoding.equals("MacRoman");
+        return encoding.equals(CP_1252) || encoding.equals("MacRoman");
     }
 
     private int adjustFirstChar(int firstChar, int lastChar) {
         for (int k = firstChar; k <= lastChar; ++k) {
-            if (!differences[k].equals(".notdef")) {
+            if (!differences[k].equals(NOTDEF1)) {
                 return k;
             }
         }
@@ -743,10 +731,10 @@ class Type1Font extends BaseFont {
     }
 
     private PdfDictionary getEncoding(boolean stdEncoding, int firstChar, int lastChar, byte[] shortTag) {
-        if (stdEncoding && encoding.equals("Cp1252")) {
+        if (stdEncoding && encoding.equals(CP_1252)) {
             return new PdfDictionary(PdfName.WIN_ANSI_ENCODING);
         }
-        else if(!encoding.equals("Cp1252")){
+        else if(!encoding.equals(CP_1252)){
             return new PdfDictionary(PdfName.MAC_ROMAN_ENCODING);
         }
         else {
@@ -867,8 +855,9 @@ class Type1Font extends BaseFont {
             case UNDERLINE_THICKNESS:
                 return underlineThickness * fontSize / 1000;
             default:
+                String stringToLog = UNEXPECTED_IDENTIFIER + key;
                 // Log a message or handle the unexpected identifier
-                System.err.println("Unexpected identifier: " + key);
+                logger.warning(stringToLog);
                 // Optionally, you can choose to ignore or throw an exception depending on your needs
                 break;
         }
@@ -982,7 +971,7 @@ class Type1Font extends BaseFont {
         if (name == null) { // font specific
             metrics = charMetrics.get(c);
         } else {
-            if (name.equals(".notdef")) {
+            if (name.equals(NOTDEF1)) {
                 return new int[]{};
             }
             metrics = charMetrics.get(name);

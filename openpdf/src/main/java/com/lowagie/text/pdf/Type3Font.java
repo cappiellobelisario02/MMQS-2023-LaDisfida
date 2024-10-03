@@ -61,7 +61,10 @@ public class Type3Font extends BaseFont {
     private IntHashtable widths3 = new IntHashtable();
     private Map<Integer, Type3Glyph> char2glyph = new HashMap<>();
     private PdfWriter writer;
-    private float llx = Float.NaN, lly, urx, ury;
+    private float llx = Float.NaN;
+    private float lly;
+    private float urx;
+    private float ury;
     private PageResources pageResources = new PageResources();
     private boolean colorized;
 
@@ -127,7 +130,7 @@ public class Type3Font extends BaseFont {
     public PdfContentByte defineGlyph(char c, float wx, float llx, float lly, float urx, float ury) {
         if (c == 0 || c > 255) {
             throw new IllegalArgumentException(
-                    MessageLocalization.getComposedMessage("the.char.1.doesn.t.belong.in.this.type3.font", (int) c));
+                    MessageLocalization.getComposedMessage("the.char.1.doesn.t.belong.in.this.type3.font", c));
         }
         usedSlot[c] = true;
         Integer ck = (int) c;
@@ -209,7 +212,7 @@ public class Type3Font extends BaseFont {
         int firstChar = findFirstChar();
         int lastChar = findLastChar(firstChar);
 
-        validateGlyphsDefined(firstChar, lastChar);
+        validateGlyphsDefined(firstChar);
 
         int[] widths = buildWidths(firstChar, lastChar);
         int[] invOrd = buildInvOrd(firstChar, lastChar);
@@ -247,7 +250,7 @@ public class Type3Font extends BaseFont {
         return lastChar;
     }
 
-    private void validateGlyphsDefined(int firstChar, int lastChar) throws com.lowagie.text.DocumentException {
+    private void validateGlyphsDefined(int firstChar) throws com.lowagie.text.DocumentException {
         if (firstChar == usedSlot.length) {
             throw new DocumentException(MessageLocalization.getComposedMessage("no.glyphs.defined.for.type3.font"));
         }

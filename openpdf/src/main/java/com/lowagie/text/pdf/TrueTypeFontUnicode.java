@@ -242,7 +242,9 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
         if (vertical) {
             return text.length() * 1000;
         }
+
         int total = 0;
+
         if (fontSpecific) {
             char[] cc = text.toCharArray();
             for (char c : cc) {
@@ -252,17 +254,22 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
             }
         } else {
             int len = text.length();
-            for (int k = 0; k < len; ++k) {
+            int k = 0;
+
+            while (k < len) {
                 if (Utilities.isSurrogatePair(text, k)) {
                     total += getRawWidth(Utilities.convertToUtf32(text, k), encoding);
-                    ++k;
+                    k += 2; // Skip the next character as it's part of the surrogate pair
                 } else {
                     total += getRawWidth(text.charAt(k), encoding);
+                    k++; // Move to the next character
                 }
             }
         }
+
         return total;
     }
+
 
     int[][] getSentenceMissingCmap(String text, GlyphVector glyphVector) {
         char[] chars = text.toCharArray();

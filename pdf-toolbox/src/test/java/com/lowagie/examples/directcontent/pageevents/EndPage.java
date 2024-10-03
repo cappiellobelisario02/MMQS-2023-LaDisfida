@@ -53,6 +53,7 @@ public class EndPage extends PdfPageEventHelper {
     /**
      * @see com.lowagie.text.pdf.PdfPageEventHelper#onEndPage(com.lowagie.text.pdf.PdfWriter, com.lowagie.text.Document)
      */
+    @Override
     public void onEndPage(PdfWriter writer, Document document) {
         try {
             Rectangle page = document.getPageSize();

@@ -128,6 +128,7 @@ public class Glossary extends PdfPageEventHelper {
      * @see com.lowagie.text.pdf.PdfPageEventHelper#onGenericTag(com.lowagie.text.pdf.PdfWriter,
      * com.lowagie.text.Document, com.lowagie.text.Rectangle, java.lang.String)
      */
+    @Override
     public void onGenericTag(PdfWriter writer, Document document, Rectangle rect, String text) {
         glossary.put(text, writer.getPageNumber());
     }

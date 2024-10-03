@@ -49,7 +49,9 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.TransformationMatrix;
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.AnnotationException;
 import java.io.IOException;
 
 /**
@@ -69,6 +71,11 @@ import java.io.IOException;
  * @author Paulo Soares (psoares@consiste.pt)
  */
 public class PushbuttonField extends BaseField {
+
+    float textX;
+    float textY;
+    Rectangle r2;
+    PdfArray matrix;
 
     /**
      * A layout option
@@ -358,8 +365,10 @@ public class PushbuttonField extends BaseField {
      * @throws DocumentException on error
      */
     public PdfAppearance getAppearance() throws IOException, DocumentException {
-        PdfAppearance app = getBorderAppearance(super.writer, super.box, super.rotation, super.backgroundColor,
+        BoxSettings boxSettings = new BoxSettings(super.box, super.rotation);
+        AppearanceSettings appearanceSettings = new AppearanceSettings(super.backgroundColor,
                 super.borderStyle, super.borderWidth, super.borderColor, super.options, super.maxCharacterLength);
+        PdfAppearance app = getBorderAppearance(super.writer, boxSettings, appearanceSettings);
         Rectangle box = new Rectangle(app.getBoundingBox());
 
         if (shouldReturnAppAsIs()) {
@@ -377,8 +386,8 @@ public class PushbuttonField extends BaseField {
         float offX = Math.min(bw2, offsetX);
 
         tp = null;
-        float textX = Float.NaN;
-        float textY = 0;
+        textX = Float.NaN;
+        textY = 0;
         float fsize = fontSize;
         float wt = box.getWidth() - 2 * offX - 2;
         float ht = box.getHeight() - 2 * offX;
@@ -397,7 +406,7 @@ public class PushbuttonField extends BaseField {
         handleIcon(app, iconBox);
 
         if (!Float.isNaN(textX)) {
-            drawText(app, textX, textY, ufont, fsize);
+            drawText(app, ufont, fsize, offX);
         }
 
         return app;
@@ -438,7 +447,7 @@ public class PushbuttonField extends BaseField {
                 }
                 break;
             case LAYOUT_ICON_TOP_LABEL_BOTTOM, LAYOUT_LABEL_TOP_ICON_BOTTOM:
-                iconBox = handleVerticalLayouts(nlayout, box, wt, offX, adj);
+                iconBox = handleVerticalLayouts(nlayout, box, wt, offX, adj, ht);
                 break;
             case LAYOUT_LABEL_LEFT_ICON_RIGHT, LAYOUT_ICON_LEFT_LABEL_RIGHT:
                 iconBox = handleHorizontalLayouts(nlayout, box, wt, offX, adj);
@@ -449,14 +458,14 @@ public class PushbuttonField extends BaseField {
         return iconBox;
     }
 
-    private Rectangle handleVerticalLayouts(int nlayout, Rectangle box, float wt, float offX, float adj)
+    private Rectangle handleVerticalLayouts(int nlayout, Rectangle box, float wt, float offX, float adj, float ht)
             throws IOException {
         if (text == null || text.isEmpty() || wt <= 0 || ht <= 0) {
             nlayout = LAYOUT_ICON_ONLY;
         }
         float nht = box.getHeight() * 0.35f - offX;
         float fsize = nht > 0 ? calculateFontSize(wt, nht) : 4;
-        float textY = nlayout == LAYOUT_ICON_TOP_LABEL_BOTTOM
+        textY = nlayout == LAYOUT_ICON_TOP_LABEL_BOTTOM
                 ? offX - getRealFont().getFontDescriptor(BaseFont.DESCENT, fsize)
                 : box.getHeight() - offX - fsize;
         if (textY < offX) {
@@ -479,7 +488,7 @@ public class PushbuttonField extends BaseField {
             nlayout = LAYOUT_LABEL_ONLY;
             fsize = fontSize;
         }
-        float textX = nlayout == LAYOUT_LABEL_LEFT_ICON_RIGHT
+        textX = nlayout == LAYOUT_LABEL_LEFT_ICON_RIGHT
                 ? offX + 1
                 : box.getWidth() - getRealFont().getWidthPoint(text, fsize) - offX - 1;
         return new Rectangle(textX + getRealFont().getWidthPoint(text, fsize), box.getBottom() + adj,
@@ -491,7 +500,7 @@ public class PushbuttonField extends BaseField {
             boolean haveIcon = false;
             float boundingBoxWidth = 0;
             float boundingBoxHeight = 0;
-            PdfArray matrix = null;
+            matrix = null;
             if (image != null) {
                 setupTemplateFromImage();
                 haveIcon = true;
@@ -509,7 +518,7 @@ public class PushbuttonField extends BaseField {
                 boundingBoxHeight = r2.getHeight();
             }
             if (haveIcon) {
-                scaleAndDrawIcon(app, iconBox, boundingBoxWidth, boundingBoxHeight, matrix);
+                scaleAndDrawIcon(app, iconBox, boundingBoxWidth, boundingBoxHeight);
             }
         }
     }
@@ -536,8 +545,7 @@ public class PushbuttonField extends BaseField {
         }
     }
 
-    private void scaleAndDrawIcon(PdfAppearance app, Rectangle iconBox, float boundingBoxWidth, float boundingBoxHeight,
-            PdfArray matrix) {
+    private void scaleAndDrawIcon(PdfAppearance app, Rectangle iconBox, float boundingBoxWidth, float boundingBoxHeight) {
         float icx = iconBox.getWidth() / boundingBoxWidth;
         float icy = iconBox.getHeight() / boundingBoxHeight;
         icx = adjustIconScale(icx, icy);
@@ -563,7 +571,9 @@ public class PushbuttonField extends BaseField {
                     coy = nm.floatValue();
                 }
             }
-            app.addTemplateReference(iconReference, PdfName.FRM, icx, 0, 0, icy, xpos - cox * icx, ypos - coy * icy);
+            TransformationMatrix transformationMatrix = new TransformationMatrix(icx, 0, 0, icy,
+                    xpos - cox * icx, ypos - coy * icy);
+            app.addTemplateReference(iconReference, PdfName.FRM, transformationMatrix);
         }
         app.restoreState();
     }
@@ -581,7 +591,7 @@ public class PushbuttonField extends BaseField {
         }
     }
 
-    private void drawText(PdfAppearance app, float textX, float textY, BaseFont ufont, float fsize) {
+    private void drawText(PdfAppearance app, BaseFont ufont, float fsize, float offX) {
         app.saveState();
         app.rectangle(offX, offX, box.getWidth() - 2 * offX, box.getHeight() - 2 * offX);
         app.clip();
@@ -655,7 +665,7 @@ public class PushbuttonField extends BaseField {
         field.setDefaultAppearanceString(da);
     }
 
-    private void setFieldColor(PdfFormField field) {
+    private void setFieldColor(PdfFormField field) throws AnnotationException {
         if (borderColor != null) {
             field.setMKBorderColor(borderColor);
         }
@@ -668,8 +678,6 @@ public class PushbuttonField extends BaseField {
         switch (visibility) {
             case HIDDEN:
                 field.setFlags(PdfAnnotation.FLAGS_PRINT | PdfAnnotation.FLAGS_HIDDEN);
-                break;
-            case VISIBLE_BUT_DOES_NOT_PRINT:
                 break;
             case HIDDEN_BUT_PRINTABLE:
                 field.setFlags(PdfAnnotation.FLAGS_PRINT | PdfAnnotation.FLAGS_NOVIEW);

@@ -184,19 +184,19 @@ class TrueTypeFontSubSet {
 
     private void calculateFullFontSize() {
         fullFontSize = 0;
-        int tablesUsed = 2; // Always includes 'head' and 'maxp'
+        int mTablesUsed = 2; // Always includes 'head' and 'maxp'
         for (String name : tableNames) {
             if (!name.equals("glyf") && !name.equals("loca")) {
                 int[] location = tableDirectory.get(name);
                 if (location != null) {
-                    tablesUsed++;
+                    mTablesUsed++;
                     fullFontSize += (location[TABLE_LENGTH] + 3) & (~3);
                 }
             }
         }
         fullFontSize += newLocaTableOut.length;
         fullFontSize += newGlyfTable.length;
-        int ref = 16 * tablesUsed + 12;
+        int ref = 16 * mTablesUsed + 12;
         fullFontSize += ref;
     }
 
@@ -211,7 +211,7 @@ class TrueTypeFontSubSet {
         writeFontShort((tablesUsed - (1 << selector)) * 16);
     }
 
-    private void writeTableDirectory() throws IOException {
+    private void writeTableDirectory() {
         int ref = 16 * tablesUsed + 12;
         for (String name : tableNames) {
             int[] tableLocation = tableDirectory.get(name);
@@ -223,7 +223,7 @@ class TrueTypeFontSubSet {
         }
     }
 
-    private void writeTableRecord(String name, int[] tableLocation, int ref) throws IOException {
+    private void writeTableRecord(String name, int[] tableLocation, int ref) {
         if (name.equals("glyf")) {
             writeFontInt(calculateChecksum(newGlyfTable));
         } else if (name.equals("loca")) {
@@ -264,9 +264,9 @@ class TrueTypeFontSubSet {
         if (id != 0x00010000) {
             throw new DocumentException(MessageLocalization.getComposedMessage("1.is.not.a.true.type.file", fileName));
         }
-        int num_tables = rf.readUnsignedShort();
+        int numTables = rf.readUnsignedShort();
         rf.skipBytes(6);
-        for (int k = 0; k < num_tables; ++k) {
+        for (int k = 0; k < numTables; ++k) {
             String tag = readStandardString(4);
             int[] tableLocation = new int[3];
             tableLocation[TABLE_CHECKSUM] = rf.readInt();
@@ -373,9 +373,8 @@ class TrueTypeFontSubSet {
             glyphsInList.add(glyph0);
         }
         tableGlyphOffset = tableLocation[TABLE_OFFSET];
-        for (int k = 0; k < glyphsInList.size(); ++k) {
+        for (int glyph : glyphsInList) {
             // TODO: concurrent List modification error in checkGlyphComposite(glyph)
-            int glyph = glyphsInList.get(k);
             checkGlyphComposite(glyph);
         }
     }

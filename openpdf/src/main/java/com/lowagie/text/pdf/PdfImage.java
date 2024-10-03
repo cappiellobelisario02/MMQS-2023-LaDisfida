@@ -86,7 +86,7 @@ public class PdfImage extends PdfStream {
     public PdfImage(Image image, String name, PdfIndirectReference maskRef) throws BadPdfFormatException {
         super();
         this.name = new PdfName(name);
-        put(PdfName.TYPE, PdfName.XOBJECT);
+        put(PdfName.TYPE_CONST, PdfName.XOBJECT);
         put(PdfName.SUBTYPE, PdfName.IMAGE);
         put(PdfName.WIDTH, new PdfNumber(image.getWidth()));
         put(PdfName.HEIGHT, new PdfNumber(image.getHeight()));
@@ -154,7 +154,7 @@ public class PdfImage extends PdfStream {
         int colorspace = image.getColorspace();
         int[] transparency = image.getTransparency();
 
-        if (transparency != null && !image.isMask() && maskRef == null) {
+        if (transparency != null && !image.isMask() && image.getImageMask() == null) {
             put(PdfName.MASK, new PdfLiteral(arrayToString(transparency)));
         }
 

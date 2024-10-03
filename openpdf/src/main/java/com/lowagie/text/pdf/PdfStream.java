@@ -423,9 +423,9 @@ public class PdfStream extends PdfDictionary {
      */
     @Override
     public String toString() {
-        if (get(PdfName.TYPE) == null) {
+        if (get(PdfName.TYPE_CONST) == null) {
             return "Stream";
         }
-        return "Stream of type: " + get(PdfName.TYPE);
+        return "Stream of type: " + get(PdfName.TYPE_CONST);
     }
 }

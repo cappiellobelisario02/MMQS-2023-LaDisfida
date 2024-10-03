@@ -244,7 +244,7 @@ public class ElementFactory {
                 ElementTags.NUMBERED));
         list.setLettered(Utilities.checkTrueOrFalse(attributes,
                 ElementTags.LETTERED));
-        list.setLowercase(Utilities.checkTrueOrFalse(attributes,
+        List.setLowercase(Utilities.checkTrueOrFalse(attributes,
                 ElementTags.LOWERCASE));
         list.setAutoindent(Utilities.checkTrueOrFalse(attributes,
                 ElementTags.AUTO_INDENT_ITEMS));
@@ -347,7 +347,7 @@ public class ElementFactory {
     }
 
     /**
-     * Creates an Table object based on a list of properties.
+     * Creates a Table object based on a list of properties.
      *
      * @param attributes The properties to base the parameters on
      * @return a Table
@@ -372,16 +372,12 @@ public class ElementFactory {
                 table.setWidths(widths);
             } else {
                 value = attributes.getProperty(ElementTags.COLUMNS);
-                try {
-                    table = new Table(Integer.parseInt(value));
-                } catch (Exception e) {
-                    table = new Table(1);
-                }
+                table = getTableTry(value);
             }
 
-            table.setBorder(Table.BOX);
+            table.setBorder(Rectangle.BOX);
             table.setBorderWidth(1);
-            table.getDefaultCell().setBorder(Table.BOX);
+            table.getDefaultCell().setBorder(Rectangle.BOX);
 
             manageAttributesProperties(table, attributes);
 
@@ -391,6 +387,16 @@ public class ElementFactory {
         } catch (BadElementException e) {
             throw new ExceptionConverter(e);
         }
+    }
+
+    private static Table getTableTry(String value) {
+        Table table;
+        try {
+            table = new Table(Integer.parseInt(value));
+        } catch (Exception e) {
+            table = new Table(1);
+        }
+        return table;
     }
 
     private static void manageAttributesProperties(Table table, Properties attributes){

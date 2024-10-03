@@ -92,7 +92,7 @@ import java.util.logging.Logger;
 
 public class ColumnText {
 
-    Logger logger = Logger.getLogger(ColumnText.class.getName());
+    static Logger logger = Logger.getLogger(ColumnText.class.getName());
 
     /**
      * Eliminate the arabic vowels
@@ -368,22 +368,20 @@ public class ColumnText {
         float lly = -1;
         float ury = 2;
         float llx;
-        float urx;
-
-        switch (alignment) {
-            case Element.ALIGN_LEFT:
+        float urx = switch (alignment) {
+            case Element.ALIGN_LEFT -> {
                 llx = 0;
-                urx = 20000;
-                break;
-            case Element.ALIGN_RIGHT:
+                yield 20000;
+            }
+            case Element.ALIGN_RIGHT -> {
                 llx = -20000;
-                urx = 0;
-                break;
-            default:
+                yield 0;
+            }
+            default -> {
                 llx = -20000;
-                urx = 20000;
-                break;
-        }
+                yield 20000;
+            }
+        };
 
         if (settings.getRotation() == 0) {
             llx += settings.getX();
@@ -589,36 +587,7 @@ public class ColumnText {
             return;
         }
         if (element instanceof Image image) {
-            Image img = image;
-            PdfPTable t = new PdfPTable(1);
-            float w = img.getWidthPercentage();
-            if (w == 0) {
-                t.setTotalWidth(img.getScaledWidth());
-                t.setLockedWidth(true);
-            } else {
-                t.setWidthPercentage(w);
-            }
-            t.setSpacingAfter(img.getSpacingAfter());
-            t.setSpacingBefore(img.getSpacingBefore());
-            switch (img.getAlignment()) {
-                case Image.LEFT:
-                    t.setHorizontalAlignment(Element.ALIGN_LEFT);
-                    break;
-                case Image.RIGHT:
-                    t.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                    break;
-                default:
-                    t.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    break;
-            }
-            PdfPCell c = new PdfPCell(img, true);
-            c.setPadding(0);
-            c.setBorder(img.getBorder());
-            c.setBorderColor(img.getBorderColor());
-            c.setBorderWidth(img.getBorderWidth());
-            c.setBackgroundColor(img.getBackgroundColor());
-            t.addCell(c);
-            element = t;
+            element = getPdfPTableImage(image);
         }
         if (element.type() == Element.CHUNK) {
             element = new Paragraph((Chunk) element);
@@ -644,6 +613,38 @@ public class ColumnText {
         compositeElements.add(element);
     }
 
+    private static PdfPTable getPdfPTableImage(Image image) {
+        PdfPTable t = new PdfPTable(1);
+        float w = image.getWidthPercentage();
+        if (w == 0) {
+            t.setTotalWidth(image.getScaledWidth());
+            t.setLockedWidth(true);
+        } else {
+            t.setWidthPercentage(w);
+        }
+        t.setSpacingAfter(image.getSpacingAfter());
+        t.setSpacingBefore(image.getSpacingBefore());
+        switch (image.getAlignment()) {
+            case Image.LEFT:
+                t.setHorizontalAlignment(Element.ALIGN_LEFT);
+                break;
+            case Image.RIGHT:
+                t.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                break;
+            default:
+                t.setHorizontalAlignment(Element.ALIGN_CENTER);
+                break;
+        }
+        PdfPCell c = new PdfPCell(image, true);
+        c.setPadding(0);
+        c.setBorder(image.getBorder());
+        c.setBorderColor(image.getBorderColor());
+        c.setBorderWidth(image.getBorderWidth());
+        c.setBackgroundColor(image.getBackgroundColor());
+        t.addCell(c);
+        return t;
+    }
+
     /**
      * Converts a sequence of lines representing one of the column bounds into an internal format.
      * <p>
@@ -656,35 +657,37 @@ public class ColumnText {
         if (cLine.length < 4) {
             throw new InvalidRunDirectionException(MessageLocalization.getComposedMessage("no.valid.column.line.found"));
         }
+
         List<float[]> cc = new ArrayList<>();
         for (int k = 0; k < cLine.length - 2; k += 2) {
-            if (cLine.length == k + 3) {
-                break;
+            // Only process if we have enough elements and y1 is not equal to y2
+            if (k + 3 < cLine.length && cLine[k + 1] != cLine[k + 3]) {
+                float x1 = cLine[k];
+                float y1 = cLine[k + 1];
+                float x2 = cLine[k + 2];
+                float y2 = cLine[k + 3];
+
+                // x = ay + b
+                float a = (x1 - x2) / (y1 - y2);
+                float b = x1 - a * y1;
+                float[] r = new float[4];
+                r[0] = Math.min(y1, y2);
+                r[1] = Math.max(y1, y2);
+                r[2] = a;
+                r[3] = b;
+                cc.add(r);
+                maxY = Math.max(maxY, r[1]);
+                minY = Math.min(minY, r[0]);
             }
-            float x1 = cLine[k];
-            float y1 = cLine[k + 1];
-            float x2 = cLine[k + 2];
-            float y2 = cLine[k + 3];
-            if (y1 == y2) {
-                continue;
-            }
-            // x = ay + b
-            float a = (x1 - x2) / (y1 - y2);
-            float b = x1 - a * y1;
-            float[] r = new float[4];
-            r[0] = Math.min(y1, y2);
-            r[1] = Math.max(y1, y2);
-            r[2] = a;
-            r[3] = b;
-            cc.add(r);
-            maxY = Math.max(maxY, r[1]);
-            minY = Math.min(minY, r[0]);
         }
+
         if (cc.isEmpty()) {
             throw new InvalidRunDirectionException(MessageLocalization.getComposedMessage("no.valid.column.line.found"));
         }
         return cc;
     }
+
+
 
     /**
      * Finds the intersection between the <CODE>yLine</CODE> and the column. It will set the <CODE>lineStatus</CODE>
@@ -735,33 +738,37 @@ public class ColumnText {
      */
     protected float[] findLimitsTwoLines() {
         boolean repeat = false;
-        for (; ; ) {
+
+        while (true) {
             if (repeat && currentLeading == 0) {
                 return new float[0];
             }
+
             repeat = true;
             float[] x1 = findLimitsOneLine();
+
             if (lineStatus == LINE_STATUS_OFFLIMITS) {
                 return new float[0];
             }
+
             yLine -= currentLeading;
-            if (lineStatus == LINE_STATUS_NOLINE) {
-                continue;
-            }
             float[] x2 = findLimitsOneLine();
+
             if (lineStatus == LINE_STATUS_OFFLIMITS) {
                 return new float[0];
             }
-            if (lineStatus == LINE_STATUS_NOLINE) {
-                yLine -= currentLeading;
-                continue;
+
+            // Check for no line status and bounds overlap
+            if (lineStatus == LINE_STATUS_NOLINE ||
+                    x1[0] >= x2[1] || x2[0] >= x1[1]) {
+                yLine -= currentLeading; // Adjust yLine only when continuing
+                continue; // Single continue statement
             }
-            if (x1[0] >= x2[1] || x2[0] >= x1[1]) {
-                continue;
-            }
+
             return new float[]{x1[0], x1[1], x2[0], x2[1]};
         }
     }
+
 
     /**
      * Sets the columns bounds. Each column bound is described by a
@@ -1005,7 +1012,7 @@ public class ColumnText {
         currentValues[1] = 0.0F;
         PdfLine line;
 
-        int status = 0;
+        int status;
         boolean dirty = false;
         while (true) {
             float firstIndent = calculateFirstIndent();
@@ -1348,31 +1355,37 @@ public class ColumnText {
         float listIndentation = list.getIndentationLeft();
         int count = 0;
         Deque<Object[]> stack = new ArrayDeque<>();
+        int k = 0;
 
-        for (int k = 0; k < items.size(); ++k) {
+        while (k < items.size()) {
             Object obj = items.get(k);
+
             if (obj instanceof ListItem listitem) {
                 if (count == listIdx) {
                     return listitem;
                 }
                 ++count;
+                k++;  // Increment k for the next iteration
             } else if (obj instanceof com.lowagie.text.List lowagieList) {
                 stack.push(new Object[]{list, k, listIndentation});
                 list = lowagieList;
                 items = list.getItems();
                 listIndentation += list.getIndentationLeft();
-                k = -1;
+                k = 0;  // Start from the beginning of the new list
             }
-            if (k == items.size() - 1 && !stack.isEmpty()) {
+
+            if (k >= items.size() && !stack.isEmpty()) {
                 Object[] objs = stack.pop();
                 list = (com.lowagie.text.List) objs[0];
                 items = list.getItems();
-                k = (Integer) objs[1];
+                k = (Integer) objs[1];  // Restore k from the stack
                 listIndentation = (Float) objs[2];
             }
         }
+
         return new ListItem();
     }
+
 
     private boolean initializeCompositeColumn(ListItem item, com.lowagie.text.List list, boolean firstPass) {
         if (compositeColumn == null) {
@@ -1480,7 +1493,6 @@ public class ColumnText {
             return NO_MORE_COLUMN;
         }
 
-        PdfPTable localTable = table;
         if (compositeColumn == null) {
             compositeColumn = new ColumnText(canvas);
         }
@@ -1494,7 +1506,7 @@ public class ColumnText {
         compositeColumn.runDirection = runDirection;
         compositeColumn.adjustFirstLine = adjustFirstLine;
         compositeColumn.setUseAscender(firstPass && useAscender);
-        compositeColumn.addElement(localTable);
+        compositeColumn.addElement(table);
 
         int status = compositeColumn.go(simulate);
         updateFilledWidth(compositeColumn.filledWidth);
@@ -1535,7 +1547,7 @@ public class ColumnText {
         }
 
         updateLineAndStatusForParagraph(status, para);
-        return checkStatusAndRemoveElement(status, Element.PARAGRAPH);
+        return checkStatusAndRemoveElement(status);
     }
 
     private ColumnText createCompositeColumnForParagraph(Paragraph para, boolean firstPass) {
@@ -1602,12 +1614,12 @@ public class ColumnText {
         }
     }
 
-    private int checkStatusAndRemoveElement(int status, int elementType) {
+    private int checkStatusAndRemoveElement(int status) {
         if ((status & NO_MORE_COLUMN) != 0) {
             return NO_MORE_COLUMN;
         }
 
-        if (elementType == Element.LIST || elementType == Element.PARAGRAPH && compositeColumn != null) {
+        if (compositeColumn != null) {
             yLine = compositeColumn.yLine;
             linesWritten += compositeColumn.linesWritten;
             descender = compositeColumn.descender;
@@ -1632,14 +1644,18 @@ public class ColumnText {
     }
 
     public static void main(String[] args) {
+        String stringToLog;
         PdfWriter writer = new PdfWriter();
         PdfContentByte canvas = new PdfContentByte(writer);
         ColumnText example = new ColumnText(canvas);
         ArrayDeque<Object[]> stack = new ArrayDeque<>();
         example.pushToStack(new Object[] {"first item"}, stack);
-        System.out.println(example.peekAtStack(stack)[0]);  // Output: first item
-        System.out.println(example.popFromStack(stack)[0]);  // Output: first item
-        System.out.println(example.isStackEmpty(stack));  // Output: true
+        stringToLog = example.peekAtStack(stack)[0].toString();
+        logger.info(stringToLog);  // Output: first item
+        stringToLog = example.popFromStack(stack)[0].toString();
+        logger.info(stringToLog);  // Output: first item
+        stringToLog = String.valueOf(example.isStackEmpty(stack));
+        logger.info(stringToLog);  // Output: true
     }
 
     /**

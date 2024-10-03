@@ -76,11 +76,13 @@ import com.lowagie.text.pdf.interfaces.PdfXConformance;
 import com.lowagie.text.pdf.internal.PdfVersionImp;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import com.lowagie.text.xml.xmp.XmpWriter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.awt.Color;
 import java.awt.color.ICC_Profile;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1397,7 +1399,7 @@ public class PdfWriter extends DocWriter implements
             group = null;
         } else if (rgbTransparencyBlending) {
             PdfDictionary pp = new PdfDictionary();
-            pp.put(PdfName.TYPE, PdfName.GROUP);
+            pp.put(PdfName.TYPE_CONST, PdfName.GROUP);
             pp.put(PdfName.S, PdfName.TRANSPARENCY);
             pp.put(PdfName.CS, PdfName.DEVICERGB);
             page.put(PdfName.GROUP, pp);
@@ -1504,6 +1506,8 @@ public class PdfWriter extends DocWriter implements
             super.close();
         } catch (IOException ioe) {
             throw new ExceptionConverter(ioe);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -1521,7 +1525,7 @@ public class PdfWriter extends DocWriter implements
     private void addMetadata(PdfDictionary catalog) throws IOException {
         if (xmpMetadata != null) {
             PdfStream xmp = new PdfStream(xmpMetadata);
-            xmp.put(PdfName.TYPE, PdfName.METADATA);
+            xmp.put(PdfName.TYPE_CONST, PdfName.METADATA);
             xmp.put(PdfName.SUBTYPE, PdfName.XML);
             if (crypto != null && !crypto.isMetadataEncrypted()) {
                 PdfArray ar = new PdfArray();
@@ -1545,7 +1549,7 @@ public class PdfWriter extends DocWriter implements
         }
     }
 
-    private PdfIndirectReference processEncryption() throws IOException {
+    private PdfIndirectReference processEncryption() throws IOException, NoSuchAlgorithmException {
         PdfIndirectReference encryption = null;
         if (crypto != null) {
             PdfIndirectObject encryptionObject = addToBody(crypto.getEncryptionDictionary(), false);
@@ -1554,7 +1558,7 @@ public class PdfWriter extends DocWriter implements
         return encryption;
     }
 
-    private PdfObject getFileID() {
+    private PdfObject getFileID() throws NoSuchAlgorithmException {
         PdfObject fileID;
         if (crypto != null) {
             fileID = crypto.getFileID();
@@ -1697,7 +1701,7 @@ public class PdfWriter extends DocWriter implements
         }
         PdfDictionary top = new PdfDictionary();
         PdfIndirectReference topRef = getPdfIndirectReference();
-        Object[] kids = SimpleBookmark.iterateOutlines(this, topRef, newBookmarks);
+        Object[] kids = SimpleBookmark.iterateOutlines(this, topRef, newBookmarks, true);
         top.put(PdfName.FIRST, (PdfIndirectReference) kids[0]);
         top.put(PdfName.LAST, (PdfIndirectReference) kids[1]);
         top.put(PdfName.COUNT, new PdfNumber((Integer) kids[2]));
@@ -1965,7 +1969,7 @@ public class PdfWriter extends DocWriter implements
     /**
      * @see com.lowagie.text.pdf.interfaces.PdfAnnotations#addAnnotation(com.lowagie.text.pdf.PdfAnnotation)
      */
-    public void addAnnotation(PdfAnnotation annot) {
+    public void addAnnotation(PdfAnnotation annot) throws IOException {
         pdf.addAnnotation(annot);
     }
 
@@ -2148,7 +2152,7 @@ public class PdfWriter extends DocWriter implements
      * otherwise
      * @throws IOException on error
      */
-    public boolean setOutputIntents(PdfReader reader, boolean checkExistence) throws IOException {
+    public boolean setOutputIntents(PdfReader reader, boolean checkExistence) throws IOException, PDFFilterException {
         PdfDictionary catalog = reader.getCatalog();
         PdfArray outs = catalog.getAsArray(PdfName.OUTPUTINTENTS);
         if (outs == null) {
@@ -2186,7 +2190,7 @@ public class PdfWriter extends DocWriter implements
      * @see com.lowagie.text.pdf.interfaces.PdfEncryptionSettings#setEncryption(byte[], byte[], int, int)
      */
     public void setEncryption(byte[] userPassword, byte[] ownerPassword, int permissions, int encryptionType)
-            throws DocumentException {
+            throws DocumentException, NoSuchAlgorithmException {
         if (pdf.isOpen()) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("encryption.can.only.be.added.before.opening.the.document"));
@@ -2200,7 +2204,8 @@ public class PdfWriter extends DocWriter implements
      * @see com.lowagie.text.pdf.interfaces.PdfEncryptionSettings#setEncryption(java.security.cert.Certificate[], int[],
      * int)
      */
-    public void setEncryption(Certificate[] certs, int[] permissions, int encryptionType) throws DocumentException {
+    public void setEncryption(Certificate[] certs, int[] permissions, int encryptionType)
+            throws DocumentException, NoSuchAlgorithmException {
         if (pdf.isOpen()) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("encryption.can.only.be.added.before.opening.the.document"));
@@ -3340,7 +3345,7 @@ public class PdfWriter extends DocWriter implements
             index.append(streamObjects);
             PdfStream stream = new PdfStream(index.toByteArray());
             stream.flateCompress(writer.getCompressionLevel());
-            stream.put(PdfName.TYPE, PdfName.OBJSTM);
+            stream.put(PdfName.TYPE_CONST, PdfName.OBJSTM);
             stream.put(PdfName.N, new PdfNumber(numObj));
             stream.put(PdfName.FIRST, new PdfNumber(first));
             add(stream, currentObjNum);
@@ -3519,7 +3524,7 @@ public class PdfWriter extends DocWriter implements
                 xr.flateCompress(writer.getCompressionLevel());
                 xr.putAll(trailer);
                 xr.put(PdfName.W, new PdfArray(new int[]{1, mid, 2}));
-                xr.put(PdfName.TYPE, PdfName.XREF);
+                xr.put(PdfName.TYPE_CONST, PdfName.XREF);
                 xr.put(PdfName.INDEX, createIndexArray(sections));
 
                 PdfEncryption enc = writer.crypto;

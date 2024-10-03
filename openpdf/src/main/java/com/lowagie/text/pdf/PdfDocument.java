@@ -623,7 +623,7 @@ public class PdfDocument extends Document {
         return true;
     }
 
-    private boolean handleImageElement(Image image) {
+    private boolean handleImageElement(Image image) throws IOException {
         if (isDoFooter) {
             addDelay(image);
         } else {
@@ -640,10 +640,10 @@ public class PdfDocument extends Document {
     }
 
     private boolean handleMarkedElement(MarkedObject mo) {
-            MarkedObject title = ((MarkedSection) mo).getTitle();
-            if (title != null) {
-                title.process(this);
-            }
+        MarkedObject title = ((MarkedSection) mo).getTitle();
+        if (title != null) {
+            title.process(this);
+        }
         mo.process(this);
         return true;
     }
@@ -684,6 +684,8 @@ public class PdfDocument extends Document {
             initPage();
         } catch (DocumentException de) {
             throw new ExceptionConverter(de);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -1028,7 +1030,7 @@ public class PdfDocument extends Document {
      *
      * @throws DocumentException on error
      */
-    protected void initPage() throws DocumentException {
+    protected void initPage() throws DocumentException, IOException {
         // the pagenumber is incremented
         pageN++;
 
@@ -1167,6 +1169,8 @@ public class PdfDocument extends Document {
             }
         } catch (DocumentException ex) {
             throw new ExceptionConverter(ex);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -1176,7 +1180,7 @@ public class PdfDocument extends Document {
      * @return the displacement that was caused
      * @throws DocumentException on error
      */
-    protected float flushLines() throws DocumentException {
+    protected float flushLines() throws DocumentException, IOException {
         // checks if the ArrayList with the lines is not null
         if (lines == null) {
             return 0;
@@ -1239,7 +1243,8 @@ public class PdfDocument extends Document {
      * @param ratio the
      * @throws DocumentException on error
      */
-    void writeLineToContent(PdfLine line, PdfContentByte text, PdfContentByte graphics, Object[] currentValues, float ratio) throws DocumentException {
+    void writeLineToContent(PdfLine line, PdfContentByte text, PdfContentByte graphics, Object[] currentValues, float ratio)
+            throws DocumentException, IOException {
         PdfFont currentFont = (PdfFont) (currentValues[0]);
         float lastBaseFactor = (Float) (currentValues[1]);
         PdfChunk chunk;
@@ -1497,7 +1502,7 @@ public class PdfDocument extends Document {
     }
 
     private void handleChunkAttributes(PdfChunk chunk, PdfContentByte text, PdfContentByte graphics, float lastBaseFactor,
-            PdfLine line, LineLayoutParams params, ChunkAttributes attributes) {
+            PdfLine line, LineLayoutParams params, ChunkAttributes attributes) throws IOException {
         int chunkStrokeIdx = 0;
         attributes.setLastChunkStroke(line.getLastStrokeChunk());
         if (chunkStrokeIdx <= attributes.getLastChunkStroke()) {
@@ -1525,7 +1530,7 @@ public class PdfDocument extends Document {
     }
 
     private void handleStrokedChunk(PdfChunk chunk, PdfContentByte text, PdfContentByte graphics, float lastBaseFactor,
-            LineLayoutParams params, ChunkAttributes attributes, PdfLine line) {
+            LineLayoutParams params, ChunkAttributes attributes, PdfLine line) throws IOException {
         PdfChunk nextChunk = line.getChunk(attributes.getChunkStrokeIdx() + 1);
         float width = calculateWidth(chunk, params);
         if (chunk.isSeparator()) {
@@ -1660,7 +1665,7 @@ public class PdfDocument extends Document {
     }
 
     private void handleAction(PdfChunk chunk, PdfContentByte text, float lastBaseFactor,
-            ChunkAttributes attributes, PdfChunk nextChunk, float width, LineLayoutParams params) {
+            ChunkAttributes attributes, PdfChunk nextChunk, float width, LineLayoutParams params) throws IOException {
         if (chunk.isAttribute(Chunk.ACTION)) {
             float subtract = calculateSubtract(nextChunk, lastBaseFactor, params);
             PdfAnnotation annotation = new PdfAnnotation(writer, attributes.getxMarker(),
@@ -1720,7 +1725,7 @@ public class PdfDocument extends Document {
     }
 
     private void handleAnnotation(PdfChunk chunk, PdfContentByte text, ChunkAttributes attributes, float width,
-            float lastBaseFactor, LineLayoutParams params) {
+            float lastBaseFactor, LineLayoutParams params) throws IOException {
         if (chunk.isAttribute(Chunk.PDFANNOTATION)) {
             float subtract = calculateSubtract(null, lastBaseFactor, params);
             float fontSize = chunk.font().size();
@@ -2396,7 +2401,7 @@ public class PdfDocument extends Document {
      * @throws DocumentException on error
      */
 
-    protected void add(Image image) throws DocumentException {
+    protected void add(Image image) throws DocumentException, IOException {
         if (image.hasAbsoluteY()) {
             addImageToGraphics(image);
             pageEmpty = false;
@@ -2532,10 +2537,10 @@ public class PdfDocument extends Document {
         for (Element element : footer.getSpecialContent()) {
             switch (element.type()) {
                 case Element.JPEG,
-                Element.JPEG2000,
-                Element.JBIG2,
-                Element.IMGRAW,
-                Element.IMGTEMPLATE:
+                     Element.JPEG2000,
+                     Element.JBIG2,
+                     Element.IMGRAW,
+                     Element.IMGTEMPLATE:
                     processImage((Image) element);
                     break;
                 case Element.PTABLE:
@@ -2602,7 +2607,7 @@ public class PdfDocument extends Document {
      * @param image the new <CODE>Image</CODE>
      */
 
-    protected void addDelay(Image image) {
+    protected void addDelay(Image image) throws IOException {
         if (image.hasAbsoluteY()) {
             logger.info("Warning: absoluteY of image is invalid in footer");
         }
@@ -2735,7 +2740,7 @@ public class PdfDocument extends Document {
         return tmp.getBottom();
     }
 
-    protected void doFooter() throws DocumentException {
+    protected void doFooter() throws DocumentException, IOException {
         if (footer == null) {
             return;
         }
@@ -2758,7 +2763,7 @@ public class PdfDocument extends Document {
         // End added: Bonf (Marc Schneider) 2003-07-29
         // End Added by Edgar Leonardo Prieto Perilla
         footer.setPageNumber(pageN);
-        leading = footer.paragraph().getTotalLeading();
+        leading = footer.paragraph().getTotalLeading(new Font());
         add(footer.paragraph());
         // adding the footer limits the height
         indentation.indentBottom = currentHeight;
@@ -2785,7 +2790,7 @@ public class PdfDocument extends Document {
         isDoFooter = false;
     }
 
-    protected void doHeader() throws DocumentException {
+    protected void doHeader() throws DocumentException, IOException {
         // if there is a header, the header = added
         if (header == null) {
             return;
@@ -2807,7 +2812,7 @@ public class PdfDocument extends Document {
         // End added: Bonf
         // Begin added by Edgar Leonardo Prieto Perilla
         header.setPageNumber(pageN);
-        leading = header.paragraph().getTotalLeading();
+        leading = header.paragraph().getTotalLeading(new Font());
         text.moveText(0, leading);
         add(header.paragraph());
         newLine();

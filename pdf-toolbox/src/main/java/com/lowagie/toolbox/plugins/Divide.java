@@ -103,8 +103,8 @@ public class Divide extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        PdfReader reader = null;
-        Document document = null;
+        PdfReader reader;
+        Document document;
         try {
             if (getValue(SRCFILE_ARGUMENT_NAME) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
@@ -121,7 +121,8 @@ public class Divide extends AbstractTool {
 
             // Retrieve the total number of pages
             int total = reader.getNumberOfPages();
-            logger.info("There are " + total + " pages in the original file.");  // Replaced System.out.println with logger
+            String stringToLog = "There are " + total + " pages in the original file.";
+            logger.info(stringToLog);  // Replaced System.out.println with logger
 
             // Get page size and create a new size for the document
             Rectangle pageSize = reader.getPageSize(1);
@@ -139,7 +140,8 @@ public class Divide extends AbstractTool {
             // Add content to the document
             PdfContentByte cb = writer.getDirectContent();
             PdfImportedPage page;
-            float offsetX, offsetY;
+            float offsetX;
+            float offsetY;
             int p;
             for (int i = 0; i < total; i++) {
                 p = i + 1;
@@ -195,11 +197,6 @@ public class Divide extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the
-            // command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

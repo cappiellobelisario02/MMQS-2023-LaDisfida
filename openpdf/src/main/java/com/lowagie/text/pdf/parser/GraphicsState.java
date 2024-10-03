@@ -46,8 +46,8 @@
  */
 package com.lowagie.text.pdf.parser;
 
+import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.CMapAwareDocumentFont;
-import com.lowagie.text.pdf.DocumentFont;
 
 /**
  * Keeps all the parameters of the graphics state.
@@ -182,7 +182,7 @@ public class GraphicsState {
      * @return ascent descriptor value
      */
     public float getFontAscentDescriptor() {
-        return font.getFontDescriptor(DocumentFont.ASCENT, fontSize);
+        return font.getFontDescriptor(BaseFont.ASCENT, fontSize);
     }
 
     /**
@@ -191,7 +191,7 @@ public class GraphicsState {
      * @return descent descriptor value
      */
     public float getFontDescentDescriptor() {
-        return font.getFontDescriptor(DocumentFont.DESCENT, fontSize);
+        return font.getFontDescriptor(BaseFont.DESCENT, fontSize);
     }
 
     public float calculateCharacterWidthWithSpace(float charFontWidth) {

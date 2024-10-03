@@ -50,7 +50,7 @@ public class CMapParser {
     private static final String MARK_END_OF_DICTIONARY = ">>";
     private static final String MARK_END_OF_ARRAY = "]";
 
-    private byte[] tokenParserByteBuffer = new byte[512];
+    private byte[] tokenParserByteBuffer;
     static Logger logger = Logger.getLogger(CMapParser.class.getName());
 
     /**
@@ -161,17 +161,23 @@ public class CMapParser {
 
     private void processRange(CMap result, byte[] startCode, byte[] endCode, Object nextToken) throws IOException {
         List<Object> array = null;
-        byte[] tokenBytes = null;
+        byte[] tokenBytes;
 
-        if (nextToken instanceof List listToken) {
-            array = listToken;
-            tokenBytes = (byte[]) array.get(0);
+        // Check if nextToken is a List<byte[]>
+        if (nextToken instanceof List<?> listToken && !listToken.isEmpty() && listToken.get(0) instanceof byte[]) {
+            // Convert List<byte[]> to List<Object>
+            array = new ArrayList<>(listToken);
+            tokenBytes = (byte[]) array.get(0); // Get the first byte[] from the list
         } else {
-            tokenBytes = (byte[]) nextToken;
+            assert nextToken instanceof byte[];
+            tokenBytes = (byte[]) nextToken; // Otherwise, treat nextToken as a byte[]
         }
 
+        // Call the method with the processed data
         processCodeRange(result, startCode, endCode, array, tokenBytes);
     }
+
+
 
     private void processCodeRange(CMap result, byte[] startCode, byte[] endCode, List<Object> array, byte[] tokenBytes) throws IOException {
         String value = null;

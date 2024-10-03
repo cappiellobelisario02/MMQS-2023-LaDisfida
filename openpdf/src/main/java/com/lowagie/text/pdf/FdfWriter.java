@@ -125,13 +125,14 @@ public class FdfWriter {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String s = entry.getKey();
             Object obj = entry.getValue();
-            if (obj instanceof HashMap hashMap) {
-                iterateFields(values, hashMap, name + "." + s);
+            if (obj instanceof HashMap<?, ?> hashMap) {
+                iterateFields(values, (HashMap<String, Object>) hashMap, name + "." + s);
             } else {
                 values.put((name + "." + s).substring(1), obj);
             }
         }
     }
+
 
     /**
      * Removes the field value.
@@ -140,7 +141,6 @@ public class FdfWriter {
      * @return <CODE>true</CODE> if the field was found and removed,
      * <CODE>false</CODE> otherwise
      */
-    @SuppressWarnings("unchecked")
     public boolean removeField(String field) {
         Map<String, Object> map = fields;
         StringTokenizer tk = new StringTokenizer(field, ".");
@@ -260,7 +260,6 @@ public class FdfWriter {
      * @param field the field name
      * @return the field value or <CODE>null</CODE> if not found
      */
-    @SuppressWarnings("unchecked")
     public String getField(String field) {
         Map<String, Object> map = fields;
         StringTokenizer tk = new StringTokenizer(field, ".");
@@ -289,6 +288,7 @@ public class FdfWriter {
         return null; // fallback, even if we should never reach this point
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> getNextMap(Object obj) {
         if (obj instanceof Map) {
             return (Map<String, Object>) obj;
@@ -396,16 +396,16 @@ public class FdfWriter {
         }
 
         @SuppressWarnings("unchecked")
-        PdfArray calculate(HashMap<String, Object> map) {
+        PdfArray calculate(HashMap<String, ?> map) {
             PdfArray ar = new PdfArray();
-            for (Map.Entry<String, Object> entry : map.entrySet()) {
+            for (Map.Entry<String, ?> entry : map.entrySet()) {
                 String key = entry.getKey();
                 Object v = entry.getValue();
                 PdfDictionary dic = new PdfDictionary();
                 dic.put(PdfName.T, new PdfString(key, PdfObject.TEXT_UNICODE));
-                if (v instanceof HashMap hMap) {
-                    dic.put(PdfName.KIDS, calculate(hMap));
-                } else if (v instanceof PdfAction pdfAction) {    // (plaflamme)
+                if (v instanceof HashMap<?, ?> hMap) {
+                    dic.put(PdfName.KIDS, calculate((HashMap<String, ?>) hMap));
+                } else if (v instanceof PdfAction pdfAction) {
                     dic.put(PdfName.A, pdfAction);
                 } else {
                     dic.put(PdfName.V, (PdfObject) v);
@@ -414,5 +414,6 @@ public class FdfWriter {
             }
             return ar;
         }
+
     }
 }

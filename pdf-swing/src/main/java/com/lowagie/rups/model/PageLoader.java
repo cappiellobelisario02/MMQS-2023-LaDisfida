@@ -85,7 +85,8 @@ public class PageLoader extends BackgroundTask {
         busy[pageNumber] = true;
         PDFPage page = file.getPage(pageNumber + 1, true);
         if (!done[pageNumber]) {
-            logger.info("Loading page " + (pageNumber + 1));
+            String stringToLog = "Loading page " + (pageNumber + 1);
+            logger.info(stringToLog);
         }
         done[pageNumber] = true;
         busy[pageNumber] = false;

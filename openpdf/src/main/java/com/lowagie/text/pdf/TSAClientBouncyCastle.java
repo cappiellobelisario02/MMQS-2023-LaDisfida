@@ -266,8 +266,8 @@ public class TSAClientBouncyCastle implements TSAClient {
         tsaConnection.setUseCaches(false);
         tsaConnection.setRequestProperty("Content-Type",
                 "application/timestamp-query");
-        
-                
+
+
         tsaConnection.setRequestProperty("Content-Transfer-Encoding", "binary");
 
         if (isNotEmpty(tsaUsername)) {

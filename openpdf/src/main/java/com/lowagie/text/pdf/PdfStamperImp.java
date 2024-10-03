@@ -48,7 +48,6 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
-import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
@@ -61,6 +60,7 @@ import com.lowagie.text.xml.xmp.XmpReader;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -120,9 +120,7 @@ class PdfStamperImp extends PdfWriter {
      * @param reader     the read PDF
      * @param os         the output destination
      * @param pdfVersion the new pdf version or '\0' to keep the same version as the original document
-     * @param append
      * @throws DocumentException on error
-     * @throws IOException
      */
     PdfStamperImp(PdfReader reader, OutputStream os, char pdfVersion, boolean append)
             throws DocumentException, IOException {
@@ -168,7 +166,7 @@ class PdfStamperImp extends PdfWriter {
         if (reader.isEncrypted()) {
             crypto = new PdfEncryption(reader.getDecrypt());
         }
-        pdf_version.setAppendmode(true);
+        pdfVersion.setAppendmode(true);
         file.reOpen();
         transferFileContentToOutputStream(file, os);
         file.close();
@@ -246,7 +244,7 @@ class PdfStamperImp extends PdfWriter {
         }
     }
 
-    void close(Map<String, String> moreInfo) throws IOException {
+    void close(Map<String, String> moreInfo) throws IOException, NoSuchAlgorithmException {
         if (closed) {
             return;
         }
@@ -323,7 +321,7 @@ class PdfStamperImp extends PdfWriter {
             fillOCProperties(false);
             PdfDictionary ocdict = catalog.getAsDict(PdfName.OCPROPERTIES);
             if (ocdict == null) {
-                ocdict = OCProperties;
+                ocdict = ocProperties;
                 catalog.put(PdfName.OCPROPERTIES, ocdict);
             } else {
                 updateOCDict(ocdict);
@@ -332,16 +330,16 @@ class PdfStamperImp extends PdfWriter {
     }
 
     private void updateOCDict(PdfDictionary ocdict) {
-        ocdict.put(PdfName.OCGS, OCProperties.get(PdfName.OCGS));
+        ocdict.put(PdfName.OCGS, ocProperties.get(PdfName.OCGS));
         PdfDictionary ddict = ocdict.getAsDict(PdfName.D);
         if (ddict == null) {
             ddict = new PdfDictionary();
             ocdict.put(PdfName.D, ddict);
         }
-        ddict.put(PdfName.ORDER, OCProperties.getAsDict(PdfName.D).get(PdfName.ORDER));
-        ddict.put(PdfName.RBGROUPS, OCProperties.getAsDict(PdfName.D).get(PdfName.RBGROUPS));
-        ddict.put(PdfName.OFF, OCProperties.getAsDict(PdfName.D).get(PdfName.OFF));
-        ddict.put(PdfName.AS, OCProperties.getAsDict(PdfName.D).get(PdfName.AS));
+        ddict.put(PdfName.ORDER, ocProperties.getAsDict(PdfName.D).get(PdfName.ORDER));
+        ddict.put(PdfName.RBGROUPS, ocProperties.getAsDict(PdfName.D).get(PdfName.RBGROUPS));
+        ddict.put(PdfName.OFF, ocProperties.getAsDict(PdfName.D).get(PdfName.OFF));
+        ddict.put(PdfName.AS, ocProperties.getAsDict(PdfName.D).get(PdfName.AS));
     }
 
     private void handleMetadata(Map<String, String> moreInfo) throws IOException {
@@ -409,7 +407,7 @@ class PdfStamperImp extends PdfWriter {
         } catch (SAXException e) {
             xmp = new PdfStream(altMetadata);
         }
-        xmp.put(PdfName.TYPE, PdfName.METADATA);
+        xmp.put(PdfName.TYPE_CONST, PdfName.METADATA);
         xmp.put(PdfName.SUBTYPE, PdfName.XML);
         if (crypto != null && !crypto.isMetadataEncrypted()) {
             PdfArray ar = new PdfArray();
@@ -424,22 +422,24 @@ class PdfStamperImp extends PdfWriter {
         body.add(xmp, xmpo.getIndRef());
     }
 
-    private void addXMPToCatalog(PdfStream xmp) {
+    private void addXMPToCatalog(PdfStream xmp) throws IOException {
         reader.getCatalog().put(PdfName.METADATA, body.add(xmp).getIndirectReference());
         markUsed(reader.getCatalog());
     }
 
-    private void writeDocument() throws IOException {
+    private void writeDocument() throws IOException, NoSuchAlgorithmException {
         try {
             file.reOpen();
             alterContents();
             writeObjects();
+        } catch (NoSuchAlgorithmException e) {
+            throw new NoSuchAlgorithmException(e);
         } finally {
             closeFile();
         }
     }
 
-    private void writeObjects() throws IOException {
+    private void writeObjects() throws IOException, NoSuchAlgorithmException {
         int rootN = ((PRIndirectReference) reader.trailer.get(PdfName.ROOT)).getNumber();
         if (append) {
             writeAppendObjects(rootN);
@@ -459,7 +459,7 @@ class PdfStamperImp extends PdfWriter {
         for (int k = initialXrefSize; k < reader.getXrefSize(); ++k) {
             PdfObject obj = reader.getPdfObject(k);
             if (obj != null) {
-                addToBody(obj, getNewObjectNumber(reader, k, 0));
+                addToBody(obj, getNewObjectNumber(reader, k));
             }
         }
     }
@@ -467,14 +467,15 @@ class PdfStamperImp extends PdfWriter {
     private void writeNonAppendObjects(int rootN) throws IOException {
         for (int k = 1; k < reader.getXrefSize(); ++k) {
             PdfObject obj = reader.getPdfObjectRelease(k);
-            if (obj != null && skipInfo != k) {
-                addToBody(obj, getNewObjectNumber(reader, k, 0), k != rootN);
+            if (obj != null) {
+                addToBody(obj, getNewObjectNumber(reader, k), k != rootN);
             }
         }
     }
 
-    private void writeCrossReferenceTable() throws IOException {
-        PdfIndirectReference root = new PdfIndirectReference(0, getNewObjectNumber(reader, ((PRIndirectReference) reader.trailer.get(PdfName.ROOT)).getNumber(), 0));
+    private void writeCrossReferenceTable() throws IOException, NoSuchAlgorithmException {
+        PdfIndirectReference root = new PdfIndirectReference(0, getNewObjectNumber(reader, ((PRIndirectReference) reader.trailer.get(PdfName.ROOT)).getNumber()),
+                0);
         PdfDictionary info = getInfoDictionary(getOldInfo(), new PdfDate(modificationDate), getProducer(null), null);
         PdfIndirectReference infoRef = addToBody(info, false).getIndirectReference();
         body.writeCrossReferenceTable(os, root, infoRef, getEncryptionRef(), getFileIDPSI(), prevxref);
@@ -496,14 +497,14 @@ class PdfStamperImp extends PdfWriter {
         }
     }
 
-    private PdfIndirectReference getEncryptionRef() throws IOException {
+    private PdfIndirectReference getEncryptionRef() throws IOException, NoSuchAlgorithmException {
         if (crypto != null) {
             return append ? reader.getCryptoRef() : addToBody(crypto.getEncryptionDictionary(), false).getIndirectReference();
         }
         return null;
     }
 
-    private PdfObject getFileIDPSI() {
+    private PdfObject getFileIDPSI() throws NoSuchAlgorithmException {
         if (crypto != null && includeFileID) {
             byte[] fileIDPartTwo = overrideFileId != null ? PdfEncryption.getFileIdChangingPart(overrideFileId) : PdfEncryption.createDocumentId();
             return PdfEncryption.createInfoId(crypto.documentID, fileIDPartTwo);
@@ -664,7 +665,7 @@ class PdfStamperImp extends PdfWriter {
     }
 
     @Override
-    protected int getNewObjectNumber(PdfReader reader, int number, int generation) {
+    protected int getNewObjectNumber(PdfReader reader, int number) {
         IntHashtable ref = readers2intrefs.get(reader);
         if (ref != null) {
             int n = ref.get(number);
@@ -685,7 +686,7 @@ class PdfStamperImp extends PdfWriter {
             }
             return n;
         } else {
-            return currentPdfReaderInstance.getNewObjectNumber(number, generation);
+            return currentPdfReaderInstance.getNewObjectNumber(number);
         }
     }
 
@@ -709,16 +710,11 @@ class PdfStamperImp extends PdfWriter {
      *
      * @throws DocumentException
      */
-    public void removeEncryption() throws DocumentException {
+    public void removeEncryption() throws DocumentException, NoSuchAlgorithmException {
         super.setEncryption(null, null, 0, ENCRYPTION_NONE);
         this.reader.setPermissions(0);
     }
 
-    /**
-     * @param reader
-     * @param openFile
-     * @throws IOException
-     */
     public void registerReader(PdfReader reader, boolean openFile) throws IOException {
         if (readers2intrefs.containsKey(reader)) {
             return;
@@ -731,9 +727,6 @@ class PdfStamperImp extends PdfWriter {
         }
     }
 
-    /**
-     * @param reader
-     */
     public void unRegisterReader(PdfReader reader) {
         if (!readers2intrefs.containsKey(reader)) {
             return;
@@ -751,10 +744,6 @@ class PdfStamperImp extends PdfWriter {
         }
     }
 
-    /**
-     * @param fdf
-     * @throws IOException
-     */
     public void addComments(FdfReader fdf) throws IOException {
         if (readers2intrefs.containsKey(fdf)) {
             return;
@@ -824,7 +813,7 @@ class PdfStamperImp extends PdfWriter {
                     }
                 }
             }
-            addToBody(obj, getNewObjectNumber(fdf, n, 0));
+            addToBody(obj, getNewObjectNumber(fdf, n));
         }
     }
 
@@ -1110,8 +1099,8 @@ class PdfStamperImp extends PdfWriter {
         int type = this.acroFields.getFieldType(name);
 
         if (type != AcroFields.FIELD_TYPE_SIGNATURE && (appDic == null || !(appDic.getDirectObject(PdfName.N) instanceof PdfIndirectReference))) {
-                regenerate = true;
-            }
+            regenerate = true;
+        }
 
         if (regenerate) {
             try {
@@ -1173,7 +1162,7 @@ class PdfStamperImp extends PdfWriter {
             cb.setLiteral("Q ");
 
             if (transformNeeded) {
-                applyTransformations(app, box, cb);
+                applyTransformations(app, box, cb, merged);
             } else {
                 addTemplateWithoutTransformation(app, box, cb, normalAppearanceObj);
             }
@@ -1206,7 +1195,7 @@ class PdfStamperImp extends PdfWriter {
         return null;
     }
 
-    private void applyTransformations(PdfAppearance app, Rectangle box, PdfContentByte cb) {
+    private void applyTransformations(PdfAppearance app, Rectangle box, PdfContentByte cb, PdfDictionary merged) {
         AffineTransform transform = new AffineTransform();
         double x = box.getLeft();
         double y = box.getBottom();
@@ -1577,7 +1566,7 @@ class PdfStamperImp extends PdfWriter {
         for (PdfTemplate template : fieldTemplates.keySet()) {
             PdfFormField.mergeResources(dr, (PdfDictionary) template.getResources(), this);
         }
-        
+
         PdfDictionary fonts = dr.getAsDict(PdfName.FONT);
         if (fonts == null) {
             fonts = new PdfDictionary();
@@ -1656,19 +1645,15 @@ class PdfStamperImp extends PdfWriter {
      *
      * @param annot annotation to be added
      */
-    private void addAnnotationToDocument(PdfAnnotation annot) {
-        try {
-            List<PdfAnnotation> allAnnots = new ArrayList<>();
-            if (annot.isForm()) {
-                handleFormField(annot, allAnnots);
-            } else {
-                allAnnots.add(annot);
-            }
-
-            processAnnotations(allAnnots);
-        } catch (IOException e) {
-            throw new ExceptionConverter(e);
+    private void addAnnotationToDocument(PdfAnnotation annot) throws IOException {
+        List<PdfAnnotation> allAnnots = new ArrayList<>();
+        if (annot.isForm()) {
+            handleFormField(annot, allAnnots);
+        } else {
+            allAnnots.add(annot);
         }
+
+        processAnnotations(allAnnots);
     }
 
     private void handleFormField(PdfAnnotation annot, List<PdfAnnotation> allAnnots) {
@@ -1680,7 +1665,7 @@ class PdfStamperImp extends PdfWriter {
         }
     }
 
-    private void processAnnotations(List<PdfAnnotation> allAnnots) {
+    private void processAnnotations(List<PdfAnnotation> allAnnots) throws IOException {
         PdfDictionary pageN = null;
 
         for (PdfAnnotation annot : allAnnots) {
@@ -1721,7 +1706,7 @@ class PdfStamperImp extends PdfWriter {
                 markUsed(annots);
                 adjustAnnotationRectangle(annot, pageN);
             } else {
-                throw new IllegalStateException("The radiobutton widget doesn't have a page: " + annot.toString());
+                throw new IllegalStateException("The radiobutton widget doesn't have a page: " + annot);
             }
         }
     }
@@ -1771,7 +1756,7 @@ class PdfStamperImp extends PdfWriter {
      * @see com.lowagie.text.pdf.PdfWriter#addAnnotation(com.lowagie.text.pdf.PdfAnnotation)
      */
     @Override
-    public void addAnnotation(PdfAnnotation annot) {
+    public void addAnnotation(PdfAnnotation annot) throws IOException {
         addAnnotationToDocument(annot);
     }
 
@@ -1874,7 +1859,6 @@ class PdfStamperImp extends PdfWriter {
             return;
         }
         PdfDictionary catalog = reader.getCatalog();
-        boolean namedAsNames = (catalog.get(PdfName.DESTS) != null);
         writeOutlines(catalog);
         markUsed(catalog);
     }
@@ -2158,10 +2142,10 @@ class PdfStamperImp extends PdfWriter {
             addOrder(null, order, ocgmap);
         }
         documentOCG.addAll(ocgmap.values());
-        OCGRadioGroup = d.getAsArray(PdfName.RBGROUPS);
-        OCGLocked = d.getAsArray(PdfName.LOCKED);
-        if (OCGLocked == null) {
-            OCGLocked = new PdfArray();
+        ocgRadioGroup = d.getAsArray(PdfName.RBGROUPS);
+        ocgLocked = d.getAsArray(PdfName.LOCKED);
+        if (ocgLocked == null) {
+            ocgLocked = new PdfArray();
         }
     }
 

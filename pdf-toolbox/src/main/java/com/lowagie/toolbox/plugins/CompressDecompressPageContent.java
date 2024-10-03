@@ -45,6 +45,7 @@ import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
@@ -63,6 +64,9 @@ public class CompressDecompressPageContent extends AbstractTool {
     private static final String SRCFILE_ARG = "srcfile";
     private static final String DEST = "destfile";
     private static final String COMP = "compress";
+
+    private static final Logger logger = Logger.getLogger(CompressDecompressPageContent.class.getName());
+
     public CompressDecompressPageContent() {
         FileArgument f = new FileArgument(this, SRCFILE_ARG, "The file you want to compress/decompress", false,
                 new PdfFilter());
@@ -84,7 +88,7 @@ public class CompressDecompressPageContent extends AbstractTool {
     public static void main(String[] args) {
         com.lowagie.toolbox.plugins.CompressDecompressPageContent tool = new com.lowagie.toolbox.plugins.CompressDecompressPageContent();
         if (args.length < 2) {
-            System.err.println(tool.getUsage());
+            logger.severe(tool.getUsage());
         }
         tool.setMainArguments(args);
         tool.execute();
@@ -97,7 +101,7 @@ public class CompressDecompressPageContent extends AbstractTool {
         internalFrame = new JInternalFrame("Compress/Decompress", true, false, true);
         internalFrame.setSize(300, 80);
         internalFrame.setJMenuBar(getMenubar());
-        System.out.println("=== Compress/Decompress OPENED ===");
+        logger.info("=== Compress/Decompress OPENED ===");
     }
 
     /**
@@ -105,10 +109,6 @@ public class CompressDecompressPageContent extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 
@@ -141,7 +141,6 @@ public class CompressDecompressPageContent extends AbstractTool {
                 for (int i = 1; i < total; i++) {
                     reader.setPageContent(i, reader.getPageContent(i));
                 }
-                stamper.close();
                 Document.compress = true;
             }
         } catch (Exception e) {
@@ -149,7 +148,7 @@ public class CompressDecompressPageContent extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.err.println(e.getMessage());
+            logger.severe(e.getMessage());
         }
     }
 }

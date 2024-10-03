@@ -80,6 +80,7 @@ public class ParagraphBookmarks extends PdfPageEventHelper {
      * @param document the Document to outline
      * @param position the position in the document
      */
+    @Override
     public void onParagraph(PdfWriter writer, Document document, float position) {
         n++;
         PdfContentByte cb = writer.getDirectContent();
