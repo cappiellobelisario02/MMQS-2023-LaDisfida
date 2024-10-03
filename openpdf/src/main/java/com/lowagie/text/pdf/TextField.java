@@ -141,7 +141,7 @@ public class TextField extends BaseField {
      * PdfWriter.RUN_DIRECTION_NO_BIDI)
      */
     private static int textRunDirectionByContent(String ptext) {
-        if (ptext == null || ptext.length() == 0) {
+        if (ptext == null || ptext.isEmpty()) {
             return PdfWriter.RUN_DIRECTION_NO_BIDI;
         }
 
@@ -165,13 +165,13 @@ public class TextField extends BaseField {
         int ltrCount = 0;
         byte[] levels = bidi.getLevels();
 
-        for (int i = 0; i < levels.length; i++) {
-            if (levels[i] % 2 == 0) {
+        for (byte level : levels) {
+            if (level % 2 == 0) {
                 ltrCount++;
             }
         }
 
-        if (ltrCount / levels.length >= 0.5) {
+        if ((double) ltrCount / levels.length >= 0.5) {
             return PdfWriter.RUN_DIRECTION_LTR;
         } else {
             return PdfWriter.RUN_DIRECTION_RTL;
@@ -302,7 +302,7 @@ public class TextField extends BaseField {
         return app;
     }
 
-    private PdfAppearance initializeAppearance() throws IOException, DocumentException {
+    private PdfAppearance initializeAppearance() throws DocumentException {
         BoxSettings boxSettings = new BoxSettings(super.box, super.rotation);
         AppearanceSettings appearanceSettings = new AppearanceSettings(super.backgroundColor,
                 super.borderStyle, super.borderWidth, super.borderColor, super.options, super.maxCharacterLength);
@@ -376,7 +376,11 @@ public class TextField extends BaseField {
         ct.setAlignment(getTextAlignment(rtl));
         ct.setRunDirection(rtl);
         ct.setText(phrase);
-        ct.go();
+        try {
+            ct.go();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private float calculateOptimalFontSizeForMultiline(float factor, ColumnText ct, Phrase phrase, int rtl) throws DocumentException {
@@ -394,7 +398,12 @@ public class TextField extends BaseField {
                     changeFontSize(phrase, usize);
                     ct.setText(phrase);
                     ct.setLeading(factor * usize);
-                    int status = ct.go(true);
+                    int status;
+                    try {
+                        status = ct.go(true);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     if ((status & ColumnText.NO_MORE_COLUMN) == 0) {
                         break;
                     }

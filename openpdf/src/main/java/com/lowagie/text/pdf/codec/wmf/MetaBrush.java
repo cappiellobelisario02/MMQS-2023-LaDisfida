@@ -68,7 +68,7 @@ public class MetaBrush extends MetaObject {
 
     int style = BS_SOLID;
     int hatch;
-    Color color = Color.white;
+    private Color color = Color.white;
 
     public MetaBrush() {
         type = META_BRUSH;

@@ -49,6 +49,7 @@
 
 package com.lowagie.text.pdf.codec.wmf;
 
+import java.awt.Color;
 import java.io.IOException;
 
 public class MetaObject {
@@ -61,7 +62,7 @@ public class MetaObject {
 
     // Common attributes for all MetaObjects
     protected String name;
-    protected int color;
+    protected Color color;
 
     public MetaObject() {
     }
@@ -78,7 +79,7 @@ public class MetaObject {
     public void init(InputMeta in) throws IOException {
         // Assume InputMeta has methods to read data, e.g., readString(), readInt(), etc.
         this.name = String.valueOf(in.readWord());  // Example method to read a string attribute
-        this.color = in.readInt();     // Example method to read an integer attribute
+        this.color = in.readColor();     // Example method to read an integer attribute
 
         // Additional common initialization can be added here
     }
@@ -88,7 +89,7 @@ public class MetaObject {
         return name;
     }
 
-    public int getColor() {
+    public Color getColor() {
         return color;
     }
 }
