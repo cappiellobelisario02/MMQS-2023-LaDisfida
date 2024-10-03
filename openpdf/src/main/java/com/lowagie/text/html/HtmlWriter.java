@@ -76,6 +76,7 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.Row;
 import com.lowagie.text.Section;
 import com.lowagie.text.Table;
+import com.lowagie.text.exceptions.AddCellException;
 import com.lowagie.text.pdf.BaseFont;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -269,10 +270,12 @@ public class HtmlWriter extends DocWriter {
             return handleElementAddition(element);
         } catch (IOException ioe) {
             throw new ExceptionConverter(ioe);
+        } catch (AddCellException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private boolean handleElementAddition(Element element) throws IOException, DocumentException {
+    private boolean handleElementAddition(Element element) throws IOException, DocumentException, AddCellException {
         switch (element.type()) {
             case Element.HEADER:
                 handleHeader((Header) element);
@@ -417,7 +420,7 @@ public class HtmlWriter extends DocWriter {
     protected void initHeader() {
         if (header != null) {
             try {
-                add(header.paragraph());
+                add(header.getContent());
             } catch (Exception e) {
                 throw new ExceptionConverter(e);
             }
@@ -590,7 +593,6 @@ public class HtmlWriter extends DocWriter {
      *
      * @param header the new header
      */
-    @Override
     public void setHeader(Header header) {
         this.header = header;
     }
@@ -630,7 +632,7 @@ public class HtmlWriter extends DocWriter {
      * @param indent  the indentation
      * @throws IOException thrown when an I/O operation fails
      */
-    protected void write(Element element, int indent) throws IOException {
+    protected void write(Element element, int indent) throws IOException, AddCellException {
         switch (element.type()) {
             case Element.MARKED:
                 handleMarked(element);
@@ -688,7 +690,7 @@ public class HtmlWriter extends DocWriter {
         }
     }
 
-    private void handleChunk(Chunk chunk, int indent) throws IOException {
+    private void handleChunk(Chunk chunk, int indent) throws IOException, AddCellException {
         Image image = chunk.getImage();
         if (image != null) {
             write(image, indent);
@@ -741,7 +743,7 @@ public class HtmlWriter extends DocWriter {
         }
     }
 
-    private void handlePhrase(Phrase phrase, int indent) throws IOException {
+    private void handlePhrase(Phrase phrase, int indent) throws IOException, AddCellException {
         writeStartTag(Markup.HTML_TAG_SPAN, phrase.getFont(), indent);
         currentfont.push(phrase.getFont());
         for (Object o : phrase) {
@@ -751,7 +753,7 @@ public class HtmlWriter extends DocWriter {
         currentfont.pop();
     }
 
-    private void handleAnchor(Anchor anchor, int indent) throws IOException {
+    private void handleAnchor(Anchor anchor, int indent) throws IOException, AddCellException {
         writeStartTag(HtmlTags.ANCHOR, anchor.getFont(), indent);
         currentfont.push(anchor.getFont());
         for (Object o : anchor) {
@@ -761,7 +763,7 @@ public class HtmlWriter extends DocWriter {
         currentfont.pop();
     }
 
-    private void handleParagraph(Paragraph paragraph, int indent) throws IOException {
+    private void handleParagraph(Paragraph paragraph, int indent) throws IOException, AddCellException {
         writeStartTag(HtmlTags.DIV, paragraph.getFont(), indent);
         currentfont.push(paragraph.getFont());
         for (Object o : paragraph) {
@@ -771,11 +773,11 @@ public class HtmlWriter extends DocWriter {
         currentfont.pop();
     }
 
-    private void handleSection(Section section, int indent) throws IOException {
+    private void handleSection(Section section, int indent) throws IOException, AddCellException {
         writeSection(section, indent);
     }
 
-    private void handleList(List list, int indent) throws IOException {
+    private void handleList(List list, int indent) throws IOException, AddCellException {
         addTabs(indent);
         if (list.isNumbered()) {
             writeStart(HtmlTags.ORDEREDLIST);
@@ -795,7 +797,7 @@ public class HtmlWriter extends DocWriter {
         }
     }
 
-    private void handleListItem(ListItem listItem, int indent) throws IOException {
+    private void handleListItem(ListItem listItem, int indent) throws IOException, AddCellException {
         writeStartTag(HtmlTags.LISTITEM, listItem.getFont(), indent);
         currentfont.push(listItem.getFont());
         for (Object o : listItem) {
@@ -805,8 +807,8 @@ public class HtmlWriter extends DocWriter {
         currentfont.pop();
     }
 
-    private void handleCell(Cell cell, int indent) throws IOException {
-        writeStartTag(cell.isHeader() ? HtmlTags.HEADERCELL : HtmlTags.CELL, cell.getFont(), indent);
+    private void handleCell(Cell cell, int indent) throws IOException, AddCellException {
+        writeStartTag(cell.isHeader() ? HtmlTags.HEADERCELL : HtmlTags.CELL, standardfont, indent);
         if (cell.isEmpty()) {
             write(NBSP);
         } else {
@@ -817,7 +819,7 @@ public class HtmlWriter extends DocWriter {
         writeEnd(cell.isHeader() ? HtmlTags.HEADERCELL : HtmlTags.CELL);
     }
 
-    private void handleRow(Row row, int indent) throws IOException {
+    private void handleRow(Row row, int indent) throws IOException, AddCellException {
         addTabs(indent);
         writeStart(HtmlTags.ROW);
         writeMarkupAttributes(markup);
@@ -831,7 +833,7 @@ public class HtmlWriter extends DocWriter {
         writeEnd(HtmlTags.ROW);
     }
 
-    private void handleTable(Table table, int indent) throws IOException {
+    private void handleTable(Table table, int indent) throws IOException, AddCellException {
         table.complete();
         addTabs(indent);
         writeStart(HtmlTags.TABLE);
@@ -916,7 +918,7 @@ public class HtmlWriter extends DocWriter {
      * @param indent  the indentation
      * @throws IOException thrown when an I/O operation fails
      */
-    protected void writeSection(Section section, int indent) throws IOException {
+    protected void writeSection(Section section, int indent) throws IOException, AddCellException {
         if (section.getTitle() != null) {
             int depth = section.getDepth() - 1;
             if (depth > 5) {
@@ -924,7 +926,8 @@ public class HtmlWriter extends DocWriter {
             }
             Properties styleAttributes = new Properties();
             if (section.getTitle().hasLeading()) {
-                styleAttributes.setProperty(Markup.CSS_KEY_LINEHEIGHT, section.getTitle().getTotalLeading() + "pt");
+                styleAttributes.setProperty(Markup.CSS_KEY_LINEHEIGHT,
+                        section.getTitle().getTotalLeading(standardfont) + "pt");
             }
             // start tag
             addTabs(indent);

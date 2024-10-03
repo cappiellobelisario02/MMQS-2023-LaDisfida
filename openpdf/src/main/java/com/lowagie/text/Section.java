@@ -303,6 +303,26 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
         return tmp;
     }
 
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
+    }
+
     /**
      * @see com.lowagie.text.Element#isContent()
      * @since iText 2.0.8
@@ -773,7 +793,7 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
         for (Iterator<Element> i = iterator(); i.hasNext(); ) {
             element = i.next();
             if (element instanceof Section section) {
-                 if (!section.isComplete() && size() == 1) {
+                if (!section.isComplete() && size() == 1) {
                     section.flushContent();
                     return;
                 } else {

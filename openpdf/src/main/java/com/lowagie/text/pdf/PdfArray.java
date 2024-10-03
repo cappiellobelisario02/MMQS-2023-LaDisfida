@@ -543,4 +543,9 @@ public class PdfArray extends PdfObject {
         }
         return ref;
     }
+
+
+    public void removeAll(List<PdfObject> annotsList) {
+        // TODO implement logic removing all elements contained in list from the array
+    }
 }

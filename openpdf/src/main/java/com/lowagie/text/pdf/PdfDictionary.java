@@ -130,7 +130,7 @@ public class PdfDictionary extends PdfObject {
     public PdfDictionary(PdfName type) {
         this();
         dictionaryType = type;
-        put(PdfName.TYPE, dictionaryType);
+        put(PdfName.TYPE_CONST, dictionaryType);
     }
 
     // METHODS OVERRIDING SOME PDFOBJECT METHODS
@@ -174,10 +174,10 @@ public class PdfDictionary extends PdfObject {
      */
     @Override
     public String toString() {
-        if (get(PdfName.TYPE) == null) {
+        if (get(PdfName.TYPE_CONST) == null) {
             return "Dictionary";
         }
-        return "Dictionary of type: " + get(PdfName.TYPE);
+        return "Dictionary of type: " + get(PdfName.TYPE_CONST);
     }
 
     // DICTIONARY contentMethod METHODS

@@ -54,6 +54,7 @@ import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.exceptions.AnnotationException;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,6 +67,9 @@ import java.util.List;
  * @author Paulo Soares (psoares@consiste.pt)
  */
 public class TextField extends BaseField {
+
+    float offX;
+    private float offsetX;
 
     /**
      * Holds value of property defaultText.
@@ -299,8 +303,10 @@ public class TextField extends BaseField {
     }
 
     private PdfAppearance initializeAppearance() throws IOException, DocumentException {
-        return getBorderAppearance(super.writer, super.box, super.rotation, super.backgroundColor,
+        BoxSettings boxSettings = new BoxSettings(super.box, super.rotation);
+        AppearanceSettings appearanceSettings = new AppearanceSettings(super.backgroundColor,
                 super.borderStyle, super.borderWidth, super.borderColor, super.options, super.maxCharacterLength);
+        return getBorderAppearance(super.writer, boxSettings, appearanceSettings);
     }
 
     private boolean isTextEmpty() {
@@ -311,8 +317,8 @@ public class TextField extends BaseField {
         boolean borderExtra = isBorderExtra();
         //float h = calculateHeight(borderExtra
         float bw2 = calculateBorderWidth(borderExtra);
-        float offsetX = Math.max(bw2, 1);
-        float offX = Math.min(bw2, offsetX);
+        offsetX = Math.max(bw2, 1);
+        offX = Math.min(bw2, offsetX);
 
         app.saveState();
         app.rectangle(offX, offX, box.getWidth() - 2 * offX, box.getHeight() - 2 * offX);
@@ -343,7 +349,7 @@ public class TextField extends BaseField {
         if ((options & MULTILINE) != 0) {
             handleMultilineText(app, ufont, rtl, phrase);
         } else {
-            handleSingleLineText(app, ufont, rtl, phrase, usize);
+            handleSingleLineText(app, ufont, rtl, phrase, usize, ptext);
         }
     }
 
@@ -361,10 +367,10 @@ public class TextField extends BaseField {
         //float width = box.getWidth() - 4 * offsetX - extraMarginLeft
         float factor = ufont.getFontDescriptor(BaseFont.BBOXURY, 1) - ufont.getFontDescriptor(BaseFont.BBOXLLY, 1);
         ColumnText ct = new ColumnText(null);
-        float usize = calculateOptimalFontSizeForMultiline(factor, ct, phrase);
+        float usize = calculateOptimalFontSizeForMultiline(factor, ct, phrase, rtl);
         ct.setCanvas(app);
         float leading = usize * factor;
-        float offsetY = offsetX + h - ufont.getFontDescriptor(BaseFont.BBOXURY, usize);
+        float offsetY = offsetX + box.getHeight() - ufont.getFontDescriptor(BaseFont.BBOXURY, usize);
         ct.setSimpleColumn(extraMarginLeft + 2 * offsetX, -20000, box.getWidth() - 2 * offsetX, offsetY + leading);
         ct.setLeading(leading);
         ct.setAlignment(getTextAlignment(rtl));
@@ -373,14 +379,14 @@ public class TextField extends BaseField {
         ct.go();
     }
 
-    private float calculateOptimalFontSizeForMultiline(float factor, ColumnText ct, Phrase phrase) throws DocumentException {
+    private float calculateOptimalFontSizeForMultiline(float factor, ColumnText ct, Phrase phrase, int rtl) throws DocumentException {
         float usize = fontSize;
         if (usize == 0) {
-            usize = h / factor;
+            usize = box.getHeight() / factor;
             if (usize > 4) {
                 usize = Math.min(12, usize);
                 float step = Math.max((usize - 4) / 10, 0.2f);
-                ct.setSimpleColumn(0, -h, width, 0);
+                ct.setSimpleColumn(0, -box.getHeight(), box.getWidth(), 0);
                 ct.setAlignment(getTextAlignment(rtl));
                 ct.setRunDirection(rtl);
                 for (; usize > 4; usize -= step) {
@@ -401,21 +407,22 @@ public class TextField extends BaseField {
         return usize;
     }
 
-    private void handleSingleLineText(PdfAppearance app, BaseFont ufont, int rtl, Phrase phrase, float usize) throws DocumentException {
+    private void handleSingleLineText(PdfAppearance app, BaseFont ufont, int rtl, Phrase phrase, float usize,
+            String ptext) throws DocumentException {
         if (usize == 0) {
-            usize = calculateOptimalFontSizeForSingleLine(ufont);
+            usize = calculateOptimalFontSizeForSingleLine(ufont, phrase, rtl);
         }
         changeFontSize(phrase, usize);
         float offsetY = calculateOffsetY(ufont, usize);
         if ((options & COMB) != 0 && maxCharacterLength > 0) {
-            handleCombText(app, phrase, usize, offsetY);
+            handleCombText(app, phrase, usize, offsetY, ptext);
         } else {
             handleAlignedText(app, phrase, offsetY, rtl);
         }
     }
 
-    private float calculateOptimalFontSizeForSingleLine(BaseFont ufont) {
-        float maxCalculatedSize = h / (ufont.getFontDescriptor(BaseFont.BBOXURX, 1) - ufont.getFontDescriptor(BaseFont.BBOXLLY, 1));
+    private float calculateOptimalFontSizeForSingleLine(BaseFont ufont, Phrase phrase, int rtl) {
+        float maxCalculatedSize = box.getHeight() / (ufont.getFontDescriptor(BaseFont.BBOXURX, 1) - ufont.getFontDescriptor(BaseFont.BBOXLLY, 1));
         changeFontSize(phrase, 1);
         float wd = ColumnText.getWidth(phrase, rtl, 0);
         float usize = (wd == 0) ? maxCalculatedSize : Math.min(maxCalculatedSize, (box.getWidth() - extraMarginLeft - 4 * offsetX) / wd);
@@ -435,7 +442,7 @@ public class TextField extends BaseField {
         return offsetY;
     }
 
-    private void handleCombText(PdfAppearance app, Phrase phrase, float usize, float offsetY) {
+    private void handleCombText(PdfAppearance app, Phrase phrase, float usize, float offsetY, String ptext) {
         int textLen = Math.min(maxCharacterLength, ptext.length());
         int position = calculateCombTextPosition(textLen);
         float step = (box.getWidth() - extraMarginLeft) / maxCharacterLength;
@@ -480,7 +487,9 @@ public class TextField extends BaseField {
 
     private void handleAlignedText(PdfAppearance app, Phrase phrase, float offsetY, int rtl) {
         float x = calculateAlignedTextX();
-        ColumnText.showTextAligned(app, alignment, phrase, x, offsetY - extraMarginTop, 0, rtl, 0);
+        TextAlignmentSettings settings = new TextAlignmentSettings(alignment, x,
+                offsetY - extraMarginTop, 0, rtl, 0);
+        ColumnText.showTextAligned(app, phrase, settings);
     }
 
     private float calculateAlignedTextX() {
@@ -500,8 +509,10 @@ public class TextField extends BaseField {
      * @throws DocumentException on error
      */
     PdfAppearance getListAppearance() throws IOException, DocumentException {
-        PdfAppearance app = getBorderAppearance(super.writer, super.box, super.rotation, super.backgroundColor,
+        BoxSettings boxSettings = new BoxSettings(super.box, super.rotation);
+        AppearanceSettings appearanceSettings = new AppearanceSettings(super.backgroundColor,
                 super.borderStyle, super.borderWidth, super.borderColor, super.options, super.maxCharacterLength);
+        PdfAppearance app = getBorderAppearance(super.writer, boxSettings, appearanceSettings);
         if (choices == null || choices.length == 0) {
             return app;
         }
@@ -518,7 +529,7 @@ public class TextField extends BaseField {
         boolean borderExtra =
                 borderStyle == PdfBorderDictionary.STYLE_BEVELED || borderStyle == PdfBorderDictionary.STYLE_INSET;
         float h = box.getHeight() - borderWidth * 2;
-        float offsetX = borderWidth;
+        offsetX = borderWidth;
         if (borderExtra) {
             h -= borderWidth * 2;
             offsetX *= 2;
@@ -562,7 +573,9 @@ public class TextField extends BaseField {
             // highlight selected values against their (presumably) darker background
             Color textCol = (choiceSelections.contains(idx)) ? GrayColor.GRAYWHITE : fcolor;
             Phrase phrase = composePhrase(ptext, ufont, textCol, usize);
-            ColumnText.showTextAligned(app, Element.ALIGN_LEFT, phrase, xp, yp, 0, rtl, 0);
+            TextAlignmentSettings settings = new TextAlignmentSettings(Element.ALIGN_LEFT, xp, yp,
+                    0, rtl, 0);
+            ColumnText.showTextAligned(app, phrase, settings);
         }
         app.restoreState();
         app.endVariableText();
@@ -696,8 +709,6 @@ public class TextField extends BaseField {
         switch (visibility) {
             case HIDDEN:
                 field.setFlags(PdfAnnotation.FLAGS_PRINT | PdfAnnotation.FLAGS_HIDDEN);
-                break;
-            case VISIBLE_BUT_DOES_NOT_PRINT:
                 break;
             case HIDDEN_BUT_PRINTABLE:
                 field.setFlags(PdfAnnotation.FLAGS_PRINT | PdfAnnotation.FLAGS_NOVIEW);
@@ -895,7 +906,7 @@ public class TextField extends BaseField {
         field.setDefaultAppearanceString(da);
     }
 
-    private void setFieldColors(PdfFormField field) {
+    private void setFieldColors(PdfFormField field) throws AnnotationException {
         if (borderColor != null) {
             field.setMKBorderColor(borderColor);
         }
@@ -908,8 +919,6 @@ public class TextField extends BaseField {
         switch (visibility) {
             case HIDDEN:
                 field.setFlags(PdfAnnotation.FLAGS_PRINT | PdfAnnotation.FLAGS_HIDDEN);
-                break;
-            case VISIBLE_BUT_DOES_NOT_PRINT:
                 break;
             case HIDDEN_BUT_PRINTABLE:
                 field.setFlags(PdfAnnotation.FLAGS_PRINT | PdfAnnotation.FLAGS_NOVIEW);

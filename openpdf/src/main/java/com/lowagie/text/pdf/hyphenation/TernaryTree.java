@@ -16,8 +16,6 @@
 
 package com.lowagie.text.pdf.hyphenation;
 
-import com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator;
-import com.lowagie.text.pdf.hyphenation.TernaryTree.Iterator.Item;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -600,6 +598,18 @@ public class TernaryTree implements Serializable {
                 }
             }
             curkey = buf.toString();
+        }
+
+        public boolean hasMoreElements() {
+            // TODO implement elements control logic
+            return false;
+        }
+
+        public Object nextElement() {
+            if (cur >= 0) {
+                return eq[cur + 1];
+            }
+            return 0;
         }
 
         private class Item {

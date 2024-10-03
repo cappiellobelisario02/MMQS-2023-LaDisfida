@@ -96,6 +96,26 @@ public class MarkedObject implements Element {
         return element.getChunks();
     }
 
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
+    }
+
     /**
      * Processes the element by adding it (or the different parts) to an
      * <CODE>ElementListener</CODE>.

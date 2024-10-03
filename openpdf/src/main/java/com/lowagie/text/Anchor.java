@@ -148,7 +148,7 @@ public class Anchor extends Phrase {
             boolean localDestination = (reference != null && reference.startsWith("#"));
             boolean notGotoOK = true;
             while (i.hasNext()) {
-                chunk = i.next();
+                chunk = (Chunk) i.next();
                 if (name != null && notGotoOK && !chunk.isEmpty()) {
                     chunk.setLocalDestination(name);
                     notGotoOK = false;
@@ -170,7 +170,7 @@ public class Anchor extends Phrase {
      * @return an <CODE>ArrayList</CODE>
      */
     @Override
-    public ArrayList<Chunk> getChunks() {
+    public ArrayList<Element> getChunks() {
         ArrayList<Chunk> tmp = new ArrayList<>();
         Chunk chunk;
         Iterator<Element> i = iterator();

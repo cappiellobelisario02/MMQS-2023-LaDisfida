@@ -47,10 +47,7 @@
 
 package com.lowagie.text.html.simpleparser;
 
-import com.lowagie.text.Element;
-import com.lowagie.text.ElementListener;
-import com.lowagie.text.Phrase;
-import com.lowagie.text.TextElementArray;
+import com.lowagie.text.*;
 import com.lowagie.text.html.Markup;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.utils.NumberUtilities;

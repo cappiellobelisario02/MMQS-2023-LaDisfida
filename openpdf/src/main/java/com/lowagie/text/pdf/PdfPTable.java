@@ -57,7 +57,6 @@ import com.lowagie.text.LargeElement;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
-import com.lowagie.text.exceptions.IllegalNumberException;
 import com.lowagie.text.exceptions.InvalidRunDirectionException;
 import com.lowagie.text.pdf.events.PdfPTableEventForwarder;
 import java.util.ArrayList;
@@ -588,9 +587,9 @@ public class PdfPTable implements LargeElement {
         PdfPCell[] cells = rows.get(row).getCells();
         for (int i = 0; i < cells.length; i++) {
             if (cells[i] != null && col >= i && col < (i + cells[i].getColspan())) {
-                
-                    return cells[i];
-                
+
+                return cells[i];
+
             }
         }
         return null;
@@ -1193,6 +1192,26 @@ public class PdfPTable implements LargeElement {
         return new ArrayList<>();
     }
 
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
+    }
+
     /**
      * Gets the type of the text element.
      *
@@ -1570,8 +1589,8 @@ public class PdfPTable implements LargeElement {
                  PdfWriter.RUN_DIRECTION_NO_BIDI,
                  PdfWriter.RUN_DIRECTION_LTR,
                  PdfWriter.RUN_DIRECTION_RTL:
-                    this.runDirection = runDirection;
-                    break;
+                this.runDirection = runDirection;
+                break;
             default:
                 throw new InvalidRunDirectionException(
                         MessageLocalization.getComposedMessage("invalid.run.direction.1", runDirection));

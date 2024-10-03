@@ -50,6 +50,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -121,7 +122,7 @@ class PdfReaderInstance {
      * @return a PdfStream object
      * @since 2.1.3 (the method already existed without param compressionLevel)
      */
-    PdfStream getFormXObject(int pageNumber, int compressionLevel) throws IOException {
+    PdfStream getFormXObject(int pageNumber, int compressionLevel) throws IOException, PDFFilterException {
         PdfDictionary page = reader.getPageNRelease(pageNumber);
         PdfObject contents = PdfReader.getPdfObjectRelease(page.get(PdfName.CONTENTS));
         PdfDictionary dic = new PdfDictionary();
@@ -136,7 +137,7 @@ class PdfReaderInstance {
             bout = new byte[0];
         }
         dic.put(PdfName.RESOURCES, PdfReader.getPdfObjectRelease(page.get(PdfName.RESOURCES)));
-        dic.put(PdfName.TYPE, PdfName.XOBJECT);
+        dic.put(PdfName.TYPE_CONST, PdfName.XOBJECT);
         dic.put(PdfName.SUBTYPE, PdfName.FORM);
         PdfImportedPage impPage = importedPages.get(pageNumber);
         dic.put(PdfName.BBOX, new PdfRectangle(impPage.getBoundingBox()));

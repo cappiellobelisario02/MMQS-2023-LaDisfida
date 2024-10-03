@@ -162,6 +162,26 @@ public class Row implements Element, WithHorizontalAlignment {
         return new ArrayList<>();
     }
 
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
+    }
+
     /**
      * @see com.lowagie.text.Element#isContent()
      * @since iText 2.0.8

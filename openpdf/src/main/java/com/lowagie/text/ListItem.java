@@ -288,15 +288,10 @@ public class ListItem extends Paragraph {
     }
 
     public float getTotalLeading(){
-        return paragraph.getTotalLeading();
+        return paragraph.getTotalLeading(getFont());
     }
 
     public ArrayList<Element> getChunks() {
         return paragraph.getChunks();
-    }
-
-    @Override
-    public java.util.List<Element> reversed() {
-        return super.reversed();
     }
 }

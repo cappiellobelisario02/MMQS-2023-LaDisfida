@@ -171,7 +171,7 @@ public abstract class BaseField {
     protected float borderWidth = BORDER_WIDTH_THIN;
     protected int borderStyle = PdfBorderDictionary.STYLE_SOLID;
     protected Color borderColor;
-    protected Color backgroundColor;
+    protected static Color backgroundColor;
     protected Color textColor;
     protected BaseFont font;
     protected float fontSize = 0;

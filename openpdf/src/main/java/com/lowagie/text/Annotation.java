@@ -49,7 +49,6 @@
 
 package com.lowagie.text;
 
-import com.lowagie.text.Annotation.AnnotationBuilder;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;

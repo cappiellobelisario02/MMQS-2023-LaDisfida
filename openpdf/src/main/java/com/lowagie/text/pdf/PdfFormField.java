@@ -115,7 +115,7 @@ public class PdfFormField extends PdfAnnotation {
      */
     public PdfFormField(PdfWriter writer, float llx, float lly, float urx, float ury, PdfAction action) {
         super(writer, llx, lly, urx, ury, action);
-        put(PdfName.TYPE, PdfName.ANNOT);
+        put(PdfName.TYPE_CONST, PdfName.ANNOT);
         put(PdfName.SUBTYPE, PdfName.WIDGET);
         annotation = true;
     }
@@ -272,7 +272,7 @@ public class PdfFormField extends PdfAnnotation {
     }
 
     public void setWidget(Rectangle rect, PdfName highlight) {
-        put(PdfName.TYPE, PdfName.ANNOT);
+        put(PdfName.TYPE_CONST, PdfName.ANNOT);
         put(PdfName.SUBTYPE, PdfName.WIDGET);
         put(PdfName.RECT, new PdfRectangle(rect));
         annotation = true;

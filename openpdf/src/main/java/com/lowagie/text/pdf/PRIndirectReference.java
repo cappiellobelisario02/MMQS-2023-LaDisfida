@@ -69,7 +69,7 @@ public class PRIndirectReference extends PdfIndirectReference {
 
     public PRIndirectReference(PdfReader reader, int number, int generation) {
         type = INDIRECT;
-        this.number = number;
+        this.number_var = number;
         this.generation = generation;
         this.reader = reader;
     }
@@ -89,7 +89,7 @@ public class PRIndirectReference extends PdfIndirectReference {
 
     @Override
     public void toPdf(PdfWriter writer, OutputStream os) throws IOException {
-        int n = writer.getNewObjectNumber(reader, number, generation);
+        int n = writer.getNewObjectNumber(reader, number_var);
         os.write(PdfEncodings.convertToBytes(new StringBuffer().append(n).append(" 0 R").toString(), null));
     }
 
@@ -98,7 +98,7 @@ public class PRIndirectReference extends PdfIndirectReference {
     }
 
     public void setNumber(int number, int generation) {
-        this.number = number;
+        this.number_var = number;
         this.generation = generation;
     }
 }

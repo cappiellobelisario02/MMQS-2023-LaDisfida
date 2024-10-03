@@ -166,7 +166,7 @@ class PdfStamperImp extends PdfWriter {
         if (reader.isEncrypted()) {
             crypto = new PdfEncryption(reader.getDecrypt());
         }
-        pdf_version.setAppendmode(true);
+        pdfVersion.setAppendmode(true);
         file.reOpen();
         transferFileContentToOutputStream(file, os);
         file.close();
@@ -321,7 +321,7 @@ class PdfStamperImp extends PdfWriter {
             fillOCProperties(false);
             PdfDictionary ocdict = catalog.getAsDict(PdfName.OCPROPERTIES);
             if (ocdict == null) {
-                ocdict = OCProperties;
+                ocdict = ocProperties;
                 catalog.put(PdfName.OCPROPERTIES, ocdict);
             } else {
                 updateOCDict(ocdict);
@@ -330,16 +330,16 @@ class PdfStamperImp extends PdfWriter {
     }
 
     private void updateOCDict(PdfDictionary ocdict) {
-        ocdict.put(PdfName.OCGS, OCProperties.get(PdfName.OCGS));
+        ocdict.put(PdfName.OCGS, ocProperties.get(PdfName.OCGS));
         PdfDictionary ddict = ocdict.getAsDict(PdfName.D);
         if (ddict == null) {
             ddict = new PdfDictionary();
             ocdict.put(PdfName.D, ddict);
         }
-        ddict.put(PdfName.ORDER, OCProperties.getAsDict(PdfName.D).get(PdfName.ORDER));
-        ddict.put(PdfName.RBGROUPS, OCProperties.getAsDict(PdfName.D).get(PdfName.RBGROUPS));
-        ddict.put(PdfName.OFF, OCProperties.getAsDict(PdfName.D).get(PdfName.OFF));
-        ddict.put(PdfName.AS, OCProperties.getAsDict(PdfName.D).get(PdfName.AS));
+        ddict.put(PdfName.ORDER, ocProperties.getAsDict(PdfName.D).get(PdfName.ORDER));
+        ddict.put(PdfName.RBGROUPS, ocProperties.getAsDict(PdfName.D).get(PdfName.RBGROUPS));
+        ddict.put(PdfName.OFF, ocProperties.getAsDict(PdfName.D).get(PdfName.OFF));
+        ddict.put(PdfName.AS, ocProperties.getAsDict(PdfName.D).get(PdfName.AS));
     }
 
     private void handleMetadata(Map<String, String> moreInfo) throws IOException {
@@ -467,7 +467,7 @@ class PdfStamperImp extends PdfWriter {
     private void writeNonAppendObjects(int rootN) throws IOException {
         for (int k = 1; k < reader.getXrefSize(); ++k) {
             PdfObject obj = reader.getPdfObjectRelease(k);
-            if (obj != null && skipInfo != k) {
+            if (obj != null) {
                 addToBody(obj, getNewObjectNumber(reader, k), k != rootN);
             }
         }
@@ -710,7 +710,7 @@ class PdfStamperImp extends PdfWriter {
      *
      * @throws DocumentException
      */
-    public void removeEncryption() throws DocumentException {
+    public void removeEncryption() throws DocumentException, NoSuchAlgorithmException {
         super.setEncryption(null, null, 0, ENCRYPTION_NONE);
         this.reader.setPermissions(0);
     }
@@ -1099,8 +1099,8 @@ class PdfStamperImp extends PdfWriter {
         int type = this.acroFields.getFieldType(name);
 
         if (type != AcroFields.FIELD_TYPE_SIGNATURE && (appDic == null || !(appDic.getDirectObject(PdfName.N) instanceof PdfIndirectReference))) {
-                regenerate = true;
-            }
+            regenerate = true;
+        }
 
         if (regenerate) {
             try {
@@ -1162,7 +1162,7 @@ class PdfStamperImp extends PdfWriter {
             cb.setLiteral("Q ");
 
             if (transformNeeded) {
-                applyTransformations(app, box, cb);
+                applyTransformations(app, box, cb, merged);
             } else {
                 addTemplateWithoutTransformation(app, box, cb, normalAppearanceObj);
             }
@@ -1195,7 +1195,7 @@ class PdfStamperImp extends PdfWriter {
         return null;
     }
 
-    private void applyTransformations(PdfAppearance app, Rectangle box, PdfContentByte cb) {
+    private void applyTransformations(PdfAppearance app, Rectangle box, PdfContentByte cb, PdfDictionary merged) {
         AffineTransform transform = new AffineTransform();
         double x = box.getLeft();
         double y = box.getBottom();
@@ -1566,7 +1566,7 @@ class PdfStamperImp extends PdfWriter {
         for (PdfTemplate template : fieldTemplates.keySet()) {
             PdfFormField.mergeResources(dr, (PdfDictionary) template.getResources(), this);
         }
-        
+
         PdfDictionary fonts = dr.getAsDict(PdfName.FONT);
         if (fonts == null) {
             fonts = new PdfDictionary();
@@ -2142,10 +2142,10 @@ class PdfStamperImp extends PdfWriter {
             addOrder(null, order, ocgmap);
         }
         documentOCG.addAll(ocgmap.values());
-        OCGRadioGroup = d.getAsArray(PdfName.RBGROUPS);
-        OCGLocked = d.getAsArray(PdfName.LOCKED);
-        if (OCGLocked == null) {
-            OCGLocked = new PdfArray();
+        ocgRadioGroup = d.getAsArray(PdfName.RBGROUPS);
+        ocgLocked = d.getAsArray(PdfName.LOCKED);
+        if (ocgLocked == null) {
+            ocgLocked = new PdfArray();
         }
     }
 
