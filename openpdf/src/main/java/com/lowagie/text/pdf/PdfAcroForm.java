@@ -51,9 +51,7 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.exceptions.AnnotationException;
-import com.lowagie.text.pdf.CheckboxParams;
-import com.lowagie.text.pdf.SelectListParams;
-import com.lowagie.text.pdf.ComboBoxParams;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -169,14 +167,14 @@ public class PdfAcroForm extends PdfDictionary {
      */
 
     public boolean isValid() {
-        if (documentFields.size() == 0) {
+        if (documentFields.isEmpty()) {
             return false;
         }
         put(PdfName.FIELDS, documentFields);
         if (sigFlags != 0) {
             put(PdfName.SIGFLAGS, new PdfNumber(sigFlags));
         }
-        if (calculationOrder.size() > 0) {
+        if (!calculationOrder.isEmpty()) {
             put(PdfName.CO, calculationOrder);
         }
         if (fieldTemplates.isEmpty()) {
@@ -222,7 +220,11 @@ public class PdfAcroForm extends PdfDictionary {
      */
 
     public void addFormField(PdfFormField formField) {
-        writer.addAnnotation(formField);
+        try{
+            writer.addAnnotation(formField);
+        }catch(IOException e){
+            //may need some logging
+        }
     }
 
     /**
@@ -266,11 +268,11 @@ public class PdfAcroForm extends PdfDictionary {
         PdfAction action = PdfAction.createSubmitForm(config.getUrl(), null, PdfAction.SUBMIT_HTML_FORMAT | PdfAction.SUBMIT_COORDINATES);
         PdfFormField button = new PdfFormField(writer, config.getLlx(), config.getLly(), config.getUrx(), config.getUry(), action);
         setButtonParams(button, PdfFormField.FF_PUSHBUTTON, config.getName(), null);
-        
+
         PdfAppearance pa = PdfAppearance.createAppearance(writer, config.getUrx() - config.getLlx(), config.getUry() - config.getLly());
         pa.add(config.getAppearance());
         button.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, pa);
-        
+
         addFormField(button);
         return button;
     }

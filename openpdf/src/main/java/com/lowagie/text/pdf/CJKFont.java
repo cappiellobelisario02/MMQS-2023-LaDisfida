@@ -55,10 +55,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.ibm.icu.util.ULocale.getBaseName;
 
 
 /**
@@ -96,7 +97,7 @@ class CJKFont extends BaseFont {
     /**
      * The CMap name associated with this font
      */
-    private String CMap;
+    private String cMap;
 
     private boolean cidDirect = false;
 
@@ -129,7 +130,7 @@ class CJKFont extends BaseFont {
         this.fontName = fontName;
         encoding = CJK_ENCODING;
         vertical = enc.endsWith("V");
-        CMap = enc;
+        cMap = enc;
 
         if (enc.startsWith("Identity-")) {
             handleIdentityEncoding(fontName);
@@ -274,7 +275,7 @@ class CJKFont extends BaseFont {
         } catch (Exception e) {
             // empty on purpose
         }
-        return new int[0];
+        return new char[0];
     }
 
     static IntHashtable createMetric(String s) {
@@ -347,16 +348,12 @@ class CJKFont extends BaseFont {
     }
 
     private static int updateBufferBasedOnState(StringBuilder buf, int state, int cid, int value, int lastCid, int lastValue) {
-        switch (state) {
-            case FIRST:
-                return handleFirstState(buf, cid, value, lastCid, lastValue);
-            case BRACKET:
-                return handleBracketState(buf, cid, value, lastCid, lastValue);
-            case SERIAL:
-                return handleSerialState(buf, cid, value, lastCid, lastValue);
-            default:
-                return state;
-        }
+        return switch (state) {
+            case FIRST -> handleFirstState(buf, cid, value, lastCid, lastValue);
+            case BRACKET -> handleBracketState(buf, cid, value, lastCid, lastValue);
+            case SERIAL -> handleSerialState(buf, cid, value, lastCid, lastValue);
+            default -> state;
+        };
     }
 
     private static int handleFirstState(StringBuilder buf, int cid, int value, int lastCid, int lastValue) {
@@ -541,22 +538,22 @@ class CJKFont extends BaseFont {
             Properties p = new Properties();
             p.load(is);
             is.close();
-            IntHashtable W = createMetric(p.getProperty("W"));
+            IntHashtable metricTable = createMetric(p.getProperty("W"));
             p.remove("W");
-            IntHashtable W2 = createMetric(p.getProperty("W2"));
+            IntHashtable metricTable2 = createMetric(p.getProperty("W2"));
             p.remove("W2");
             HashMap<Object, Object> map = new HashMap<>();
             for (Enumeration<Object> e = p.keys(); e.hasMoreElements(); ) {
                 Object obj = e.nextElement();
                 map.put(obj, p.getProperty((String) obj));
             }
-            map.put("W", W);
-            map.put("W2", W2);
+            map.put("W", metricTable);
+            map.put("W2", metricTable2);
             return map;
         } catch (Exception e) {
             // empty on purpose
         }
-        return new int[0];
+        return new HashMap<>();
     }
 
     /**
@@ -668,17 +665,17 @@ class CJKFont extends BaseFont {
         return dic;
     }
 
-    private PdfDictionary getFontBaseType(PdfIndirectReference CIDFont) {
+    private PdfDictionary getFontBaseType(PdfIndirectReference cidFont) {
         PdfDictionary dic = new PdfDictionary(PdfName.FONT);
         dic.put(PdfName.SUBTYPE, PdfName.TYPE0);
         String name = fontName;
-        if (style.length() > 0) {
+        if (!style.isEmpty()) {
             name += "-" + style.substring(1);
         }
-        name += "-" + CMap;
+        name += "-" + cMap;
         dic.put(PdfName.BASEFONT, new PdfName(name));
-        dic.put(PdfName.ENCODING, new PdfName(CMap));
-        dic.put(PdfName.DESCENDANTFONTS, new PdfArray(CIDFont));
+        dic.put(PdfName.ENCODING, new PdfName(cMap));
+        dic.put(PdfName.DESCENDANTFONTS, new PdfArray(cidFont));
         return dic;
     }
 
@@ -686,20 +683,20 @@ class CJKFont extends BaseFont {
     void writeFont(PdfWriter writer, PdfIndirectReference ref, Object[] params)
             throws DocumentException, IOException {
         IntHashtable cjkTag = (IntHashtable) params[0];
-        PdfIndirectReference ind_font = null;
-        PdfObject pobj = null;
-        PdfIndirectObject obj = null;
+        PdfIndirectReference indFont;
+        PdfObject pobj;
+        PdfIndirectObject obj;
         pobj = getFontDescriptor();
 
             obj = writer.addToBody(pobj);
-            ind_font = obj.getIndirectReference();
+            indFont = obj.getIndirectReference();
 
-        pobj = getCIDFont(ind_font, cjkTag);
+        pobj = getCIDFont(indFont, cjkTag);
 
             obj = writer.addToBody(pobj);
-            ind_font = obj.getIndirectReference();
+            indFont = obj.getIndirectReference();
 
-        pobj = getFontBaseType(ind_font);
+        pobj = getFontBaseType(indFont);
         writer.addToBody(pobj, ref);
     }
 
@@ -739,33 +736,19 @@ class CJKFont extends BaseFont {
      */
     @Override
     public float getFontDescriptor(int key, float fontSize) {
-        switch (key) {
-            case AWT_ASCENT:
-            case ASCENT:
-                return getDescNumber("Ascent") * fontSize / 1000;
-            case CAPHEIGHT:
-                return getDescNumber("CapHeight") * fontSize / 1000;
-            case AWT_DESCENT:
-            case DESCENT:
-                return getDescNumber("Descent") * fontSize / 1000;
-            case ITALICANGLE:
-                return getDescNumber("ItalicAngle");
-            case BBOXLLX:
-                return fontSize * getBBox(0) / 1000;
-            case BBOXLLY:
-                return fontSize * getBBox(1) / 1000;
-            case BBOXURX:
-                return fontSize * getBBox(2) / 1000;
-            case BBOXURY:
-                return fontSize * getBBox(3) / 1000;
-            case AWT_LEADING:
-                return 0;
-            case AWT_MAXADVANCE:
-                return fontSize * (getBBox(2) - getBBox(0)) / 1000;
-            default:
-                break;
-        }
-        return 0;
+        return switch (key) {
+            case AWT_ASCENT, ASCENT -> getDescNumber("Ascent") * fontSize / 1000;
+            case CAPHEIGHT -> getDescNumber("CapHeight") * fontSize / 1000;
+            case AWT_DESCENT, DESCENT -> getDescNumber("Descent") * fontSize / 1000;
+            case ITALICANGLE -> getDescNumber("ItalicAngle");
+            case BBOXLLX -> fontSize * getBBox(0) / 1000;
+            case BBOXLLY -> fontSize * getBBox(1) / 1000;
+            case BBOXURX -> fontSize * getBBox(2) / 1000;
+            case BBOXURY -> fontSize * getBBox(3) / 1000;
+            case AWT_LEADING -> 0;
+            case AWT_MAXADVANCE -> fontSize * (getBBox(2) - getBBox(0)) / 1000;
+            default -> 0;
+        };
     }
 
     @Override
