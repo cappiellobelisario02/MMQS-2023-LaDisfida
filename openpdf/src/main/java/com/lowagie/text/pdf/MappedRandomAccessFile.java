@@ -59,6 +59,8 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.logging.Logger;
+import java.io.*;
+
 
 /**
  * A {@link java.nio.MappedByteBuffer} wrapped as a {@link java.io.RandomAccessFile}
@@ -82,31 +84,34 @@ public class MappedRandomAccessFile implements AutoCloseable {
     public MappedRandomAccessFile(String filename, String mode)
             throws IOException {
 
+        FileInputStream fis = null; // Declare fis here
+
         if (mode.equals("rw")) {
             try (RandomAccessFile raf = new RandomAccessFile(filename, mode)) {
                 init(raf.getChannel(), FileChannel.MapMode.READ_WRITE);
-            }
-            catch(IOException e){
-                logger.info("Error in RandomAccessFile.");
+            } catch (IOException e) {
+                logger.info("Error in RandomAccessFile: " + e.getMessage());
             }
         } else {
-            try(FileInputStream fis = new FileInputStream(filename)){
+            try {
+                fis = new FileInputStream(filename); // Initialize fis inside try block
                 init(fis.getChannel(), FileChannel.MapMode.READ_ONLY);
             } catch (FileNotFoundException e) {
                 logger.info("File not found: " + e.getMessage());
-            } catch(IOException e){
+            } catch (IOException e) {
                 logger.info("I/O Error: " + e.getMessage());
             } finally {
-                if(fis != null){
-                    try{
+                if (fis != null) {
+                    try {
                         fis.close();
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         logger.info("Failed to close FileInputStream: " + e.getMessage());
                     }
                 }
             }
         }
     }
+
 
     /**
      * invokes the clean method on the ByteBuffer's cleaner
