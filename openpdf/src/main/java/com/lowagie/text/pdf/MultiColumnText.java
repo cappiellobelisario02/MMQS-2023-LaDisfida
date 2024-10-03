@@ -256,10 +256,10 @@ public class MultiColumnText implements Element {
     public void addElement(Element element) throws DocumentException {
         if (simple) {
             columnText.addElement(element);
-        } else if (element instanceof Phrase) {
-            columnText.addText((Phrase) element);
-        } else if (element instanceof Chunk) {
-            columnText.addText((Chunk) element);
+        } else if (element instanceof Phrase phraseElement) {
+            columnText.addText(phraseElement);
+        } else if (element instanceof Chunk chunkElement) {
+            columnText.addText(chunkElement);
         } else {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("can.t.add.1.to.multicolumntext.with.complex.columns",
@@ -286,40 +286,35 @@ public class MultiColumnText implements Element {
         float currentHeight = 0;
         boolean done = false;
 
-        try {
-            while (!done) {
-                adjustTopPosition();
-                ColumnDef currentDef = columnDefs.get(getCurrentColumn());
-                columnText.setYLine(top);
+        while (!done) {
+            adjustTopPosition();
+            ColumnDef currentDef = columnDefs.get(getCurrentColumn());
+            columnText.setYLine(top);
 
-                float[] left = currentDef.resolvePositions(Rectangle.LEFT);
-                float[] right = currentDef.resolvePositions(Rectangle.RIGHT);
+            float[] left = currentDef.resolvePositions(Rectangle.LEFT);
+            float[] right = currentDef.resolvePositions(Rectangle.RIGHT);
 
-                adjustForMarginMirroring(left, right);
+            adjustForMarginMirroring(left, right);
 
-                currentHeight = Math.max(currentHeight, getHeight(left, right));
-                configureColumnText(currentDef, left, right);
+            currentHeight = Math.max(currentHeight, getHeight(left, right));
+            configureColumnText(currentDef, left, right);
 
-                int result = columnText.go();
-                done = handleResult(result);
+            int result = columnText.go();
+            done = handleResult(result);
 
-                if (!done && shiftCurrentColumn()) {
-                    top = nextY;
-                } else if (!done) {
-                    totalHeight += currentHeight;
-                    if ((desiredHeight != AUTOMATIC) && (totalHeight >= desiredHeight)) {
-                        overflow = true;
-                        done = true;
-                    } else {
-                        documentY = nextY;
-                        newPage();
-                        currentHeight = 0;
-                    }
+            if (!done && shiftCurrentColumn()) {
+                top = nextY;
+            } else if (!done) {
+                totalHeight += currentHeight;
+                if ((desiredHeight != AUTOMATIC) && (totalHeight >= desiredHeight)) {
+                    overflow = true;
+                    done = true;
+                } else {
+                    documentY = nextY;
+                    newPage();
+                    currentHeight = 0;
                 }
             }
-        } catch (DocumentException ex) {
-//da vedere come effettuare il log
-            throw ex;
         }
 
         return finalizeHeight(documentY, currentHeight);
@@ -485,18 +480,7 @@ public class MultiColumnText implements Element {
         return false;
     }
 
-    /**
-     * Calculates the appropriate y position for the bottom of the columns on this page.
-     *
-     * @return the y position of the bottom of the columns
-     */
-    private float getColumnBottom() {
-        if (desiredHeight == AUTOMATIC) {
-            return document.bottom();
-        } else {
-            return Math.max(top - (desiredHeight - totalHeight), document.bottom());
-        }
-    }
+
 
     /**
      * Moves the text insertion point to the beginning of the next column, issuing a page break if needed.
@@ -623,6 +607,19 @@ public class MultiColumnText implements Element {
                 right[3] = AUTOMATIC;
             } else {
                 right[3] = top - desiredHeight;
+            }
+        }
+
+        /**
+         * Calculates the appropriate y position for the bottom of the columns on this page.
+         *
+         * @return the y position of the bottom of the columns
+         */
+        private float getColumnBottom() {
+            if (desiredHeight == AUTOMATIC) {
+                return document.bottom();
+            } else {
+                return Math.max(top - (desiredHeight - totalHeight), document.bottom());
             }
         }
 

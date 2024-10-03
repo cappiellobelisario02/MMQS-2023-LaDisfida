@@ -143,6 +143,26 @@ public class VerticalPositionMark implements DrawInterface, Element {
         return list;
     }
 
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
+    }
+
     /**
      * Getter for the interface with the overruling draw() method.
      *

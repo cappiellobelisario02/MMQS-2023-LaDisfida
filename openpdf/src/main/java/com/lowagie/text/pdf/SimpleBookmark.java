@@ -54,7 +54,6 @@ import com.lowagie.text.xml.simpleparser.IanaEncodings;
 import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
 import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
 import org.apache.fop.fo.pagination.bookmarks.Bookmark;
-import java.awt.print.Book;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,7 +69,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 /**
@@ -166,7 +164,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
             StringBuilder s = new StringBuilder();
             if ((f & 1) != 0) s.append("italic ");
             if ((f & 2) != 0) s.append("bold ");
-            if (s.length() > 0) map.put("Style", s.toString().trim());
+            if (!s.isEmpty()) map.put("Style", s.toString().trim());
         }
     }
 
@@ -285,7 +283,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
 
     private static String makeBookmarkParam(PdfArray dest, IntHashtable pages) {
         StringBuilder s = new StringBuilder();
-        if (dest.size() == 0) {
+        if (dest.isEmpty()) {
             throw new IllegalArgumentException("Illegal bookmark destination");
         }
         PdfObject obj = dest.getPdfObject(0);
@@ -643,7 +641,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
 
 
     /**
-     * Exports the bookmarks to XML. Only of use if the generation is to be include in some other XML document.
+     * Exports the bookmarks to XML. Only of use if the generation is to be included in some other XML document.
      *
      * @param list      the bookmarks
      * @param out       the export destination. The writer is not closed
@@ -657,10 +655,10 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
         Map<String, Bookmark> map = new HashMap<>();
 
         for (Bookmark item : list) {
-            map.put(item.getBookmarkTitle(), item);
+            map.put(item.getBookmarkTitle(), item); // Assumes `getBookmarkTitle()` is a method
         }
 
-        List<Bookmark> kids = processMapEntries(map, out, indentation, onlyASCII); // Note this is now outside the loop
+        List<Bookmark> kids = processMapEntries(map, out, indentation, onlyASCII);
         writeTitleAndChildren(out, map, indentation, kids, indent, onlyASCII);
     }
 
@@ -678,19 +676,13 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
             String key = entry.getKey();
             Bookmark value = entry.getValue(); // value is of type Bookmark
 
-            switch (key) {
-                case TITLE:
-                    // Extract the bookmark title as a string
-                    writeAttribute(out, key, value.getBookmarkTitle(), onlyASCII);
-                    break;
-                case "Kids":
-                    kids.add(value); // Add the Bookmark to kids if needed
-                    break;
-                default:
-                    // Extract the appropriate attribute value as a string
-                    String attributeValue = getAttributeValueFromBookmark(value, key);
-                    writeAttribute(out, key, attributeValue, onlyASCII);
-                    break;
+            if (TITLE.equals(key)) {
+                writeAttribute(out, key, value.getBookmarkTitle(), onlyASCII); // Assuming this method exists
+            } else if ("Kids".equals(key)) {
+                kids.add(value);
+            } else {
+                String attributeValue = getAttributeValueFromBookmark(value, key);
+                writeAttribute(out, key, attributeValue, onlyASCII);
             }
         }
 
@@ -698,66 +690,44 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
         return kids;
     }
 
-    // Helper method to get the attribute value based on the key
     private static String getAttributeValueFromBookmark(Bookmark bookmark, String key) {
         // Implement logic to return the correct attribute value based on the key
-        switch (key) {
-            case "someAttribute":
-                return bookmark.getSomeAttribute(); // Replace with actual method
+        return switch (key) {
+            case NAMED -> bookmark.getName(); // Replace with actual Bookmark method
+            case NAMED_N -> bookmark.getBookmarkTitle(); // Replace with actual Bookmark method
             // Add other cases as needed
-            default:
-                return ""; // Return default or handle as needed
-        }
+            default -> ""; // Return a default value if needed
+        };
     }
-
 
     private static void writeAttribute(Writer out, String key, String value, boolean onlyASCII) throws IOException {
         out.write(key);
         out.write("=\"");
 
-        if (key.equals(NAMED) || key.equals(NAMED_N)) {
-            value = SimpleNamedDestination.escapeBinaryString(value);
+        if (NAMED.equals(key) || NAMED_N.equals(key)) {
+            value = SimpleNamedDestination.escapeBinaryString(value); // Assuming this method is available
         }
 
-        out.write(XMLUtil.escapeXML(value, onlyASCII));
+        out.write(XMLUtil.escapeXML(value, onlyASCII)); // Assuming escapeXML method is available
         out.write("\" ");
     }
 
-
-    private static void writeTitleAndChildren(Writer out, Map<String, String> map, String indentation, List<Bookmark> kids, int indent, boolean onlyASCII) throws IOException {
-        String title = map.getOrDefault(TITLE, ""); // TITLE should be a String constant
+    private static void writeTitleAndChildren(Writer out, Map<String, Bookmark> map, String indentation, List<Bookmark> kids, int indent, boolean onlyASCII) throws IOException {
+        Bookmark titleBookmark = map.get(TITLE); // Get the Bookmark for the title
+        String title = (titleBookmark != null) ? titleBookmark.getBookmarkTitle() : ""; // Assuming getBookmarkTitle() exists
         out.write(XMLUtil.escapeXML(title, onlyASCII));
 
-        if (kids != null) {
+        if (kids != null && !kids.isEmpty()) {
             out.write("\n");
-            exportToXMLNode(kids, out, indent + 1, onlyASCII);
+            exportToXMLNode(kids, out, indent + 1, onlyASCII); // Recursively export kids
             out.write(indentation);
         }
 
         out.write("</Title>\n");
     }
 
-
-
     /**
-     * Exports the bookmarks to XML. The DTD for this XML is:
-     * <pre>
-     * &lt;?xml version='1.0' encoding='UTF-8'?&gt;
-     * &lt;!ELEMENT Title (#PCDATA|Title)*&gt;
-     * &lt;!ATTLIST Title
-     *    Action CDATA #IMPLIED
-     *    Open CDATA #IMPLIED
-     *    Page CDATA #IMPLIED
-     *    URI CDATA #IMPLIED
-     *    File CDATA #IMPLIED
-     *    Named CDATA #IMPLIED
-     *    NamedN CDATA #IMPLIED
-     *    NewWindow CDATA #IMPLIED
-     *    Style CDATA #IMPLIED
-     *    Color CDATA #IMPLIED
-     * &gt;
-     * &lt;!ELEMENT Bookmark (Title)*&gt;
-     * </pre>
+     * Exports the bookmarks to XML.
      *
      * @param list      the bookmarks
      * @param out       the export destination. The stream is not closed
@@ -766,10 +736,10 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
      *                  encoding
      * @throws IOException on error
      */
-    public static void exportToXML(List<?> list, OutputStream out, String encoding, boolean onlyASCII) throws IOException {
+    public static void exportToXML(List<Bookmark> list, OutputStream out, String encoding, boolean onlyASCII) throws IOException {
         String jenc = IanaEncodings.getJavaEncoding(encoding);
         Writer wrt = new BufferedWriter(new OutputStreamWriter(out, jenc));
-        exportToXML(list, wrt, encoding, onlyASCII);
+        exportToXMLNode(list, wrt, 0, onlyASCII); // Changed to `exportToXMLNode`
     }
 
     /**

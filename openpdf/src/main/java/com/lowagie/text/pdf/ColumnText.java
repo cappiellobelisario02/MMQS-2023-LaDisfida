@@ -61,6 +61,7 @@ import com.lowagie.text.SimpleTable;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.InvalidRunDirectionException;
 import com.lowagie.text.pdf.draw.DrawInterface;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -412,7 +413,7 @@ public class ColumnText {
 
         try {
             ct.go();
-        } catch (DocumentException e) {
+        } catch (DocumentException | IOException e) {
             throw new ExceptionConverter(e);
         }
 
@@ -982,7 +983,7 @@ public class ColumnText {
      * <CODE>NO_MORE_COLUMN</CODE>
      * @throws DocumentException on error
      */
-    public int go() throws DocumentException {
+    public int go() throws DocumentException, IOException {
         return go(false);
     }
 
@@ -994,7 +995,7 @@ public class ColumnText {
      * <CODE>NO_MORE_COLUMN</CODE>
      * @throws DocumentException on error
      */
-    public int go(boolean simulate) throws DocumentException {
+    public int go(boolean simulate) throws DocumentException, IOException {
         if (composite) {
             return goComposite(simulate);
         }
@@ -1030,7 +1031,11 @@ public class ColumnText {
                 break;
             }
 
-            processLine(simulate, firstIndent, pdf, graphics, text, ratio, line);
+            try {
+                processLine(simulate, firstIndent, pdf, graphics, text, ratio, line);
+            } catch (IOException e) {
+                throw new IOException(e);
+            }
         }
 
         finalizeText(text, dirty);
@@ -1125,11 +1130,16 @@ public class ColumnText {
     }
 
     private void processLine(boolean simulate, float firstIndent, PdfDocument pdf,
-            PdfContentByte graphics, PdfContentByte text, float ratio, PdfLine line) throws DocumentException {
+            PdfContentByte graphics, PdfContentByte text, float ratio, PdfLine line)
+            throws DocumentException, IOException {
         if (!simulate) {
             currentValues[0] = currentFont;
             text.setTextMatrix(leftX + (line.isRTL() ? rightIndent : firstIndent) + line.indentLeft(), yLine);
-            pdf.writeLineToContent(line, text, graphics, currentValues, ratio);
+            try {
+                pdf.writeLineToContent(line, text, graphics, currentValues, ratio);
+            } catch (IOException e) {
+                throw new IOException(e);
+            }
             currentFont = (PdfFont) currentValues[0];
         }
         lastWasNewline = line.isNewlineSplit();
@@ -1285,7 +1295,7 @@ public class ColumnText {
         return descender;
     }
 
-    protected int goComposite(boolean simulate) throws DocumentException {
+    protected int goComposite(boolean simulate) throws DocumentException, IOException {
         if (!rectangularMode) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("irregular.columns.are.not.supported.in.composite.mode"));
@@ -1327,7 +1337,8 @@ public class ColumnText {
         }
     }
 
-    private int handleList(com.lowagie.text.List list, boolean simulate, boolean firstPass) throws DocumentException {
+    private int handleList(com.lowagie.text.List list, boolean simulate, boolean firstPass)
+            throws DocumentException, IOException {
         ListItem item = findListItem(list);
         if (item == null) {
             listIdx = 0;
@@ -1406,7 +1417,8 @@ public class ColumnText {
         return false;
     }
 
-    private int processCompositeColumn(ListItem item, boolean simulate, int keep, float lastY) throws DocumentException {
+    private int processCompositeColumn(ListItem item, boolean simulate, int keep, float lastY)
+            throws DocumentException, IOException {
         compositeColumn.leftX = leftX;
         compositeColumn.rightX = rightX;
         compositeColumn.yLine = yLine;
@@ -1416,7 +1428,12 @@ public class ColumnText {
         compositeColumn.maxY = maxY;
 
         boolean keepCandidate = (item != null && item.getKeepTogether() && !simulate);
-        int status = compositeColumn.go(simulate || (keepCandidate && keep == 0));
+        int status = 0;
+        try {
+            status = compositeColumn.go(simulate || (keepCandidate && keep == 0));
+        } catch (IOException e) {
+            throw new IOException(e);
+        }
         updateFilledWidth(compositeColumn.filledWidth);
 
         if ((status & NO_MORE_TEXT) == 0 && keepCandidate) {
@@ -1474,7 +1491,7 @@ public class ColumnText {
     }
 
 
-    private int handleTable(PdfPTable table, boolean simulate, boolean firstPass) throws DocumentException {
+    private int handleTable(PdfPTable table, boolean simulate, boolean firstPass) throws DocumentException, IOException {
         if (yLine < minY || yLine > maxY) {
             return NO_MORE_COLUMN;
         }
@@ -1528,7 +1545,8 @@ public class ColumnText {
         return 0;
     }
 
-    private int handleParagraph(Paragraph para, boolean firstPass, boolean simulate) throws DocumentException {
+    private int handleParagraph(Paragraph para, boolean firstPass, boolean simulate)
+            throws DocumentException, IOException {
         int status = 0;
         for (int keep = 0; keep < 2; ++keep) {
             float lastY = yLine;
@@ -1566,7 +1584,8 @@ public class ColumnText {
         return column;
     }
 
-    private int processColumn(boolean keepCandidate, boolean simulate, int keep, float lastY) throws DocumentException {
+    private int processColumn(boolean keepCandidate, boolean simulate, int keep, float lastY)
+            throws DocumentException, IOException {
         compositeColumn.leftX = leftX;
         compositeColumn.rightX = rightX;
         compositeColumn.yLine = yLine;

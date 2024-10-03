@@ -49,6 +49,8 @@
 
 package com.lowagie.text.pdf.codec.wmf;
 
+import java.io.IOException;
+
 public class MetaObject {
 
     public static final int META_NOT_SUPPORTED = 0;
@@ -56,6 +58,10 @@ public class MetaObject {
     public static final int META_BRUSH = 2;
     public static final int META_FONT = 3;
     public int type = META_NOT_SUPPORTED;
+
+    // Common attributes for all MetaObjects
+    protected String name;
+    protected int color;
 
     public MetaObject() {
     }
@@ -68,4 +74,21 @@ public class MetaObject {
         return type;
     }
 
+    // Initialize common properties
+    public void init(InputMeta in) throws IOException {
+        // Assume InputMeta has methods to read data, e.g., readString(), readInt(), etc.
+        this.name = String.valueOf(in.readWord());  // Example method to read a string attribute
+        this.color = in.readInt();     // Example method to read an integer attribute
+
+        // Additional common initialization can be added here
+    }
+
+    // Getters for the common attributes
+    public String getName() {
+        return name;
+    }
+
+    public int getColor() {
+        return color;
+    }
 }

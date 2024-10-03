@@ -86,7 +86,7 @@ public class XmpWriter implements AutoCloseable {
     /**
      * String used to fill the extra space.
      */
-    public static final String EXTRAPACE = "\n";
+    public static final String EXTRASPACE = "\n";
     /**
      * Processing Instruction required at the start of an XMP stream
      *
@@ -331,7 +331,7 @@ public class XmpWriter implements AutoCloseable {
         writer.write("</rdf:RDF>");
         writer.write("</x:xmpmeta>\n");
         for (int i = 0; i < extraS; i++) {
-            writer.write(EXTRAPACE);
+            writer.write(EXTRASPACE);
         }
         writer.write(end == 'r' ? XPACKET_PI_END_R : XPACKET_PI_END_W);
         writer.flush();
