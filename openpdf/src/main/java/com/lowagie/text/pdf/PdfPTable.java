@@ -587,9 +587,9 @@ public class PdfPTable implements LargeElement {
         PdfPCell[] cells = rows.get(row).getCells();
         for (int i = 0; i < cells.length; i++) {
             if (cells[i] != null && col >= i && col < (i + cells[i].getColspan())) {
-
-                return cells[i];
-
+                
+                    return cells[i];
+                
             }
         }
         return null;
@@ -1589,8 +1589,8 @@ public class PdfPTable implements LargeElement {
                  PdfWriter.RUN_DIRECTION_NO_BIDI,
                  PdfWriter.RUN_DIRECTION_LTR,
                  PdfWriter.RUN_DIRECTION_RTL:
-                this.runDirection = runDirection;
-                break;
+                    this.runDirection = runDirection;
+                    break;
             default:
                 throw new InvalidRunDirectionException(
                         MessageLocalization.getComposedMessage("invalid.run.direction.1", runDirection));

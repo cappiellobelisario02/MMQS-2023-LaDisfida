@@ -106,35 +106,35 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     /**
      * an extra spacing variable
      */
-    private float spacing_left = Float.NaN;
+    private float spacingLeft = Float.NaN;
     /**
      * an extra spacing variable
      */
-    private float spacing_right = Float.NaN;
+    private float spacingRight = Float.NaN;
     /**
      * an extra spacing variable
      */
-    private float spacing_top = Float.NaN;
+    private float spacingTop = Float.NaN;
     /**
      * an extra spacing variable
      */
-    private float spacing_bottom = Float.NaN;
+    private float spacingBottom = Float.NaN;
     /**
      * an extra padding variable
      */
-    private float padding_left = Float.NaN;
+    private float paddingLeft = Float.NaN;
     /**
      * an extra padding variable
      */
-    private float padding_right = Float.NaN;
+    private float paddingRight = Float.NaN;
     /**
      * an extra padding variable
      */
-    private float padding_top = Float.NaN;
+    private float paddingTop = Float.NaN;
     /**
      * an extra padding variable
      */
-    private float padding_bottom = Float.NaN;
+    private float paddingBottom = Float.NaN;
     /**
      * the colspan of a Cell
      */
@@ -171,8 +171,8 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
      */
     public void addElement(Element element) throws BadElementException {
         if (cellgroup) {
-            if (element instanceof SimpleCell) {
-                if (((SimpleCell) element).isCellgroup()) {
+            if (element instanceof SimpleCell simpleCell) {
+                if (simpleCell.isCellgroup()) {
                     throw new BadElementException(
                             MessageLocalization.getComposedMessage("you.can.t.add.one.row.to.another.row"));
                 }
@@ -223,8 +223,8 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
         cell.setUseBorderPadding(useBorderPadding);
         cell.setUseDescender(useDescender);
         Element element;
-        for (Object o : content) {
-            element = (Element) o;
+        for (Element o : content) {
+            element = o;
             cell.addElement(element);
         }
         return cell;
@@ -240,10 +240,10 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
         PdfPCell cell = new PdfPCell();
         cell.setBorder(NO_BORDER);
         SimpleCell tmp = new SimpleCell(CELL);
-        tmp.setSpacing_left(spacing_left);
-        tmp.setSpacing_right(spacing_right);
-        tmp.setSpacing_top(spacing_top);
-        tmp.setSpacing_bottom(spacing_bottom);
+        tmp.setSpacingLeft(spacingLeft);
+        tmp.setSpacingRight(spacingRight);
+        tmp.setSpacingTop(spacingTop);
+        tmp.setSpacingBottom(spacingBottom);
         tmp.cloneNonPositionParameters(rowAttributes);
         tmp.softCloneNonPositionParameters(this);
         cell.setCellEvent(tmp);
@@ -269,48 +269,53 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
             cell.setUseDescender(useDescender);
         }
         float p;
-        float sp_left = spacing_left;
-        if (Float.isNaN(sp_left)) {
-            sp_left = 0f;
+        float spLeft = spacingLeft;
+        if (Float.isNaN(spLeft)) {
+            spLeft = 0f;
         }
-        float sp_right = spacing_right;
-        if (Float.isNaN(sp_right)) {
-            sp_right = 0f;
+        float spRight = spacingRight;
+        if (Float.isNaN(spRight)) {
+            spRight = 0f;
         }
-        float sp_top = spacing_top;
-        if (Float.isNaN(sp_top)) {
-            sp_top = 0f;
+        float spTop = spacingTop;
+        if (Float.isNaN(spTop)) {
+            spTop = 0f;
         }
-        float sp_bottom = spacing_bottom;
-        if (Float.isNaN(sp_bottom)) {
-            sp_bottom = 0f;
+        float spBottom = spacingBottom;
+        if (Float.isNaN(spBottom)) {
+            spBottom = 0f;
         }
-        p = padding_left;
+        Result result = new Result(spLeft, spRight, spTop, spBottom);
+        p = paddingLeft;
         if (Float.isNaN(p)) {
             p = 0f;
         }
-        cell.setPaddingLeft(p + sp_left);
-        p = padding_right;
+        cell.setPaddingLeft(p + result.spLeft());
+        p = paddingRight;
         if (Float.isNaN(p)) {
             p = 0f;
         }
-        cell.setPaddingRight(p + sp_right);
-        p = padding_top;
+        cell.setPaddingRight(p + result.spRight());
+        p = paddingTop;
         if (Float.isNaN(p)) {
             p = 0f;
         }
-        cell.setPaddingTop(p + sp_top);
-        p = padding_bottom;
+        cell.setPaddingTop(p + result.spTop());
+        p = paddingBottom;
         if (Float.isNaN(p)) {
             p = 0f;
         }
-        cell.setPaddingBottom(p + sp_bottom);
+        cell.setPaddingBottom(p + result.spBottom());
         Element element;
-        for (Object o : content) {
-            element = (Element) o;
+        for (Element o : content) {
+            element = o;
             cell.addElement(element);
         }
         return cell;
+    }
+
+    private record Result(float spLeft, float spRight, float spTop, float spBottom) {
+
     }
 
     /**
@@ -318,28 +323,28 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
      * com.lowagie.text.pdf.PdfContentByte[])
      */
     public void cellLayout(PdfPCell cell, Rectangle position, PdfContentByte[] canvases) {
-        float sp_left = spacing_left;
-        if (Float.isNaN(sp_left)) {
-            sp_left = 0f;
+        float spLeft = spacingLeft;
+        if (Float.isNaN(spLeft)) {
+            spLeft = 0f;
         }
-        float sp_right = spacing_right;
-        if (Float.isNaN(sp_right)) {
-            sp_right = 0f;
+        float spRight = spacingRight;
+        if (Float.isNaN(spRight)) {
+            spRight = 0f;
         }
-        float sp_top = spacing_top;
-        if (Float.isNaN(sp_top)) {
-            sp_top = 0f;
+        float spTop = spacingTop;
+        if (Float.isNaN(spTop)) {
+            spTop = 0f;
         }
-        float sp_bottom = spacing_bottom;
-        if (Float.isNaN(sp_bottom)) {
-            sp_bottom = 0f;
+        float spBottom = spacingBottom;
+        if (Float.isNaN(spBottom)) {
+            spBottom = 0f;
         }
-        Rectangle rect = new Rectangle(position.getLeft(sp_left), position.getBottom(sp_bottom),
-                position.getRight(sp_right), position.getTop(sp_top));
+        Rectangle rect = new Rectangle(position.getLeft(spLeft), position.getBottom(spBottom),
+                position.getRight(spRight), position.getTop(spTop));
         rect.cloneNonPositionParameters(this);
-        canvases[PdfPTable.BACKGROUNDCANVAS].rectangle(rect);
+        canvases[PdfPTable.BACKGROUNDCANVAS].rectangle(rect.llx(), rect.lly(), rect.urx(), rect.ury());
         rect.setBackgroundColor(null);
-        canvases[PdfPTable.LINECANVAS].rectangle(rect);
+        canvases[PdfPTable.LINECANVAS].rectangle(rect.llx(), rect.lly(), rect.urx(), rect.ury());
     }
 
     /**
@@ -348,17 +353,17 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
      * @param padding padding that will be set
      */
     public void setPadding(float padding) {
-        if (Float.isNaN(padding_right)) {
-            setPadding_right(padding);
+        if (Float.isNaN(paddingRight)) {
+            setPaddingRight(padding);
         }
-        if (Float.isNaN(padding_left)) {
-            setPadding_left(padding);
+        if (Float.isNaN(paddingLeft)) {
+            setPaddingLeft(padding);
         }
-        if (Float.isNaN(padding_top)) {
-            setPadding_top(padding);
+        if (Float.isNaN(paddingTop)) {
+            setPaddingTop(padding);
         }
-        if (Float.isNaN(padding_bottom)) {
-            setPadding_bottom(padding);
+        if (Float.isNaN(paddingBottom)) {
+            setPaddingBottom(padding);
         }
     }
 
@@ -381,123 +386,123 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     /**
      * @return Returns the padding_bottom.
      */
-    public float getPadding_bottom() {
-        return padding_bottom;
+    public float getPaddingBottom() {
+        return paddingBottom;
     }
 
     /**
-     * @param padding_bottom The padding_bottom to set.
+     * @param paddingBottom The padding_bottom to set.
      */
-    public void setPadding_bottom(float padding_bottom) {
-        this.padding_bottom = padding_bottom;
+    public void setPaddingBottom(float paddingBottom) {
+        this.paddingBottom = paddingBottom;
     }
 
     /**
      * @return Returns the padding_left.
      */
-    public float getPadding_left() {
-        return padding_left;
+    public float getPaddingLeft() {
+        return paddingLeft;
     }
 
     /**
-     * @param padding_left The padding_left to set.
+     * @param paddingLeft The padding_left to set.
      */
-    public void setPadding_left(float padding_left) {
-        this.padding_left = padding_left;
+    public void setPaddingLeft(float paddingLeft) {
+        this.paddingLeft = paddingLeft;
     }
 
     /**
      * @return Returns the padding_right.
      */
-    public float getPadding_right() {
-        return padding_right;
+    public float getPaddingRight() {
+        return paddingRight;
     }
 
     /**
-     * @param padding_right The padding_right to set.
+     * @param paddingRight The padding_right to set.
      */
-    public void setPadding_right(float padding_right) {
-        this.padding_right = padding_right;
+    public void setPaddingRight(float paddingRight) {
+        this.paddingRight = paddingRight;
     }
 
     /**
      * @return Returns the padding_top.
      */
-    public float getPadding_top() {
-        return padding_top;
+    public float getPaddingTop() {
+        return paddingTop;
     }
 
     /**
-     * @param padding_top The padding_top to set.
+     * @param paddingTop The padding_top to set.
      */
-    public void setPadding_top(float padding_top) {
-        this.padding_top = padding_top;
-    }
-
-    /**
-     * @return Returns the spacing.
-     */
-    public float getSpacing_left() {
-        return spacing_left;
-    }
-
-    /**
-     * @param spacing The spacing to set.
-     */
-    public void setSpacing_left(float spacing) {
-        this.spacing_left = spacing;
+    public void setPaddingTop(float paddingTop) {
+        this.paddingTop = paddingTop;
     }
 
     /**
      * @return Returns the spacing.
      */
-    public float getSpacing_right() {
-        return spacing_right;
+    public float getSpacingLeft() {
+        return spacingLeft;
     }
 
     /**
      * @param spacing The spacing to set.
      */
-    public void setSpacing_right(float spacing) {
-        this.spacing_right = spacing;
+    public void setSpacingLeft(float spacing) {
+        this.spacingLeft = spacing;
     }
 
     /**
      * @return Returns the spacing.
      */
-    public float getSpacing_top() {
-        return spacing_top;
+    public float getSpacingRight() {
+        return spacingRight;
     }
 
     /**
      * @param spacing The spacing to set.
      */
-    public void setSpacing_top(float spacing) {
-        this.spacing_top = spacing;
+    public void setSpacingRight(float spacing) {
+        this.spacingRight = spacing;
     }
 
     /**
      * @return Returns the spacing.
      */
-    public float getSpacing_bottom() {
-        return spacing_bottom;
+    public float getSpacingTop() {
+        return spacingTop;
     }
 
     /**
      * @param spacing The spacing to set.
      */
-    public void setSpacing_bottom(float spacing) {
-        this.spacing_bottom = spacing;
+    public void setSpacingTop(float spacing) {
+        this.spacingTop = spacing;
+    }
+
+    /**
+     * @return Returns the spacing.
+     */
+    public float getSpacingBottom() {
+        return spacingBottom;
+    }
+
+    /**
+     * @param spacing The spacing to set.
+     */
+    public void setSpacingBottom(float spacing) {
+        this.spacingBottom = spacing;
     }
 
     /**
      * @param spacing The spacing to set.
      */
     public void setSpacing(float spacing) {
-        this.spacing_left = spacing;
-        this.spacing_right = spacing;
-        this.spacing_top = spacing;
-        this.spacing_bottom = spacing;
+        this.spacingLeft = spacing;
+        this.spacingRight = spacing;
+        this.spacingTop = spacing;
+        this.spacingBottom = spacing;
     }
 
     /**

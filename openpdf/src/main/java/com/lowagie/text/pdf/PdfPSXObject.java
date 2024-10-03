@@ -77,7 +77,7 @@ public class PdfPSXObject extends PdfTemplate {
     @Override
     PdfStream getFormXObject(int compressionLevel) {
         PdfStream s = new PdfStream(content.toByteArray());
-        s.put(PdfName.TYPE, PdfName.XOBJECT);
+        s.put(PdfName.TYPE_CONST, PdfName.XOBJECT);
         s.put(PdfName.SUBTYPE, PdfName.PS);
         s.flateCompress(compressionLevel);
         return s;

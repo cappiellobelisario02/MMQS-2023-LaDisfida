@@ -54,7 +54,6 @@ import static java.awt.Font.LAYOUT_RIGHT_TO_LEFT;
 
 import com.lowagie.text.Anchor;
 import com.lowagie.text.Annotation;
-import com.lowagie.text.BadElementException;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.DocListener;
 import com.lowagie.text.Document;
@@ -91,6 +90,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -281,7 +281,7 @@ public class PdfDocument extends Document {
     protected PdfDictionary pageAA = null;
     protected PdfIndirectReference thumb;
     /**
-     * This are the page resources of the current Page.
+     * These are the page resources of the current Page.
      */
     protected PageResources pageResources;
     /**
@@ -640,10 +640,10 @@ public class PdfDocument extends Document {
     }
 
     private boolean handleMarkedElement(MarkedObject mo) {
-        MarkedObject title = ((MarkedSection) mo).getTitle();
-        if (title != null) {
-            title.process(this);
-        }
+            MarkedObject title = ((MarkedSection) mo).getTitle();
+            if (title != null) {
+                title.process(this);
+            }
         mo.process(this);
         return true;
     }
@@ -717,7 +717,19 @@ public class PdfDocument extends Document {
             }
             super.close();
 
-            writer.addLocalDestinations((TreeMap<String, Object>) localDestinations);
+            // Convert TreeMap<String, Object[]> to TreeMap<String, Object>
+            TreeMap<String, Object> destinations = new TreeMap<>();
+            for (Map.Entry<String, Object[]> entry : localDestinations.entrySet()) {
+                // Extract the first element from Object[] or handle as needed
+                if (entry.getValue() != null && entry.getValue().length > 0) {
+                    destinations.put(entry.getKey(), entry.getValue()[0]);
+                } else {
+                    destinations.put(entry.getKey(), null); // Handle empty arrays or null values
+                }
+            }
+
+            // Use the newly created TreeMap with Object values
+            writer.addLocalDestinations(destinations);
             calculateOutlineCount();
             writeOutlines();
         } catch (Exception e) {
@@ -726,6 +738,7 @@ public class PdfDocument extends Document {
 
         writer.close();
     }
+
 
     /**
      * Use this method to set the XMP Metadata.
@@ -2179,7 +2192,7 @@ public class PdfDocument extends Document {
             }
         }
         fs.addDescription(description, true);
-        if (description.length() == 0) {
+        if (description.isEmpty()) {
             description = "Unnamed";
         }
         String fn = PdfEncodings.convertToString(new PdfString(description, PdfObject.TEXT_UNICODE).getBytes(), null);
@@ -2537,10 +2550,10 @@ public class PdfDocument extends Document {
         for (Element element : footer.getSpecialContent()) {
             switch (element.type()) {
                 case Element.JPEG,
-                     Element.JPEG2000,
-                     Element.JBIG2,
-                     Element.IMGRAW,
-                     Element.IMGTEMPLATE:
+                Element.JPEG2000,
+                Element.JBIG2,
+                Element.IMGRAW,
+                Element.IMGTEMPLATE:
                     processImage((Image) element);
                     break;
                 case Element.PTABLE:
@@ -3033,7 +3046,7 @@ public class PdfDocument extends Document {
                         ar.add(new PdfString(name, null));
                         ar.add(ref);
                     }
-                    if (ar.size() > 0) {
+                    if (!ar.isEmpty()) {
                         PdfDictionary dests = new PdfDictionary();
                         dests.put(PdfName.NAMES, ar);
                         names.put(PdfName.DESTS, writer.addToBody(dests).getIndirectReference());
@@ -3186,11 +3199,7 @@ public class PdfDocument extends Document {
          */
         public int currentRowspan(PdfCell c) {
             Integer i = rowspanMap.get(c);
-            if (i == null) {
-                return c.rowspan();
-            } else {
-                return i;
-            }
+            return Objects.requireNonNullElseGet(i, c::rowspan);
         }
 
         public int cellRendered(PdfCell cell, int pageNumber) {

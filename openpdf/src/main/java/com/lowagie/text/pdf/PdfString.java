@@ -155,19 +155,16 @@ public class PdfString extends PdfObject {
             b = crypto.encryptByteArray(b);
         }
         if (hexWriting) {
-            ByteBuffer buf = null;
-            try{
-                buf = new ByteBuffer();
+            try(ByteBuffer buf = new ByteBuffer()){
                 buf.append('<');
-                int len = b.length;
                 for (byte b1 : b) {
                     buf.appendHex(b1);
                 }
-            } catch (IOException e) {
-                 logger.info("ByteBuffer error: " + e.getMessage());
+                buf.append('>');
+                os.write(buf.toByteArray());
+            }catch(IOException ioe){
+                //may need logging
             }
-            buf.append('>');
-            os.write(buf.toByteArray());
         } else {
             os.write(PdfContentByte.escapeString(b));
         }
@@ -204,7 +201,7 @@ public class PdfString extends PdfObject {
      * @return A <CODE>String</CODE>
      */
     public String toUnicodeString() {
-        if (encoding != null && encoding.length() != 0) {
+        if (encoding != null && !encoding.isEmpty()) {
             return value;
         }
         getBytes();
@@ -264,7 +261,7 @@ public class PdfString extends PdfObject {
      */
     public char[] getOriginalChars() {
         char[] chars;
-        if (encoding == null || encoding.length() == 0) {
+        if (encoding == null || encoding.isEmpty()) {
             byte[] bytes = getOriginalBytes();
             chars = new char[bytes.length];
             for (int i = 0; i < bytes.length; i++) {
@@ -297,5 +294,9 @@ public class PdfString extends PdfObject {
     public PdfString setHexWriting(boolean hexWriting) {
         this.hexWriting = hexWriting;
         return this;
+    }
+
+    public int charAt(int i) {
+        return value.charAt(i);
     }
 }
