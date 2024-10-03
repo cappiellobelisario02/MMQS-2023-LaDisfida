@@ -2610,7 +2610,11 @@ public class PdfDocument extends Document {
         ColumnText ct = new ColumnText(writer.getDirectContent());
         ct.addElement(ptable);
         ct.setSimpleColumn(indentLeft(), footer.getBottom(), indentRight(), footer.getTop());
-        ct.go();
+        try {
+            ct.go();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -2696,7 +2700,12 @@ public class PdfDocument extends Document {
         int loop = 0;
         while (true) {
             ct.setSimpleColumn(indentLeft(), indentBottom(), indentRight(), indentTop() - currentHeight);
-            int status = ct.go();
+            int status;
+            try {
+                status = ct.go();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             if ((status & ColumnText.NO_MORE_TEXT) != 0) {
                 text.moveText(0, ct.getYLine() - indentTop() + currentHeight);
                 currentHeight = indentTop() - ct.getYLine();
