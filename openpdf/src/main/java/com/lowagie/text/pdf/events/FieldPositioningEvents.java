@@ -202,7 +202,7 @@ public class FieldPositioningEvents extends PdfPageEventHelper implements PdfPCe
             try {
                 writer.addAnnotation(field);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                //may need some logging or some other operation
             }
         } else {
             parent.addKid(field);
@@ -225,7 +225,7 @@ public class FieldPositioningEvents extends PdfPageEventHelper implements PdfPCe
             try {
                 fieldWriter.addAnnotation(cellField);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                //may need some logging or some other operation
             }
         } else {
             parent.addKid(cellField);

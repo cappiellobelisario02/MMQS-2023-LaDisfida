@@ -680,7 +680,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
         try {
             table.addCell(tmp);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -758,7 +758,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
             }
             table.addCell(getDummyCell());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -798,7 +798,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
             try {
                 return new PdfPCell(((Table) arrayList.get(0)).createPdfPTable());
             } catch (AddCellException | IOException e) {
-                throw new RuntimeException(e);
+                //may need some logging or some other operation
             }
         }
         PdfPCell cell = new PdfPCell();

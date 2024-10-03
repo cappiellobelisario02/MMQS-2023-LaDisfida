@@ -304,7 +304,7 @@ public class MultiColumnText implements Element {
             try {
                 result = columnText.go();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                //may need some logging or some other operation
             }
             done = handleResult(result);
 

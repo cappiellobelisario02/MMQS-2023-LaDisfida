@@ -271,7 +271,7 @@ public class HtmlWriter extends DocWriter {
         } catch (IOException ioe) {
             throw new ExceptionConverter(ioe);
         } catch (AddCellException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 

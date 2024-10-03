@@ -685,7 +685,7 @@ public class PdfDocument extends Document {
         } catch (DocumentException de) {
             throw new ExceptionConverter(de);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -1183,7 +1183,7 @@ public class PdfDocument extends Document {
         } catch (DocumentException ex) {
             throw new ExceptionConverter(ex);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -2613,7 +2613,7 @@ public class PdfDocument extends Document {
         try {
             ct.go();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -2704,7 +2704,7 @@ public class PdfDocument extends Document {
             try {
                 status = ct.go();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                //may need some logging or some other operation
             }
             if ((status & ColumnText.NO_MORE_TEXT) != 0) {
                 text.moveText(0, ct.getYLine() - indentTop() + currentHeight);

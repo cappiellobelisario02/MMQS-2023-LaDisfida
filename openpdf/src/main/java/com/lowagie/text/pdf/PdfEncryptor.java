@@ -86,7 +86,7 @@ public final class PdfEncryptor {
 
             stamper.setEncryption(userPassword, ownerPassword, permissions, strength128Bits);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -116,7 +116,7 @@ public final class PdfEncryptor {
             stamper.setEncryption(userPassword, ownerPassword, permissions, strength128Bits);
             stamper.setInfoDictionary(newInfo);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -142,7 +142,7 @@ public final class PdfEncryptor {
         try (PdfStamper stamper = new PdfStamper(reader, os)){
             stamper.setEncryption(strength, userPassword, ownerPassword, permissions);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -172,7 +172,7 @@ public final class PdfEncryptor {
             stamper.setEncryption(strength, userPassword, ownerPassword, permissions);
             stamper.setInfoDictionary(newInfo);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -204,7 +204,7 @@ public final class PdfEncryptor {
             stamper.setEncryption(type, userPassword, ownerPassword, permissions);
             stamper.setInfoDictionary(newInfo);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -233,7 +233,7 @@ public final class PdfEncryptor {
         try (PdfStamper stamper = new PdfStamper(reader, os)){
             stamper.setEncryption(type, userPassword, ownerPassword, permissions);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 

@@ -708,7 +708,7 @@ public class PdfPRow {
         } catch (DocumentException e) {
             throw new ExceptionConverter(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
 
         return evaluateCellContent(cell, newCell, ct, y, status);

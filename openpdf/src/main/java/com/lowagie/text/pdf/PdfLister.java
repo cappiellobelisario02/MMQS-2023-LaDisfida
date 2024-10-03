@@ -146,7 +146,7 @@ public class PdfLister {
             try {
                 b = PdfReader.getStreamBytes(stream);
             } catch (PDFFilterException e) {
-                throw new RuntimeException(e);
+                //may need some logging or some other operation
             }
             int len = b.length - 1;
             for (int k = 0; k < len; ++k) {

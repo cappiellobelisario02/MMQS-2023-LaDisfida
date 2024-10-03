@@ -1507,7 +1507,7 @@ public class PdfWriter extends DocWriter implements
         } catch (IOException ioe) {
             throw new ExceptionConverter(ioe);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 

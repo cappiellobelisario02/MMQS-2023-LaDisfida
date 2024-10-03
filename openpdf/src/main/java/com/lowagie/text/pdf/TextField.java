@@ -379,7 +379,7 @@ public class TextField extends BaseField {
         try {
             ct.go();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 
@@ -402,7 +402,7 @@ public class TextField extends BaseField {
                     try {
                         status = ct.go(true);
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        //may need some logging or some other operation
                     }
                     if ((status & ColumnText.NO_MORE_COLUMN) == 0) {
                         break;

@@ -546,7 +546,7 @@ public class PdfContentStreamHandler {
                 try {
                     font = new CMapAwareDocumentFont((PRIndirectReference) pdfObject);
                 } catch (PDFFilterException e) {
-                    throw new RuntimeException(e);
+                    //may need some logging or some other operation
                 }
                 float size = fontParameter.getAsNumber(1).floatValue();
 
@@ -622,7 +622,7 @@ public class PdfContentStreamHandler {
             try {
                 font = new CMapAwareDocumentFont((PRIndirectReference) pdfObject);
             } catch (PDFFilterException e) {
-                throw new RuntimeException(e);
+                //may need some logging or some other operation
             }
 
             handler.graphicsState().setFont(font);

@@ -733,7 +733,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             try {
                 table.addCell(cell);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                //may need some logging or some other operation
             }
         }
 

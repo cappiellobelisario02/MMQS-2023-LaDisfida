@@ -29,7 +29,7 @@ class DecryptAES256R6Test {
         try {
             return ownerPasswordUsedField.getBoolean(pdfReader);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 

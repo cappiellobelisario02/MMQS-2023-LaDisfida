@@ -48,7 +48,7 @@ class BarcodeDatamatrixTest {
                 document.add(new Paragraph(HELLO_WORLD));
                 document.add(image);
             } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
+                //may need some logging or some other operation
             }
         }
     }

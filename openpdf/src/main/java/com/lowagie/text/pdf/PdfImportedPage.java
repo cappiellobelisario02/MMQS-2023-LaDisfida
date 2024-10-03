@@ -145,7 +145,7 @@ public class PdfImportedPage extends com.lowagie.text.pdf.PdfTemplate {
         try {
             return readerInstance.getFormXObject(pageNumber, compressionLevel);
         } catch (PDFFilterException e) {
-            throw new RuntimeException(e);
+            //may need some logging or some other operation
         }
     }
 

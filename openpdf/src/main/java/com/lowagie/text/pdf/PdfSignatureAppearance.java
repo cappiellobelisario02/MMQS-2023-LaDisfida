@@ -716,7 +716,7 @@ public class PdfSignatureAppearance {
                 try {
                     ct2.go();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    //may need some logging or some other operation
                 }
             } else if (render == SIGNATURE_RENDER_GRAPHIC_AND_DESCRIPTION) {
                 ColumnText ct2 = new ColumnText(t);
@@ -745,7 +745,7 @@ public class PdfSignatureAppearance {
                 try {
                     ct2.go();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    //may need some logging or some other operation
                 }
             } else if (this.render == SIGNATURE_RENDER_GRAPHIC) {
                 ColumnText ct2 = new ColumnText(t);
@@ -767,7 +767,7 @@ public class PdfSignatureAppearance {
                 try {
                     ct2.go();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    //may need some logging or some other operation
                 }
             }
 
@@ -783,7 +783,7 @@ public class PdfSignatureAppearance {
                 try {
                     ct.go();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    //may need some logging or some other operation
                 }
             }
         }
@@ -819,7 +819,7 @@ public class PdfSignatureAppearance {
             try {
                 ct.go();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                //may need some logging or some other operation
             }
         }
         int rotation = writer.reader.getPageRotation(page);
