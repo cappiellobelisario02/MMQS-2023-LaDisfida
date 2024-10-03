@@ -2,8 +2,8 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
+import com.lowagie.text.TransformationMatrix;
 import com.lowagie.text.error_messages.MessageLocalization;
-import com.lowagie.text.pdf.Type3Glyph.Builder;
 
 /**
  * The content where Type3 glyphs are written to.
@@ -44,7 +44,7 @@ public final class Type3Glyph extends PdfContentByte {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("not.colorized.typed3.fonts.only.accept.mask.images"));
         }
-        super.addImage(image, a, b, c, d, e, f, inlineImage);
+        super.addImage(image, new TransformationMatrix(a, b, c, d, e, f), inlineImage);
     }
 
     @Override

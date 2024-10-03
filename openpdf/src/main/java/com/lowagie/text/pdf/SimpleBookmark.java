@@ -800,7 +800,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
      * @throws IOException on error
      */
     public static List<Map<String, Object>> importFromXML(InputStream in) throws IOException {
-        SimpleBookmark book = new SimpleBookmark();
+        com.lowagie.text.pdf.SimpleBookmark book = new com.lowagie.text.pdf.SimpleBookmark();
         SimpleXMLParser.parse(book, in);
         return book.topList;
     }
@@ -813,7 +813,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
      * @throws IOException on error
      */
     public static List<Map<String, Object>> importFromXML(Reader in) throws IOException {
-        SimpleBookmark book = new SimpleBookmark();
+        com.lowagie.text.pdf.SimpleBookmark book = new com.lowagie.text.pdf.SimpleBookmark();
         SimpleXMLParser.parse(book, in);
         return book.topList;
     }
