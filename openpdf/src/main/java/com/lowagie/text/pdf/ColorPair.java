@@ -11,7 +11,7 @@ public class ColorPair {
         this.endColor = endColor;
     }
 
-    public SpotColor getStartColor() { return startColor; }
-    public SpotColor getEndColor() { return endColor; }
+    public SpotColor getStartColor() { return (SpotColor) startColor; }
+    public SpotColor getEndColor() { return (SpotColor) endColor; }
 }
 
