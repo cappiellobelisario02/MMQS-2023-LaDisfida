@@ -86,7 +86,7 @@ public class CMapAwareDocumentFont extends DocumentFont {
      *
      * @param refFont the indirect reference to a font
      */
-    public CMapAwareDocumentFont(PRIndirectReference refFont) throws ToUnicodeMapProcessingException {
+    public CMapAwareDocumentFont(PRIndirectReference refFont) throws ToUnicodeMapProcessingException, PDFFilterException {
         super(refFont);
         fontDic = (PdfDictionary) PdfReader.getPdfObjectRelease(refFont);
 
