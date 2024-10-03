@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -76,6 +77,8 @@ public class PdfCopy extends PdfWriter {
     protected PdfArray fieldArray;
     protected HashMap<PdfTemplate, Object> fieldTemplates;
     static Logger logger = Logger.getLogger(PdfCopy.class.getName());
+
+    private PdfIndirectReference acroForm;
     /**
      * Holds value of property rotateContents.
      */
@@ -165,7 +168,7 @@ public class PdfCopy extends PdfWriter {
         }
         PdfObject obj = PdfReader.getPdfObjectRelease(in);
         if (obj != null && obj.isDictionary()) {
-            PdfObject type = PdfReader.getPdfObjectRelease(((PdfDictionary) obj).get(PdfName.TYPE));
+            PdfObject type = PdfReader.getPdfObjectRelease(((PdfDictionary) obj).get(PdfName.TYPE_CONST));
             if (PdfName.PAGE.equals(type)) {
                 return theRef;
             }
@@ -187,7 +190,7 @@ public class PdfCopy extends PdfWriter {
     protected PdfDictionary copyDictionary(PdfDictionary in)
             throws IOException, BadPdfFormatException {
         PdfDictionary out = new PdfDictionary();
-        PdfObject type = PdfReader.getPdfObjectRelease(in.get(PdfName.TYPE));
+        PdfObject type = PdfReader.getPdfObjectRelease(in.get(PdfName.TYPE_CONST));
 
         for (PdfName key : in.getKeys()) {
             PdfObject value = in.get(key);
@@ -258,10 +261,7 @@ public class PdfCopy extends PdfWriter {
                 return copyDictionary((PdfDictionary) in);
             case PdfObject.INDIRECT:
                 PdfObject obj = copyIndirect((PRIndirectReference) in);
-                if (obj == null) {
-                    return PdfNull.PDFNULL;
-                }
-                return obj;
+                return Objects.requireNonNullElse(obj, PdfNull.PDFNULL);
             case PdfObject.ARRAY:
                 return copyArray((PdfArray) in);
             case PdfObject.NUMBER,
@@ -436,18 +436,17 @@ public class PdfCopy extends PdfWriter {
         if (fieldArray == null) {
             return;
         }
-        PdfDictionary acroForm = new PdfDictionary();
-        catalog.put(PdfName.ACROFORM, acroForm);
-        acroForm.put(PdfName.FIELDS, fieldArray);
-        acroForm.put(PdfName.DA, new PdfString("/Helv 0 Tf 0 g "));
+        PdfDictionary acroFormPdfDictionary = new PdfDictionary();
+        catalog.put(PdfName.ACROFORM, acroFormPdfDictionary);
+        acroFormPdfDictionary.put(PdfName.FIELDS, fieldArray);
+        acroFormPdfDictionary.put(PdfName.DA, new PdfString("/Helv 0 Tf 0 g "));
         if (fieldTemplates.isEmpty()) {
             return;
         }
         PdfDictionary dr = new PdfDictionary();
-        acroForm.put(PdfName.DR, dr);
+        acroFormPdfDictionary.put(PdfName.DR, dr);
         for (PdfTemplate o : fieldTemplates.keySet()) {
-            PdfTemplate template = o;
-            PdfFormField.mergeResources(dr, (PdfDictionary) template.getResources());
+            PdfFormField.mergeResources(dr, (PdfDictionary) o.getResources());
         }
         
         PdfDictionary fonts = dr.getAsDict(PdfName.FONT);
@@ -508,7 +507,7 @@ public class PdfCopy extends PdfWriter {
     }
 
     @Override
-    public void freeReader(PdfReader reader) throws IOException {
+    public void freeReader(PdfReader reader) {
         indirectMap.remove(reader);
         if (currentPdfReaderInstance != null && currentPdfReaderInstance.getReader() == reader) {
             try {
@@ -605,10 +604,9 @@ public class PdfCopy extends PdfWriter {
         }
 
         public boolean equals(Object o) {
-            if (!(o instanceof RefKey)) {
+            if (!(o instanceof RefKey other)) {
                 return false;
             }
-            RefKey other = (RefKey) o;
             return this.gen == other.gen && this.num == other.num;
         }
 
@@ -656,12 +654,12 @@ public class PdfCopy extends PdfWriter {
             return over;
         }
 
-        public void alterContents() throws IOException {
+        public void alterContents() {
             try(ByteBuffer out = new ByteBuffer()) {
                 if (over == null && under == null) {
                     return;
                 }
-                PdfArray ar = null;
+                PdfArray ar;
                 PdfObject content = PdfReader.getPdfObject(pageN.get(PdfName.CONTENTS), pageN);
                 if (content.isArray()) {
                     ar = (PdfArray) content;
@@ -828,33 +826,28 @@ public class PdfCopy extends PdfWriter {
         }
 
         private PdfRectangle getAdjustedRectangle(PdfRectangle rect, int rotation, Rectangle pageSize) {
-            switch (rotation) {
-                case 90:
-                    return new PdfRectangle(
-                            pageSize.getTop() - rect.bottom(),
-                            rect.left(),
-                            pageSize.getTop() - rect.top(),
-                            rect.right()
-                    );
-                case 180:
-                    return new PdfRectangle(
-                            pageSize.getRight() - rect.left(),
-                            pageSize.getTop() - rect.bottom(),
-                            pageSize.getRight() - rect.right(),
-                            pageSize.getTop() - rect.top()
-                    );
-                case 270:
-                    return new PdfRectangle(
-                            rect.bottom(),
-                            pageSize.getRight() - rect.left(),
-                            rect.top(),
-                            pageSize.getRight() - rect.right()
-                    );
-                case 0:
-                    return rect;
-                default:
-                    throw new IllegalArgumentException("Invalid rotation: " + rotation);
-            }
+            return switch (rotation) {
+                case 90 -> new PdfRectangle(
+                        pageSize.getTop() - rect.bottom(),
+                        rect.left(),
+                        pageSize.getTop() - rect.top(),
+                        rect.right()
+                );
+                case 180 -> new PdfRectangle(
+                        pageSize.getRight() - rect.left(),
+                        pageSize.getTop() - rect.bottom(),
+                        pageSize.getRight() - rect.right(),
+                        pageSize.getTop() - rect.top()
+                );
+                case 270 -> new PdfRectangle(
+                        rect.bottom(),
+                        pageSize.getRight() - rect.left(),
+                        rect.top(),
+                        pageSize.getRight() - rect.right()
+                );
+                case 0 -> rect;
+                default -> throw new IllegalArgumentException("Invalid rotation: " + rotation);
+            };
         }
 
         private void finalizeAnnotation(PdfAnnotation annot) throws IOException {
