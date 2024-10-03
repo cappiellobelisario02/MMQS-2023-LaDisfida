@@ -80,7 +80,7 @@ public class PdfPattern extends PdfStream {
         if (matrix != null) {
             put(PdfName.MATRIX, matrix);
         }
-        put(PdfName.TYPE, PdfName.PATTERN);
+        put(PdfName.TYPE_CONST, PdfName.PATTERN);
         put(PdfName.BBOX, new PdfRectangle(painter.getBoundingBox()));
         put(PdfName.RESOURCES, painter.getResources());
         put(PdfName.TILINGTYPE, one);

@@ -82,7 +82,7 @@ public class Header extends Meta {
 
     public Header(String name, String content) {
         super(Element.HEADER, content);
-        this.name = new StringBuffer(name);
+        this.name = new StringBuilder(name);
     }
 
     // methods to retrieve information

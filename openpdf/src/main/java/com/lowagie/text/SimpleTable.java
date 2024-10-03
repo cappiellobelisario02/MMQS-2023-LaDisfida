@@ -53,6 +53,7 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPTableEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -130,7 +131,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
 
         Table table = createTableWithProperties(columns, of, cellspacing, cellpadding);
 
-        for (Object o1 : content) {
+        for (Element o1 : content) {
             row = (SimpleCell) o1;
             addCellstoTable(table, row, widths, widthPercentages);
         }
@@ -142,7 +143,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
 
     private int calculateColumns(SimpleCell row) {
         int columns = 0;
-        for (Object o : row.getContent()) {
+        for (Element o : row.getContent()) {
             columns += ((SimpleCell) o).getColspan();
         }
         return columns;
@@ -160,13 +161,17 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
     private void addCellstoTable(Table table, SimpleCell row, float[] widths, float[] widthPercentages) {
         int pos = 0;
         SimpleCell cell;
-        for (Object o : row.getContent()) {
-            cell = (SimpleCell) o;
-            table.addCell(cell.createCell(row));
-            if (cell.getColspan() == 1) {
-                storeWidthInformation(cell, widths, widthPercentages, pos);
+        try{
+            for (Element o : row.getContent()) {
+                cell = (SimpleCell) o;
+                table.addCell(cell.createCell(row));
+                if (cell.getColspan() == 1) {
+                    storeWidthInformation(cell, widths, widthPercentages, pos);
+                }
+                pos += cell.getColspan();
             }
-            pos += cell.getColspan();
+        }catch(IOException ioe){
+            //may need some logging
         }
     }
 
@@ -231,7 +236,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
         PdfPTable table = createTableWithProperties(columns, alignment);
         setTableEvent(table);
 
-        for (Object o : content) {
+        for (Element o : content) {
             row = (SimpleCell) o;
             addCellstoTable(table, row, widths, widthPercentages);
             setTableCellSpacing(row); // Handle cell spacing in a separate method
@@ -254,7 +259,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
 
     private void addCellstoTable(PdfPTable table, SimpleCell row, float[] widths, float[] widthPercentages) {
         int pos = 0;
-        for (Object o : row.getContent()) {
+        for (Element o : row.getContent()) {
             SimpleCell cell = (SimpleCell) o;
             table.addCell(cell.createPdfPCell(row));
             if (cell.getColspan() == 1) {
@@ -284,19 +289,19 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
     }
 
     private void setTableCellSpacing(SimpleCell row) {
-        for (Object o : row.getContent()) {
+        for (Element o : row.getContent()) {
             SimpleCell cell = (SimpleCell) o;
-            if (Float.isNaN(cell.getSpacing_left())) {
-                cell.setSpacing_left(cellspacing / 2f);
+            if (Float.isNaN(cell.getSpacingLeft())) {
+                cell.setSpacingLeft(cellspacing / 2f);
             }
-            if (Float.isNaN(cell.getSpacing_right())) {
-                cell.setSpacing_right(cellspacing / 2f);
+            if (Float.isNaN(cell.getSpacingRight())) {
+                cell.setSpacingRight(cellspacing / 2f);
             }
-            if (Float.isNaN(cell.getSpacing_top())) {
-                cell.setSpacing_top(cellspacing / 2f);
+            if (Float.isNaN(cell.getSpacingTop())) {
+                cell.setSpacingTop(cellspacing / 2f);
             }
-            if (Float.isNaN(cell.getSpacing_bottom())) {
-                cell.setSpacing_bottom(cellspacing / 2f);
+            if (Float.isNaN(cell.getSpacingBottom())) {
+                cell.setSpacingBottom(cellspacing / 2f);
             }
         }
     }
@@ -307,15 +312,15 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
      */
     public void tableLayout(PdfPTable table, float[][] widths, float[] heights, int headerRows, int rowStart,
             PdfContentByte[] canvases) {
-        float[] Width = widths[0];
-        Rectangle rect = new Rectangle(Width[0], heights[heights.length - 1], Width[Width.length - 1], heights[0]);
+        float[] mWidth = widths[0];
+        Rectangle rect = new Rectangle(mWidth[0], heights[heights.length - 1], mWidth[mWidth.length - 1], heights[0]);
         rect.cloneNonPositionParameters(this);
         int bd = rect.getBorder();
         rect.setBorder(Rectangle.NO_BORDER);
-        canvases[PdfPTable.BACKGROUNDCANVAS].rectangle(rect);
+        canvases[PdfPTable.BACKGROUNDCANVAS].rectangle(rect.llx(), rect.lly(), rect.urx(), rect.ury());
         rect.setBorder(bd);
         rect.setBackgroundColor(null);
-        canvases[PdfPTable.LINECANVAS].rectangle(rect);
+        canvases[PdfPTable.LINECANVAS].rectangle(rect.llx(), rect.lly(), rect.urx(), rect.ury());
     }
 
     /**

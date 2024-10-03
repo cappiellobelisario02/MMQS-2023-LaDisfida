@@ -1099,8 +1099,8 @@ class PdfStamperImp extends PdfWriter {
         int type = this.acroFields.getFieldType(name);
 
         if (type != AcroFields.FIELD_TYPE_SIGNATURE && (appDic == null || !(appDic.getDirectObject(PdfName.N) instanceof PdfIndirectReference))) {
-            regenerate = true;
-        }
+                regenerate = true;
+            }
 
         if (regenerate) {
             try {
@@ -1566,7 +1566,7 @@ class PdfStamperImp extends PdfWriter {
         for (PdfTemplate template : fieldTemplates.keySet()) {
             PdfFormField.mergeResources(dr, (PdfDictionary) template.getResources(), this);
         }
-
+        
         PdfDictionary fonts = dr.getAsDict(PdfName.FONT);
         if (fonts == null) {
             fonts = new PdfDictionary();

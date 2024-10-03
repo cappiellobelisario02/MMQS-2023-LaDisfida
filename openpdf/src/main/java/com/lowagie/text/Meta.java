@@ -87,7 +87,7 @@ public class Meta implements Element {
      */
     Meta(int type, String content) {
         this.type = type;
-        this.content = new StringBuffer(content);
+        this.content = new StringBuilder(content);
     }
 
     /**
@@ -98,7 +98,7 @@ public class Meta implements Element {
      */
     public Meta(String tag, String content) {
         this.type = Meta.getType(tag);
-        this.content = new StringBuffer(content);
+        this.content = new StringBuilder(content);
     }
 
     // implementation of the Element-methods
@@ -164,6 +164,26 @@ public class Meta implements Element {
         return new ArrayList<>();
     }
 
+    @Override
+    public float llx() {
+        return 0;
+    }
+
+    @Override
+    public float lly() {
+        return 0;
+    }
+
+    @Override
+    public float urx() {
+        return 0;
+    }
+
+    @Override
+    public float ury() {
+        return 0;
+    }
+
     /**
      * @see com.lowagie.text.Element#isContent()
      * @since iText 2.0.8
@@ -210,22 +230,15 @@ public class Meta implements Element {
      */
 
     public String getName() {
-        switch (type) {
-            case Element.SUBJECT:
-                return ElementTags.SUBJECT;
-            case Element.KEYWORDS:
-                return ElementTags.KEYWORDS;
-            case Element.AUTHOR:
-                return ElementTags.AUTHOR;
-            case Element.TITLE:
-                return ElementTags.TITLE;
-            case Element.PRODUCER:
-                return ElementTags.PRODUCER;
-            case Element.CREATIONDATE:
-                return ElementTags.CREATIONDATE;
-            default:
-                return ElementTags.UNKNOWN;
-        }
+        return switch (type) {
+            case Element.SUBJECT -> ElementTags.SUBJECT;
+            case Element.KEYWORDS -> ElementTags.KEYWORDS;
+            case Element.AUTHOR -> ElementTags.AUTHOR;
+            case Element.TITLE -> ElementTags.TITLE;
+            case Element.PRODUCER -> ElementTags.PRODUCER;
+            case Element.CREATIONDATE -> ElementTags.CREATIONDATE;
+            default -> ElementTags.UNKNOWN;
+        };
     }
 
 }

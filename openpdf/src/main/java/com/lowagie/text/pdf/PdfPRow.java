@@ -688,8 +688,8 @@ public class PdfPRow {
     private PdfPCell createNewCell(PdfPCell cell, float newHeightLoop) {
         PdfPCell newCell = new PdfPCell(cell);
         if (cell.getImage() != null && newHeightLoop <= cell.getEffectivePaddingBottom() + cell.getEffectivePaddingTop() + 2) {
-            newCell.setPhrase(null);
-        }
+                newCell.setPhrase(null);
+            }
 
         return newCell;
     }

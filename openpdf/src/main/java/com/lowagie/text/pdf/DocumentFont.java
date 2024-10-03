@@ -559,33 +559,18 @@ public class DocumentFont extends BaseFont {
         if (cjkMirror != null) {
             return cjkMirror.getFontDescriptor(key, fontSize);
         }
-        switch (key) {
-            case AWT_ASCENT:
-            case ASCENT:
-                return ascender * fontSize / 1000;
-            case CAPHEIGHTCONST:
-                return capHeightVar * fontSize / 1000;
-            case AWT_DESCENT:
-            case DESCENT:
-                return descender * fontSize / 1000;
-            case ITALICANGLECONST:
-                return italicAngleVar;
-            case BBOXLLX:
-                return llx * fontSize / 1000;
-            case BBOXLLY:
-                return lly * fontSize / 1000;
-            case BBOXURX:
-                return urx * fontSize / 1000;
-            case BBOXURY:
-                return ury * fontSize / 1000;
-            case AWT_LEADING:
-                return 0;
-            case AWT_MAXADVANCE:
-                return (urx - llx) * fontSize / 1000;
-            default:
-                break;
-        }
-        return 0;
+        return switch (key) {
+            case AWT_ASCENT, ASCENT -> ascender * fontSize / 1000;
+            case CAPHEIGHTCONST -> capHeightVar * fontSize / 1000;
+            case AWT_DESCENT, DESCENT -> descender * fontSize / 1000;
+            case ITALICANGLECONST -> italicAngleVar;
+            case BBOXLLX -> llx * fontSize / 1000;
+            case BBOXLLY -> lly * fontSize / 1000;
+            case BBOXURX -> urx * fontSize / 1000;
+            case BBOXURY -> ury * fontSize / 1000;
+            case AWT_MAXADVANCE -> (urx - llx) * fontSize / 1000;
+            default -> 0;
+        };
     }
 
     /**
@@ -817,7 +802,7 @@ public class DocumentFont extends BaseFont {
     }
 
     public boolean setKerning(int char1, int char2, int kern) {
-        return new int[0];
+        return true;
     }
 
     @Override
