@@ -77,6 +77,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
 
     public static PdfName op;
     public static PdfName ca;
+    public static PdfName TYPE;
     static Logger logger = Logger.getLogger(PdfName.class.getName());
 
     // CLASS CONSTANTS (a variety of standard names used in PDF))
