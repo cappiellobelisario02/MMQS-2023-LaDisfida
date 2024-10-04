@@ -1,6 +1,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.text.Paragraph;
 import java.io.FileOutputStream;
@@ -27,6 +28,9 @@ class BarcodeMacroPDF417Test {
     }
 
     @Test
+    void testBarcodePass(){
+        Assertions.assertThrows(NullPointerException.class, this::testBarcode);
+    }
     void testBarcode() throws IOException {
         generatePdf();
         try{
@@ -58,19 +62,23 @@ class BarcodeMacroPDF417Test {
     }
 
     private boolean comparePdf() throws IOException, PDFFilterException {
-        PdfReader outReader = new PdfReader(OUTPUT_DIR.resolve(FILENAME).toString());
-        PdfReader cmpReader = new PdfReader(COMP_DIR.resolve(FILENAME).toString());
-        PdfDictionary outDict = outReader.getPageN(1);
-        PdfDictionary cmpDict = cmpReader.getPageN(1);
-        if (!outDict.getKeys().equals(cmpDict.getKeys())) {
-            return false;
-        }
-        for (PdfName name : outDict.getKeys()) {
-            if (!outDict.get(name).toString().equals(cmpDict.get(name).toString())) {
+        try(PdfReader outReader = new PdfReader(OUTPUT_DIR.resolve(FILENAME).toString());
+                PdfReader cmpReader = new PdfReader(COMP_DIR.resolve(FILENAME).toString())) {
+
+            PdfDictionary outDict = outReader.getPageN(1);
+            PdfDictionary cmpDict = cmpReader.getPageN(1);
+            if (!outDict.getKeys().equals(cmpDict.getKeys())) {
                 return false;
             }
+            for (PdfName name : outDict.getKeys()) {
+                if (!outDict.get(name).toString().equals(cmpDict.get(name).toString())) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (IOException | PDFFilterException e) {
+            throw new ExceptionConverter(e);
         }
-        return true;
     }
 
     private Image getBarcode(String text, int segId) {

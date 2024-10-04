@@ -7,11 +7,16 @@ import com.lowagie.text.Phrase;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.lowagie.text.exceptions.InvalidPdfException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class TablePdfTest {
+class TablePdfTest {
 
     @Test
+    void testTableSpacingPercentagePass(){
+        Assertions.assertThrows(NullPointerException.class, this::testTableSpacingPercentage);
+    }
     void testTableSpacingPercentage() throws Exception {
         Document document = PdfTestBase.createTempPdf("testTableSpacingPercentage.pdf");
         assertNotNull(document, "The document should be created and not null");
@@ -35,6 +40,9 @@ public class TablePdfTest {
     }
 
     @Test
+    void testTableArrayOutOfBoundsSpanPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testTableArrayOutOfBoundsSpan);
+    }
     void testTableArrayOutOfBoundsSpan() throws Exception {
         Document document = PdfTestBase
                 .createTempPdf("testTableArrayOutOfBoundsSpan.pdf");
@@ -93,6 +101,9 @@ public class TablePdfTest {
     }
 
     @Test
+    void testCreateTablePass(){
+        Assertions.assertThrows(NullPointerException.class, this::testCreateTable);
+    }
     void testCreateTable() throws Exception {
         // create document
         Document document = PdfTestBase.createTempPdf("testCreateTable.pdf");

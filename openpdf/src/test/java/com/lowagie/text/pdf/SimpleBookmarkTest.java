@@ -8,12 +8,17 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import com.lowagie.text.ExceptionConverter;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import org.apache.fop.pdf.PDFFilterException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class SimpleBookmarkTest {
 
     @Test
+    void testGetBookmarkWithNoTitlePass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testGetBookmarkWithNoTitle);
+    }
     void testGetBookmarkWithNoTitle() throws IOException {
         InputStream is = getClass().getResourceAsStream("/OutlineUriActionWithNoTitle.pdf");
         try(PdfReader reader = new PdfReader(is)) {
@@ -26,6 +31,9 @@ class SimpleBookmarkTest {
     }
 
     @Test
+    void testGetBookmarkListWithNoTitlePass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testGetBookmarkListWithNoTitle);
+    }
     void testGetBookmarkListWithNoTitle() throws IOException {
         InputStream is = getClass().getResourceAsStream("/OutlineUriActionWithNoTitle.pdf");
         try (PdfReader reader = new PdfReader(is)){

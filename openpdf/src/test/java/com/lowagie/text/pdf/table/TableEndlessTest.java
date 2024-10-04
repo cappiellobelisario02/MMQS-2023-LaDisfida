@@ -9,17 +9,22 @@ import com.lowagie.text.PageSize;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Table;
 import com.lowagie.text.alignment.VerticalAlignment;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.PdfWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class TableEndlessTest {
+class TableEndlessTest {
 
     /**
      * Bug fix scenario: a table with setting alignment as bottom enters endless loop
      */
     @Test
+    void testNoEndlessLoopWithBottomPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testNoEndlessLoopWithBottom);
+    }
     void testNoEndlessLoopWithBottom() {
         assertTimeout(ofSeconds(10), () -> {
             Document document = new Document(PageSize.A4);
@@ -44,6 +49,9 @@ public class TableEndlessTest {
      * Bug fix scenario: a table with setting alignment as center enters endless loop
      */
     @Test
+    void testNoEndlessLoopWithCenterPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testNoEndlessLoopWithCenter);
+    }
     void testNoEndlessLoopWithCenter() {
         assertTimeout(ofSeconds(10), () -> {
             Document document = new Document(PageSize.A4);

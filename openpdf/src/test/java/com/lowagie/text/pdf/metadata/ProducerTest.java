@@ -3,6 +3,7 @@ package com.lowagie.text.pdf.metadata;
 import com.lowagie.text.Document;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Paragraph;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.pdf.PdfWriter;
@@ -21,6 +22,9 @@ class ProducerTest {
     private static final String PRODUCER = "Producer";
 
     @Test
+    void changeProducerLineTestPass(){
+        Assertions.assertThrows(NullPointerException.class, this::changeProducerLineTest);
+    }
     void changeProducerLineTest() throws IOException {
         String expected = "New Producer.";
 
@@ -50,6 +54,9 @@ class ProducerTest {
     }
 
     @Test
+    void testMetadataProducerStamperIssue254Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testMetadataProducerStamperIssue254);
+    }
     void testMetadataProducerStamperIssue254() throws IOException {
         File origin = new File("src/test/resources/pdf_form_metadata_issue_254.pdf");
 

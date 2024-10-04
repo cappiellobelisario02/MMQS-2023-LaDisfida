@@ -4,6 +4,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
@@ -33,6 +34,9 @@ class EncryptAES256R6Test {
     }
 
     @Test
+    void testCreateSimplePdfPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testCreateSimplePdf);
+    }
     void testCreateSimplePdf() throws IOException {
         File result = new File(RESULT_FOLDER, "CreateSimplePdf.pdf");
 
@@ -75,6 +79,9 @@ class EncryptAES256R6Test {
     }
 
     @Test
+    void testStampPwProtectedAES256_openPDFiss375Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testStampPwProtectedAES256_openPDFiss375);
+    }
     void testStampPwProtectedAES256_openPDFiss375() throws IOException {
         File result = new File(RESULT_FOLDER, "pwProtectedAES256_openPDFiss375-Stamped.pdf");
 

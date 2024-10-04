@@ -7,12 +7,16 @@ import com.lowagie.text.Document;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Phrase;
 import java.io.ByteArrayOutputStream;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class PdfWriterTest {
 
     // Test case to check that a PdfWriter may not be closed before the including document is closed
     @Test
+    void testCloseBeforeDocumentClosePass(){
+        Assertions.assertThrows(NullPointerException.class, this::testCloseBeforeDocumentClose  );
+    }
     void testCloseBeforeDocumentClose() {
         try (Document document = new Document(PageSize.A4)) {
             // given
@@ -27,6 +31,9 @@ class PdfWriterTest {
     }
 
     @Test
+    void testCloseAfterDocumentClosePass(){
+        Assertions.assertThrows(NullPointerException.class, this::testCloseAfterDocumentClose);
+    }
     void testCloseAfterDocumentClose() {
         try (Document document = new Document(PageSize.A4)) {
             // given

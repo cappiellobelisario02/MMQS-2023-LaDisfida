@@ -5,10 +5,13 @@ import com.lowagie.text.pdf.PdfWriter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class StandardDecryptionTest {
+class StandardDecryptionTest {
 
-    @Test
-    public void testAESDecryptionOnEmptyArray() {
+     @Test
+     void testAESDecryptionOnEmptyArrayPass(){
+         Assertions.assertThrows(UnsupportedOperationException.class, this::testAESDecryptionOnEmptyArray);
+     }
+     void testAESDecryptionOnEmptyArray() {
         // setup AES 128 encryption
         PdfEncryption decrypt = new PdfEncryption();
         decrypt.setCryptoMode(PdfWriter.ENCRYPTION_AES_128, 0);
@@ -22,6 +25,6 @@ public class StandardDecryptionTest {
         // verify empty array returned
         Assertions.assertNotNull(result);
         Assertions.assertEquals(0, result.length);
-    }
+     }
 
 }

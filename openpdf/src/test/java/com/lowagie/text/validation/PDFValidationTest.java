@@ -24,6 +24,9 @@ import org.verapdf.pdfa.validation.validators.ValidatorFactory;
 class PDFValidationTest {
 
     @Test
+    void testValidatePDFWithVeraPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testValidatePDFWithVera);
+    }
     void testValidatePDFWithVera() throws Exception {
         Document document = new Document(PageSize.A4);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

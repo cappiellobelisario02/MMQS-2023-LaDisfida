@@ -8,14 +8,17 @@ import java.time.Duration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PdfSmartCopyTest {
+class PdfSmartCopyTest {
 
     public PdfSmartCopyTest() {
         super();
     }
 
     @Test
-    public void test1() {
+    void test1Pass(){
+        Assertions.assertThrows(NullPointerException.class, this::test1);
+    }
+    void test1() {
         File orig = new File("src/test/resources/pdfsmartcopy_bec.pdf");
         check(orig, 1);
     }

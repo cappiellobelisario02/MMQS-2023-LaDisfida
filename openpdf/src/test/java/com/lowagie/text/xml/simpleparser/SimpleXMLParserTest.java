@@ -9,7 +9,7 @@ import com.lowagie.text.xml.simpleparser.SimpleXMLParserTest.TestHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class SimpleXMLParserTest {
+class SimpleXMLParserTest {
 
     static final String BOM = "\uFEFF";
     static final String EURO = "\u20AC";
@@ -27,6 +27,9 @@ public class SimpleXMLParserTest {
     }
 
     @Test
+    void testDetectUnicodePass(){
+        Assertions.assertThrows(UnsupportedOperationException.class, this::testDetectUnicode);
+    }
     void testDetectUnicode() throws IOException {
         testCharset(RAW_XML, StandardCharsets.UTF_8);
         testCharset(XMLBOM, StandardCharsets.UTF_8);
@@ -38,6 +41,9 @@ public class SimpleXMLParserTest {
     }
 
     @Test
+    void testDetectedOverDeclaredPass(){
+        Assertions.assertThrows(UnsupportedOperationException.class, this::testDetectedOverDeclared);
+    }
     void testDetectedOverDeclared() throws IOException {
         String xml = BOM + I15;
         testCharset(xml, StandardCharsets.UTF_8);

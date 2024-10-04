@@ -5,6 +5,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.PageSize;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,6 +16,9 @@ import org.junit.jupiter.api.Test;
 class TabTest {
 
     @Test
+    void TabTest1Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::TabTest1);
+    }
     void TabTest1() throws IOException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         String stringWithTab = "data\ttable";

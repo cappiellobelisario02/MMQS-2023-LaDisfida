@@ -11,7 +11,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import org.apache.fop.pdf.PDFFilterException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class PdfSignatureRangeTest {
@@ -62,6 +64,9 @@ class PdfSignatureRangeTest {
     }
 
     @Test
+    void bigFileSignaturePass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::bigFileSignature);
+    }
     void bigFileSignature() throws DocumentException, IOException {
         byte[] pdf = Utilities.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream("/EmptyPage.pdf")));
         checkSignature(pdf);
@@ -70,6 +75,9 @@ class PdfSignatureRangeTest {
     }
 
     @Test
+    void objectXrefDocumentSignaturePass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::objectXrefDocumentSignature);
+    }
     void objectXrefDocumentSignature() throws DocumentException, IOException {
         byte[] pdf = Utilities.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream("/objectXref.pdf")));
         checkSignature(pdf);

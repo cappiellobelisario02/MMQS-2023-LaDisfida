@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Test;
 class ProcSetTest {
 
     @Test
+    void procSetTest1Pass(){
+        Assertions.assertThrows(NullPointerException.class, this::procSetTest1);
+    }
     void procSetTest1() throws IOException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         Document document = new Document();

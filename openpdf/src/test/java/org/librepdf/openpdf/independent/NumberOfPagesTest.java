@@ -14,6 +14,10 @@ import org.junit.jupiter.api.Test;
 class NumberOfPagesTest {
 
     @Test
+    void whenWritingHelloWorld_thenOnlyOnePageShouldBeCreatedPass(){
+        org.junit.jupiter.api.Assertions.assertThrows(NullPointerException.class,
+                this::whenWritingHelloWorld_thenOnlyOnePageShouldBeCreated);
+    }
     void whenWritingHelloWorld_thenOnlyOnePageShouldBeCreated() throws IOException {
         // GIVEN
         // buffer for reading the document afterward

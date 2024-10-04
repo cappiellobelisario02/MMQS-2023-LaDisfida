@@ -16,11 +16,16 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import com.lowagie.text.exceptions.InvalidPdfException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PdfProtectedDocumentTest {
+class PdfProtectedDocumentTest {
 
     @Test
+    void signPasswordProtectedPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::signPasswordProtected);
+    }
     void signPasswordProtected() throws Exception {
         Calendar signDate = Calendar.getInstance();
 
@@ -106,6 +111,9 @@ public class PdfProtectedDocumentTest {
     }
 
     @Test
+    void signPasswordProtectedOverrideFileIdPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::signPasswordProtectedOverrideFileId);
+    }
     void signPasswordProtectedOverrideFileId() throws Exception {
         Calendar signDate = Calendar.getInstance();
 

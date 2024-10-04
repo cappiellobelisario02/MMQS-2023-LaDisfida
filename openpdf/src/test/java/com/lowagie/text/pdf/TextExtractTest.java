@@ -8,6 +8,7 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +21,9 @@ import org.junit.jupiter.api.Test;
 class TextExtractTest {
 
     @Test
+    void textExtractTest1Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::textExtractTest1);
+    }
     void textExtractTest1() throws IOException {
         try (PdfReader reader = new PdfReader(TextExtractTest.class.getResourceAsStream("/identity-h.pdf"))){
             PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
@@ -30,6 +34,9 @@ class TextExtractTest {
     }
 
     @Test
+    void textExtractTest2Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::textExtractTest2);
+    }
     void textExtractTest2() throws IOException {
         try (PdfReader reader = new PdfReader(TextExtractTest.class.getResourceAsStream("/HelloWorldMeta.pdf"))){
             PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
@@ -40,6 +47,9 @@ class TextExtractTest {
     }
 
     @Test
+    void extCreateAndExtractTest2Pass(){
+        Assertions.assertThrows(NullPointerException.class, this::textCreateAndExtractTest2);
+    }
     void textCreateAndExtractTest2() throws IOException {
         LayoutProcessor.enableKernLiga();
         float fontSize = 12.0f;

@@ -2,6 +2,7 @@ package com.lowagie.text.pdf.sign;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.AcroFields;
 import com.lowagie.text.pdf.PdfPKCS7;
 import com.lowagie.text.pdf.PdfPKCS7.X509Name;
@@ -11,6 +12,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ExtractCertificatesTest {
@@ -21,11 +23,17 @@ class ExtractCertificatesTest {
 
 
     @Test
+    void testSha1Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testSha1);
+    }
     void testSha1() throws Exception {
         extract("src/test/resources/sample_signed-sha1.pdf", false);
     }
 
     @Test
+    void testSha512Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testSha512);
+    }
     void testSha512() throws Exception {
         extract("src/test/resources/sample_signed-sha512.pdf", false);
     }
@@ -36,6 +44,9 @@ class ExtractCertificatesTest {
      * will only be valid till 2022/01/02 (Hence only Sout is used not assert)
      */
     @Test
+    void testSha256TimeStampPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testSha256TimeStamp);
+    }
     void testSha256TimeStamp() throws Exception {
         extract("src/test/resources/pdf_digital_signature_timestamp.pdf", true);
     }

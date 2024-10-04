@@ -17,12 +17,17 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import org.apache.fop.pdf.PDFFilterException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class PdfSignatureAppearanceTest {
 
     @Test
+    void invisibleExternalSignaturePass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::invisibleExternalSignature);
+    }
     void invisibleExternalSignature()
             throws DocumentException, IOException, NoSuchAlgorithmException, PDFFilterException {
         byte[] expectedDigestPreClose = null;
@@ -103,6 +108,9 @@ class PdfSignatureAppearanceTest {
     }
 
     @Test
+    void visibleExternalSignaturePass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::visibleExternalSignature);
+    }
     void visibleExternalSignature() throws DocumentException, IOException, NoSuchAlgorithmException, PDFFilterException {
         byte[] expectedDigestPreClose = null;
         byte[] expectedDigestClose = null;

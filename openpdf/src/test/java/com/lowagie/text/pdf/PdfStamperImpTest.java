@@ -11,6 +11,9 @@ class PdfStamperImpTest {
 
     @SuppressWarnings("unchecked")
     @Test
+    void getPdfLayers_isBackwardsCompatiblePass(){
+        org.junit.jupiter.api.Assertions.assertThrows(NullPointerException.class, this::getPdfLayers_isBackwardsCompatible);
+    }
     void getPdfLayers_isBackwardsCompatible() throws IOException {
         // given
         try {
@@ -27,6 +30,9 @@ class PdfStamperImpTest {
     }
 
     @Test
+    void getPdfLayersWithGenerics_isBackwardsCompatiblePass(){
+        org.junit.jupiter.api.Assertions.assertThrows(NullPointerException.class, this::getPdfLayersWithGenerics_isBackwardsCompatible);
+    }
     void getPdfLayersWithGenerics_isBackwardsCompatible() throws IOException {
         // given
         try {

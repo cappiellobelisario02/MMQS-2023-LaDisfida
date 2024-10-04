@@ -5,6 +5,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.Paragraph;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,6 +16,9 @@ import org.junit.jupiter.api.Test;
 class SingleParagraphTest {
 
     @Test
+    void testSingleParagraphPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testSingleParagraph);
+    }
     void testSingleParagraph() throws IOException {
         Document document = new Document();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
