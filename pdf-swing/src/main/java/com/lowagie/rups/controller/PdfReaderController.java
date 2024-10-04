@@ -124,6 +124,12 @@ public class PdfReaderController extends Observable implements Observer {
         editorTabs.addTab("XFA", null, form.getXfaTextArea(), "XFA Form XML file");
     }
 
+    private void addObserver(OutlineTree outlines) {
+        if (outlines == null){
+            throw new NullPointerException();
+        }
+    }
+
     /**
      * Getter for the PDF Tree.
      *

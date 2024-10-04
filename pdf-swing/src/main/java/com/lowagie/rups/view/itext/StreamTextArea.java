@@ -24,6 +24,7 @@ import com.lowagie.rups.io.TextAreaOutputStream;
 import com.lowagie.text.pdf.PRStream;
 import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfReader;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
@@ -63,13 +64,13 @@ public class StreamTextArea extends JScrollPane implements Observer {
      * @param object the object of which the content stream needs to be rendered
      */
     public void render(PdfObject object) {
-        if (object instanceof PRStream) {
-            PRStream stream = (PRStream) object;
+        if (object instanceof PRStream prStream) {
             try (TextAreaOutputStream taos = new TextAreaOutputStream(text)) {
-                taos.write(PdfReader.getStreamBytes(stream));
+                taos.write(PdfReader.getStreamBytes(prStream));
                 // text.addMouseListener(new StreamEditorAction(stream))
-            } catch (IOException e) {
-                text.setText("The stream could not be read: " + e.getMessage());
+            } catch (IOException | PDFFilterException e) {
+                String stringToSet = "The stream could not be read: " + e.getMessage();
+                text.setText(stringToSet);
             }
         } else {
             update(null, null);

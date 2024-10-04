@@ -21,8 +21,10 @@
 package com.lowagie.rups.view.itext.treenodes;
 
 import com.lowagie.rups.io.OutputStreamResource;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.pdf.PRStream;
 import com.lowagie.text.pdf.PdfReader;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serial;
@@ -85,7 +87,11 @@ public class XfaTreeNode extends FormTreeNode implements OutputStreamResource {
                 os.write(BOUNDARY_END);
             }
             stream = (PRStream) node.getCorrespondingPdfObjectNode().getPdfObject();
-            os.write(PdfReader.getStreamBytes(stream));
+            try {
+                os.write(PdfReader.getStreamBytes(stream));
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
+            }
         }
         os.flush();
         os.close();
