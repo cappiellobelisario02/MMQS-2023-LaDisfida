@@ -1,6 +1,7 @@
 package com.lowagie.text.pdf.metadata;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
@@ -9,48 +10,57 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ProducerTest {
+class ProducerTest {
 
     private static final String PRODUCER = "Producer";
 
     @Test
-    public void changeProducerLineTest() throws IOException {
+    void changeProducerLineTest() throws IOException {
         String expected = "New Producer.";
 
-        Document document = new Document();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PdfWriter.getInstance(document, baos);
-        document.addProducer(expected);
-        document.open();
-        document.add(new Paragraph("Hello World!"));
-        document.close();
+        try(Document document = new Document();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-        byte[] pdfBytes = baos.toByteArray();
-        baos.close();
+            PdfWriter.getInstance(document, baos);
+            document.addProducer(expected);
+            document.open();
+            document.add(new Paragraph("Hello World!"));
+            document.close();
 
-        PdfReader reader = new PdfReader(new ByteArrayInputStream(pdfBytes));
+            byte[] pdfBytes = baos.toByteArray();
+            baos.close();
 
-        Map<String, String> infoDictionary = reader.getInfo();
-        String actual = infoDictionary.get(PRODUCER);
+            PdfReader reader = new PdfReader(new ByteArrayInputStream(pdfBytes));
 
-        Assertions.assertEquals(expected, actual);
+            Map<String, String> infoDictionary = reader.getInfo();
+            String actual = infoDictionary.get(PRODUCER);
 
-        reader.close();
+            Assertions.assertEquals(expected, actual);
+
+            reader.close();
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
     @Test
-    public void testMetadataProducerStamperIssue254() throws IOException {
+    void testMetadataProducerStamperIssue254() throws IOException {
         File origin = new File("src/test/resources/pdf_form_metadata_issue_254.pdf");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PdfReader reader = new PdfReader(origin.getAbsolutePath());
-        PdfStamper stamp = new PdfStamper(reader, baos);
-        stamp.close();
-        String sData = baos.toString();
-        Assertions.assertTrue(sData.contains("(LibreOffice 6.0; modified using OpenPDF"));
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PdfReader reader = new PdfReader(origin.getAbsolutePath());
+                PdfStamper stamp = new PdfStamper(reader, baos)){
+            String sData = baos.toString();
+            Assertions.assertTrue(sData.contains("(LibreOffice 6.0; modified using OpenPDF"));
+        } catch (PDFFilterException | NoSuchAlgorithmException e) {
+            throw new ExceptionConverter(e);
+        }
 
 
     }

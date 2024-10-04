@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Font;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -127,9 +129,13 @@ class PdfTextExtractorTest {
                 new Chunk("trun"),
                 new Chunk("ked"));
         // when
-        final String extracted = new PdfTextExtractor(new PdfReader(pdfBytes)).getTextFromPage(1);
-        // then
-        assertThat(extracted, is("trunked"));
+        try {
+            final String extracted = new PdfTextExtractor(new PdfReader(pdfBytes)).getTextFromPage(1);
+            // then
+            assertThat(extracted, is("trunked"));
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
     @Test
@@ -139,10 +145,14 @@ class PdfTextExtractorTest {
                 new Phrase("Phrase begin. "),
                 new Phrase("Phrase End.")
         );
-        // when
-        final String extracted = new PdfTextExtractor(new PdfReader(pdfBytes)).getTextFromPage(1);
-        // then
-        assertThat(extracted, is("Phrase begin. Phrase End."));
+        try {
+            // when
+            final String extracted = new PdfTextExtractor(new PdfReader(pdfBytes)).getTextFromPage(1);
+            // then
+            assertThat(extracted, is("Phrase begin. Phrase End."));
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
     @Test
@@ -156,11 +166,15 @@ class PdfTextExtractorTest {
                 loremIpsumParagraph
         );
         final String expected = LOREM_IPSUM + " " + LOREM_IPSUM;
-        // when
-        final String extracted = new PdfTextExtractor(new PdfReader(pdfBytes)).getTextFromPage(1);
-        // then
-        assertThat(extracted, equalToCompressingWhiteSpace(expected));
-        assertThat(extracted, not(containsString("  ")));
+        try {
+            // when
+            final String extracted = new PdfTextExtractor(new PdfReader(pdfBytes)).getTextFromPage(1);
+            // then
+            assertThat(extracted, equalToCompressingWhiteSpace(expected));
+            assertThat(extracted, not(containsString("  ")));
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
     @Test
@@ -172,14 +186,19 @@ class PdfTextExtractorTest {
         table.addCell("Two");
         table.addCell("Three");
         byte[] pdfBytes = createSimpleDocumentWithElements(table);
-        // when
-        final String extracted = new PdfTextExtractor(new PdfReader(pdfBytes)).getTextFromPage(1);
-        // then
-        assertThat(extracted, is("One Two Three"));
+        try {
+            // when
+            final String extracted = new PdfTextExtractor(new PdfReader(pdfBytes)).getTextFromPage(1);
+            // then
+            assertThat(extracted, is("One Two Three"));
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
     private String getString(String fileName, int pageNumber) throws Exception {
         URL resource = getClass().getResource("/" + fileName);
+        assert resource != null;
         return getString(new File(resource.toURI()), pageNumber);
     }
 

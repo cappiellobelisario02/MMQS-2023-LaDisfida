@@ -2,15 +2,17 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class SingleParagraphTest {
+class SingleParagraphTest {
 
     @Test
     void testSingleParagraph() throws IOException {
@@ -32,10 +34,13 @@ public class SingleParagraphTest {
         document.add(paragraph);
         document.close();
 
-        PdfReader reader = new PdfReader(stream.toByteArray());
-        PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
-        String text = pdfTextExtractor.getTextFromPage(1);
-        Assertions.assertEquals("Hier fetter Text", text);
+        try(PdfReader reader = new PdfReader(stream.toByteArray())) {
+            PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
+            String text = pdfTextExtractor.getTextFromPage(1);
+            Assertions.assertEquals("Hier fetter Text", text);
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
 }

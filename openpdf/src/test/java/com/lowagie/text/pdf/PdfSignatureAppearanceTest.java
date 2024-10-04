@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.Utilities;
 import java.io.ByteArrayInputStream;
@@ -16,12 +17,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Test;
 
-public class PdfSignatureAppearanceTest {
+class PdfSignatureAppearanceTest {
 
     @Test
-    void invisibleExternalSignature() throws DocumentException, IOException, NoSuchAlgorithmException {
+    void invisibleExternalSignature()
+            throws DocumentException, IOException, NoSuchAlgorithmException, PDFFilterException {
         byte[] expectedDigestPreClose = null;
         byte[] expectedDigestClose = null;
 
@@ -82,8 +85,8 @@ public class PdfSignatureAppearanceTest {
                 resultDocument = baos.toByteArray();
             }
 
-            try (InputStream resultIS = new ByteArrayInputStream(
-                    resultDocument); PdfReader resultReader = new PdfReader(resultIS)) {
+            try (InputStream resultIS = new ByteArrayInputStream(resultDocument);
+                    PdfReader resultReader = new PdfReader(resultIS)) {
                 byte[] documentId = resultReader.getDocumentId();
                 assertNotNull(documentId);
                 assertArrayEquals(originalDocId, documentId);
@@ -93,12 +96,14 @@ public class PdfSignatureAppearanceTest {
                 assertArrayEquals(documentId,
                         com.lowagie.text.DocWriter.getISOBytes(idArray.getPdfObject(0).toString()));
                 assertEquals("123", idArray.getPdfObject(1).toString());
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
             }
         }
     }
 
     @Test
-    void visibleExternalSignature() throws DocumentException, IOException, NoSuchAlgorithmException {
+    void visibleExternalSignature() throws DocumentException, IOException, NoSuchAlgorithmException, PDFFilterException {
         byte[] expectedDigestPreClose = null;
         byte[] expectedDigestClose = null;
 
@@ -155,6 +160,8 @@ public class PdfSignatureAppearanceTest {
                 }
 
                 resultDocument = baos.toByteArray();
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
             }
 
             try (InputStream resultIS = new ByteArrayInputStream(

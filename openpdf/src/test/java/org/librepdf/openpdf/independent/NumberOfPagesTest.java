@@ -1,20 +1,22 @@
 package org.librepdf.openpdf.independent;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class NumberOfPagesTest {
+class NumberOfPagesTest {
 
     @Test
     void whenWritingHelloWorld_thenOnlyOnePageShouldBeCreated() throws IOException {
         // GIVEN
-        // buffer for reading the document afterwards
+        // buffer for reading the document afterward
         ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
         // step 1: create a writer that listens to the document and writes to outputBuffer
         Document document = new Document();
@@ -28,11 +30,14 @@ public class NumberOfPagesTest {
         document.close();
         // WHEN
         // step 5 Read it back and count pages
-        PdfReader reader = new PdfReader(outputBuffer.toByteArray());
-        final int pagesRead = reader.getNumberOfPages();
-        // THEN
-        Assertions.assertThat(pagesWritten)
-                .isEqualTo(1)
-                .isEqualTo(pagesRead);
+        try (PdfReader reader = new PdfReader(outputBuffer.toByteArray())){
+            final int pagesRead = reader.getNumberOfPages();
+            // THEN
+            Assertions.assertThat(pagesWritten)
+                    .isEqualTo(1)
+                    .isEqualTo(pagesRead);
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 }

@@ -3,20 +3,25 @@ package com.lowagie.text.pdf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Utilities;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Test;
 
-public class PdfSignatureRangeTest {
+class PdfSignatureRangeTest {
 
     private static void checkSignature(byte[] pdf) throws IOException {
         byte[] produced = fakeSignature(pdf);
         try (PdfReader r = new PdfReader(produced)) {
             assertTrue(r.getAcroFields().signatureCoversWholeDocument("Signature1"), "file size: " + pdf.length);
+        }catch(PDFFilterException e){
+            throw new ExceptionConverter(e);
         }
     }
 
@@ -42,6 +47,8 @@ public class PdfSignatureRangeTest {
             sap.close(update);
 
             return baos.toByteArray();
+        }catch(PDFFilterException e){
+            throw new ExceptionConverter(e);
         }
     }
 
@@ -56,7 +63,7 @@ public class PdfSignatureRangeTest {
 
     @Test
     void bigFileSignature() throws DocumentException, IOException {
-        byte[] pdf = Utilities.toByteArray(getClass().getResourceAsStream("/EmptyPage.pdf"));
+        byte[] pdf = Utilities.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream("/EmptyPage.pdf")));
         checkSignature(pdf);
         checkSignature(enlarge(pdf, 100001));
         checkSignature(enlarge(pdf, 16777217)); // must be odd, as only the last bit is lost
@@ -64,7 +71,7 @@ public class PdfSignatureRangeTest {
 
     @Test
     void objectXrefDocumentSignature() throws DocumentException, IOException {
-        byte[] pdf = Utilities.toByteArray(getClass().getResourceAsStream("/objectXref.pdf"));
+        byte[] pdf = Utilities.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream("/objectXref.pdf")));
         checkSignature(pdf);
         checkSignature(enlarge(pdf, 100001));
         checkSignature(enlarge(pdf, 16777217)); // must be odd, as only the last bit is lost

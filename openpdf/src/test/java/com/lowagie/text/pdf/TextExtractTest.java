@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
@@ -11,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -18,16 +21,22 @@ class TextExtractTest {
 
     @Test
     void textExtractTest1() throws IOException {
-        PdfReader reader = new PdfReader(TextExtractTest.class.getResourceAsStream("/identity-h.pdf"));
-        PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
-        Assertions.assertEquals("Hello World", pdfTextExtractor.getTextFromPage(1));
+        try (PdfReader reader = new PdfReader(TextExtractTest.class.getResourceAsStream("/identity-h.pdf"))){
+            PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
+            Assertions.assertEquals("Hello World", pdfTextExtractor.getTextFromPage(1));
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
     @Test
     void textExtractTest2() throws IOException {
-        PdfReader reader = new PdfReader(TextExtractTest.class.getResourceAsStream("/HelloWorldMeta.pdf"));
-        PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
-        Assertions.assertEquals("Hello World", pdfTextExtractor.getTextFromPage(1));
+        try (PdfReader reader = new PdfReader(TextExtractTest.class.getResourceAsStream("/HelloWorldMeta.pdf"))){
+            PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
+            Assertions.assertEquals("Hello World", pdfTextExtractor.getTextFromPage(1));
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
     @Test
@@ -50,17 +59,22 @@ class TextExtractTest {
             writer.setInitialLeading(16.0f);
             document.open();
             document.add(new Chunk(testText, notoSansThaiLooped));
+        }catch(DocumentException de){
+            throw new ExceptionConverter(de);
         }
         LayoutProcessor.disable();
 
-        PdfReader reader = new PdfReader(new ByteArrayInputStream(pdfOutput.toByteArray()));
-        PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
+        try (PdfReader reader = new PdfReader(new ByteArrayInputStream(pdfOutput.toByteArray()))){
+            PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
 
-        // FileOutputStream test = new FileOutputStream("/tmp/output2.pdf")
-        // pdfOutput.writeTo(test)
+            // FileOutputStream test = new FileOutputStream("/tmp/output2.pdf")
+            // pdfOutput.writeTo(test)
 
-        // Ignore spaces in comparison
-        Assertions.assertEquals("ก ข น ํ้ า ต า ญูญูิ่ ก้กิ้".replaceAll(" ", ""),
-            pdfTextExtractor.getTextFromPage(1).replaceAll(" ", ""));
+            // Ignore spaces in comparison
+            Assertions.assertEquals("ก ข น ํ้ า ต า ญูญูิ่ ก้กิ้".replaceAll(" ", ""),
+                pdfTextExtractor.getTextFromPage(1).replaceAll(" ", ""));
+        } catch (PDFFilterException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
