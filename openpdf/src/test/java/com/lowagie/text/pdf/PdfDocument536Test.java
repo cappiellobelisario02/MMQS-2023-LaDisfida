@@ -3,12 +3,14 @@ package com.lowagie.text.pdf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Test;
 
 class PdfDocument536Test {
@@ -37,14 +39,18 @@ class PdfDocument536Test {
         document.add(table);
         document.close();
         // when
-        final PdfReader reader = new PdfReader(pdfOut.toByteArray());
-        PdfTextExtractor extractor = new PdfTextExtractor(reader);
-        // then
-        assertThat(extractor.getTextFromPage(1)).as("First Page")
-                .doesNotContain("HEADER 1", "HEADER 2", "HEADER 3");
-        assertThat(extractor.getTextFromPage(2)).as("SecondPage")
-                .contains("HEADER 1", "HEADER 2", "HEADER 3");
-        Document.compress = true;
+        try {
+            final PdfReader reader = new PdfReader(pdfOut.toByteArray());
+            PdfTextExtractor extractor = new PdfTextExtractor(reader);
+            // then
+            assertThat(extractor.getTextFromPage(1)).as("First Page")
+                    .doesNotContain("HEADER 1", "HEADER 2", "HEADER 3");
+            assertThat(extractor.getTextFromPage(2)).as("SecondPage")
+                    .contains("HEADER 1", "HEADER 2", "HEADER 3");
+            Document.compress = true;
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
     private void addCell(PdfPTable table, String cellText) {

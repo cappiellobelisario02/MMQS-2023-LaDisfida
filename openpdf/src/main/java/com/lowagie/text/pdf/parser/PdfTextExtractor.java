@@ -61,6 +61,7 @@ import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.RandomAccessFileOrArray;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -120,7 +121,7 @@ public class PdfTextExtractor {
      *
      * @param pageNum the 1-based page number of page you want get the content stream from
      * @return a byte array with the effective content stream of a page
-     * @throws IOException
+     * @throws IOException exception
      */
     private byte[] getContentBytesForPage(int pageNum) throws IOException {
         try (RandomAccessFileOrArray ignored = reader.getSafeFile()) {
@@ -135,7 +136,7 @@ public class PdfTextExtractor {
      *
      * @param contentObject the object to read bytes from
      * @return the content bytes
-     * @throws IOException
+     * @throws IOException exception
      */
     private byte[] getContentBytesFromContentObject(PdfObject contentObject) throws IOException {
         final byte[] result;
@@ -146,8 +147,12 @@ public class PdfTextExtractor {
                 result = getContentBytesFromContentObject(directObject);
                 break;
             case PdfObject.STREAM:
-                PRStream stream = (PRStream) PdfReader.getPdfObject(contentObject);
-                result = PdfReader.getStreamBytes(stream);
+                try {
+                    PRStream stream = (PRStream) PdfReader.getPdfObject(contentObject);
+                    result = PdfReader.getStreamBytes(stream);
+                } catch (PDFFilterException e) {
+                    throw new ExceptionConverter(e);
+                }
                 break;
             case PdfObject.ARRAY:
                 // Stitch together all content before calling processContent(),
@@ -213,7 +218,7 @@ public class PdfTextExtractor {
         try {
             PdfContentParser ps = new PdfContentParser(new PRTokeniser(contentBytes));
             List<PdfObject> operands = new ArrayList<>();
-            while (ps.parse(operands).size() > 0) {
+            while (!ps.parse(operands).isEmpty()) {
                 PdfLiteral operator = (PdfLiteral) operands.get(operands.size() - 1);
                 handler.invokeOperator(operator, operands, resources);
             }

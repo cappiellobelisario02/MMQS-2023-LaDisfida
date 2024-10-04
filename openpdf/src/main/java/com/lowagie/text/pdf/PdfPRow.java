@@ -702,7 +702,7 @@ public class PdfPRow {
         ColumnText ct = ColumnText.duplicate(cell.getColumn());
         float y = configureColumnText(cell, newHeightLoop, ct);
 
-        int status;
+        int status = 0;
         try {
             status = ct.go(true);
         } catch (DocumentException e) {

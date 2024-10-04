@@ -31,8 +31,10 @@
  */
 package com.lowagie.text.pdf.parser;
 
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.parser.Word.Builder;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,8 +115,12 @@ public class MarkedUpTextAssembler implements TextAssembler {
         }
         partialWords.clear();
         if (inProgress != null) {
-            result.add(inProgress.getFinalText(reader, page, this, usePdfMarkupElements));
-            inProgress = null;
+            try {
+                result.add(inProgress.getFinalText(reader, page, this, usePdfMarkupElements));
+                inProgress = null;
+            } catch (IOException e) {
+                throw new ExceptionConverter(e);
+            }
         }
     }
 
@@ -179,55 +185,91 @@ public class MarkedUpTextAssembler implements TextAssembler {
      */
     @Override
     public void renderText(ParsedTextImpl partialWord) {
-        boolean firstRender = inProgress == null;
-        boolean hardReturn = false;
-        if (firstRender) {
-            inProgress = partialWord;
+        if (isFirstRender(partialWord)) {
             return;
         }
+
+        float dist = calculateDistance(partialWord);
+        boolean hardReturn = shouldHardReturn(partialWord, dist);
+
+        handleRender(partialWord, hardReturn);
+    }
+
+    private boolean isFirstRender(ParsedTextImpl partialWord) {
+        if (inProgress == null) {
+            inProgress = partialWord;
+            return true;
+        }
+        return false;
+    }
+
+    private float calculateDistance(ParsedTextImpl partialWord) {
         Vector start = partialWord.getStartPoint();
         Vector lastStart = inProgress.getStartPoint();
-        Vector lastEnd = inProgress.getEndPoint();
 
-        // see
-        // http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
-        float dist = inProgress.getBaseline()
+        return inProgress.getBaseline()
                 .subtract(lastStart)
                 .cross(lastStart.subtract(start))
                 .lengthSquared() / inProgress.getBaseline().subtract(lastStart).lengthSquared();
+    }
 
+    private boolean shouldHardReturn(ParsedTextImpl partialWord, float dist) {
         float sameLineThreshold = partialWord.getAscent() * 0.5f;
-        // let's try using 25% of current leading for vertical slop.
-        if (dist > sameLineThreshold || Float.isNaN(dist)) {
-            hardReturn = true;
-        }
-        /*
-         * Note: Technically, we should check both the start and end positions,
-         * in case the angle of the text changed without any displacement but
-         * this sort of thing probably doesn't happen much in reality, so we'll
-         * leave it alone for now
-         */
-        float spacing = lastEnd.subtract(start).length();
-        if (hardReturn || partialWord.breakBefore()) {
-            result.add(inProgress.getFinalText(reader, page, this, usePdfMarkupElements));
-            if (hardReturn) {
-                result.add(new FinalText("\n"));
-                if (usePdfMarkupElements) {
-                    result.add(new FinalText("<br class='t-pdf' />"));
-                }
-            }
-            inProgress = partialWord;
-        } else if (spacing < partialWord.getSingleSpaceWidth() / 2.3 || inProgress.shouldNotSplit()) {
-            Builder inProgressBuilder = new Builder(inProgress.getText() + partialWord.getText().trim(),
-                    partialWord.getAscent(), partialWord.getDescent(), lastStart, partialWord.getEndPoint(),
-                    inProgress.getBaseline(), partialWord.getSingleSpaceWidth());
-            inProgress = new Word(inProgressBuilder);
+        return dist > sameLineThreshold || Float.isNaN(dist);
+    }
 
-        } else {
-            result.add(inProgress.getFinalText(reader, page, this, usePdfMarkupElements));
-            inProgress = partialWord;
+    private void handleRender(ParsedTextImpl partialWord, boolean hardReturn) {
+        try {
+            float spacing = calculateSpacing(partialWord);
+            if (hardReturn || partialWord.breakBefore()) {
+                processHardReturn(partialWord, hardReturn);
+            } else if (shouldMergeWithInProgress(partialWord, spacing)) {
+                mergeWithInProgress(partialWord);
+            } else {
+                addFinalText(partialWord);
+            }
+        } catch (IOException e) {
+            throw new ExceptionConverter(e);
         }
     }
+
+    private float calculateSpacing(ParsedTextImpl partialWord) {
+        Vector start = partialWord.getStartPoint();
+        Vector lastEnd = inProgress.getEndPoint();
+        return lastEnd.subtract(start).length();
+    }
+
+    private boolean shouldMergeWithInProgress(ParsedTextImpl partialWord, float spacing) {
+        return spacing < partialWord.getSingleSpaceWidth() / 2.3 || inProgress.shouldNotSplit();
+    }
+
+    private void processHardReturn(ParsedTextImpl partialWord, boolean hardReturn) throws IOException {
+        result.add(inProgress.getFinalText(reader, page, this, usePdfMarkupElements));
+        if (hardReturn) {
+            addHardReturn();
+        }
+        inProgress = partialWord;
+    }
+
+    private void addHardReturn() {
+        result.add(new FinalText("\n"));
+        if (usePdfMarkupElements) {
+            result.add(new FinalText("<br class='t-pdf' />"));
+        }
+    }
+
+    private void mergeWithInProgress(ParsedTextImpl partialWord) {
+        Builder inProgressBuilder = new Builder(inProgress.getText() + partialWord.getText().trim(),
+                partialWord.getAscent(), partialWord.getDescent(), inProgress.getStartPoint(), partialWord.getEndPoint(),
+                inProgress.getBaseline(), partialWord.getSingleSpaceWidth());
+        inProgress = new Word(inProgressBuilder);
+    }
+
+    private void addFinalText(ParsedTextImpl partialWord) throws IOException {
+        result.add(inProgress.getFinalText(reader, page, this, usePdfMarkupElements));
+        inProgress = partialWord;
+    }
+
 
     /**
      * Getter.

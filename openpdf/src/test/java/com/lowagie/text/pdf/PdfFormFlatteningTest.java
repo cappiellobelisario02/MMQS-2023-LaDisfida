@@ -9,17 +9,19 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import com.lowagie.text.ExceptionConverter;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
-public class PdfFormFlatteningTest {
+class PdfFormFlatteningTest {
 
 
     /**
      * Flattens a problematic document. Issue described here: https://stackoverflow.com/questions/47797647
      *
-     * @throws IOException
+     * @throws IOException exception that may be thrown in the body of this test method
      */
     @Test
     void testFlattenSignatureDocument() throws IOException {
@@ -31,28 +33,27 @@ public class PdfFormFlatteningTest {
             FileOutputStream fos = new FileOutputStream(
                     new File("target/20231027-DistortedFlatteningInternetExample-flattened.pdf"));
 
-            PdfReader pdfReader = new PdfReader(resource);
-            PdfStamper stamper = new PdfStamper(pdfReader, fos);
-
-            stamper.setFormFlattening(true);
-
-            pdfReader.close();
-            stamper.close();
+            try (PdfReader pdfReader = new PdfReader(resource);
+                    PdfStamper stamper = new PdfStamper(pdfReader, fos)){
+                stamper.setFormFlattening(true);
+            } catch (Exception e) {
+                throw new ExceptionConverter(e);
+            }
         }
         //Verify no form fields left (the correct shape is difficult to verify...)
         try (InputStream resource = new FileInputStream(
                 new File("target/20231027-DistortedFlatteningInternetExample-flattened.pdf"))) {
 
             Assertions.assertNotNull(resource, "File could not be found!");
-            PdfReader pdfReader = new PdfReader(resource);
-
-            PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
-                    pdfReader.getCatalog().get(PdfName.ACROFORM));
-            Assertions.assertTrue(
-                    acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(
-                            PdfName.FIELDS).isEmpty());
-
-            pdfReader.close();
+            try (PdfReader pdfReader = new PdfReader(resource)){
+                PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
+                        pdfReader.getCatalog().get(PdfName.ACROFORM));
+                Assertions.assertTrue(
+                        acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(
+                                PdfName.FIELDS).isEmpty());
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
+            }
         }
     }
 
@@ -67,37 +68,37 @@ public class PdfFormFlatteningTest {
 
             Assertions.assertNotNull(resource, "File could not be found!");
             FileOutputStream fos = new FileOutputStream(
-                    new File("target/20180301-CheckboxFlatteningBug-flattened.pdf"));
+                    "target/20180301-CheckboxFlatteningBug-flattened.pdf");
 
-            PdfReader pdfReader = new PdfReader(resource);
-            PdfStamper stamper = new PdfStamper(pdfReader, fos);
-
-            stamper.setFormFlattening(true);
-
-            pdfReader.close();
-            stamper.close();
+            try (PdfReader pdfReader = new PdfReader(resource);
+                    PdfStamper stamper = new PdfStamper(pdfReader, fos)){
+                stamper.setFormFlattening(true);
+            } catch (Exception e) {
+                throw new ExceptionConverter(e);
+            }
         }
         //Verify no form fields left (the correct shape is difficult to verify...)
         try (InputStream resource = new FileInputStream(
                 new File("target/20180301-CheckboxFlatteningBug-flattened.pdf"))) {
 
             Assertions.assertNotNull(resource, "File could not be found!");
-            PdfReader pdfReader = new PdfReader(resource);
 
-            PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
-                    pdfReader.getCatalog().get(PdfName.ACROFORM));
-            Assertions.assertTrue(
-                    acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(
-                            PdfName.FIELDS).isEmpty());
-
-            pdfReader.close();
+            try (PdfReader pdfReader = new PdfReader(resource)){
+                PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
+                        pdfReader.getCatalog().get(PdfName.ACROFORM));
+                Assertions.assertTrue(
+                        acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(
+                                PdfName.FIELDS).isEmpty());
+            } catch (Exception e) {
+                throw new ExceptionConverter(e);
+            }
         }
     }
 
     /**
      * Flattens a problematic document. Issue described here: https://stackoverflow.com/questions/47755629
      *
-     * @throws IOException
+     * @throws IOException exception thrown within the body
      */
     @Test
     void testFlattenTextfieldsWithRotationAndMatrix() throws IOException {
@@ -105,30 +106,30 @@ public class PdfFormFlatteningTest {
                 "/flattening/20231027-DistortedFlatteningSmall.pdf")) {
             Assertions.assertNotNull(resource, "File could not be found!");
             FileOutputStream fos = new FileOutputStream(
-                    new File("target/20231027-DistortedFlatteningSmall-flattened.pdf"));
+                    "target/20231027-DistortedFlatteningSmall-flattened.pdf");
 
-            PdfReader pdfReader = new PdfReader(resource);
-            PdfStamper stamper = new PdfStamper(pdfReader, fos);
-
-            stamper.setFormFlattening(true);
-
-            pdfReader.close();
-            stamper.close();
+            try (PdfReader pdfReader = new PdfReader(resource);
+                    PdfStamper stamper = new PdfStamper(pdfReader, fos)){
+                stamper.setFormFlattening(true);
+            } catch (Exception e) {
+                throw new ExceptionConverter(e);
+            }
         }
         //Verify no form fields left (the correct shape is difficult to verify...)
         try (InputStream resource = new FileInputStream(
                 new File("target/20231027-DistortedFlatteningSmall-flattened.pdf"))) {
 
             Assertions.assertNotNull(resource, "File could not be found!");
-            PdfReader pdfReader = new PdfReader(resource);
 
-            PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
-                    pdfReader.getCatalog().get(PdfName.ACROFORM));
-            Assertions.assertTrue(
-                    acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(
-                            PdfName.FIELDS).isEmpty());
-
-            pdfReader.close();
+            try(PdfReader pdfReader = new PdfReader(resource)) {
+                PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
+                        pdfReader.getCatalog().get(PdfName.ACROFORM));
+                Assertions.assertTrue(
+                        acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(
+                                PdfName.FIELDS).isEmpty());
+            } catch (Exception e) {
+                throw new ExceptionConverter(e);
+            }
         }
     }
 
@@ -140,28 +141,29 @@ public class PdfFormFlatteningTest {
             Assertions.assertNotNull(resource, "File could not be found!");
             OutputStream fos = Files.newOutputStream(targetFilePath);
 
-            PdfReader pdfReader = new PdfReader(resource);
-            PdfStamper stamper = new PdfStamper(pdfReader, fos);
-
-            stamper.getAcroFields().setGenerateAppearances(true);
-            stamper.setFormFlattening(true);
-
-            pdfReader.close();
-            stamper.close();
+            try (PdfReader pdfReader = new PdfReader(resource);
+                    PdfStamper stamper = new PdfStamper(pdfReader, fos)){
+                stamper.getAcroFields().setGenerateAppearances(true);
+                stamper.setFormFlattening(true);
+            } catch (Exception e) {
+                throw new ExceptionConverter(e);
+            }
         }
         //Verify no form fields left (the correct shape is difficult to verify...)
         try (InputStream resource = Files.newInputStream(targetFilePath)) {
 
             Assertions.assertNotNull(resource, "File could not be found!");
-            PdfReader pdfReader = new PdfReader(resource);
 
-            PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
-                    pdfReader.getCatalog().get(PdfName.ACROFORM));
-            Assertions.assertTrue(acroForm == null
-                    || acroForm.getAsArray(PdfName.FIELDS) == null
-                    || acroForm.getAsArray(PdfName.FIELDS).isEmpty());
+            try(PdfReader pdfReader = new PdfReader(resource)) {
+                PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
+                        pdfReader.getCatalog().get(PdfName.ACROFORM));
+                Assertions.assertTrue(acroForm == null
+                        || acroForm.getAsArray(PdfName.FIELDS) == null
+                        || acroForm.getAsArray(PdfName.FIELDS).isEmpty());
+            } catch (Exception e) {
+                throw new ExceptionConverter(e);
+            }
 
-            pdfReader.close();
         }
     }
 

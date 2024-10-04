@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
 
 import com.lowagie.text.Annotation;
 import com.lowagie.text.Document;
@@ -19,7 +18,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
 
-public class SimplePdfTest {
+class SimplePdfTest {
 
     @Test
     void testSimplePdf() throws Exception {
@@ -36,8 +35,8 @@ public class SimplePdfTest {
             
             // Add assertion to verify the annotation and rectangle were added
             assertNotNull(ann);
-            assertEquals("Title", ann.getTitle());
-            assertEquals("Text", ann.getContent());
+            assertEquals("Title", ann.titleMethod());
+            assertEquals("Text", ann.contentMethod());
             assertEquals(100, rect.getWidth());
             assertEquals(100, rect.getHeight());
         } finally {
@@ -86,7 +85,7 @@ public class SimplePdfTest {
 
     @Test
     void testDocumentId() throws Exception {
-        byte[] docBytes = null;
+        byte[] docBytes;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 Document document = new Document(PageSize.A4)) {
             PdfWriter pdfWriter = PdfWriter.getInstance(document, baos);
@@ -110,11 +109,4 @@ public class SimplePdfTest {
         }
 
     }
-
-    @Test
-    void testDocumentClose() throws Exception{
-        //Execute the watermarking process
-        verify
-    }
-
 }

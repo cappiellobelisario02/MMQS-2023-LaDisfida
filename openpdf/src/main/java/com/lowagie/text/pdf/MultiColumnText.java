@@ -303,23 +303,24 @@ public class MultiColumnText implements Element {
             int result;
             try {
                 result = columnText.go();
+
+                done = handleResult(result);
+
+                if (!done && shiftCurrentColumn()) {
+                    top = nextY;
+                } else if (!done) {
+                    totalHeight += currentHeight;
+                    if ((desiredHeight != AUTOMATIC) && (totalHeight >= desiredHeight)) {
+                        overflow = true;
+                        done = true;
+                    } else {
+                        documentY = nextY;
+                        newPage();
+                        currentHeight = 0;
+                    }
+                }
             } catch (IOException e) {
                 //may need some logging or some other operation
-            }
-            done = handleResult(result);
-
-            if (!done && shiftCurrentColumn()) {
-                top = nextY;
-            } else if (!done) {
-                totalHeight += currentHeight;
-                if ((desiredHeight != AUTOMATIC) && (totalHeight >= desiredHeight)) {
-                    overflow = true;
-                    done = true;
-                } else {
-                    documentY = nextY;
-                    newPage();
-                    currentHeight = 0;
-                }
             }
         }
 

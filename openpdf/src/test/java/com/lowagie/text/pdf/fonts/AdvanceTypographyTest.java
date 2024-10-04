@@ -74,7 +74,7 @@ class AdvanceTypographyTest {
         char[] expectedOutput = {254, 278, 390, 314, 331, 376, 254, 285, 278};
         BaseFont font = BaseFont.createFont("ViaodaLibre-Regular.ttf", BaseFont.IDENTITY_H,
                 BaseFont.EMBEDDED, true,
-                getTestFontByte(), null, false, false);
+                getTestFontByte(), null, false);
         byte[] processedContent = FopGlyphProcessor.convertToBytesWithGlyphs(
                 font, "instruction", "Viaoda Libre", new HashMap<>(), "dflt");
         String str = new String(processedContent, "UnicodeBigUnmarked");

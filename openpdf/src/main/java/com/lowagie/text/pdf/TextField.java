@@ -401,11 +401,12 @@ public class TextField extends BaseField {
                     int status;
                     try {
                         status = ct.go(true);
+
+                        if ((status & ColumnText.NO_MORE_COLUMN) == 0) {
+                            break;
+                        }
                     } catch (IOException e) {
                         //may need some logging or some other operation
-                    }
-                    if ((status & ColumnText.NO_MORE_COLUMN) == 0) {
-                        break;
                     }
                 }
             }

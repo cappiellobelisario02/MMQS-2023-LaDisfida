@@ -145,17 +145,17 @@ public class PdfLister {
             byte[] b;
             try {
                 b = PdfReader.getStreamBytes(stream);
+                int len = b.length - 1;
+                for (int k = 0; k < len; ++k) {
+                    if (b[k] == '\r' && b[k + 1] != '\n') {
+                        b[k] = (byte) '\n';
+                    }
+                }
+                out.println(new String(b));
+                out.println("endstream");
             } catch (PDFFilterException e) {
                 //may need some logging or some other operation
             }
-            int len = b.length - 1;
-            for (int k = 0; k < len; ++k) {
-                if (b[k] == '\r' && b[k + 1] != '\n') {
-                    b[k] = (byte) '\n';
-                }
-            }
-            out.println(new String(b));
-            out.println("endstream");
         } catch (IOException e) {
             logger.info("I/O exception: " + e);
         }
@@ -189,7 +189,7 @@ public class PdfLister {
                 }
                 break;
             default:
-                out.println(obj.toString());
+                out.println(obj);
         }
     }
 }

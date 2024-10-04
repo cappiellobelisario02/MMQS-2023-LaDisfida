@@ -71,7 +71,7 @@ class ExtractCertificatesTest {
                 assertThat(pk.verify()).isTrue();
                 assertThat(pk.verifyTimestampImprint()).isEqualTo(isExpectedValidTimeStamp);
 
-                Object[] fails = PdfPKCS7.verifyCertificates(pkc, kall, null, cal);
+                Object[] fails = pk.verifyCertificates(pkc, kall, null, cal);
                 if (fails == null) {
                     System.out.println("Certificates verified against the KeyStore");
                 } else {

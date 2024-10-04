@@ -393,8 +393,14 @@ public class Annotation implements Element {
 
     // Inner class AnnotationBuilder
     public static class AnnotationBuilder {
-        private float llx, lly, urx, ury;
-        private String application, parameters, operation, defaultdir;
+        private float llx;
+        private float lly;
+        private float urx;
+        private float ury;
+        private String application;
+        private String parameters;
+        private String operation;
+        private String defaultdir;
 
         public com.lowagie.text.Annotation.AnnotationBuilder setCoordinates(float llx, float lly, float urx, float ury) {
             this.llx = llx;

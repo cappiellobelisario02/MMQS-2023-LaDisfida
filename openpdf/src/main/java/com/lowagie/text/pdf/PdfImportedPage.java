@@ -147,6 +147,7 @@ public class PdfImportedPage extends com.lowagie.text.pdf.PdfTemplate {
         } catch (PDFFilterException e) {
             //may need some logging or some other operation
         }
+        return new PdfStream();
     }
 
     @Override

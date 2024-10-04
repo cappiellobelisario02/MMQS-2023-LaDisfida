@@ -10,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * @author SE_SUSTech, group: Lanrand test issue #620
  * <p>This file is to test the code for fix the bugs in the issue #620

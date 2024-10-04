@@ -6,12 +6,14 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.awt.Font;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,17 +56,21 @@ class LayoutProcessor534Test {
         document.close();
 
         // then
-        PdfTextExtractor extractor = new PdfTextExtractor(new PdfReader(pdfOut.toByteArray()));
-        String textFromPage = extractor.getTextFromPage(1);
-        assertThat(textFromPage)
-                .isEqualTo("""
-                        owTytnewt enOεytnewt ytnewt neetenin neethgie neetneves neetxis neetfif neetruof neetriht \
-                        evlewt nevele net enin thgie neves xis evif ruof eerht owt eno
-                         evlewt nevele net enin thgie neves xis evif ruof eerht owt eno ytriht eniNytnewt thgiEytnewt \
-                        neveSytnewt xiSytnewt eviFytnewt ruoFytnewt eerhTytnewt
-                         neveSytnewt xiSytnewt eviFytnewt ruoFytnewt eerhTytnewt owTytnewt enOεytnewt ytnewt neetenin n\
-                        eethgie neetneves neetxis neetfif neetruof neetriht
-                         ytriht eniNytnewt thgiEytnewt""");
+        try {
+            PdfTextExtractor extractor = new PdfTextExtractor(new PdfReader(pdfOut.toByteArray()));
+            String textFromPage = extractor.getTextFromPage(1);
+            assertThat(textFromPage)
+                    .isEqualTo("""
+                            owTytnewt enOεytnewt ytnewt neetenin neethgie neetneves neetxis neetfif neetruof neetriht \
+                            evlewt nevele net enin thgie neves xis evif ruof eerht owt eno
+                             evlewt nevele net enin thgie neves xis evif ruof eerht owt eno ytriht eniNytnewt thgiEytnewt \
+                            neveSytnewt xiSytnewt eviFytnewt ruoFytnewt eerhTytnewt
+                             neveSytnewt xiSytnewt eviFytnewt ruoFytnewt eerhTytnewt owTytnewt enOεytnewt ytnewt neetenin n\
+                            eethgie neetneves neetxis neetfif neetruof neetriht
+                             ytriht eniNytnewt thgiEytnewt""");
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
     @Test
@@ -89,19 +95,23 @@ class LayoutProcessor534Test {
         document.close();
 
         // then
-        byte[] pdfBytes = pdfOut.toByteArray();
-        PdfTextExtractor extractor = new PdfTextExtractor(new PdfReader(pdfBytes));
-        String expected = """
-                .ויה אלש םירבדה ןמ יושע ,דהדהמ ,לולח טקש היה וילאמ\
-                 שקבתמה קלחה.םיקלח השולש תב הממד וז התיהו ,ךרדה־ןבא קדנופב הררש הממד .הליל תעש וז התיה בוש
-                 וליא .ויתס ילע תפרוג איהש יפכ ,ךרדה דרומב הממדהתא\
-                 תפחוסו ויריצ לע הקירחב קדנופה טלש תא תלטלטמ ,םיצעה ןיב הרבועב תחנאנ התיה זאיכ ,חור התיה וליא
-                 וליא .תוכושחה הלילה תועשב,האבסמב םהל תופַצל\
-                 םוקמ היהש ןואשבו הלומהב ,קוחצבו החישב הממדה תא םיאלממ ויה זאיכ ,םישנא ץמוק וליפא ,קדנופב להק היה
-                 .הניעב הממדה\
-                 הרתונ ןכלו ,םש היה הלאה םירבדהמ דחא אלףא ,תמאה ןעמל .הקיסומ התיה אלש יאדו , אל לבא ...הקיסומ התיה""";
-        assertThat(extractor.getTextFromPage(1))
-                .isEqualTo(expected);
+        try {
+            byte[] pdfBytes = pdfOut.toByteArray();
+            PdfTextExtractor extractor = new PdfTextExtractor(new PdfReader(pdfBytes));
+            String expected = """
+                    .ויה אלש םירבדה ןמ יושע ,דהדהמ ,לולח טקש היה וילאמ\
+                     שקבתמה קלחה.םיקלח השולש תב הממד וז התיהו ,ךרדה־ןבא קדנופב הררש הממד .הליל תעש וז התיה בוש
+                     וליא .ויתס ילע תפרוג איהש יפכ ,ךרדה דרומב הממדהתא\
+                     תפחוסו ויריצ לע הקירחב קדנופה טלש תא תלטלטמ ,םיצעה ןיב הרבועב תחנאנ התיה זאיכ ,חור התיה וליא
+                     וליא .תוכושחה הלילה תועשב,האבסמב םהל תופַצל\
+                     םוקמ היהש ןואשבו הלומהב ,קוחצבו החישב הממדה תא םיאלממ ויה זאיכ ,םישנא ץמוק וליפא ,קדנופב להק היה
+                     .הניעב הממדה\
+                     הרתונ ןכלו ,םש היה הלאה םירבדהמ דחא אלףא ,תמאה ןעמל .הקיסומ התיה אלש יאדו , אל לבא ...הקיסומ התיה""";
+            assertThat(extractor.getTextFromPage(1))
+                    .isEqualTo(expected);
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
 }

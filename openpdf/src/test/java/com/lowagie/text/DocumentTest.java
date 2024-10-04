@@ -7,6 +7,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Test;
 
 class DocumentTest {
@@ -65,9 +66,13 @@ class DocumentTest {
         document.close();
         // extracts the text from the PDF
         byte[] pdfBytes = output.toByteArray();
-        PdfTextExtractor extractor = new PdfTextExtractor(new PdfReader(pdfBytes));
-        // then
-        assertThat(extractor.getTextFromPage(1)).isEqualTo(string);
+        try {
+            PdfTextExtractor extractor = new PdfTextExtractor(new PdfReader(pdfBytes));
+            // then
+            assertThat(extractor.getTextFromPage(1)).isEqualTo(string);
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
 }

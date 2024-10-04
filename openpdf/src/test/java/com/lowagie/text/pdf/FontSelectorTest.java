@@ -3,11 +3,13 @@ package com.lowagie.text.pdf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Font;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Test;
 
 class FontSelectorTest {
@@ -27,8 +29,12 @@ class FontSelectorTest {
         document.add(selector.process(STRING_TO_CHECK));
         document.close();
 
-        PdfReader rd = new PdfReader(stream.toByteArray());
-        PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(rd);
-        assertEquals(STRING_TO_CHECK, pdfTextExtractor.getTextFromPage(1));
+        try {
+            PdfReader rd = new PdfReader(stream.toByteArray());
+            PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(rd);
+            assertEquals(STRING_TO_CHECK, pdfTextExtractor.getTextFromPage(1));
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 }

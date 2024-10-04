@@ -719,7 +719,7 @@ public class PdfDocument extends Document {
 
             // Convert TreeMap<String, Object[]> to TreeMap<String, Object>
             TreeMap<String, Object> destinations = new TreeMap<>();
-            for (Map.Entry<String, Object[]> entry : localDestinations.entrySet()) {
+            for (Entry<String, Object[]> entry : localDestinations.entrySet()) {
                 // Extract the first element from Object[] or handle as needed
                 if (entry.getValue() != null && entry.getValue().length > 0) {
                     destinations.put(entry.getKey(), entry.getValue()[0]);
@@ -2703,24 +2703,25 @@ public class PdfDocument extends Document {
             int status;
             try {
                 status = ct.go();
+
+                if ((status & ColumnText.NO_MORE_TEXT) != 0) {
+                    text.moveText(0, ct.getYLine() - indentTop() + currentHeight);
+                    currentHeight = indentTop() - ct.getYLine();
+                    break;
+                }
+                if (indentTop() - currentHeight == ct.getYLine()) {
+                    ++loop;
+                } else {
+                    loop = 0;
+                }
+                if (loop == 3) {
+                    add(new Paragraph("ERROR: Infinite table loop"));
+                    break;
+                }
+                newPage();
             } catch (IOException e) {
                 //may need some logging or some other operation
             }
-            if ((status & ColumnText.NO_MORE_TEXT) != 0) {
-                text.moveText(0, ct.getYLine() - indentTop() + currentHeight);
-                currentHeight = indentTop() - ct.getYLine();
-                break;
-            }
-            if (indentTop() - currentHeight == ct.getYLine()) {
-                ++loop;
-            } else {
-                loop = 0;
-            }
-            if (loop == 3) {
-                add(new Paragraph("ERROR: Infinite table loop"));
-                break;
-            }
-            newPage();
         }
         ptable.setHeadersInEvent(he);
     }

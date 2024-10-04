@@ -88,7 +88,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Stack;
 
 /**
  * A <CODE>DocWriter</CODE> class for HTML.
@@ -119,12 +118,12 @@ public class HtmlWriter extends DocWriter {
     /**
      * This is a possible HTML-tag.
      */
-    public static final byte[] BEGINCOMMENT = getISOBytes("<!-- ");
+    protected static final byte[] BEGINCOMMENT = getISOBytes("<!-- ");
 
     /**
      * This is a possible HTML-tag.
      */
-    public static final byte[] ENDCOMMENT = getISOBytes(" -->");
+    protected static final byte[] ENDCOMMENT = getISOBytes(" -->");
 
     /**
      * This is a possible HTML-tag.
@@ -273,36 +272,41 @@ public class HtmlWriter extends DocWriter {
         } catch (AddCellException e) {
             //may need some logging or some other operation
         }
+        return false;
     }
 
     private boolean handleElementAddition(Element element) throws IOException, DocumentException, AddCellException {
-        switch (element.type()) {
-            case Element.HEADER:
+        return switch (element.type()) {
+            case Element.HEADER -> {
                 handleHeader((Header) element);
-                return true;
-            case Element.SUBJECT:
-            case Element.KEYWORDS:
-            case Element.AUTHOR:
+                yield true;
+            }
+            case Element.SUBJECT, Element.KEYWORDS, Element.AUTHOR -> {
                 writeHeader((Meta) element);
-                return true;
-            case Element.TITLE:
+                yield true;
+            }
+            case Element.TITLE -> {
                 handleTitle((Meta) element);
-                return true;
-            case Element.CREATOR:
+                yield true;
+            }
+            case Element.CREATOR -> {
                 writeComment("Creator: " + HtmlEncoder.encode(((Meta) element).getContent()));
-                return true;
-            case Element.PRODUCER:
+                yield true;
+            }
+            case Element.PRODUCER -> {
                 writeComment("Producer: " + HtmlEncoder.encode(((Meta) element).getContent()));
-                return true;
-            case Element.CREATIONDATE:
+                yield true;
+            }
+            case Element.CREATIONDATE -> {
                 writeComment("Creationdate: " + HtmlEncoder.encode(((Meta) element).getContent()));
-                return true;
-            case Element.MARKED:
-                return handleMarkedElement(element);
-            default:
+                yield true;
+            }
+            case Element.MARKED -> handleMarkedElement(element);
+            default -> {
                 write(element, 2);
-                return true;
-        }
+                yield true;
+            }
+        };
     }
 
     private void handleHeader(Header header) throws IOException {
@@ -326,8 +330,7 @@ public class HtmlWriter extends DocWriter {
     }
 
     private boolean handleMarkedElement(Element element) throws IOException, DocumentException {
-        if (element instanceof MarkedSection) {
-            MarkedSection ms = (MarkedSection) element;
+        if (element instanceof MarkedSection ms) {
             addTabs(1);
             writeStart(HtmlTags.DIV);
             writeMarkupAttributes(ms.getMarkupAttributes());
@@ -358,7 +361,7 @@ public class HtmlWriter extends DocWriter {
         super.open();
         try {
             writeComment(Document.getVersion());
-            writeComment("CreationDate: " + new Date().toString());
+            writeComment("CreationDate: " + new Date());
             addTabs(1);
             writeEnd(HtmlTags.HEAD);
             addTabs(1);
@@ -498,7 +501,7 @@ public class HtmlWriter extends DocWriter {
         addTabs(2);
         writeStart(HtmlTags.SCRIPT);
         write(HtmlTags.LANGUAGE, HtmlTags.JAVASCRIPT);
-        if (markup.size() > 0) {
+        if (!markup.isEmpty()) {
             /* JavaScript reference example:
              *
              * <script language="JavaScript" src="/myPath/MyFunctions.js"/>
@@ -649,8 +652,8 @@ public class HtmlWriter extends DocWriter {
             case Element.PARAGRAPH:
                 handleParagraph((Paragraph) element, indent);
                 break;
-            case Element.SECTION:
-            case Element.CHAPTER:
+            case Element.SECTION,
+                 Element.CHAPTER:
                 handleSection((Section) element, indent);
                 break;
             case Element.LIST:
@@ -671,10 +674,10 @@ public class HtmlWriter extends DocWriter {
             case Element.ANNOTATION:
                 handleAnnotation((Annotation) element);
                 break;
-            case Element.IMGRAW:
-            case Element.JPEG:
-            case Element.JPEG2000:
-            case Element.IMGTEMPLATE:
+            case Element.IMGRAW,
+                 Element.JPEG,
+                 Element.JPEG2000,
+                 Element.IMGTEMPLATE:
                 handleImage((Image) element, indent);
                 break;
             default:
@@ -701,7 +704,7 @@ public class HtmlWriter extends DocWriter {
             return;
         }
 
-        boolean tag = isOtherFont(chunk.getFont()) || markup.size() > 0;
+        boolean tag = isOtherFont(chunk.getFont()) || !markup.isEmpty();
         if (tag) {
             writeStartTag(HtmlTags.SPAN, chunk.getFont(), indent);
         }
@@ -746,8 +749,8 @@ public class HtmlWriter extends DocWriter {
     private void handlePhrase(Phrase phrase, int indent) throws IOException, AddCellException {
         writeStartTag(Markup.HTML_TAG_SPAN, phrase.getFont(), indent);
         currentfont.push(phrase.getFont());
-        for (Object o : phrase) {
-            write((Element) o, indent + 1);
+        for (Element o : phrase) {
+            write(o, indent + 1);
         }
         writeEnd(Markup.HTML_TAG_SPAN);
         currentfont.pop();
@@ -756,8 +759,8 @@ public class HtmlWriter extends DocWriter {
     private void handleAnchor(Anchor anchor, int indent) throws IOException, AddCellException {
         writeStartTag(HtmlTags.ANCHOR, anchor.getFont(), indent);
         currentfont.push(anchor.getFont());
-        for (Object o : anchor) {
-            write((Element) o, indent + 1);
+        for (Element o : anchor) {
+            write(o, indent + 1);
         }
         writeEnd(HtmlTags.ANCHOR);
         currentfont.pop();
@@ -766,8 +769,8 @@ public class HtmlWriter extends DocWriter {
     private void handleParagraph(Paragraph paragraph, int indent) throws IOException, AddCellException {
         writeStartTag(HtmlTags.DIV, paragraph.getFont(), indent);
         currentfont.push(paragraph.getFont());
-        for (Object o : paragraph) {
-            write((Element) o, indent + 1);
+        for (Element o : paragraph) {
+            write(o, indent + 1);
         }
         writeEnd(HtmlTags.DIV);
         currentfont.pop();
@@ -786,8 +789,8 @@ public class HtmlWriter extends DocWriter {
         }
         writeMarkupAttributes(markup);
         os.write(GT);
-        for (Object o : list.getItems()) {
-            write((Element) o, indent + 1);
+        for (Element o : list.getItems()) {
+            write(o, indent + 1);
         }
         addTabs(indent);
         if (list.isNumbered()) {
@@ -800,8 +803,8 @@ public class HtmlWriter extends DocWriter {
     private void handleListItem(ListItem listItem, int indent) throws IOException, AddCellException {
         writeStartTag(HtmlTags.LISTITEM, listItem.getFont(), indent);
         currentfont.push(listItem.getFont());
-        for (Object o : listItem) {
-            write((Element) o, indent + 1);
+        for (Element o : listItem) {
+            write(o, indent + 1);
         }
         writeEnd(HtmlTags.LISTITEM);
         currentfont.pop();
@@ -813,7 +816,7 @@ public class HtmlWriter extends DocWriter {
             write(NBSP);
         } else {
             for (Iterator<Element> i = cell.getElements(); i.hasNext(); ) {
-                write((Element) i.next(), indent + 1);
+                write(i.next(), indent + 1);
             }
         }
         writeEnd(cell.isHeader() ? HtmlTags.HEADERCELL : HtmlTags.CELL);
@@ -864,7 +867,7 @@ public class HtmlWriter extends DocWriter {
         }
         os.write(GT);
         for (Iterator<Row> iterator = table.iterator(); iterator.hasNext(); ) {
-            write((Row) iterator.next(), indent + 1);
+            write(iterator.next(), indent + 1);
         }
         writeEnd(HtmlTags.TABLE);
     }
@@ -941,16 +944,16 @@ public class HtmlWriter extends DocWriter {
             os.write(GT);
             currentfont.push(section.getTitle().getFont());
             // contents
-            for (Object o : section.getTitle()) {
-                write((Element) o, indent + 1);
+            for (Element o : section.getTitle()) {
+                write(o, indent + 1);
             }
             // end tag
             addTabs(indent);
             writeEnd(HtmlTags.H[depth]);
             currentfont.pop();
         }
-        for (Object o : section) {
-            write((Element) o, indent);
+        for (Element o : section) {
+            write(o, indent);
         }
     }
 

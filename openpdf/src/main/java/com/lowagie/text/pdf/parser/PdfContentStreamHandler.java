@@ -70,7 +70,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Stack;
 import java.util.logging.Logger;
 
 /**
@@ -545,13 +544,14 @@ public class PdfContentStreamHandler {
                 CMapAwareDocumentFont font;
                 try {
                     font = new CMapAwareDocumentFont((PRIndirectReference) pdfObject);
+
+                    float size = fontParameter.getAsNumber(1).floatValue();
+
+                    handler.graphicsState().setFont(font);
+                    handler.graphicsState().setFontSize(size);
                 } catch (PDFFilterException e) {
                     //may need some logging or some other operation
                 }
-                float size = fontParameter.getAsNumber(1).floatValue();
-
-                handler.graphicsState().setFont(font);
-                handler.graphicsState().setFontSize(size);
             }
         }
     }
@@ -621,12 +621,12 @@ public class PdfContentStreamHandler {
             CMapAwareDocumentFont font;
             try {
                 font = new CMapAwareDocumentFont((PRIndirectReference) pdfObject);
+
+                handler.graphicsState().setFont(font);
+                handler.graphicsState().setFontSize(size);
             } catch (PDFFilterException e) {
                 //may need some logging or some other operation
             }
-
-            handler.graphicsState().setFont(font);
-            handler.graphicsState().setFontSize(size);
         }
     }
 
