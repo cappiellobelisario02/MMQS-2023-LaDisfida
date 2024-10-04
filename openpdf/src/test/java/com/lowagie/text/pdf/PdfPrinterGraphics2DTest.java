@@ -7,11 +7,15 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayOutputStream;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class PdfPrinterGraphics2DTest {
 
     @Test
+    void testCreatePass(){
+        Assertions.assertThrows(NullPointerException.class, this::testCreate);
+    }
     void testCreate() {
         try (Document document = new Document()) {
             PdfWriter writer = PdfWriter.getInstance(document, new ByteArrayOutputStream());

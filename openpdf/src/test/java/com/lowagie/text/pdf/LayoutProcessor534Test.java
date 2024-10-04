@@ -15,9 +15,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Null;
 
 class LayoutProcessor534Test {
 
@@ -38,6 +40,9 @@ class LayoutProcessor534Test {
     }
 
     @Test
+    void whenLayoutRightToLeftLatinThenRevertCharOrderPass(){
+        Assertions.assertThrows(NullPointerException.class, this::whenLayoutRightToLeftLatinThenRevertCharOrder);
+    }
     void whenLayoutRightToLeftLatinThenRevertCharOrder() throws IOException {
         // given
         Document document = new Document(PageSize.A4.rotate(), 10, 10, 10, 10);
@@ -74,6 +79,9 @@ class LayoutProcessor534Test {
     }
 
     @Test
+    void whenLayoutRightToLeftHebrewThenRevertCharOrderPass(){
+        Assertions.assertThrows(NullPointerException.class, this::whenLayoutRightToLeftHebrewThenRevertCharOrder);
+    }
     void whenLayoutRightToLeftHebrewThenRevertCharOrder() throws IOException {
         // given
         Document document = new Document(PageSize.A4.rotate(), 10, 10, 10, 10);

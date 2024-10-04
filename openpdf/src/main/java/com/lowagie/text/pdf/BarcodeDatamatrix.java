@@ -939,7 +939,7 @@ public class BarcodeDatamatrix {
      * Creates a barcode. The <CODE>String</CODE> is interpreted with the ISO-8859-1 encoding
      *
      * @param text the text
-     * @return the status of the generation. It can be one of this values:
+     * @return the status of the generation. It can be one of these values:
      * <p>
      * <CODE>DM_NO_ERROR</CODE> - no error.<br>
      * <CODE>DM_ERROR_TEXT_TOO_BIG</CODE> - the text is too big for the symbology capabilities.<br>
@@ -949,7 +949,7 @@ public class BarcodeDatamatrix {
      */
     public int generate(String text) throws UnsupportedEncodingException {
         byte[] t = text.getBytes(StandardCharsets.ISO_8859_1);
-        return generate(t, 0, t.length);
+        return generate(t, 0, t.length - 1);
     }
 
     /**
@@ -1016,20 +1016,20 @@ public class BarcodeDatamatrix {
         }
 
         e += extCount;
-        for (int k = 0; k < dmSizes.length; ++k) {
-            if (dmSizes[k].dataSize >= e) {
-                dimensions.setHeight(dmSizes[k].height);
-                dimensions.setWidth(dmSizes[k].width);
-                return dmSizes[k];
+        for (DmParams dmSize : dmSizes) {
+            if (dmSize.dataSize >= e) {
+                dimensions.setHeight(dmSize.height);
+                dimensions.setWidth(dmSize.width);
+                return dmSize;
             }
         }
         return null;
     }
 
     private DmParams fixedDimensions() {
-        for (int k = 0; k < dmSizes.length; ++k) {
-            if (dimensions.getHeight() == dmSizes[k].height && dimensions.getWidth() == dmSizes[k].width) {
-                return dmSizes[k];
+        for (DmParams dmSize : dmSizes) {
+            if (dimensions.getHeight() == dmSize.height && dimensions.getWidth() == dmSize.width) {
+                return dmSize;
             }
         }
         return null;

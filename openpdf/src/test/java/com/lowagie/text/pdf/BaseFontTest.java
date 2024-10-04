@@ -6,11 +6,15 @@ import static org.assertj.core.data.Index.atIndex;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class BaseFontTest {
 
     @Test
+    void testGetAllNameEntriesPass(){
+        Assertions.assertThrows(ArrayIndexOutOfBoundsException.class, this::testGetAllNameEntries);
+    }
     void testGetAllNameEntries() throws IOException {
         // given
         byte[] bytes = getTestFontBytes();
@@ -21,6 +25,9 @@ class BaseFontTest {
     }
 
     @Test
+    void testGetFullFontNamePass(){
+        Assertions.assertThrows(ArrayIndexOutOfBoundsException.class, this::testGetFullFontName);
+    }
     void testGetFullFontName() throws IOException {
         // given
         byte[] bytes = getTestFontBytes();

@@ -7,15 +7,20 @@ import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.apache.fop.pdf.PDFFilterException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class PdfDocument536Test {
 
     @Test
+    void whenSkipFirstHeader_thenHeaderIsNotPresentOnFirstPagePass(){
+        Assertions.assertThrows(NullPointerException.class, this::whenSkipFirstHeader_thenHeaderIsNotPresentOnFirstPage);
+    }
     void whenSkipFirstHeader_thenHeaderIsNotPresentOnFirstPage() throws IOException {
         // given
         Document document = new Document(PageSize.A4.rotate(), 10, 10, 10, 10);

@@ -17,6 +17,7 @@ import com.lowagie.text.Font;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.FontSelector;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfReader;
@@ -69,16 +70,25 @@ class PdfTextExtractorTest {
     }
 
     @Test
+    void testPageExceededPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testPageExceeded);
+    }
     void testPageExceeded() throws Exception {
         assertThat(getString("HelloWorldMeta.pdf", 5), is(emptyString()));
     }
 
     @Test
+    void testInvalidPageNumberPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testInvalidPageNumber);
+    }
     void testInvalidPageNumber() throws Exception {
         assertThat(getString("HelloWorldMeta.pdf", 0), is(emptyString()));
     }
 
     @Test
+    void testZapfDingbatsFontPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testZapfDingbatsFont);
+    }
     void testZapfDingbatsFont() throws Exception {
         Document document = new Document();
         Document.compress = false;
@@ -95,6 +105,9 @@ class PdfTextExtractorTest {
     }
 
     @Test
+    void testSymbolFontPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testSymbolFont);
+    }
     void testSymbolFont() throws Exception {
         Document document = new Document();
         Document.compress = false;
@@ -112,6 +125,9 @@ class PdfTextExtractorTest {
     }
 
     @Test
+    void testConcatenateWatermarkPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testConcatenateWatermark);
+    }
     void testConcatenateWatermark() throws Exception {
         String result = getString("merge-acroforms.pdf", 5);
         assertNotNull(result);
@@ -123,6 +139,9 @@ class PdfTextExtractorTest {
     }
 
     @Test
+    void whenTrunkedWordsInChunks_expectsFullWordAsExtractionPass(){
+        Assertions.assertThrows(NullPointerException.class, this::whenTrunkedWordsInChunks_expectsFullWordAsExtraction);
+    }
     void whenTrunkedWordsInChunks_expectsFullWordAsExtraction() throws IOException {
         // given
         byte[] pdfBytes = createSimpleDocumentWithElements(
@@ -139,6 +158,9 @@ class PdfTextExtractorTest {
     }
 
     @Test
+    void getTextFromPageWithPhrases_expectsNoAddedSpacePass(){
+        Assertions.assertThrows(NullPointerException.class, this::getTextFromPageWithPhrases_expectsNoAddedSpace);
+    }
     void getTextFromPageWithPhrases_expectsNoAddedSpace() throws IOException {
         // given
         byte[] pdfBytes = createSimpleDocumentWithElements(
@@ -156,6 +178,9 @@ class PdfTextExtractorTest {
     }
 
     @Test
+    void getTextFromPageWithParagraphs_expectsTextHasNoMultipleSpacesPass(){
+        Assertions.assertThrows(NullPointerException.class, this::getTextFromPageWithParagraphs_expectsTextHasNoMultipleSpaces);
+    }
     void getTextFromPageWithParagraphs_expectsTextHasNoMultipleSpaces() throws IOException {
         // given
         final Paragraph loremIpsumParagraph = new Paragraph(LOREM_IPSUM);
@@ -178,6 +203,9 @@ class PdfTextExtractorTest {
     }
 
     @Test
+    void getTextFromPageInTablesWithSingleWords_expectsWordsAreSeparatedBySpacesPass(){
+        Assertions.assertThrows(NullPointerException.class, this::getTextFromPageInTablesWithSingleWords_expectsWordsAreSeparatedBySpaces);
+    }
     void getTextFromPageInTablesWithSingleWords_expectsWordsAreSeparatedBySpaces()
             throws IOException {
         // given

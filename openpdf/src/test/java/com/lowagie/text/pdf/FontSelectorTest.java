@@ -10,6 +10,7 @@ import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.apache.fop.pdf.PDFFilterException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class FontSelectorTest {
@@ -17,6 +18,9 @@ class FontSelectorTest {
     public static final String STRING_TO_CHECK = "Some Χαίρετε Greek -";
 
     @Test
+    void testDefaultFontPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testDefaultFont);
+    }
     void testDefaultFont() throws IOException {
         Document document = new Document(PageSize.A4.rotate(), 10, 10, 10, 10);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();

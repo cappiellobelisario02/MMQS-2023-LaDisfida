@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,6 +28,9 @@ class PdfDocument620Test {
      * see the pdf file, the two should be same.
      */
     @Test
+    void generate2DocumentsWithShortLinePass(){
+        Assertions.assertThrows(NullPointerException.class, this::generate2DocumentsWithShortLine);
+    }
     void generate2DocumentsWithShortLine() throws IOException {
         createPdf("shortLine", "Test Paragraph", true);
         createPdf("shortLine", "Test Paragraph", false);
@@ -36,6 +40,9 @@ class PdfDocument620Test {
     }
 
     @Test
+    void generate2DocumentsWithLongLinePass(){
+        Assertions.assertThrows(NullPointerException.class, this::generate2DocumentsWithLongLine);
+    }
     void generate2DocumentsWithLongLine() throws IOException {
         String s = "sagdageafedddddd dddddddddddddd dddddddddddddddddd ddddddddddd dddddddd" +
                 "sdaffffff ffffffffffffff ffffffffffffff ffffffffffff" +

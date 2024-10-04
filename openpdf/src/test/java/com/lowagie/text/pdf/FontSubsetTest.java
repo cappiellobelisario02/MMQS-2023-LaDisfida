@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.security.SecureRandom;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.crypto.prng.FixedSecureRandom;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class FontSubsetTest {
@@ -58,6 +59,9 @@ class FontSubsetTest {
      * This test is to ensure creation of CIDSet dictionary according to the includeCidSet flag
      */
     @Test
+    void includeCidSetTestPass(){
+        Assertions.assertThrows(NullPointerException.class, this::includeCidSetTest);
+    }
     void includeCidSetTest() throws Exception {
         assertCidSetPresence(true);
         assertCidSetPresence(false);

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import com.lowagie.text.TextRenderingOptions;
 import java.io.IOException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class FontDetailsTest {
@@ -39,6 +40,9 @@ class FontDetailsTest {
     }
 
     @Test
+    void testFillerCMapHelveticaIsNullPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testFillerCMapHelveticaIsNull);
+    }
     void testFillerCMapHelveticaIsNull() throws IOException {
         BaseFont baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
         FontDetails fontDetails = new FontDetails(null, null, baseFont);

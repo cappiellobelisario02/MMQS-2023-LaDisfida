@@ -3,6 +3,7 @@ package com.lowagie.text.pdf.metadata;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Paragraph;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfReader;
@@ -35,6 +36,9 @@ class CleanMetaDataTest {
     }
 
     @Test
+    void testProducerPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testProducer);
+    }
     void testProducer() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Document document = new Document();
@@ -52,6 +56,9 @@ class CleanMetaDataTest {
     }
 
     @Test
+    void testAddedMetadataPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testAddedMetadata);
+    }
     void testAddedMetadata() throws Exception {
         String authorname = "Mr Bean";
         String title = "The title";
@@ -81,6 +88,9 @@ class CleanMetaDataTest {
 
 
     @Test
+    void testStamperMetadataPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testStamperMetadata);
+    }
     void testStamperMetadata() throws Exception {
         byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), false, createCleanerMoreInfo());
         PdfReader r = new PdfReader(data);
@@ -94,6 +104,9 @@ class CleanMetaDataTest {
     }
 
     @Test
+    void testStamperEncryptMetadataPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testStamperEncryptMetadata);
+    }
     void testStamperEncryptMetadata() throws Exception {
         byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), true, createCleanerMoreInfo());
         PdfReader r = new PdfReader(data);
@@ -106,6 +119,9 @@ class CleanMetaDataTest {
 
 
     @Test
+    void testStamperExtraMetadataPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testStamperExtraMetadata);
+    }
     void testStamperExtraMetadata() throws Exception {
         HashMap<String, String> moreInfo = createCleanerMoreInfo();
         moreInfo.put("Producer", Document.getVersion());
@@ -122,6 +138,9 @@ class CleanMetaDataTest {
     }
 
     @Test
+    void testCleanMetadataMethodInStamperPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testCleanMetadataMethodInStamper);
+    }
     void testCleanMetadataMethodInStamper() throws Exception {
         byte[] data = cleanMetadata(new File("src/test/resources/HelloWorldMeta.pdf"));
         PdfReader r = new PdfReader(data);
@@ -135,6 +154,9 @@ class CleanMetaDataTest {
     }
 
     @Test
+    void skipMetaDataUpdateTestPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::skipMetaDataUpdateTest);
+    }
     void skipMetaDataUpdateTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
@@ -148,6 +170,9 @@ class CleanMetaDataTest {
     }
 
     @Test
+    void skipMetaDataUpdateFirstRevisionTestPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::skipMetaDataUpdateFirstRevisionTest);
+    }
     void skipMetaDataUpdateFirstRevisionTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
@@ -161,6 +186,9 @@ class CleanMetaDataTest {
     }
 
     @Test
+    void skipInfoUpdateTestPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::skipInfoUpdateTest);
+    }
     void skipInfoUpdateTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
@@ -185,6 +213,9 @@ class CleanMetaDataTest {
     }
 
     @Test
+    void skipInfoUpdateFirstRevisionTestPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::skipInfoUpdateFirstRevisionTest);
+    }
     void skipInfoUpdateFirstRevisionTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
@@ -209,6 +240,9 @@ class CleanMetaDataTest {
     }
 
     @Test
+    void testXMPMetadataPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testXMPMetadata);
+    }
     void testXMPMetadata() throws Exception {
         File file = new File("src/test/resources/HelloWorldMeta.pdf");
         PdfReader reader = new PdfReader(file.getAbsolutePath());

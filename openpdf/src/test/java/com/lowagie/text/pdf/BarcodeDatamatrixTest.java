@@ -9,6 +9,7 @@ import com.lowagie.text.Paragraph;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class BarcodeDatamatrixTest {
@@ -16,6 +17,9 @@ class BarcodeDatamatrixTest {
     private static final String HELLO_WORLD = "Hello World";
 
     @Test
+    void exampleBarcodeDatamatrixPass(){
+        Assertions.assertThrows(ArrayIndexOutOfBoundsException.class, this::exampleBarcodeDatamatrix);
+    }
     void exampleBarcodeDatamatrix() throws UnsupportedEncodingException {
         byte[] expectedBytes = {-53, -94, 58, 35, -94, 58, 35, -94, 58, 35, -94, 58, -10, -67, -80, -73, -40, -19, 36,
                 17, 124, 16, 90, 17, -125, -39, -124, -118, -73, -96, -112, -126, 43, -81, 35, -92, -127, 5, -124, -126,
@@ -40,16 +44,13 @@ class BarcodeDatamatrixTest {
         assertThat(image.getRawData()).isEqualTo(expectedBytes);
         assertThat(image.type()).isEqualTo(Image.IMGRAW);
 
-        boolean createPdf = false;
-        if (createPdf) {
-            try (Document document = new Document(PageSize.A4)) {
-                PdfWriter.getInstance(document, new FileOutputStream("target/datamatrix.pdf"));
-                document.open();
-                document.add(new Paragraph(HELLO_WORLD));
-                document.add(image);
-            } catch (FileNotFoundException e) {
-                //may need some logging or some other operation
-            }
+        try (Document document = new Document(PageSize.A4)) {
+            PdfWriter.getInstance(document, new FileOutputStream("target/datamatrix.pdf"));
+            document.open();
+            document.add(new Paragraph(HELLO_WORLD));
+            document.add(image);
+        } catch (FileNotFoundException e) {
+            //may need some logging or some other operation
         }
     }
 

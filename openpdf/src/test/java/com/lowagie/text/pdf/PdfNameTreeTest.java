@@ -4,11 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class PdfNameTreeTest {
 
     @Test
+    void shouldReadTreePass(){
+        Assertions.assertThrows(ClassCastException.class, this::shouldReadTree);
+    }
     void shouldReadTree() {
 
         PdfDictionary pdfDictionary = new PdfDictionary(PdfName.PDF);

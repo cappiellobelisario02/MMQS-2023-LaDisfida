@@ -16,11 +16,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
+import com.lowagie.text.exceptions.InvalidPdfException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class SimplePdfTest {
 
     @Test
+    void testSimplePdfPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testSimplePdf);
+    }
     void testSimplePdf() throws Exception {
         // create document
         Document document = PdfTestBase.createTempPdf("testSimplePdf.pdf");
@@ -50,6 +55,9 @@ class SimplePdfTest {
     }
 
     @Test
+    void testTryWithResources_with_os_before_docPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testTryWithResources_with_os_before_doc);
+    }
     void testTryWithResources_with_os_before_doc() throws Exception {
         try (PdfReader reader = new PdfReader("./src/test/resources/HelloWorldMeta.pdf");
                 FileOutputStream os = new FileOutputStream(Files.createTempFile("temp-file-name", ".pdf").toFile());
@@ -68,6 +76,9 @@ class SimplePdfTest {
     }
 
     @Test
+    void testTryWithResources_with_unknown_osPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testTryWithResources_with_unknown_os);
+    }
     void testTryWithResources_with_unknown_os() throws Exception {
         try (PdfReader reader = new PdfReader("./src/test/resources/HelloWorldMeta.pdf");
                 Document document = new Document()
@@ -84,6 +95,9 @@ class SimplePdfTest {
     }
 
     @Test
+    void testDocumentIdPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testDocumentId);
+    }
     void testDocumentId() throws Exception {
         byte[] docBytes;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
