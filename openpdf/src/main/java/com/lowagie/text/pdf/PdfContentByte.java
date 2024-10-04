@@ -70,7 +70,6 @@ import com.lowagie.text.exceptions.ZeroValueException;
 import com.lowagie.text.pdf.PdfPrinterGraphics2D.Builder;
 import com.lowagie.text.pdf.internal.PdfAnnotationsImp;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
-import org.apache.xmlgraphics.image.codec.png.PNGEncodeParam.Gray;
 import java.awt.Color;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
@@ -283,7 +282,7 @@ public class PdfContentByte {
      * @param content the content to append the escaped string
      */
     static void escapeAndAppendString(byte[] b, ByteBuffer content) {
-        content.append_i('(');
+        content.appendI('(');
         for (byte c : b) {
             switch (c) {
                 case '\r':
@@ -302,10 +301,10 @@ public class PdfContentByte {
                     content.append("\\f");
                     break;
                 case '(', ')', '\\':
-                    content.append_i('\\').append_i(c);
+                    content.appendI('\\').appendI(c);
                     break;
                 default:
-                    content.append_i(c);
+                    content.appendI(c);
             }
         }
         content.append(")");
@@ -477,7 +476,7 @@ public class PdfContentByte {
         if (state != null) {
             state.leading = leading;
         }
-        content.append(leading).append(" TL").append_i(separator);
+        content.append(leading).append(" TL").appendI(separator);
     }
 
     /**
@@ -498,7 +497,7 @@ public class PdfContentByte {
         if (state != null) {
             state.charSpace = charSpace;
         }
-        content.append(charSpace).append(" Tc").append_i(separator);
+        content.append(charSpace).append(" Tc").appendI(separator);
     }
 
     /**
@@ -519,7 +518,7 @@ public class PdfContentByte {
         if (state != null) {
             state.wordSpace = wordSpace;
         }
-        content.append(wordSpace).append(" Tw").append_i(separator);
+        content.append(wordSpace).append(" Tw").appendI(separator);
     }
 
     /**
@@ -540,7 +539,7 @@ public class PdfContentByte {
         if (state != null) {
             state.scale = scale;
         }
-        content.append(scale).append(" Tz").append_i(separator);
+        content.append(scale).append(" Tz").appendI(separator);
     }
 
     /**
@@ -554,7 +553,7 @@ public class PdfContentByte {
 
     public void setFlatness(float flatness) {
         if (flatness >= 0 && flatness <= 100) {
-            content.append(flatness).append(" i").append_i(separator);
+            content.append(flatness).append(" i").appendI(separator);
         }
     }
 
@@ -569,7 +568,7 @@ public class PdfContentByte {
 
     public void setLineCap(int style) {
         if (style >= 0 && style <= 2) {
-            content.append(style).append(" J").append_i(separator);
+            content.append(style).append(" J").appendI(separator);
         }
     }
 
@@ -584,7 +583,7 @@ public class PdfContentByte {
      */
 
     public void setLineDash(float phase) {
-        content.append("[] ").append(phase).append(" d").append_i(separator);
+        content.append("[] ").append(phase).append(" d").appendI(separator);
     }
 
     /**
@@ -599,7 +598,7 @@ public class PdfContentByte {
      */
 
     public void setLineDash(float unitsOn, float phase) {
-        content.append("[").append(unitsOn).append("] ").append(phase).append(" d").append_i(separator);
+        content.append("[").append(unitsOn).append("] ").append(phase).append(" d").appendI(separator);
     }
 
     /**
@@ -616,7 +615,7 @@ public class PdfContentByte {
 
     public void setLineDash(float unitsOn, float unitsOff, float phase) {
         content.append("[").append(unitsOn).append(SINGLE_SPACE).append(unitsOff).append("] ").append(phase).append(" d")
-                .append_i(separator);
+                .appendI(separator);
     }
 
     /**
@@ -638,7 +637,7 @@ public class PdfContentByte {
                 content.append(SINGLE_SPACE);
             }
         }
-        content.append("] ").append(phase).append(" d").append_i(separator);
+        content.append("] ").append(phase).append(" d").appendI(separator);
     }
 
     /**
@@ -653,7 +652,7 @@ public class PdfContentByte {
 
     public void setLineJoin(int style) {
         if (style >= 0 && style <= 2) {
-            content.append(style).append(" j").append_i(separator);
+            content.append(style).append(" j").appendI(separator);
         }
     }
 
@@ -667,7 +666,7 @@ public class PdfContentByte {
      */
 
     public void setLineWidth(float w) {
-        content.append(w).append(" w").append_i(separator);
+        content.append(w).append(" w").appendI(separator);
     }
 
     /**
@@ -683,7 +682,7 @@ public class PdfContentByte {
 
     public void setMiterLimit(float miterLimit) {
         if (miterLimit > 1) {
-            content.append(miterLimit).append(" M").append_i(separator);
+            content.append(miterLimit).append(" M").appendI(separator);
         }
     }
 
@@ -693,7 +692,7 @@ public class PdfContentByte {
      */
 
     public void clip() {
-        content.append("W").append_i(separator);
+        content.append("W").appendI(separator);
     }
 
     /**
@@ -702,7 +701,7 @@ public class PdfContentByte {
      */
 
     public void eoClip() {
-        content.append("W*").append_i(separator);
+        content.append("W*").appendI(separator);
     }
 
     /**
@@ -720,7 +719,7 @@ public class PdfContentByte {
 
     public void setGrayFill(float gray, float alpha) {
         saveColorFill(new GrayColor(gray, alpha));
-        content.append(gray).append(" g").append_i(separator);
+        content.append(gray).append(" g").appendI(separator);
     }
 
     /**
@@ -729,7 +728,7 @@ public class PdfContentByte {
 
     public void resetGrayFill() {
         saveColorFill(GrayColor.GRAYBLACK);
-        content.append("0 g").append_i(separator);
+        content.append("0 g").appendI(separator);
     }
 
     /**
@@ -747,7 +746,7 @@ public class PdfContentByte {
 
     public void setGrayStroke(float gray, float alpha) {
         saveColorStroke(new GrayColor(gray, alpha));
-        content.append(gray).append(" G").append_i(separator);
+        content.append(gray).append(" G").appendI(separator);
     }
 
     /**
@@ -756,7 +755,7 @@ public class PdfContentByte {
 
     public void resetGrayStroke() {
         saveColorStroke(GrayColor.GRAYBLACK);
-        content.append("0 G").append_i(separator);
+        content.append("0 G").appendI(separator);
     }
 
     /**
@@ -820,7 +819,7 @@ public class PdfContentByte {
     public void setRGBColorFillF(float red, float green, float blue, float alpha) {
         saveColorFill(new RGBColor(red, green, blue, alpha));
         helperRGB(red, green, blue);
-        content.append(" rg").append_i(separator);
+        content.append(" rg").appendI(separator);
     }
 
     /**
@@ -849,7 +848,7 @@ public class PdfContentByte {
     public void setRGBColorStrokeF(float red, float green, float blue) {
         saveColorStroke(new RGBColor(red, green, blue));
         helperRGB(red, green, blue);
-        content.append(" RG").append_i(separator);
+        content.append(" RG").appendI(separator);
     }
 
     /**
@@ -930,7 +929,7 @@ public class PdfContentByte {
     public void setCMYKColorFillF(float cyan, float magenta, float yellow, float black, float alpha) {
         saveColorFill(new CMYKColor(cyan, magenta, yellow, black, alpha));
         helperCMYK(cyan, magenta, yellow, black);
-        content.append(" k").append_i(separator);
+        content.append(" k").appendI(separator);
     }
 
     /**
@@ -940,7 +939,7 @@ public class PdfContentByte {
     public void resetCMYKColorFill() {
         saveColorFill(new CMYKColor(0.0f, 0.0f, 0.0f, MAX_FLOAT_COLOR_VALUE));
         helperCMYK(0.0f, 0.0f, 0.0f, MAX_FLOAT_COLOR_VALUE);
-        content.append(" k").append_i(separator);
+        content.append(" k").appendI(separator);
     }
 
     /**
@@ -965,7 +964,7 @@ public class PdfContentByte {
     public void setCMYKColorStrokeF(float cyan, float magenta, float yellow, float black, float alpha) {
         saveColorStroke(new CMYKColor(cyan, magenta, yellow, black, alpha));
         helperCMYK(cyan, magenta, yellow, black);
-        content.append(" K").append_i(separator);
+        content.append(" K").appendI(separator);
     }
 
     /**
@@ -975,7 +974,7 @@ public class PdfContentByte {
     public void resetCMYKColorStroke() {
         saveColorStroke(new CMYKColor(0.0f, 0.0f, 0.0f, MAX_FLOAT_COLOR_VALUE));
         helperCMYK(0.0f, 0.0f, 0.0f, MAX_FLOAT_COLOR_VALUE);
-        content.append(" K").append_i(separator);
+        content.append(" K").appendI(separator);
     }
 
     /**
@@ -986,7 +985,7 @@ public class PdfContentByte {
      */
 
     public void moveTo(float x, float y) {
-        content.append(x).append(SINGLE_SPACE).append(y).append(" m").append_i(separator);
+        content.append(x).append(SINGLE_SPACE).append(y).append(" m").appendI(separator);
     }
 
     /**
@@ -997,7 +996,7 @@ public class PdfContentByte {
      */
 
     public void lineTo(float x, float y) {
-        content.append(x).append(SINGLE_SPACE).append(y).append(" l").append_i(separator);
+        content.append(x).append(SINGLE_SPACE).append(y).append(" l").appendI(separator);
     }
 
     /**
@@ -1014,7 +1013,7 @@ public class PdfContentByte {
     public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3) {
         content.append(x1).append(SINGLE_SPACE).append(y1).append(SINGLE_SPACE).append(x2).append(SINGLE_SPACE).append(y2).append(
                         SINGLE_SPACE).append(x3)
-                .append(SINGLE_SPACE).append(y3).append(" c").append_i(separator);
+                .append(SINGLE_SPACE).append(y3).append(" c").appendI(separator);
     }
 
     /**
@@ -1028,7 +1027,7 @@ public class PdfContentByte {
 
     public void curveTo(float x2, float y2, float x3, float y3) {
         content.append(x2).append(SINGLE_SPACE).append(y2).append(SINGLE_SPACE).append(x3).append(SINGLE_SPACE).append(y3).append(" v")
-                .append_i(separator);
+                .appendI(separator);
     }
 
     /**
@@ -1042,7 +1041,7 @@ public class PdfContentByte {
 
     public void curveFromTo(float x1, float y1, float x3, float y3) {
         content.append(x1).append(SINGLE_SPACE).append(y1).append(SINGLE_SPACE).append(x3).append(SINGLE_SPACE).append(y3).append(" y")
-                .append_i(separator);
+                .appendI(separator);
     }
 
     /**
@@ -1072,7 +1071,7 @@ public class PdfContentByte {
 
     public void rectangle(float x, float y, float w, float h) {
         content.append(x).append(SINGLE_SPACE).append(y).append(SINGLE_SPACE).append(w).append(SINGLE_SPACE).append(h).append(" re")
-                .append_i(separator);
+                .appendI(separator);
     }
 
     private boolean compareColors(Color c1, Color c2) {
@@ -1290,7 +1289,7 @@ public class PdfContentByte {
      */
 
     public void closePath() {
-        content.append("h").append_i(separator);
+        content.append("h").appendI(separator);
     }
 
     /**
@@ -1298,7 +1297,7 @@ public class PdfContentByte {
      */
 
     public void newPath() {
-        content.append("n").append_i(separator);
+        content.append("n").appendI(separator);
     }
 
     /**
@@ -1306,7 +1305,7 @@ public class PdfContentByte {
      */
 
     public void stroke() {
-        content.append("S").append_i(separator);
+        content.append("S").appendI(separator);
     }
 
     /**
@@ -1314,7 +1313,7 @@ public class PdfContentByte {
      */
 
     public void closePathStroke() {
-        content.append("s").append_i(separator);
+        content.append("s").appendI(separator);
     }
 
     /**
@@ -1322,7 +1321,7 @@ public class PdfContentByte {
      */
 
     public void fill() {
-        content.append("f").append_i(separator);
+        content.append("f").appendI(separator);
     }
 
     /**
@@ -1330,7 +1329,7 @@ public class PdfContentByte {
      */
 
     public void eoFill() {
-        content.append("f*").append_i(separator);
+        content.append("f*").appendI(separator);
     }
 
     /**
@@ -1338,7 +1337,7 @@ public class PdfContentByte {
      */
 
     public void fillStroke() {
-        content.append("B").append_i(separator);
+        content.append("B").appendI(separator);
     }
 
     /**
@@ -1346,7 +1345,7 @@ public class PdfContentByte {
      */
 
     public void closePathFillStroke() {
-        content.append("b").append_i(separator);
+        content.append("b").appendI(separator);
     }
 
     /**
@@ -1354,7 +1353,7 @@ public class PdfContentByte {
      */
 
     public void eoFillStroke() {
-        content.append("B*").append_i(separator);
+        content.append("B*").appendI(separator);
     }
 
     /**
@@ -1362,7 +1361,7 @@ public class PdfContentByte {
      */
 
     public void closePathEoFillStroke() {
-        content.append("b*").append_i(separator);
+        content.append("b*").appendI(separator);
     }
 
     /**
@@ -1490,7 +1489,7 @@ public class PdfContentByte {
 
         content.append("ID\n");
         pimage.writeContent(content);
-        content.append("\nEI\nQ").append_i(separator);
+        content.append("\nEI\nQ").appendI(separator);
     }
 
     private void handleJBIG2Image(Image image, PdfImage pimage) {
@@ -1541,7 +1540,7 @@ public class PdfContentByte {
         handleImageMask(image, prs);
         PdfName name = writer.addDirectImageSimple(image);
         name = prs.addXObject(name, writer.getImageReference(name));
-        content.append(SINGLE_SPACE).append(name.getBytes()).append(DO_Q).append_i(separator);
+        content.append(SINGLE_SPACE).append(name.getBytes()).append(DO_Q).appendI(separator);
     }
 
     private void handleImageMask(Image image, PageResources prs) throws DocumentException {
@@ -1642,7 +1641,7 @@ public class PdfContentByte {
         state.xTLM = 0;
         state.yTLM = 0;
         layoutPositionCorrection = null;
-        content.append("BT").append_i(separator);
+        content.append("BT").appendI(separator);
     }
 
     /**
@@ -1654,7 +1653,7 @@ public class PdfContentByte {
                     MessageLocalization.getComposedMessage(UNBALANCED_BEGIN_END_TEXT_OPERATORS));
         }
         inText = false;
-        content.append("ET").append_i(separator);
+        content.append("ET").appendI(separator);
     }
 
     /**
@@ -1662,7 +1661,7 @@ public class PdfContentByte {
      * <CODE>restoreState</CODE> must be balanced.
      */
     public void saveState() {
-        content.append("q").append_i(separator);
+        content.append("q").appendI(separator);
         if (state != null) {
             stateList.add(new GraphicState(state));
         }
@@ -1673,7 +1672,7 @@ public class PdfContentByte {
      * <CODE>restoreState</CODE> must be balanced.
      */
     public void restoreState() {
-        content.append("Q").append_i(separator);
+        content.append("Q").appendI(separator);
         int idx = stateList.size() - 1;
         if (idx < 0) {
             throw new IllegalPdfSyntaxException(
@@ -1703,7 +1702,7 @@ public class PdfContentByte {
         PageResources prs = getPageResources();
         PdfName name = state.fontDetails.getFontName();
         name = prs.addFont(name, state.fontDetails.getIndirectReference());
-        content.append(name.getBytes()).append(SINGLE_SPACE).append(size).append(" Tf").append_i(separator);
+        content.append(name.getBytes()).append(SINGLE_SPACE).append(size).append(" Tf").appendI(separator);
     }
 
     /**
@@ -1712,7 +1711,7 @@ public class PdfContentByte {
      * @param rendering a parameter
      */
     public void setTextRenderingMode(int rendering) {
-        content.append(rendering).append(" Tr").append_i(separator);
+        content.append(rendering).append(" Tr").appendI(separator);
     }
 
     /**
@@ -1723,7 +1722,7 @@ public class PdfContentByte {
      * @param rise a parameter
      */
     public void setTextRise(float rise) {
-        content.append(rise).append(" Ts").append_i(separator);
+        content.append(rise).append(" Ts").appendI(separator);
     }
 
     /**
@@ -1772,7 +1771,7 @@ public class PdfContentByte {
      */
     public void showTextBasic(String text) {
         showText2(text);
-        content.append("Tj").append_i(separator);
+        content.append("Tj").appendI(separator);
     }
 
     /**
@@ -1798,7 +1797,7 @@ public class PdfContentByte {
         }
         byte[] b = state.fontDetails.convertToBytes(glyphVector, beginIndex, endIndex);
         escapeAndAppendString(b, content);
-        content.append("Tj").append_i(separator);
+        content.append("Tj").appendI(separator);
     }
 
     /**
@@ -1827,7 +1826,7 @@ public class PdfContentByte {
     public void newlineShowText(String text) {
         state.yTLM -= state.leading;
         showText2(text);
-        content.append("'").append_i(separator);
+        content.append("'").appendI(separator);
     }
 
     /**
@@ -1842,7 +1841,7 @@ public class PdfContentByte {
         state.yTLM -= state.leading;
         content.append(wordSpacing).append(SINGLE_SPACE).append(charSpacing);
         showText2(text);
-        content.append("\"").append_i(separator);
+        content.append("\"").appendI(separator);
 
         // The " operator sets charSpace and wordSpace into graphics state
         // (cfr PDF reference v1.6, table 5.6)
@@ -1865,9 +1864,9 @@ public class PdfContentByte {
     public void setTextMatrix(float a, float b, float c, float d, float x, float y) {
         state.xTLM = x;
         state.yTLM = y;
-        content.append(a).append(SINGLE_SPACE).append(b).append_i(SINGLE_SPACE)
-                .append(c).append_i(SINGLE_SPACE).append(d).append_i(SINGLE_SPACE)
-                .append(x).append_i(SINGLE_SPACE).append(y).append(" Tm").append_i(separator);
+        content.append(a).append(SINGLE_SPACE).append(b).appendI(SINGLE_SPACE)
+                .append(c).appendI(SINGLE_SPACE).append(d).appendI(SINGLE_SPACE)
+                .append(x).appendI(SINGLE_SPACE).append(y).append(" Tm").appendI(separator);
     }
 
     /**
@@ -1906,7 +1905,7 @@ public class PdfContentByte {
     void moveTextBasic(float x, float y) {
         state.xTLM += x;
         state.yTLM += y;
-        content.append(x).append(SINGLE_SPACE).append(y).append(" Td").append_i(separator);
+        content.append(x).append(SINGLE_SPACE).append(y).append(" Td").appendI(separator);
     }
 
     /**
@@ -1926,7 +1925,7 @@ public class PdfContentByte {
         state.xTLM += x;
         state.yTLM += y;
         state.leading = -y;
-        content.append(x).append(SINGLE_SPACE).append(y).append(" TD").append_i(separator);
+        content.append(x).append(SINGLE_SPACE).append(y).append(" TD").appendI(separator);
     }
 
     /**
@@ -1936,7 +1935,7 @@ public class PdfContentByte {
         if (state != null) {
             state.yTLM -= state.leading;
         }
-        content.append("T*").append_i(separator);
+        content.append("T*").appendI(separator);
     }
 
     /**
@@ -2102,7 +2101,7 @@ public class PdfContentByte {
      **/
     public void concatCTM(float a, float b, float c, float d, float e, float f) {
         content.append(a).append(SINGLE_SPACE).append(b).append(SINGLE_SPACE).append(c).append(SINGLE_SPACE);
-        content.append(d).append(SINGLE_SPACE).append(e).append(SINGLE_SPACE).append(f).append(" cm").append_i(separator);
+        content.append(d).append(SINGLE_SPACE).append(e).append(SINGLE_SPACE).append(f).append(" cm").appendI(separator);
     }
 
     /**
@@ -2270,7 +2269,7 @@ public class PdfContentByte {
         PdfName name = writer.addDirectTemplateSimple(psobject, null);
         PageResources prs = getPageResources();
         name = prs.addXObject(name, psobject.getIndirectReference());
-        content.append(name.getBytes()).append(" Do").append_i(separator);
+        content.append(name.getBytes()).append(" Do").appendI(separator);
     }
 
     /**
@@ -2297,7 +2296,7 @@ public class PdfContentByte {
         content.append(d).append(SINGLE_SPACE);
         content.append(e).append(SINGLE_SPACE);
         content.append(f).append(" cm ");
-        content.append(name.getBytes()).append(DO_Q).append_i(separator);
+        content.append(name.getBytes()).append(DO_Q).appendI(separator);
     }
 
     void addTemplateReference(PdfIndirectReference template, PdfName name, TransformationMatrix matrix) {
@@ -2311,7 +2310,7 @@ public class PdfContentByte {
         content.append(matrix.getD()).append(SINGLE_SPACE);
         content.append(matrix.getE()).append(SINGLE_SPACE);
         content.append(matrix.getF()).append(" cm ");
-        content.append(name.getBytes()).append(DO_Q).append_i(separator);
+        content.append(name.getBytes()).append(DO_Q).appendI(separator);
     }
 
     /**
@@ -2352,7 +2351,7 @@ public class PdfContentByte {
         content.append(d).append(SINGLE_SPACE);
         content.append(e).append(SINGLE_SPACE);
         content.append(f).append(" cm ");
-        content.append(name.getBytes()).append(DO_Q).append_i(separator);
+        content.append(name.getBytes()).append(DO_Q).appendI(separator);
     }
 
     /**
@@ -2375,7 +2374,7 @@ public class PdfContentByte {
 
     public void setCMYKColorFill(int cyan, int magenta, int yellow, int black) {
         helperCMYK(cyan, magenta, yellow, black);
-        content.append(" k").append_i(separator);
+        content.append(" k").appendI(separator);
     }
 
     /**
@@ -2396,7 +2395,7 @@ public class PdfContentByte {
 
     public void setCMYKColorStroke(int cyan, int magenta, int yellow, int black) {
         helperCMYK(cyan, magenta, yellow, black);
-        content.append(" K").append_i(separator);
+        content.append(" K").appendI(separator);
     }
 
     /**
@@ -2423,7 +2422,7 @@ public class PdfContentByte {
     public void setRGBColorFill(int red, int green, int blue, int alpha) {
         saveColorFill(new RGBColor(red, green, blue, alpha));
         helperRGB(red, green, blue);
-        content.append(" rg").append_i(separator);
+        content.append(" rg").appendI(separator);
     }
 
     /**
@@ -2448,7 +2447,7 @@ public class PdfContentByte {
     public void setRGBColorStroke(int red, int green, int blue, int alpha) {
         saveColorStroke(new RGBColor(red, green, blue, alpha));
         helperRGB(red, green, blue);
-        content.append(" RG").append_i(separator);
+        content.append(" RG").appendI(separator);
     }
 
     /**
@@ -2580,7 +2579,7 @@ public class PdfContentByte {
         PageResources prs = getPageResources();
         PdfName name = state.colorDetails.getColorName();
         name = prs.addColor(name, state.colorDetails.getIndirectReference());
-        content.append(name.getBytes()).append(" cs ").append(tint).append(" scn").append_i(separator);
+        content.append(name.getBytes()).append(" cs ").append(tint).append(" scn").appendI(separator);
     }
 
     /**
@@ -2596,7 +2595,7 @@ public class PdfContentByte {
         PageResources prs = getPageResources();
         PdfName name = state.colorDetails.getColorName();
         name = prs.addColor(name, state.colorDetails.getIndirectReference());
-        content.append(name.getBytes()).append(" CS ").append(tint).append(" SCN").append_i(separator);
+        content.append(name.getBytes()).append(" CS ").append(tint).append(" SCN").appendI(separator);
     }
 
     /**
@@ -2615,7 +2614,7 @@ public class PdfContentByte {
         PdfName name = writer.addSimplePattern(p);
         name = prs.addPattern(name, p.getIndirectReference());
         content.append(PdfName.PATTERN.getBytes()).append(" cs ").append(name.getBytes()).append(" scn")
-                .append_i(separator);
+                .appendI(separator);
     }
 
     /**
@@ -2687,9 +2686,9 @@ public class PdfContentByte {
         name = prs.addPattern(name, p.getIndirectReference());
         ColorDetails csDetail = writer.addSimplePatternColorspace(color);
         PdfName cName = prs.addColor(csDetail.getColorName(), csDetail.getIndirectReference());
-        content.append(cName.getBytes()).append(" cs").append_i(separator);
+        content.append(cName.getBytes()).append(" cs").appendI(separator);
         outputColorNumbers(color, tint);
-        content.append(SINGLE_SPACE).append(name.getBytes()).append(" scn").append_i(separator);
+        content.append(SINGLE_SPACE).append(name.getBytes()).append(" scn").appendI(separator);
     }
 
     /**
@@ -2731,9 +2730,9 @@ public class PdfContentByte {
         name = prs.addPattern(name, p.getIndirectReference());
         ColorDetails csDetail = writer.addSimplePatternColorspace(color);
         PdfName cName = prs.addColor(csDetail.getColorName(), csDetail.getIndirectReference());
-        content.append(cName.getBytes()).append(" CS").append_i(separator);
+        content.append(cName.getBytes()).append(" CS").appendI(separator);
         outputColorNumbers(color, tint);
-        content.append(SINGLE_SPACE).append(name.getBytes()).append(" SCN").append_i(separator);
+        content.append(SINGLE_SPACE).append(name.getBytes()).append(" SCN").appendI(separator);
     }
 
     /**
@@ -2752,7 +2751,7 @@ public class PdfContentByte {
         PdfName name = writer.addSimplePattern(p);
         name = prs.addPattern(name, p.getIndirectReference());
         content.append(PdfName.PATTERN.getBytes()).append(" CS ").append(name.getBytes()).append(" SCN")
-                .append_i(separator);
+                .appendI(separator);
     }
 
     /**
@@ -2764,7 +2763,7 @@ public class PdfContentByte {
         writer.addSimpleShading(shading);
         PageResources prs = getPageResources();
         PdfName name = prs.addShading(shading.getShadingName(), shading.getShadingReference());
-        content.append(name.getBytes()).append(" sh").append_i(separator);
+        content.append(name.getBytes()).append(" sh").appendI(separator);
         ColorDetails details = shading.getColorDetails();
         if (details != null) {
             prs.addColor(details.getColorName(), details.getIndirectReference());
@@ -2792,7 +2791,7 @@ public class PdfContentByte {
         PageResources prs = getPageResources();
         PdfName name = prs.addPattern(shading.getPatternName(), shading.getPatternReference());
         content.append(PdfName.PATTERN.getBytes()).append(" cs ").append(name.getBytes()).append(" scn")
-                .append_i(separator);
+                .appendI(separator);
         ColorDetails details = shading.getColorDetails();
         if (details != null) {
             prs.addColor(details.getColorName(), details.getIndirectReference());
@@ -2811,7 +2810,7 @@ public class PdfContentByte {
         PageResources prs = getPageResources();
         PdfName name = prs.addPattern(shading.getPatternName(), shading.getPatternReference());
         content.append(PdfName.PATTERN.getBytes()).append(" CS ").append(name.getBytes()).append(" SCN")
-                .append_i(separator);
+                .appendI(separator);
         ColorDetails details = shading.getColorDetails();
         if (details != null) {
             prs.addColor(details.getColorName(), details.getIndirectReference());
@@ -2858,7 +2857,7 @@ public class PdfContentByte {
                 content.append((Float) obj);
             }
         }
-        content.append("]TJ").append_i(separator);
+        content.append("]TJ").appendI(separator);
     }
 
     /**
@@ -2887,7 +2886,7 @@ public class PdfContentByte {
                 content.append((Float) obj);
             }
         }
-        content.append("]TJ").append_i(separator);
+        content.append("]TJ").appendI(separator);
     }
 
     /**
@@ -3414,7 +3413,7 @@ public class PdfContentByte {
         if (state != null) {
             state.extGState = gstate;
         }
-        content.append(name.getBytes()).append(" gs").append_i(separator);
+        content.append(name.getBytes()).append(" gs").appendI(separator);
     }
 
     /**
@@ -3457,7 +3456,7 @@ public class PdfContentByte {
         PdfName name = (PdfName) writer.addSimpleProperty(layer, layer.getRef())[0];
         PageResources prs = getPageResources();
         name = prs.addProperty(name, layer.getRef());
-        content.append("/OC ").append(name.getBytes()).append(" BDC").append_i(separator);
+        content.append("/OC ").append(name.getBytes()).append(" BDC").appendI(separator);
     }
 
     /**
@@ -3472,7 +3471,7 @@ public class PdfContentByte {
             throw new IllegalPdfSyntaxException(MessageLocalization.getComposedMessage("unbalanced.layer.operators"));
         }
         while (n-- > 0) {
-            content.append("EMC").append_i(separator);
+            content.append("EMC").appendI(separator);
         }
     }
 
@@ -3486,7 +3485,7 @@ public class PdfContentByte {
         af.getMatrix(arr);
         content.append(arr[0]).append(SINGLE_SPACE).append(arr[1]).append(SINGLE_SPACE).append(arr[2]).append(
                 SINGLE_SPACE);
-        content.append(arr[3]).append(SINGLE_SPACE).append(arr[4]).append(SINGLE_SPACE).append(arr[5]).append(" cm").append_i(separator);
+        content.append(arr[3]).append(SINGLE_SPACE).append(arr[4]).append(SINGLE_SPACE).append(arr[5]).append(" cm").appendI(separator);
     }
 
     void addAnnotation(PdfAnnotation annot) throws IOException {
@@ -3555,7 +3554,7 @@ public class PdfContentByte {
         } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
-        content.append(" BDC").append_i(separator);
+        content.append(" BDC").appendI(separator);
     }
 
     /**
@@ -3567,7 +3566,7 @@ public class PdfContentByte {
                     MessageLocalization.getComposedMessage("unbalanced.begin.end.marked.content.operators"));
         }
         --mcDepth;
-        content.append("EMC").append_i(separator);
+        content.append("EMC").appendI(separator);
     }
 
     /**
@@ -3581,7 +3580,7 @@ public class PdfContentByte {
      */
     public void beginMarkedContentSequence(PdfName tag, PdfDictionary property, boolean inline) {
         if (property == null) {
-            content.append(tag.getBytes()).append(" BMC").append_i(separator);
+            content.append(tag.getBytes()).append(" BMC").appendI(separator);
         } else {
             content.append(tag.getBytes()).append(SINGLE_SPACE);
             if (inline) {
@@ -3602,7 +3601,7 @@ public class PdfContentByte {
                 name = prs.addProperty(name, (PdfIndirectReference) objs[1]);
                 content.append(name.getBytes());
             }
-            content.append(" BDC").append_i(separator);
+            content.append(" BDC").appendI(separator);
         }
         ++mcDepth;
     }

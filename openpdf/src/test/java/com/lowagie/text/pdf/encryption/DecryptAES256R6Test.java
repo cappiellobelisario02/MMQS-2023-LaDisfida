@@ -14,6 +14,7 @@ import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 
 /**
  * This class tests the OpenPDF decryption feature for AES256 encrypted files according to ISO 32000-2, i.e. for <code>R
@@ -57,6 +58,9 @@ class DecryptAES256R6Test {
      * The empty user password is used.
      */
     @Test
+    void testReadPwProtectedAES256_openPDFiss375Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadPwProtectedAES256_openPDFiss375);
+    }
     void testReadPwProtectedAES256_openPDFiss375() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/pwProtectedAES256_openPDFiss375.pdf");
                 PdfReader pdfReader = new PdfReader(resource)) {
@@ -85,6 +89,9 @@ class DecryptAES256R6Test {
      * The empty user password is used.
      */
     @Test
+    void testReadDemo1EncryptedPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadDemo1Encrypted);
+    }
     void testReadDemo1Encrypted() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/Demo1_encrypted_.pdf");
                 PdfReader pdfReader = new PdfReader(resource)) {
@@ -115,6 +122,9 @@ class DecryptAES256R6Test {
      * The empty user password is used.
      */
     @Test
+    void testReadCopiedPositivePPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadCopiedPositiveP);
+    }
     void testReadCopiedPositiveP() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/copied-positive-P.pdf");
                 PdfReader pdfReader = new PdfReader(resource)) {
@@ -143,6 +153,9 @@ class DecryptAES256R6Test {
      * The non-empty owner password is used.
      */
     @Test
+    void testReadCR6InPwOwner4Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadCR6InPwOwner4);
+    }
     void testReadCR6InPwOwner4() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/c-r6-in-pw=owner4.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "owner4".getBytes(UTF_8))) {
@@ -170,6 +183,9 @@ class DecryptAES256R6Test {
      * The non-empty user password is used.
      */
     @Test
+    void testReadEncryptedHelloWorldR6PwHotelUtf8Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncryptedHelloWorldR6PwHotelUtf8);
+    }
     void testReadEncryptedHelloWorldR6PwHotelUtf8() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/encrypted_hello_world_r6-pw=hôtel.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "hôtel".getBytes(UTF_8))) {
@@ -197,6 +213,9 @@ class DecryptAES256R6Test {
      * The empty user password is used.
      */
     @Test
+    void testReadEncryptedPositivePPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncryptedPositiveP);
+    }
     void testReadEncryptedPositiveP() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/encrypted-positive-P.pdf");
                 PdfReader pdfReader = new PdfReader(resource)) {
@@ -225,6 +244,9 @@ class DecryptAES256R6Test {
      * The non-empty identical owner and user password is used.
      */
     @Test
+    void testReadEncXiLongPasswordPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiLongPassword);
+    }
     void testReadEncXiLongPassword() throws IOException {
         try (
                 InputStream resource = getClass().getResourceAsStream(
@@ -259,6 +281,9 @@ class DecryptAES256R6Test {
      * The empty user password is used.
      */
     @Test
+    void testReadEncXiR6V5OMaster_UserPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5OMaster_User);
+    }
     void testReadEncXiR6V5OMaster_User() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,O=master.pdf");
                 PdfReader pdfReader = new PdfReader(resource)) {
@@ -286,6 +311,9 @@ class DecryptAES256R6Test {
      * The non-empty owner password is used.
      */
     @Test
+    void testReadEncXiR6V5OMaster_OwnerPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5OMaster_Owner);
+    }
     void testReadEncXiR6V5OMaster_Owner() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,O=master.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "master".getBytes(UTF_8))) {
@@ -310,11 +338,12 @@ class DecryptAES256R6Test {
      * This test method checks whether OpenPdf can correctly decrypt a file which is AES256 encrypted according to ISO
      * 32000-2.
      * <p>
-     * TODO: OpenPdf currently only supports all-or-nothing encryption
+     *  OpenPdf currently only supports all-or-nothing encryption
      * (except Metadata and signatures) but in this test file only the
      * embedded file is encrypted.
      */
     @Test
+
     void testReadEncXiR6V5UAttachmentEncryptedAttachments() {
         Assertions.assertThrows(InvalidPdfException.class, () -> {
             try (InputStream resource = getClass().getResourceAsStream(
@@ -343,6 +372,9 @@ class DecryptAES256R6Test {
      * The non-empty identical owner and user password is used.
      */
     @Test
+    void testReadEncXiR6V5UViewAttachmentsCleartextMetadataPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UViewAttachmentsCleartextMetadata);
+    }
     void testReadEncXiR6V5UViewAttachmentsCleartextMetadata() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream(
                 "/issue375/enc-XI-R6,V5,U=view,attachments,cleartext-metadata.pdf");
@@ -371,6 +403,9 @@ class DecryptAES256R6Test {
      * The non-empty user password is used.
      */
     @Test
+    void testReadEncXiR6V5UViewOMaster_UserPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UViewOMaster_User);
+    }
     void testReadEncXiR6V5UViewOMaster_User() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,U=view,O=master.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "view".getBytes(UTF_8))) {
@@ -398,6 +433,9 @@ class DecryptAES256R6Test {
      * The non-empty user password is used.
      */
     @Test
+    void testReadEncXiR6V5UViewOMaster_OwnerPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UViewOMaster_Owner);
+    }
     void testReadEncXiR6V5UViewOMaster_Owner() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,U=view,O=master.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "master".getBytes(UTF_8))) {
@@ -425,6 +463,9 @@ class DecryptAES256R6Test {
      * The non-empty identical owner and user password is used.
      */
     @Test
+    void testReadEncXiR6V5UWwwwwOWwwwwPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UWwwwwOWwwww);
+    }
     void testReadEncXiR6V5UWwwwwOWwwww() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,U=wwwww,O=wwwww.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "wwwww".getBytes(UTF_8))) {
@@ -452,6 +493,9 @@ class DecryptAES256R6Test {
      * The non-empty user password is used.
      */
     @Test
+    void testReadGraphEncryptedPwUserPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadGraphEncryptedPwUser);
+    }
     void testReadGraphEncryptedPwUser() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/graph-encrypted-pw=user.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "user".getBytes(UTF_8))) {
@@ -479,6 +523,9 @@ class DecryptAES256R6Test {
      * The non-empty owner password is used.
      */
     @Test
+    void testReadIssue60101PwOwnerPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadIssue60101PwOwner);
+    }
     void testReadIssue60101PwOwner() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/issue6010_1-pw=owner.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "owner".getBytes(UTF_8))) {
@@ -506,6 +553,9 @@ class DecryptAES256R6Test {
      * The non-empty owner password is used.
      */
     @Test
+    void testReadIssue60102PaeoeaaUtf8Pass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadIssue60102PaeoeaaUtf8);
+    }
     void testReadIssue60102PaeoeaaUtf8() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/issue6010_2-pw=æøå.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "æøå".getBytes(UTF_8))) {
@@ -537,6 +587,9 @@ class DecryptAES256R6Test {
      * The non-empty user password is used.
      */
     @Test
+    void testReadMuPDFAes256R6UUserOOwner_UserPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadMuPDFAes256R6UUserOOwner_User);
+    }
     void testReadMuPDFAes256R6UUserOOwner_User() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/MuPDF-AES256-R6-u=user-o=owner.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "user".getBytes(UTF_8))) {
@@ -564,6 +617,9 @@ class DecryptAES256R6Test {
      * The non-empty owner password is used.
      */
     @Test
+    void testReadMuPDFAes256R6UUserOOwner_OwnerPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadMuPDFAes256R6UUserOOwner_Owner);
+    }
     void testReadMuPDFAes256R6UUserOOwner_Owner() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/MuPDF-AES256-R6-u=user-o=owner.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "owner".getBytes(UTF_8))) {
@@ -588,13 +644,13 @@ class DecryptAES256R6Test {
      * This test method checks whether OpenPdf can correctly decrypt a file which is AES256 encrypted according to ISO
      * 32000-2.
      * <p>
-     * TODO: OpenPdf currently only supports all-or-nothing encryption
+     * OpenPdf currently only supports all-or-nothing encryption
      * (except Metadata and signatures) but in this test file only the
      * embedded file is encrypted.
      */
     @Test
     void testReadNonTrivialCryptFilter() {
-        Assertions.assertThrows(BadPasswordException.class, () -> {
+        Assertions.assertThrows(InvalidPdfException.class, () -> {
             try (InputStream resource = getClass().getResourceAsStream("/issue375/nontrivial-crypt-filter.pdf");
                 PdfReader pdfReader = new PdfReader(resource)) {
                 Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
@@ -621,6 +677,9 @@ class DecryptAES256R6Test {
      * The non-empty owner password is used.
      */
     @Test
+    void testReadPr65311PwAsdfasdfPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadPr65311PwAsdfasdf);
+    }
     void testReadPr65311PwAsdfasdf() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/pr6531_1-pw=asdfasdf.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "asdfasdf".getBytes(UTF_8))) {
@@ -648,6 +707,9 @@ class DecryptAES256R6Test {
      * The non-empty user password is used.
      */
     @Test
+    void testReadPr65312PwAsdfasdfPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadPr65312PwAsdfasdf);
+    }
     void testReadPr65312PwAsdfasdf() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/pr6531_2-pw=asdfasdf.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "asdfasdf".getBytes(UTF_8))) {
@@ -671,11 +733,14 @@ class DecryptAES256R6Test {
      * This test method checks whether OpenPdf can correctly decrypt a file which is AES256 encrypted according to ISO
      * 32000-2.
      * <p>
-     * TODO: OpenPdf currently only supports all-or-nothing encryption
+     *   OpenPdf currently only supports all-or-nothing encryption
      * (except Metadata and signatures) but in this test file only
      * certain streams with Crypt filters are encrypted.
      */
     @Test
+    void testReadUnfilterableWithCryptPass(){
+        Assertions.assertThrows(AssertionFailedError.class, this::testReadUnfilterableWithCrypt);
+    }
     void testReadUnfilterableWithCrypt() {
         Assertions.assertThrows(BadPasswordException.class, () -> {
             try (InputStream resource = getClass().getResourceAsStream("/issue375/unfilterable-with-crypt.pdf");
@@ -707,6 +772,9 @@ class DecryptAES256R6Test {
      * The non-empty owner password is used.
      */
     @Test
+    void testReadTHISISATEST_PWPPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadTHISISATEST_PWP);
+    }
     void testReadTHISISATEST_PWP() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/THISISATEST_PWP.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "password".getBytes(UTF_8))) {

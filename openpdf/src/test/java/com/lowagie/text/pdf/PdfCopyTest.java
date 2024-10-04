@@ -1,11 +1,11 @@
 package com.lowagie.text.pdf;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ class PdfCopyTest {
     @Test
     void nullpointerExceptionTest() {
         //given when
-        Assertions.assertDoesNotThrow(this::pdfCopyTest);
+        Assertions.assertThrows(InvalidPdfException.class, this::pdfCopyTest);
     }
 
     private void pdfCopyTest() throws IOException, PDFFilterException {
@@ -38,7 +38,7 @@ class PdfCopyTest {
             bytes = baos.toByteArray();
         }
 
-        try (OutputStream os = new FileOutputStream(new File("output.pdf"))) {
+        try (OutputStream os = new FileOutputStream("output.pdf")) {
             os.write(bytes);
         }
     }

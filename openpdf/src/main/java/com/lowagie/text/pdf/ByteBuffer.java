@@ -76,7 +76,7 @@ public class ByteBuffer extends OutputStream {
      * If <CODE>true</CODE> always output floating point numbers with 6 decimal digits. If <CODE>false</CODE> uses the
      * faster, although less precise, representation.
      */
-    public static boolean HIGH_PRECISION = false;
+    public static boolean highPrecision = false;
     private static int byteCacheSize = 0;
     private static byte[][] byteCache = new byte[byteCacheSize][];
     /**
@@ -163,7 +163,9 @@ public class ByteBuffer extends OutputStream {
      */
 
     private static byte[] convertToBytes(int i) {
-        int size = (int) Math.floor(Math.log(i) / Math.log(10));
+        double floor = Math.floor(Math.log(i) / Math.log(10));
+
+        int size = (int) floor;
         if (i % 100 != 0) {
             size += 2;
         }
@@ -187,12 +189,12 @@ public class ByteBuffer extends OutputStream {
         }
         if (i % 100 != 0) {
             cache[size--] = bytes[(i / 10) % 10];
-            cache[size--] = (byte) '.';
+            cache[size] = (byte) '.';
         }
-        size = (int) Math.floor(Math.log(i) / Math.log(10)) - 1;
+        size = (int) floor - 1;
         int add = 0;
         while (add < size) {
-            cache[add] = bytes[(i / (int) Math.pow(10, size - add + 1)) % 10];
+            cache[add] = bytes[(i / (int) Math.pow(10, (double) (size - add) + 1)) % 10];
             add++;
         }
         return cache;
@@ -218,7 +220,7 @@ public class ByteBuffer extends OutputStream {
      * then the double is appended directly to the buffer and this methods returns <CODE>null</CODE>.
      */
     public static String formatDouble(double d, ByteBuffer buf) {
-        if (HIGH_PRECISION) {
+        if (highPrecision) {
             return handleHighPrecision(d, buf);
         }
 
@@ -455,7 +457,7 @@ public class ByteBuffer extends OutputStream {
      * @param b the int to be appended
      * @return a reference to this <CODE>ByteBuffer</CODE> object
      */
-    public ByteBuffer append_i(int b) {
+    public ByteBuffer appendI(int b) {
         int newcount = count + 1;
         if (newcount > buf.length) {
             byte[] newbuf = new byte[Math.max(buf.length << 1, newcount)];
@@ -524,7 +526,7 @@ public class ByteBuffer extends OutputStream {
      * @return a reference to this <CODE>ByteBuffer</CODE> object
      */
     public ByteBuffer append(char c) {
-        return append_i(c);
+        return appendI(c);
     }
 
     /**
@@ -558,7 +560,7 @@ public class ByteBuffer extends OutputStream {
     }
 
     public ByteBuffer append(byte b) {
-        return append_i(b);
+        return appendI(b);
     }
 
     public ByteBuffer appendHex(byte b) {
