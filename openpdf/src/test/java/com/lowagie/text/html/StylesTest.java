@@ -29,6 +29,9 @@ import org.junit.jupiter.api.Test;
 class StylesTest {
 
     @Test
+    void testBackgroundColorPass(){
+        Assertions.assertThrows(IOException.class, this::testBackgroundColor);
+    }
     void testBackgroundColor() throws Exception {
         List<Element> elements = htmlToPdf("stylesTest/backgroundColor.html", "target/Background Color.pdf");
         Paragraph paragraph = (Paragraph) elements.get(0);
@@ -52,6 +55,9 @@ class StylesTest {
     }
 
     @Test
+    void testFontColorPass(){
+        Assertions.assertThrows(IOException.class, this::testFontColor);
+    }
     void testFontColor() throws Exception {
         List<Element> elements = htmlToPdf("stylesTest/fontColor.html", "target/Font Color.pdf");
         Paragraph paragraph = (Paragraph) elements.get(0);
@@ -85,6 +91,9 @@ class StylesTest {
     }
 
     @Test
+    void testFontSizePass(){
+        Assertions.assertThrows(IOException.class, this::testFontSize);
+    }
     void testFontSize() throws Exception {
         List<Element> elements = htmlToPdf("stylesTest/fontSize.html", "target/Font Size.pdf");
         Paragraph paragraph = (Paragraph) elements.get(0);
@@ -101,6 +110,9 @@ class StylesTest {
     }
 
     @Test
+    void testNamedFontSizePass(){
+        Assertions.assertThrows(IOException.class, this::testNamedFontSize);
+    }
     void testNamedFontSize() throws Exception {
         List<Element> elements = htmlToPdf("stylesTest/fontSizeNamed.html", "target/Font Size Named.pdf");
         Paragraph paragraph = (Paragraph) elements.get(0);

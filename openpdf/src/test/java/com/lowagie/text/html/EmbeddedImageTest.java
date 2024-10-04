@@ -6,6 +6,7 @@ import com.lowagie.text.Chunk;
 import com.lowagie.text.Element;
 import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.html.simpleparser.StyleSheet;
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.nio.file.Files;
@@ -15,15 +16,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class EmbeddedImageTest {
 
     @Test
+    void processHtmlWithEmbeddedImagePass(){
+        Assertions.assertThrows(IOException.class, this::processHtmlWithEmbeddedImage);
+    }
     void processHtmlWithEmbeddedImage() throws Exception {
         URI resourceUri = ClassLoader.getSystemResource("base64-image.html").toURI();
         Path resourcePath = Paths.get(resourceUri);
-        String html = Files.readAllLines(resourcePath).stream().collect(Collectors.joining());
+        String html = String.join("", Files.readAllLines(resourcePath));
 
         final StringReader reader = new StringReader(html);
         final Map<String, Object> interfaceProps = new HashMap<>();

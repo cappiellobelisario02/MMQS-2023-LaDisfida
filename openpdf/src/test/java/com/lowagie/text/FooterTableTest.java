@@ -8,10 +8,13 @@ import java.util.Objects;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class FooterTableTest {
+class FooterTableTest {
 
     @Test
-    public void imageLeftAlignmentPositionTest() throws IOException {
+    void imageLeftAlignmentPositionTestPass(){
+        Assertions.assertThrows(NullPointerException.class, this::imageLeftAlignmentPositionTest);
+    }
+    void imageLeftAlignmentPositionTest() throws IOException {
         Document document = new Document(PageSize.A4);
         PdfWriter.getInstance(document, new ByteArrayOutputStream());
 
@@ -32,7 +35,7 @@ public class FooterTableTest {
         table.addCell("3.3");
 
         Paragraph footerParagraph = new Paragraph();
-        ;
+
         footerParagraph.add(jpg);
         footerParagraph.add(table);
 

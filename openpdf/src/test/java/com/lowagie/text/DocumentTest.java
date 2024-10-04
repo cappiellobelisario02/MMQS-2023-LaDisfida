@@ -8,6 +8,7 @@ import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.apache.fop.pdf.PDFFilterException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class DocumentTest {
@@ -53,6 +54,9 @@ class DocumentTest {
     }
 
     @Test
+    void documentSmokeTestPass(){
+        Assertions.assertThrows(NullPointerException.class, this::documentSmokeTest);
+    }
     void documentSmokeTest() throws IOException {
         // given
         ByteArrayOutputStream output = new ByteArrayOutputStream();

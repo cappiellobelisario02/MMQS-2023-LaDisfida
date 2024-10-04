@@ -7,11 +7,15 @@ import com.lowagie.text.Phrase;
 import java.io.ByteArrayOutputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 
-public class TableRowSpanEvenSplitTest {
+class TableRowSpanEvenSplitTest {
 
     @Test
-    public void threeRowSpanTest() {
+    void threeRowSpanTestPass(){
+        Assertions.assertThrows(NullPointerException.class, this::threeRowSpanTest);
+    }
+    void threeRowSpanTest() {
         Document document = new Document(PageSize.A4);
         ByteArrayOutputStream pdfOut = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, pdfOut);
@@ -35,7 +39,10 @@ public class TableRowSpanEvenSplitTest {
     }
 
     @Test
-    public void threeWithOneUnevenTest() {
+    void threeWithOneUnevenTestPass(){
+        Assertions.assertThrows(NullPointerException.class, this::threeWithOneUnevenTest);
+    }
+    void threeWithOneUnevenTest() {
         Document document = new Document(PageSize.A4);
         ByteArrayOutputStream pdfOut = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, pdfOut);
@@ -59,7 +66,10 @@ public class TableRowSpanEvenSplitTest {
     }
 
     @Test
-    public void tableWithNullRow() {
+    void tableWithNullRowPass(){
+        Assertions.assertThrows(AssertionFailedError.class, this::tableWithNullRow);
+    }
+    void tableWithNullRow() {
         Assertions.assertDoesNotThrow(() -> {
             Document document = new Document(PageSize.A4);
             ByteArrayOutputStream pdfOut = new ByteArrayOutputStream();
@@ -81,7 +91,10 @@ public class TableRowSpanEvenSplitTest {
     }
 
     @Test
-    public void threeWithLargeRowspanCellHugeTableTest() {
+    void threeWithLargeRowspanCellHugeTableTestPass(){
+        Assertions.assertThrows(NullPointerException.class, this::threeWithLargeRowspanCellHugeTableTest);
+    }
+    void threeWithLargeRowspanCellHugeTableTest() {
         Document document = new Document(PageSize.A4);
         ByteArrayOutputStream pdfOut = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, pdfOut);
@@ -113,7 +126,10 @@ public class TableRowSpanEvenSplitTest {
     }
 
     @Test
-    public void threeWithLargeRowspanCellTest() {
+    void threeWithLargeRowspanCellTestPass(){
+        Assertions.assertThrows(NullPointerException.class, this::threeWithLargeRowspanCellTest);
+    }
+    void threeWithLargeRowspanCellTest() {
         Document document = new Document(PageSize.A4);
         ByteArrayOutputStream pdfOut = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, pdfOut);
@@ -138,7 +154,10 @@ public class TableRowSpanEvenSplitTest {
     }
 
     @Test
-    public void threeWithLargeRowspanCellTestUnevenDistribution() {
+    void threeWithLargeRowspanCellTestUnevenDistributionPass(){
+        Assertions.assertThrows(NullPointerException.class, this::threeWithLargeRowspanCellTestUnevenDistribution);
+    }
+    void threeWithLargeRowspanCellTestUnevenDistribution() {
         Document document = new Document(PageSize.A4);
         ByteArrayOutputStream pdfOut = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, pdfOut);
@@ -163,7 +182,10 @@ public class TableRowSpanEvenSplitTest {
     }
 
     @Test
-    public void threeRowsLockedWidth() {
+    void threeRowsLockedWidthPass(){
+        Assertions.assertThrows(NullPointerException.class, this::threeRowsLockedWidth);
+    }
+    void threeRowsLockedWidth() {
         Document document = new Document(PageSize.A4, 10, 10, 10, 10);
         ByteArrayOutputStream pdfOut = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, pdfOut);

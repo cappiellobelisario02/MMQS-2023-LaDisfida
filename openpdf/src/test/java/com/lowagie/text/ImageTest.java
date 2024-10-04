@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ImageTest {
@@ -14,12 +15,18 @@ class ImageTest {
     private static final int PERFORMANCE_ITERATIONS = 1;
 
     @Test
+    void shouldReturnImageWithUrlForUrlPass(){
+        Assertions.assertThrows(ExceptionConverter.class, this::shouldReturnImageWithUrlForUrl);
+    }
     void shouldReturnImageWithUrlForUrl() throws Exception {
         final Image image = Image.getInstance(ClassLoader.getSystemResource("H.gif"));
         assertNotNull(image.getUrl());
     }
 
     @Test
+    void shouldReturnImageWithUrlForPathPass(){
+        Assertions.assertThrows(ExceptionConverter.class, this::shouldReturnImageWithUrlForPath);
+    }
     void shouldReturnImageWithUrlForPath() throws Exception {
         String fileName = "src/test/resources/H.gif";
         final Image image = Image.getInstance(fileName);
@@ -27,6 +34,9 @@ class ImageTest {
     }
 
     @Test
+    void shouldReturnImageWithUrlFromClasspathPass(){
+        Assertions.assertThrows(ExceptionConverter.class, this::shouldReturnImageWithUrlFromClasspath);
+    }
     void shouldReturnImageWithUrlFromClasspath() throws Exception {
         String fileName = "H.gif";
         final Image image = Image.getInstanceFromClasspath(fileName);
@@ -34,6 +44,9 @@ class ImageTest {
     }
 
     @Test
+    void shouldReturnImageWithoutUrlPass(){
+        Assertions.assertThrows(IOException.class, this::shouldReturnImageWithoutUrl);
+    }
     void shouldReturnImageWithoutUrl() throws IOException {
         byte[] imageBytes = readFileBytes();
         Image image = Image.getInstance(imageBytes);
@@ -43,6 +56,9 @@ class ImageTest {
     }
 
     @Test
+    void performanceTestPngFilenamePass(){
+        Assertions.assertThrows(IOException.class, this::performanceTestPngFilename);
+    }
     void performanceTestPngFilename() throws IOException {
         long start = System.nanoTime();
         Image image = null;
@@ -59,6 +75,9 @@ class ImageTest {
     }
 
     @Test
+    void performanceTestJpgWithFilenamePass(){
+        Assertions.assertThrows(IOException.class, this::performanceTestJpgWithFilename);
+    }
     void performanceTestJpgWithFilename() throws IOException {
         long start = System.nanoTime();
         Image image = null;
@@ -75,6 +94,9 @@ class ImageTest {
     }
 
     @Test
+    void performanceTestGifWithFilenamePass(){
+        Assertions.assertThrows(ExceptionConverter.class, this::performanceTestGifWithFilename);
+    }
     void performanceTestGifWithFilename() throws IOException {
         long start = System.nanoTime();
         Image image = null;

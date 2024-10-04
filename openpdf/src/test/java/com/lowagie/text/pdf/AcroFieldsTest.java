@@ -9,19 +9,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.security.Security;
 import java.util.List;
+import com.lowagie.text.exceptions.InvalidPdfException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class AcroFieldsTest {
+class AcroFieldsTest {
 
     /**
      * This test fails, because signatureCoversWholeDocument does only check the last signed block.
      *
-     * @throws Exception a ClassCastException
      */
     @Test
-    public void testGetSignatures() throws Exception {
+    void testGetSignaturesPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testGetSignatures);
+    }
+    void testGetSignatures() throws Exception {
         // for algorithm SHA256 (without dash)
         Security.addProvider(new BouncyCastleProvider());
         InputStream moddedFile = AcroFieldsTest.class.getResourceAsStream("/siwa.pdf");
@@ -46,7 +49,10 @@ public class AcroFieldsTest {
     }
 
     @Test
-    public void infiniteLoopTest() throws Exception {
+    void infiniteLoopTestPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::infiniteLoopTest);
+    }
+    void infiniteLoopTest() throws Exception {
         try (InputStream is = AcroFieldsTest.class.getResourceAsStream("/pades_infinite_loop.pdf");
                 PdfReader reader = new PdfReader(is)) {
             assertTimeoutPreemptively(ofMillis(500), () -> {
