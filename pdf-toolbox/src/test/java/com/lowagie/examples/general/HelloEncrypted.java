@@ -16,10 +16,12 @@ package com.lowagie.examples.general;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Generates an encrypted 'Hello World' PDF file.
@@ -54,6 +56,8 @@ public class HelloEncrypted {
             document.add(new Paragraph("Hello World"));
         } catch (DocumentException | IOException de) {
             System.err.println(de.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            throw new ExceptionConverter(e);
         }
 
         // step 5: we close the document

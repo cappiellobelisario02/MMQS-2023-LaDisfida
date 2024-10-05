@@ -52,6 +52,7 @@ import com.lowagie.text.Anchor;
 import com.lowagie.text.Chapter;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Header;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Section;
@@ -133,7 +134,8 @@ public class HtmlBookmarks extends AbstractTool {
     private static Section createBookmark(String pdf, Section section, Map<String, Object> bookmark) {
         Section s;
         Paragraph title = new Paragraph((String) bookmark.get(TITLE));
-        logger.info(bookmark.get(TITLE).toString());
+        String stringToLog = bookmark.get(TITLE).toString();
+        logger.info(stringToLog);
         String action = (String) bookmark.get("Action");
         if ("GoTo".equals(action)) {
             if (bookmark.get("Page") != null) {
@@ -214,8 +216,10 @@ public class HtmlBookmarks extends AbstractTool {
             document.open();
             addContent(document, reader, src);
             Executable.launchBrowser(html.getAbsolutePath());
-        } catch (Exception e) {
+        } catch (InterruptedException | IOException | ReflectiveOperationException e) {
             handleException(e);
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
         } finally {
             closeReader(reader);
         }

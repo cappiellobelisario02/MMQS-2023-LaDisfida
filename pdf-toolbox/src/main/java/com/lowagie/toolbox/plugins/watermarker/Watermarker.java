@@ -3,9 +3,11 @@ package com.lowagie.toolbox.plugins.watermarker;
 import static java.awt.Color.BLACK;
 
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
+import org.apache.fop.pdf.PDFFilterException;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,7 +38,11 @@ public class Watermarker {
      * @throws DocumentException on error
      */
     public Watermarker(byte[] input, String text, int fontsize, float opacity) throws IOException, DocumentException {
-        this.reader = new PdfReader(input);
+        try {
+            this.reader = new PdfReader(input);
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
         this.outputStream = new ByteArrayOutputStream();
         this.stamp = new PdfStamper(reader, outputStream);
         this.text = text;

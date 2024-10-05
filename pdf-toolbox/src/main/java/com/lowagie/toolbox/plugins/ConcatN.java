@@ -36,6 +36,7 @@
 package com.lowagie.toolbox.plugins;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
@@ -45,7 +46,7 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.FileArrayArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
-import com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -87,7 +88,7 @@ public class ConcatN extends AbstractTool {
      *
      * @param args String[]
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         com.lowagie.toolbox.plugins.ConcatN tool = new com.lowagie.toolbox.plugins.ConcatN();
         if (args.length < 2) {
             logger.severe(tool.getUsage());
@@ -109,9 +110,15 @@ public class ConcatN extends AbstractTool {
     /**
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
-    public void execute() throws Exception {
-        File[] sourceFiles = validateInputFiles();
-        File destinationFile = getDestinationFile();
+    public void execute() {
+        File[] sourceFiles;
+        File destinationFile;
+        try {
+            sourceFiles = validateInputFiles();
+            destinationFile = getDestinationFile();
+        } catch (InstantiationException e) {
+            throw new ExceptionConverter(e);
+        }
 
         PdfReader reader = null;
         Document document = null;
@@ -144,8 +151,11 @@ public class ConcatN extends AbstractTool {
             }
 
             document.close();  // Close document after processing all files
-        } finally {
-            closeResources(reader, document, fos, writer);
+            reader.close();
+            fos.close();
+            writer.close();
+        } catch (PDFFilterException | IOException e) {
+            throw new ExceptionConverter(e);
         }
     }
 
@@ -199,53 +209,6 @@ public class ConcatN extends AbstractTool {
         String message = "Processed " + numberOfPages + " pages";
         logger.info(message);
     }
-
-    public class ResourceClosingException extends Exception {
-        public ResourceClosingException(String message) {
-            super(message);
-        }
-
-        public ResourceClosingException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
-
-    private void closeResources(PdfReader reader, Document document, FileOutputStream fos, PdfCopy writer) throws com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException {
-        try {
-            if (reader != null) {
-                reader.close();
-            }
-        } catch (Exception e) {
-            throw new com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException("Failed to close PdfReader", e);
-        }
-
-        try {
-            if (document != null) {
-                document.close();
-            }
-        } catch (Exception e) {
-            throw new com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException("Failed to close Document", e);
-        }
-
-        try {
-            if (fos != null) {
-                fos.close();
-            }
-        } catch (Exception e) {
-            throw new com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException("Failed to close FileOutputStream", e);
-        }
-
-        try {
-            if (writer != null) {
-                writer.close();
-            }
-        } catch (Exception e) {
-            throw new com.lowagie.toolbox.plugins.ConcatN.ResourceClosingException("Failed to close PdfCopy", e);
-        }
-    }
-
-
 
 
     /**

@@ -4,6 +4,7 @@ package com.lowagie.examples.objects.columns;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.ColumnText;
@@ -21,12 +22,12 @@ import java.io.IOException;
  */
 public class ColumnTextTable {
 
-    public static float A4_MARGIN_LEFT = 40;
-    public static float A4_MARGIN_RIGHT = 40;
-    public static float A4_MARGIN_TOP = 100;
-    public static float A4_MARGIN_BOTTOM = A4_MARGIN_TOP;
-    public static float A4_HEIGHT_BODY = PageSize.A4.getHeight() - A4_MARGIN_TOP - A4_MARGIN_BOTTOM;
-    public static float A4_WIDTH_BODY = PageSize.A4.getWidth() - A4_MARGIN_LEFT - A4_MARGIN_RIGHT;
+    public static float a4MarginLeft = 40;
+    public static float a4MarginRight = 40;
+    public static float a4MarginTop = 100;
+    public static float a4MarginBottom = a4MarginTop;
+    public static float a4HeightBody = PageSize.A4.getHeight() - a4MarginTop - a4MarginBottom;
+    public static float a4WidthBody = PageSize.A4.getWidth() - a4MarginLeft - a4MarginRight;
     protected PdfWriter pdfWriter;
 
     public static void main(String[] args) throws IOException {
@@ -36,7 +37,7 @@ public class ColumnTextTable {
         File outputPDF = new File("columnTextTable.pdf");
 
         Document document = new Document(PageSize.A4);
-        document.setMargins(A4_MARGIN_LEFT, A4_MARGIN_RIGHT, A4_MARGIN_TOP, A4_MARGIN_BOTTOM);
+        document.setMargins(a4MarginLeft, a4MarginRight, a4MarginTop, a4MarginBottom);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         columnTextTable.pdfWriter = PdfWriter.getInstance(document, baos);
         columnTextTable.pdfWriter.setStrictImageSequence(true);
@@ -48,14 +49,14 @@ public class ColumnTextTable {
         PdfPTable table = columnTextTable.getPdfPTable();
 
         ColumnText ct = new ColumnText(columnTextTable.pdfWriter.getDirectContent());
-        ct.setSimpleColumn(A4_MARGIN_LEFT, A4_MARGIN_BOTTOM, A4_WIDTH_BODY + A4_MARGIN_LEFT,
-                A4_HEIGHT_BODY + A4_MARGIN_BOTTOM);
+        ct.setSimpleColumn(a4MarginLeft, a4MarginBottom, a4WidthBody + a4MarginLeft,
+                a4HeightBody + a4MarginBottom);
 
         float space = columnTextTable.getHeightOfBlock(table);
 
         ct.addElement(table);
 
-        ct.setYLine(A4_MARGIN_BOTTOM + space);
+        ct.setYLine(a4MarginBottom + space);
 
         ct.go(false);
 
@@ -76,7 +77,7 @@ public class ColumnTextTable {
         Paragraph f1, f2;
         PdfPTable table;
         table = new PdfPTable(1);
-        table.setTotalWidth(A4_WIDTH_BODY);
+        table.setTotalWidth(a4WidthBody);
         table.setLockedWidth(true);
         table.setSplitRows(false);
         PdfPCell cell;
@@ -104,19 +105,24 @@ public class ColumnTextTable {
      */
     float getHeightOfBlock(Element... elements) {
         ColumnText ct = new ColumnText(pdfWriter.getDirectContent());
-        float startY = A4_HEIGHT_BODY + A4_MARGIN_BOTTOM;
+        float startY = a4HeightBody + a4MarginBottom;
 
         float height;
 
-        ct.setSimpleColumn(A4_MARGIN_LEFT, A4_MARGIN_BOTTOM, A4_WIDTH_BODY + A4_MARGIN_LEFT,
-                A4_HEIGHT_BODY + A4_MARGIN_BOTTOM);
+        ct.setSimpleColumn(a4MarginLeft, a4MarginBottom, a4WidthBody + a4MarginLeft,
+                a4HeightBody + a4MarginBottom);
         ct.setYLine(startY);
 
         for (Element element : elements) {
             ct.addElement(element);
         }
 
-        int result = ct.go(true);
+        int result;
+        try {
+            result = ct.go(true);
+        } catch (IOException e) {
+            throw new ExceptionConverter(e);
+        }
         if (ColumnText.hasMoreText(result)) {
             return -1;
         } else {

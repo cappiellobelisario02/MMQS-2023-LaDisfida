@@ -49,6 +49,7 @@ import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
@@ -129,22 +130,15 @@ public class RemoveLaunchApplication
     }
 
     private void processPdf() throws IOException, InstantiationException, PDFFilterException {
-        PdfReader reader = null;
-        FileOutputStream fouts = null;
-        try {
-            File src = (File) getValue(SRCFILE);
-            File dest = (File) getValue(DESTFILE);
 
-            reader = new PdfReader(src.getAbsolutePath());
+        File src = (File) getValue(SRCFILE);
+        File dest = (File) getValue(DESTFILE);
+        try(PdfReader reader = new PdfReader(src.getAbsolutePath());
+                FileOutputStream fouts = new FileOutputStream(dest);
+                PdfStamper stamper = new PdfStamper(reader, fouts)) {
             removeLaunchActions(reader);
-
-            fouts = new FileOutputStream(dest);
-            PdfStamper stamper = new PdfStamper(reader, fouts);
-            stamper.close();
-        } catch (PDFFilterException e) {
+        } catch (PDFFilterException | NoSuchAlgorithmException e) {
             throw new PDFFilterException();
-        } finally {
-            closeResources(reader, fouts);
         }
     }
 
@@ -179,19 +173,6 @@ public class RemoveLaunchApplication
             stringToLog = "Removed: " + l.get(PdfName.WIN);
             logger.info(stringToLog);
             l.remove(PdfName.WIN);
-        }
-    }
-
-    private void closeResources(PdfReader reader, FileOutputStream fouts) {
-        try {
-            if (reader != null) {
-                reader.close();
-            }
-            if (fouts != null) {
-                fouts.close();
-            }
-        } catch (Exception e) {
-            //da vedere come effettuare il log
         }
     }
 

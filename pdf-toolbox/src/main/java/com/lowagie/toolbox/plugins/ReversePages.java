@@ -44,6 +44,8 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.toolbox.plugins.watermarker.WatermarkerTool;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -267,17 +269,7 @@ public class ReversePages
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
-
-        if (destinationfile.getValue() == null && arg.getName().equalsIgnoreCase(SRCFILE)) {
-            String filename = arg.getValue().toString();
-            String filenameout = filename.substring(0, filename.indexOf(".",
-                    filename.length() - 4)) + "_out.pdf";
-            destinationfile.setValue(filenameout);
-        }
+        WatermarkerTool.checkInternalFrame(arg, internalFrame == null, destinationfile, SRCFILE);
     }
 
     /**

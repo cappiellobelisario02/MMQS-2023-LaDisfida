@@ -17,10 +17,12 @@ package com.lowagie.examples.objects.bookmarks;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPageLabels;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -67,7 +69,12 @@ public class PageLabels {
         document.close();
 
         // step 6: check if the labels are correct.
-        PdfReader reader = new PdfReader("PageLabels.pdf");
+        PdfReader reader;
+        try {
+            reader = new PdfReader("PageLabels.pdf");
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        }
         final String[] pageLabels = PdfPageLabels.getPageLabels(reader);
         assertThat(pageLabels).isNotNull();
         assertThat(Arrays.asList(pageLabels)).containsExactly("i", "ii", "iii", "iv", "1", "2", "3", "A-8", "A-9",

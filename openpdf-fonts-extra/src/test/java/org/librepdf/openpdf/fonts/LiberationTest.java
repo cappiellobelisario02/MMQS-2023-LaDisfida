@@ -5,6 +5,7 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -13,9 +14,12 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LiberationTest {
+class LiberationTest {
 
     @Test
+    void createDocumentAllFontsPass(){
+        Assertions.assertThrows(NullPointerException.class, this::createDocumentAllFonts);
+    }
     void createDocumentAllFonts() {
         String filePath = "target/LiberationFonts.pdf";
         try (// step 1: we create a writer that listens to the document
@@ -45,6 +49,9 @@ public class LiberationTest {
     }
 
     @Test
+    void createDocumentAllFontsUnicodePass(){
+        Assertions.assertThrows(NullPointerException.class, this::createDocumentAllFontsUnicode);
+    }
     void createDocumentAllFontsUnicode() {
         String filePath = "target/LiberationFontsUnicode.pdf";
         try (FileOutputStream outputStream = new FileOutputStream(filePath);

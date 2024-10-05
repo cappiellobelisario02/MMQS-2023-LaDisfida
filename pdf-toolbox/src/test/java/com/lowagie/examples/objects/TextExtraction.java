@@ -9,6 +9,7 @@ import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfString;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class TextExtraction {
             System.out.println("Page 2 text: " + pdfTextExtractor.getTextFromPage(2));
             System.out.println("Page 3 table cell text: " + pdfTextExtractor.getTextFromPage(3));
 
-        } catch (DocumentException | IOException de) {
+        } catch (DocumentException | IOException | PDFFilterException de) {
             System.err.println(de.getMessage());
         }
     }

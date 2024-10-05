@@ -37,6 +37,7 @@ package com.lowagie.toolbox.plugins;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
@@ -47,8 +48,10 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.IntegerArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
@@ -135,13 +138,10 @@ public class Split extends AbstractTool {
         }
     }
 
-    private void splitPdf(File src, File file1, File file2, int pagenumber) throws IOException, DocumentException {
-        PdfReader reader = null;
-        Document document1 = null;
-        Document document2 = null;
-
-        try {
-            reader = new PdfReader(src.getAbsolutePath());
+    private void splitPdf(File src, File file1, File file2, int pagenumber) {
+        try (PdfReader reader = new PdfReader(src.getAbsolutePath());
+                Document document1 = new Document(reader.getPageSizeWithRotation(1));
+                Document document2 = new Document(reader.getPageSizeWithRotation(pagenumber))){
             int totalPages = reader.getNumberOfPages();
             logPageCount(totalPages);
 
@@ -149,9 +149,6 @@ public class Split extends AbstractTool {
                 throw new DocumentException(
                         "You can't split this document at page " + pagenumber + "; there is no such page.");
             }
-
-            document1 = new Document(reader.getPageSizeWithRotation(1));
-            document2 = new Document(reader.getPageSizeWithRotation(pagenumber));
 
             PdfWriter writer1 = PdfWriter.getInstance(document1, new FileOutputStream(file1));
             PdfWriter writer2 = PdfWriter.getInstance(document2, new FileOutputStream(file2));
@@ -165,10 +162,8 @@ public class Split extends AbstractTool {
             copyPages(reader, pagenumber, totalPages, document1, cb1, writer1, 1);
             copyPages(reader, pagenumber, totalPages, document2, cb2, writer2, pagenumber);
 
-            document1.close();
-            document2.close();
-        } finally {
-            closeResources(reader, document1, document2);
+        }catch(IOException | DocumentException | PDFFilterException e){
+            throw new ExceptionConverter(e);
         }
     }
 
@@ -181,37 +176,17 @@ public class Split extends AbstractTool {
         for (int i = startPage; i <= totalPages && i < pagenumber + startPage - 1; i++) {
             document.setPageSize(reader.getPageSizeWithRotation(i));
             document.newPage();
-            PdfImportedPage page = writer.getImportedPage(reader, i);
-            int rotation = reader.getPageRotation(i);
-            if (rotation == 90 || rotation == 270) {
-                cb.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(i).getHeight());
-            } else {
-                cb.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
-            }
+            assignImportedPageAndRotation(reader, cb, writer, i);
         }
     }
 
-    private void closeResources(PdfReader reader, Document document1, Document document2) {
-        try {
-            if (reader != null) {
-                reader.close();
-            }
-        } catch (Exception e) {
-            //da vedere come effettuare il log
-        }
-        try {
-            if (document1 != null) {
-                document1.close();
-            }
-        } catch (Exception e) {
-            //da vedere come effettuare il log
-        }
-        try {
-            if (document2 != null) {
-                document2.close();
-            }
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+    static void assignImportedPageAndRotation(PdfReader reader, PdfContentByte cb, PdfWriter writer, int i) {
+        PdfImportedPage page = writer.getImportedPage(reader, i);
+        int rotation = reader.getPageRotation(i);
+        if (rotation == 90 || rotation == 270) {
+            cb.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(i).getHeight());
+        } else {
+            cb.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
         }
     }
 

@@ -97,7 +97,7 @@ public class WatermarkerTool extends AbstractTool {
     }
 
     /**
-     * This methods helps you running this tool as a standalone application.
+     * These methods help you run this tool as a standalone application.
      *
      * <p>
      * Call it like this from command line: java com.lowagie.tools.plugins.Watermarker input.pdf Draft 230 0.2
@@ -151,7 +151,7 @@ public class WatermarkerTool extends AbstractTool {
     public void execute() {
         try (PdfReader reader = new PdfReader(((File) getValue(SRCFILE)).getAbsolutePath());
                 FileOutputStream fouts = new FileOutputStream((File) getValue(DESTFILE));
-                PdfStamper stamp = new PdfStamper(reader, fouts);
+                PdfStamper stamp = new PdfStamper(reader, fouts)
         ){
             if (getValue(SRCFILE) == null) {
                 throw new InstantiationException(
@@ -210,13 +210,18 @@ public class WatermarkerTool extends AbstractTool {
      */
     @Override
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
+        checkInternalFrame(arg, internalFrame == null, destfileFileArgument, SRCFILE);
+    }
+
+    public static void checkInternalFrame(AbstractArgument arg, boolean b, FileArgument destfileFileArgument,
+            String srcfile) {
+        if (b) {
             // if the internal frame is null, the tool was called from the
             // command line
             return;
         }
         if (destfileFileArgument.getValue() == null
-                && arg.getName().equalsIgnoreCase(SRCFILE)) {
+                && arg.getName().equalsIgnoreCase(srcfile)) {
             String filename = arg.getValue().toString();
             String filenameout = filename.substring(0,
                     filename.indexOf(".", filename.length() - 4))

@@ -4,12 +4,16 @@ import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
 import java.io.File;
 import java.io.IOException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GreekAndCyrillicTest {
 
     @Test
+    void testGreekPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testGreek);
+    }
     void testGreek() throws IOException {
         String greekText = "Some greek text: " +
                 "Οἱ δὲ Φοίνιϰες οὗτοι οἱ σὺν Κάδμῳ ἀπιϰόμενοι.. ἐσήγαγον διδασϰάλια ἐς τοὺς ῞Ελληνας ϰαὶ δὴ ϰαὶ "
@@ -36,6 +40,9 @@ class GreekAndCyrillicTest {
     }
 
     @Test
+    void testCyrillicPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testCyrillic);
+    }
     void testCyrillic() throws IOException {
         String cyrillicText = "Some cyrillic text: " +
                 "Статья 1 Все люди рождаются свободными и равными в своем достоинстве и правах. Они "

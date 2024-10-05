@@ -146,13 +146,7 @@ public class Burst extends AbstractTool {
                     try {
                         document2.open();
                         PdfContentByte cb = writer.getDirectContent();
-                        PdfImportedPage page = writer.getImportedPage(reader, pagenumber);
-                        int rotation = reader.getPageRotation(pagenumber);
-                        if (rotation == 90 || rotation == 270) {
-                            cb.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(pagenumber).getHeight());
-                        } else {
-                            cb.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
-                        }
+                        Split.assignImportedPageAndRotation(reader, cb, writer, pagenumber);
                     } finally {
                         // Ensure the document is closed
                         document.close();

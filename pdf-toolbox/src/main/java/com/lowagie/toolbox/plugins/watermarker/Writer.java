@@ -4,6 +4,7 @@ import static com.lowagie.text.pdf.BaseFont.WINANSI;
 import static com.lowagie.text.pdf.BaseFont.createFont;
 
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfContentByte;
@@ -12,6 +13,7 @@ import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import java.awt.Color;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * The concrete class which will write a the watermark on the stamp. It is meant to be used through WatermarkerTool or
@@ -79,7 +81,11 @@ class Writer {
             seitex.endText();
             seitex.restoreState();
         }
-        stamp.close();
+        try {
+            stamp.close();
+        } catch (NoSuchAlgorithmException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
 }

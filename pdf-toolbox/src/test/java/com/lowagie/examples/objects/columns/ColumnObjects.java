@@ -36,7 +36,7 @@ public class ColumnObjects {
     /**
      * Some data we want to output.
      */
-    static public String[] headings = {
+    public static String[] headings = {
             "Book/Product Model:",
             "Sales Handle:",
             "Why We Published this Book/Product Model:",
@@ -51,7 +51,7 @@ public class ColumnObjects {
     /**
      * Some text we want to output.
      */
-    static public String[] texts = {
+    public static String[] texts = {
             "Ideally, choose one title (2-3 if absolutely necessary) that this book should perform like. Include full "
                     + "title, ISBN, author, and any sell through numbers if possible.",
             "One line description about the sales.",
@@ -61,13 +61,13 @@ public class ColumnObjects {
                     + "features about this book should be highlighted? What makes this book different, better? From "
                     + "other books and the previous edition?",
                         """
-                What makes this person so special?  Is she/he an expert, creator of the technology, educational leader, 
-                etc.? What is their background, and what relevant experiences do they have to make them the 
-                BEST choice? Have he/she/they won awards or been recognized in any way. Other books poublished 
+                What makes this person so special?  Is she/he an expert, creator of the technology, educational leader,\s
+                etc.? What is their background, and what relevant experiences do they have to make them the\s
+                BEST choice? Have he/she/they won awards or been recognized in any way. Other books poublished\s
                 by the author.
                 1. Book one.
                 2. Book two.
-                """;
+               \s""",
             "In brief two to five line description of the technology, topic or relevant information. Please keep "
                     + "descriptions succinct.",
             "Ideal describe the contents of this book. What will this book do for the reader? Will this book help them "
@@ -116,7 +116,7 @@ public class ColumnObjects {
             PdfContentByte cb = writer.getDirectContent();
             // headers
             Phrase fullTitle = new Phrase("Full Title", font24B);
-            float currentY = document.top();
+            float currentY;
             ColumnText ct = new ColumnText(cb);
             ct.setSimpleColumn(fullTitle, document.left(), 0, document.right(), document.top(), 24,
                     Element.ALIGN_JUSTIFIED);

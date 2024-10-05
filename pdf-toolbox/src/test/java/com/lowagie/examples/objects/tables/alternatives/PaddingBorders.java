@@ -18,6 +18,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Table;
+import com.lowagie.text.exceptions.AddCellException;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
@@ -88,7 +89,7 @@ public class PaddingBorders {
             table.setConvert2pdfptable(true);
             document.add(new Paragraph("converted to PdfPTable:"));
             document.add(table);
-        } catch (DocumentException | IOException de) {
+        } catch (DocumentException | IOException | AddCellException de) {
             System.err.println(de.getMessage());
         }
         // step 5: we close the document

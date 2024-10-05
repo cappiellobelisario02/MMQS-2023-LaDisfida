@@ -108,7 +108,7 @@ public class SimpleAnnotations {
                     "SimpleAnnotations1.pdf", 2);
             document2.add(a7);
             Annotation a8 = new Annotation(100f, 250f, 200f, 350f,
-                    "C://windows/notepad.exe", null, null, null);
+                    "C://windows/notepad.exe");
             document2.add(a8);
             // draw rectangles to show where the annotations were added
             cb2.rectangle(100, 700, 100, 100);

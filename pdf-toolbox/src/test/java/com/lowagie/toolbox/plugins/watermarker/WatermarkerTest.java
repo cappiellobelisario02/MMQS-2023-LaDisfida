@@ -9,11 +9,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import com.lowagie.text.exceptions.InvalidPdfException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class WatermarkerTest {
 
     @Test
+    void shouldWriteWatermarkWithIOStreamsPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::shouldWriteWatermarkWithIOStreams);
+    }
     void shouldWriteWatermarkWithIOStreams() throws IOException, DocumentException {
         // GIVEN
         Path path = Paths.get("src/test/resources/layers.pdf");

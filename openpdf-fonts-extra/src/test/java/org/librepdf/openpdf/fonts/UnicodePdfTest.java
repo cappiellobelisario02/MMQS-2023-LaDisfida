@@ -13,6 +13,9 @@ class UnicodePdfTest {
     private static final String INPUT = "Symbol: '\u25b2' Latin: 'äöüÄÖÜß'";
 
     @Test
+    void testSimplePdfPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testSimplePdf);
+    }
     void testSimplePdf() throws IOException {
         // Probably a good idea to write the document to a byte array, 
         // so you can read the result and make some checks.

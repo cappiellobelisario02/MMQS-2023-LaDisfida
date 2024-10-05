@@ -21,6 +21,7 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.TextAlignmentSettings;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -71,10 +72,13 @@ public class ComplexText {
             String text = "\u0623\u0648\u0631\u0648\u0628\u0627, \u0628\u0631\u0645\u062c\u064a\u0627\u062a"
                     + " \u0627\u0644\u062d\u0627\u0633\u0648\u0628 + \u0627\u0646\u062a\u0631\u0646\u064a\u062a :";
             Phrase center = new Phrase(text + " Center", ft);
-            ColumnText.showTextAligned(cb, PdfContentByte.ALIGN_CENTER, center, 250, 700, 0,
-                    PdfWriter.RUN_DIRECTION_RTL, 0);
-            ColumnText.showTextAligned(cb, PdfContentByte.ALIGN_RIGHT, new Phrase(text + " Right", ft), 250, 650, 20,
-                    PdfWriter.RUN_DIRECTION_RTL, 0);
+            ColumnText.showTextAligned(cb, center, new TextAlignmentSettings(TextAlignmentSettings.ALIGN_CENTER, 250,
+                    700, 0,
+                    PdfWriter.RUN_DIRECTION_RTL, 0));
+            Phrase right = new Phrase(text + " Right", ft);
+            ColumnText.showTextAligned(cb, right,
+                    new TextAlignmentSettings(TextAlignmentSettings.ALIGN_RIGHT,250, 650, 20,
+                    PdfWriter.RUN_DIRECTION_RTL, 0));
             ColumnText.showTextAligned(cb, PdfContentByte.ALIGN_LEFT, new Phrase("Some text Left aligned", ft), 250,
                     600, 20);
             float size = ColumnText.getWidth(center, PdfWriter.RUN_DIRECTION_RTL, 0);

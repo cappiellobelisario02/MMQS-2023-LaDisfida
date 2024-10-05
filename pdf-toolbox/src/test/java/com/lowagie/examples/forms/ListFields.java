@@ -15,6 +15,7 @@
 package com.lowagie.examples.forms;
 
 
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.pdf.PRAcroForm;
 import com.lowagie.text.pdf.PdfArray;
 import com.lowagie.text.pdf.PdfDictionary;
@@ -23,6 +24,7 @@ import com.lowagie.text.pdf.PdfLister;
 import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfString;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -54,7 +56,12 @@ public class ListFields {
                 stream.print("Filename: ");
                 stream.println(arg);
                 stream.println();
-                PdfReader reader = new PdfReader(arg);
+                PdfReader reader = null;
+                try {
+                    reader = new PdfReader(arg);
+                } catch (PDFFilterException e) {
+                    throw new ExceptionConverter(e);
+                }
                 PRAcroForm form = reader.getAcroForm();
                 if (form == null) {
                     stream.println("This document has no fields.");

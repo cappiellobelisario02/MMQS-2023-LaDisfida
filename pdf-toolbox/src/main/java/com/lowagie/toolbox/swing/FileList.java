@@ -26,7 +26,9 @@
  */
 package com.lowagie.toolbox.swing;
 
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.pdf.PdfReader;
+import org.apache.fop.pdf.PDFFilterException;
 import java.awt.BorderLayout;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -199,7 +201,7 @@ public class FileList
         }
 
         public void tableChanged(TableModelEvent e) {
-            adaptee.ftmTableChanged(e);
+            adaptee.ftmTableChanged();
         }
     }
 
@@ -230,10 +232,9 @@ public class FileList
             this.file = file;
             try (PdfReader reader = new PdfReader((file.getAbsolutePath()))) {
                 this.pages = reader.getNumberOfPages();  // Safe to access reader here
-            } catch (IOException e) {
-                // Handle the exception or log an error message
-                //da vedere come effettuare il log
+            } catch (IOException | PDFFilterException e) {
                 this.pages = 0;  // Set pages to 0 or an appropriate default value
+                throw new ExceptionConverter(e);
             }
         }
 
@@ -256,6 +257,7 @@ public class FileList
 
     class FileTableModel extends AbstractTableModel {
 
+        @Serial
         private static final long serialVersionUID = -8173736343997473512L;
         private final String[] columnNames = {
                 "Filename", "Pages", "Directory"};

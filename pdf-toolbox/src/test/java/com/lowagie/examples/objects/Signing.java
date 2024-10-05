@@ -2,6 +2,7 @@ package com.lowagie.examples.objects;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.AcroFields;
@@ -15,6 +16,7 @@ import com.lowagie.text.pdf.PdfSignatureAppearance;
 import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.pdf.PdfString;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -57,7 +59,12 @@ public class Signing {
             document.add(new Paragraph(description));
             document.close();
 
-            PdfReader reader = new PdfReader(baos.toByteArray());
+            PdfReader reader = null;
+            try {
+                reader = new PdfReader(baos.toByteArray());
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
+            }
             // A verified signature would require a private key plus a valid certificate. see the JavaDoc of this
             // method for details
             PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
@@ -92,7 +99,12 @@ public class Signing {
             fos.close();
 
             InputStream resultIS = new ByteArrayInputStream(baos.toByteArray());
-            PdfReader resultReader = new PdfReader(resultIS);
+            PdfReader resultReader;
+            try {
+                resultReader = new PdfReader(resultIS);
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
+            }
 
             AcroFields fields = resultReader.getAcroFields();
 
@@ -133,6 +145,8 @@ public class Signing {
             }
         } catch (SignatureException | IOException | NoSuchAlgorithmException e) {
             System.err.println(e.getMessage());
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
         }
     }
 

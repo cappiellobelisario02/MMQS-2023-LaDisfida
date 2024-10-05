@@ -36,6 +36,7 @@
 package com.lowagie.toolbox.plugins;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
@@ -44,6 +45,7 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -86,7 +88,7 @@ public class Concat extends AbstractTool {
      *
      * @param args String[]
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         com.lowagie.toolbox.plugins.Concat tool = new com.lowagie.toolbox.plugins.Concat();
         if (args.length < 2) {
             logger.severe(tool.getUsage());
@@ -108,8 +110,12 @@ public class Concat extends AbstractTool {
     /**
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
-    public void execute() throws Exception {
-        validateInputFiles();
+    public void execute() {
+        try {
+            validateInputFiles();
+        } catch (InstantiationException e) {
+            throw new ExceptionConverter(e);
+        }
 
         PdfReader reader = null;
         Document document = null;
@@ -141,8 +147,11 @@ public class Concat extends AbstractTool {
             }
 
             document.close();
-        } finally {
-            closeResources(reader, document, fos, writer);
+            reader.close();
+            fos.close();
+            writer.close();
+        } catch (InstantiationException | IOException | PDFFilterException e) {
+            throw new ExceptionConverter(e);
         }
     }
 
@@ -211,7 +220,7 @@ public class Concat extends AbstractTool {
         logger.info(message);
     }
 
-    private void closeResources(PdfReader reader, Document document, FileOutputStream fos, PdfCopy writer) throws Exception {
+    private void closeResources(PdfReader reader, Document document, FileOutputStream fos, PdfCopy writer) throws IOException {
         if (reader != null) {
             reader.close();
         }

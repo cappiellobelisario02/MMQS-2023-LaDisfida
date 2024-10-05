@@ -966,19 +966,13 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @throws IOException on error
      */
     public static byte[] getStreamBytes(PRStream stream) throws IOException, PDFFilterException {
-        RandomAccessFileOrArray rf = stream.getReader().getSafeFile();
-        try {
+        try (RandomAccessFileOrArray rf = stream.getReader().getSafeFile()) {
             rf.reOpen();
             return getStreamBytes(stream, rf);
         } catch (PDFFilterException e) {
             throw new PDFFilterException(e.getMessage());
-        } finally {
-            try {
-                rf.close();
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
         }
+        //da vedere come effettuare il log
     }
 
     /**
@@ -1040,17 +1034,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @throws IOException on error
      */
     public static byte[] getStreamBytesRaw(PRStream stream) throws IOException {
-        RandomAccessFileOrArray rf = stream.getReader().getSafeFile();
-        try {
+        try (RandomAccessFileOrArray rf = stream.getReader().getSafeFile()) {
             rf.reOpen();
             return getStreamBytesRaw(stream, rf);
-        } finally {
-            try {
-                rf.close();
-            } catch (Exception ignored) {
-//da vedere come effettuare il log
-            }
         }
+        //da vedere come effettuare il log
     }
 
     private static boolean equalsn(byte[] a1, byte[] a2) {
@@ -1516,9 +1504,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return documentID;
         }
         // just in case we have a broken producer
-        if (documentID == null) {
-            return new byte[0];
-        }
 
         return new byte[0];
     }
@@ -2664,24 +2649,17 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         tokens.nextValidToken();
         int type = tokens.getTokenType();
 
-        switch (type) {
-            case PRTokeniser.TK_START_DIC:
-                return handleDictionary();
-            case PRTokeniser.TK_START_ARRAY:
-                return handleArray();
-            case PRTokeniser.TK_NUMBER:
-                return handleNumber();
-            case PRTokeniser.TK_STRING:
-                return handleString();
-            case PRTokeniser.TK_NAME:
-                return handleName();
-            case PRTokeniser.TK_REF:
-                return handleReference();
-            case PRTokeniser.TK_ENDOFFILE:
-                throw new IOException(MessageLocalization.getComposedMessage("unexpected.end.of.file"));
-            default:
-                return handleDefault();
-        }
+        return switch (type) {
+            case PRTokeniser.TK_START_DIC -> handleDictionary();
+            case PRTokeniser.TK_START_ARRAY -> handleArray();
+            case PRTokeniser.TK_NUMBER -> handleNumber();
+            case PRTokeniser.TK_STRING -> handleString();
+            case PRTokeniser.TK_NAME -> handleName();
+            case PRTokeniser.TK_REF -> handleReference();
+            case PRTokeniser.TK_ENDOFFILE ->
+                    throw new IOException(MessageLocalization.getComposedMessage("unexpected.end.of.file"));
+            default -> handleDefault();
+        };
     }
 
     private PdfObject handleDictionary() throws IOException {
@@ -4079,7 +4057,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return PdfSignatureAppearance.NOT_CERTIFIED;
         }
         PdfArray arr = dic.getAsArray(PdfName.REFERENCE);
-        if (arr == null || arr.size() == 0) {
+        if (arr == null || arr.isEmpty()) {
             return PdfSignatureAppearance.NOT_CERTIFIED;
         }
         dic = arr.getAsDict(0);
@@ -4165,7 +4143,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return new byte[]{};
         }
         PdfArray documentIDs = trailer.getAsArray(PdfName.ID);
-        if (documentIDs == null || documentIDs.size() == 0) {
+        if (documentIDs == null || documentIDs.isEmpty()) {
             return new byte[]{};
         }
         PdfObject o = documentIDs.getPdfObject(0);
@@ -4217,7 +4195,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     // sizep = 0; // or another appropriate default value
 
                     // Option 3: Log a warning message (if using a logging framework)
-                    // Logger.warn("Page count is null. Defaulting sizep to 0."
+                    // Logger.warn("Page count is null. Defaulting sizep to 0.")
                 }
             } else {
                 readPages();
@@ -4230,9 +4208,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             this.sizep = other.sizep;
             if (other.refsn != null) {
                 refsn = new ArrayList<>(other.refsn);
-                for (int k = 0; k < refsn.size(); ++k) {
-                    refsn.set(k, duplicatePdfObject(refsn.get(k), reader));
-                }
+                refsn.replaceAll(original -> duplicatePdfObject(original, reader));
             } else {
                 this.refsp = other.refsp;
             }

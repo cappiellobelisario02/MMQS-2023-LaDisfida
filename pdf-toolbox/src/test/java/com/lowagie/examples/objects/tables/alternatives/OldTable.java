@@ -17,6 +17,7 @@ import com.lowagie.text.Cell;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Table;
+import com.lowagie.text.exceptions.AddCellException;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
@@ -67,7 +68,7 @@ public class OldTable {
             table.addCell(cell);
             table.addCell("cell test2");
             document.add(table);
-        } catch (DocumentException | IOException de) {
+        } catch (DocumentException | IOException | AddCellException de) {
             System.err.println(de.getMessage());
         }
         // step 5: we close the document

@@ -17,6 +17,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Table;
+import com.lowagie.text.exceptions.AddCellException;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Point;
 import java.io.FileOutputStream;
@@ -132,7 +133,7 @@ public class NestedTables {
             c.setConvert2pdfptable(true);
             document.add(c);
 
-        } catch (DocumentException | IOException de) {
+        } catch (DocumentException | IOException | AddCellException de) {
             System.err.println(de.getMessage());
         }
         // step 5: we close the document

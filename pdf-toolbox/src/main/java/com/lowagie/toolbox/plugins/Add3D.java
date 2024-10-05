@@ -58,6 +58,8 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import com.lowagie.toolbox.arguments.filters.U3DFilter;
+import com.lowagie.toolbox.plugins.watermarker.WatermarkerTool;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -289,17 +291,6 @@ public class Add3D extends AbstractTool {
      * @param arg the argument that has changed
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the
-            // command line
-            return;
-        }
-        if (destfile.getValue() == null &&
-                arg.getName().equalsIgnoreCase(SRCFILE)) {
-            String filename = arg.getValue().toString();
-            String filenameout = filename.substring(0, filename.indexOf(".",
-                    filename.length() - 4)) + "_out.pdf";
-            destfile.setValue(filenameout);
-        }
+        WatermarkerTool.checkInternalFrame(arg, internalFrame == null, destfile, SRCFILE);
     }
 }

@@ -35,6 +35,7 @@
 
 package com.lowagie.toolbox.plugins;
 
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.pdf.PRStream;
 import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfObject;
@@ -45,6 +46,7 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import com.lowagie.toolbox.swing.EventDispatchingThread;
+import org.apache.fop.pdf.PDFFilterException;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Cursor;
@@ -136,9 +138,9 @@ public class ImageXRefViewer extends AbstractTool {
         internalFrame.setJMenuBar(getMenubar());
         internalFrame.getContentPane().setLayout(new BorderLayout());
 
-        JPanel master_panel = new JPanel();
-        master_panel.setLayout(new BorderLayout());
-        internalFrame.getContentPane().add(master_panel,
+        JPanel masterPanel = new JPanel();
+        masterPanel.setLayout(new BorderLayout());
+        internalFrame.getContentPane().add(masterPanel,
                 java.awt.BorderLayout.CENTER);
 
         // images
@@ -148,20 +150,20 @@ public class ImageXRefViewer extends AbstractTool {
 
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setViewportView(imagePanel);
-        master_panel.add(scrollPane, java.awt.BorderLayout.CENTER);
+        masterPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
 
         // spinner
 
-        JPanel spinner_panel = new JPanel();
-        spinner_panel.setLayout(new BorderLayout());
-        spinner_panel.add(jSpinner, java.awt.BorderLayout.CENTER);
+        JPanel spinnerPanel = new JPanel();
+        spinnerPanel.setLayout(new BorderLayout());
+        spinnerPanel.add(jSpinner, java.awt.BorderLayout.CENTER);
 
-        JLabel image_label = new JLabel();
-        image_label.setHorizontalAlignment(SwingConstants.CENTER);
-        image_label.setText("images");
-        spinner_panel.add(image_label, java.awt.BorderLayout.NORTH);
+        JLabel imageLabel = new JLabel();
+        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        imageLabel.setText("images");
+        spinnerPanel.add(imageLabel, java.awt.BorderLayout.NORTH);
 
-        master_panel.add(spinner_panel, java.awt.BorderLayout.NORTH);
+        masterPanel.add(spinnerPanel, java.awt.BorderLayout.NORTH);
 
         logger.info("=== Image XObject Viewer OPENED ===");
     }
@@ -205,59 +207,50 @@ public class ImageXRefViewer extends AbstractTool {
             }
             EventDispatchingThread task = new EventDispatchingThread() {
                 public Object construct() {
-                    PdfReader reader = null;
-                    try {
-                        reader = new PdfReader(
-                                ((File) getValue(SRCFILE)).getAbsolutePath());
+                    try (PdfReader reader = new PdfReader(
+                            ((File) getValue(SRCFILE)).getAbsolutePath())) {
                         for (int i = 0; i < reader.getXrefSize(); i++) {
                             PdfObject pdfobj = reader.getPdfObject(i);
                             if (pdfobj != null && pdfobj.isStream()) {
 
-                                    PdfStream pdfdict = (PdfStream) pdfobj;
-                                    PdfObject pdfsubtype = pdfdict
-                                            .get(PdfName.SUBTYPE);
-                                    if (pdfsubtype == null) {
-                                        continue;
-                                    }
-                                    if (!pdfsubtype.toString().equals(
-                                            PdfName.IMAGE.toString())) {
-                                        continue;
-                                    }
-                                    stringToLog = "total_number_of_pictures: "
-                                            + totalNumberOfPictures;
-                                    logger.info(stringToLog);
-                                    stringToLog = "height:"
-                                        + pdfdict.get(PdfName.HEIGHT)
-                                    logger.info(stringToLog);
-                                    stringToLog = "width:"
-                                            + pdfdict.get(PdfName.WIDTH);
-                                    logger.info(stringToLog);
-                                    stringToLog = "bitspercomponent:"
-                                            + pdfdict.get(PdfName.BITSPERCOMPONENT)
-                                    logger.info(stringToLog);
-                                    byte[] barr = PdfReader
-                                            .getStreamBytesRaw((PRStream) pdfdict);
-                                    java.awt.Image im = Toolkit
-                                            .getDefaultToolkit().createImage(barr);
-                                    javax.swing.ImageIcon ii = new javax.swing.ImageIcon(im);
+                                PdfStream pdfdict = (PdfStream) pdfobj;
+                                PdfObject pdfsubtype = pdfdict
+                                        .get(PdfName.SUBTYPE);
+                                if (pdfsubtype == null) {
+                                    continue;
+                                }
+                                if (!pdfsubtype.toString().equals(
+                                        PdfName.IMAGE.toString())) {
+                                    continue;
+                                }
+                                stringToLog = "total_number_of_pictures: "
+                                        + totalNumberOfPictures;
+                                logger.info(stringToLog);
+                                stringToLog = "height:"
+                                        + pdfdict.get(PdfName.HEIGHT);
+                                logger.info(stringToLog);
+                                stringToLog = "width:"
+                                        + pdfdict.get(PdfName.WIDTH);
+                                logger.info(stringToLog);
+                                stringToLog = "bitspercomponent:"
+                                        + pdfdict.get(PdfName.BITSPERCOMPONENT);
+                                logger.info(stringToLog);
+                                byte[] barr = PdfReader
+                                        .getStreamBytesRaw((PRStream) pdfdict);
+                                java.awt.Image im = Toolkit
+                                        .getDefaultToolkit().createImage(barr);
+                                javax.swing.ImageIcon ii = new javax.swing.ImageIcon(im);
 
-                                    JLabel label = new JLabel();
-                                    label.setIcon(ii);
-                                    imagePanel.add(label, String.valueOf(totalNumberOfPictures++));
+                                JLabel label = new JLabel();
+                                label.setIcon(ii);
+                                imagePanel.add(label, String.valueOf(totalNumberOfPictures++));
 
                             }
                         }
-                    } catch (InstantiationException | IOException ex) {
-//da vedere come effettuare il log
-                    } finally {
-                        if (reader != null) {
-                            try {
-                                reader.close();
-                            } catch (Exception e) {
-                                //da vedere come effettuare il log
-                            }
-                        }
+                    } catch (InstantiationException | IOException | PDFFilterException ex) {
+                        throw new ExceptionConverter(ex);
                     }
+                    //da vedere come effettuare il log
                     internalFrame.setCursor(Cursor.getDefaultCursor());
                     return null;
                 }
@@ -271,7 +264,7 @@ public class ImageXRefViewer extends AbstractTool {
         }
     }
 
-    class SpinnerListener implements ChangeListener {
+    static class SpinnerListener implements ChangeListener {
 
         private ImageXRefViewer adaptee;
 

@@ -3514,7 +3514,7 @@ public class PdfWriter extends DocWriter implements
             return sections;
         }
 
-        private void writeNewXrefFormat(int refNumber, PdfTrailer trailer, List<Integer> sections) throws IOException {
+        private void writeNewXrefFormat(int refNumber, PdfTrailer trailer, List<Integer> sections) {
             int mid = 8 - (Long.numberOfLeadingZeros(position) >> 3);
             try (ByteBuffer buf = new ByteBuffer()){
                 for (PdfCrossReference xref : xrefs) {
@@ -3737,9 +3737,9 @@ public class PdfWriter extends DocWriter implements
         /**
          * Returns the PDF representation of this <CODE>PdfObject</CODE>.
          *
-         * @param writer
-         * @param os
-         * @throws IOException
+         * @param writer writer
+         * @param os os
+         * @throws IOException exception
          */
         @Override
         public void toPdf(PdfWriter writer, OutputStream os) throws IOException {
