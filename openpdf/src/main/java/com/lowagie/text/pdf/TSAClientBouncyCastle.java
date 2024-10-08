@@ -58,8 +58,10 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.Base64;
 
 import com.lowagie.text.exceptions.InvalidTokenException;
@@ -255,6 +257,11 @@ public class TSAClientBouncyCastle implements TSAClient {
      * @throws Exception on error
      */
     protected byte[] getTSAResponse(byte[] requestBytes) throws IOException {
+        // Ensure URL uses HTTPS for secure communication
+        if (!tsaURL.startsWith("https://")) {
+            throw new IllegalArgumentException("Only HTTPS connections are allowed.");
+        }
+
         // Setup the TSA connection
         URL url = new URL(tsaURL);
         URLConnection tsaConnection;
@@ -264,37 +271,46 @@ public class TSAClientBouncyCastle implements TSAClient {
         tsaConnection.setDoInput(true);
         tsaConnection.setDoOutput(true);
         tsaConnection.setUseCaches(false);
-        tsaConnection.setRequestProperty("Content-Type",
-                "application/timestamp-query");
-
-
+        tsaConnection.setRequestProperty("Content-Type", "application/timestamp-query");
         tsaConnection.setRequestProperty("Content-Transfer-Encoding", "binary");
 
+        // If credentials are required, avoid plain text and use secure handling
         if (isNotEmpty(tsaUsername)) {
             String userPassword = tsaUsername + ":" + tsaPassword;
-            tsaConnection.setRequestProperty("Authorization", "Basic "
-                    + new String(Base64.getEncoder().encode(userPassword.getBytes())));
+            String encodedCredentials = Base64.getEncoder().encodeToString(userPassword.getBytes(StandardCharsets.UTF_8));
+            tsaConnection.setRequestProperty("Authorization", "Basic " + encodedCredentials);
+
+            // Clear sensitive data from memory
+            Arrays.fill(userPassword.toCharArray(), '\0');
         }
-        OutputStream out = tsaConnection.getOutputStream();
-        out.write(requestBytes);
-        out.close();
+
+        // Send the request
+        try (OutputStream out = tsaConnection.getOutputStream()) {
+            out.write(requestBytes);
+        }
 
         // Get TSA response as a byte array
-        InputStream inp = tsaConnection.getInputStream();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int bytesRead = 0;
-        while ((bytesRead = inp.read(buffer, 0, buffer.length)) >= 0) {
-            baos.write(buffer, 0, bytesRead);
-        }
-        byte[] respBytes = baos.toByteArray();
+        byte[] respBytes;
+        try (InputStream inp = tsaConnection.getInputStream();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inp.read(buffer, 0, buffer.length)) >= 0) {
+                baos.write(buffer, 0, bytesRead);
+            }
+            respBytes = baos.toByteArray();
+        }
+
+        // Decode if response is base64 encoded
         String encoding = tsaConnection.getContentEncoding();
         if (encoding != null && encoding.equalsIgnoreCase("base64")) {
             respBytes = Base64.getDecoder().decode(respBytes);
         }
+
         return respBytes;
     }
+
 
     /**
      * Proxy object used for URL connections.
