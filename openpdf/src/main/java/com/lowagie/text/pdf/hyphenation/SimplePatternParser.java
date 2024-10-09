@@ -54,6 +54,7 @@ package com.lowagie.text.pdf.hyphenation;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
 import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -124,11 +125,36 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
     public static void main(String[] args) {
         try {
             if (args.length > 0) {
+                String filePath = args[0];
+
+                // Validate the file path
+                File file = new File(filePath);
+                // Ensure the file exists and is a valid file
+                if (!file.isFile() || !file.exists()) {
+                    System.err.println("Invalid file path: " + filePath);
+                    return;
+                }
+
+                // Convert to absolute path
+                String absolutePath = file.getCanonicalPath();
+                // Check if the file is within a designated safe directory (e.g., "/allowed/directory/")
+                if (!absolutePath.startsWith("/allowed/directory/")) {
+                    System.err.println("Access denied to: " + absolutePath);
+                    return;
+                }
+
+                // Proceed with parsing
                 com.lowagie.text.pdf.hyphenation.SimplePatternParser pp = new com.lowagie.text.pdf.hyphenation.SimplePatternParser();
-                pp.parse(new FileInputStream(args[0]), pp);
+                try (FileInputStream fis = new FileInputStream(file)) { // Use try-with-resources for proper closure
+                    pp.parse(fis, pp);
+                }
             }
+        } catch (IOException e) {
+            // Improved logging
+            System.err.println("Error processing file: " + e.getMessage());
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            // Catch-all for other exceptions
+            System.err.println("An unexpected error occurred: " + e.getMessage());
         }
     }
 
