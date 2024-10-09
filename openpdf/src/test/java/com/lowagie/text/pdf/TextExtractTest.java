@@ -13,6 +13,7 @@ import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
@@ -25,13 +26,20 @@ class TextExtractTest {
         Assertions.assertThrows(InvalidPdfException.class, this::textExtractTest1);
     }
     void textExtractTest1() throws IOException {
-        try (PdfReader reader = new PdfReader(TextExtractTest.class.getResourceAsStream("/identity-h.pdf"))){
+        try (InputStream inputStream = TextExtractTest.class.getResourceAsStream("/identity-h.pdf");
+                PdfReader reader = new PdfReader(inputStream)) {
+
+            Assertions.assertNotNull(reader, "PdfReader should not be null. Check if the PDF file exists.");
+
             PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
-            Assertions.assertEquals("Hello World", pdfTextExtractor.getTextFromPage(1));
+            String extractedText = pdfTextExtractor.getTextFromPage(1);
+
+            Assertions.assertEquals("Hello World", extractedText.trim(), "Extracted text does not match the expected value.");
         } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     @Test
     void textExtractTest2Pass(){

@@ -38,9 +38,11 @@ class PdfProtectedDocumentTest {
 
         // Sign and compare the generated range
         for (int i = 0; i < 10; i++) {
+            byte[] documentId = null; // Move this out of try to avoid scope issues
             try (InputStream is = getClass().getResourceAsStream("/open_protected.pdf");
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     PdfReader reader = new PdfReader(is, new byte[]{' '})) {
+
                 originalDocId = reader.getDocumentId();
 
                 PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
@@ -89,9 +91,10 @@ class PdfProtectedDocumentTest {
             // Ensure document is readable
             try (InputStream is = new ByteArrayInputStream(documentBytes);
                     PdfReader reader = new PdfReader(is, new byte[]{' '})) {
+
                 assertNotNull(reader);
 
-                byte[] documentId = reader.getDocumentId();
+                documentId = reader.getDocumentId(); // Get document ID after closing previous try
                 assertNotNull(documentId);
                 assertArrayEquals(originalDocId, documentId);
 
@@ -107,8 +110,8 @@ class PdfProtectedDocumentTest {
                 changingId = currentChangingId;
             }
         }
-
     }
+
 
     @Test
     void signPasswordProtectedOverrideFileIdPass(){

@@ -14,8 +14,10 @@
 package com.lowagie.examples.general.read;
 
 import com.lowagie.text.pdf.PdfReader;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 
 /**
  * Getting information from a PDF file.
@@ -28,20 +30,22 @@ public class Info {
      * @param args the names of paths to PDF files.
      */
     public static void main(String[] args) {
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter("info.txt"));
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("info.txt"))) {
             for (String arg : args) {
-                PdfReader r = new PdfReader(arg);
-                out.write(arg);
-                out.write("\r\n------------------------------------\r\n");
-                out.write(r.getInfo().toString());
-                out.write("\r\n------------------------------------\r\n");
+                try (PdfReader r = new PdfReader(arg)) {
+                    out.write(arg);
+                    out.write("\r\n------------------------------------\r\n");
+                    out.write(r.getInfo().toString());
+                    out.write("\r\n------------------------------------\r\n");
+                } catch (IOException | PDFFilterException e) {
+                    System.err.println("Error reading PDF file: " + arg + " - " + e.getMessage());
+                }
             }
             out.flush();
-            out.close();
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
         }
     }
+
 
 }

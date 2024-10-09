@@ -37,16 +37,18 @@ public class ParseHelloHtml {
     public static void main(String[] args) {
         System.out.println("Parse Hello World");
 
-        // step 1: creation of a document-object
         try (Document document = new Document()) {
             PdfWriter.getInstance(document, new FileOutputStream("parseHelloWorld.pdf"));
-            // step 2: we open the document
+
+            // Step 2: we open the document
             document.open();
-            // step 3: parsing the HTML document to convert it in PDF
+
+            // Step 3: parsing the HTML document to convert it in PDF
             HtmlParser.parse(document, ParseHelloHtml.class.getClassLoader()
                     .getResourceAsStream("com/lowagie/examples/html/parseHelloWorld.html"));
         } catch (DocumentException | IOException de) {
             System.err.println(de.getMessage());
         }
     }
+
 }

@@ -28,24 +28,20 @@ class PdfSignatureAppearanceTest {
     void invisibleExternalSignaturePass(){
         Assertions.assertThrows(InvalidPdfException.class, this::invisibleExternalSignature);
     }
-    void invisibleExternalSignature()
-            throws DocumentException, IOException, NoSuchAlgorithmException, PDFFilterException {
+    void invisibleExternalSignature() throws DocumentException, IOException, NoSuchAlgorithmException, PDFFilterException {
         byte[] expectedDigestPreClose = null;
         byte[] expectedDigestClose = null;
 
-        // These fields are provided to be able to generate the same content more than
-        // once
         Calendar signDate = Calendar.getInstance();
-
         byte[] originalDocId = null;
         PdfObject overrideFileId = new PdfLiteral("<123><123>".getBytes());
-
         byte[] resultDocument = null;
 
         for (int i = 0; i < 10; i++) {
             try (InputStream is = getClass().getResourceAsStream("/EmptyPage.pdf");
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     PdfReader reader = new PdfReader(is)) {
+
                 originalDocId = reader.getDocumentId();
 
                 PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
@@ -53,7 +49,6 @@ class PdfSignatureAppearanceTest {
                 stp.setOverrideFileId(overrideFileId);
 
                 PdfSignatureAppearance sap = stp.getSignatureAppearance();
-
                 PdfDictionary dic = new PdfDictionary();
                 dic.put(PdfName.FILTER, PdfName.ADOBE_PPKLITE);
                 dic.put(PdfName.M, new PdfDate(signDate));
@@ -92,6 +87,7 @@ class PdfSignatureAppearanceTest {
 
             try (InputStream resultIS = new ByteArrayInputStream(resultDocument);
                     PdfReader resultReader = new PdfReader(resultIS)) {
+
                 byte[] documentId = resultReader.getDocumentId();
                 assertNotNull(documentId);
                 assertArrayEquals(originalDocId, documentId);
@@ -106,6 +102,7 @@ class PdfSignatureAppearanceTest {
             }
         }
     }
+
 
     @Test
     void visibleExternalSignaturePass(){

@@ -99,8 +99,10 @@ class AdvanceTypographyTest {
     }
 
     private byte[] getTestFontByte() throws IOException {
-        InputStream stream = BaseFont.getResourceStream("fonts/Viaoda_Libre/ViaodaLibre-Regular.ttf", null);
-        assertThat(stream).isNotNull();
-        return IOUtils.toByteArray(stream);
+        try (InputStream stream = BaseFont.getResourceStream("fonts/Viaoda_Libre/ViaodaLibre-Regular.ttf", null)) {
+            assertThat(stream).isNotNull();
+            return IOUtils.toByteArray(stream);
+        }
     }
+
 }
