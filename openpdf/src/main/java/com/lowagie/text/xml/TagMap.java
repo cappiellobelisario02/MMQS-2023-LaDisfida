@@ -53,6 +53,7 @@ package com.lowagie.text.xml;
 import com.lowagie.text.ExceptionConverter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,16 +77,31 @@ public class TagMap extends HashMap<String, XmlPeer> {
      * @param tagfile the path to an XML file with the tagmap
      */
     public TagMap(String tagfile) {
+        InputStream inputStream = null;
         try {
-            init(TagMap.class.getClassLoader().getResourceAsStream(tagfile));
+            inputStream = TagMap.class.getClassLoader().getResourceAsStream(tagfile);
+            if (inputStream != null) {
+                init(inputStream);
+            } else {
+                inputStream = new FileInputStream(tagfile);
+                init(inputStream);
+            }
+        } catch (FileNotFoundException fnfe) {
+            throw new ExceptionConverter(fnfe);
         } catch (Exception e) {
-            try {
-                init(new FileInputStream(tagfile));
-            } catch (FileNotFoundException fnfe) {
-                throw new ExceptionConverter(fnfe);
+            // Handle other exceptions if necessary
+            throw e;  // Rethrow or handle the exception appropriately
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    // Log the error if necessary
+                }
             }
         }
     }
+
 
     /**
      * Constructs a TagMap.

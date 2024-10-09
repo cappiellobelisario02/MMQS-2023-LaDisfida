@@ -501,8 +501,11 @@ public class XfaForm {
     }
 
     public void fillXfaForm(File file) throws ParserConfigurationException, SAXException, IOException {
-        fillXfaForm(new FileInputStream(file));
+        try (FileInputStream fis = new FileInputStream(file)) {
+            fillXfaForm(fis);
+        }
     }
+
 
     public void fillXfaForm(InputStream is) throws ParserConfigurationException, SAXException, IOException {
         fillXfaForm(new InputSource(is));
