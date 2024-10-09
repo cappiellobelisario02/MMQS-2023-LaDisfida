@@ -544,7 +544,7 @@ public final class Pfm2afm {
             } catch (Exception e) {
                 //da vedere come effettuare il log
             }
-        }
+    }
 
         private static RandomAccessFileOrArray createRandomAccessFileOrArray(String fileName) {
             try {

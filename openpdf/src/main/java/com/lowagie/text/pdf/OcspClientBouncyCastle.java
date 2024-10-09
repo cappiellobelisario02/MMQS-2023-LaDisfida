@@ -231,59 +231,65 @@ public class OcspClientBouncyCastle implements OcspClient {
      */
     @Override
     public byte[] getEncoded() {
+        HttpURLConnection con = null; // Declare HttpURLConnection outside try
         try {
-            OCSPReq request = generateOCSPRequest(rootCert,
-                    checkCert.getSerialNumber());
+            OCSPReq request = generateOCSPRequest(rootCert, checkCert.getSerialNumber());
             byte[] array = request.getEncoded();
             URL urlt = new URL(url);
             Proxy tmpProxy = proxy == null ? Proxy.NO_PROXY : proxy;
-            HttpURLConnection con = (HttpURLConnection) urlt.openConnection(tmpProxy);
+
+            con = (HttpURLConnection) urlt.openConnection(tmpProxy);
             con.setRequestProperty("Content-Type", "application/ocsp-request");
             con.setRequestProperty("Accept", "application/ocsp-response");
             con.setDoOutput(true);
-            OutputStream out = con.getOutputStream();
-            DataOutputStream dataOut = new DataOutputStream(new BufferedOutputStream(
-                    out));
-            dataOut.write(array);
-            dataOut.flush();
-            dataOut.close();
+
+            try (OutputStream out = con.getOutputStream(); // Use try-with-resources
+                    DataOutputStream dataOut = new DataOutputStream(new BufferedOutputStream(out))) {
+                dataOut.write(array);
+                dataOut.flush();
+            }
+
             if (con.getResponseCode() / 100 != 2) {
                 throw new IOException(MessageLocalization.getComposedMessage(
                         "invalid.http.response.1", con.getResponseCode()));
             }
-            // Get Response
-            InputStream in = (InputStream) con.getContent();
-            OCSPResp ocspResponse = new OCSPResp(in);
 
-            if (ocspResponse.getStatus() != 0) {
-                throw new IOException(MessageLocalization.getComposedMessage(
-                        "invalid.status.1", ocspResponse.getStatus()));
-            }
-            BasicOCSPResp basicResponse = (BasicOCSPResp) ocspResponse
-                    .getResponseObject();
-            if (basicResponse != null) {
-                SingleResp[] responses = basicResponse.getResponses();
-                if (responses.length == 1) {
-                    SingleResp resp = responses[0];
-                    Object status = resp.getCertStatus();
-                    if (status == null) {
-                        return basicResponse.getEncoded();
-                    } else if (status instanceof org.bouncycastle.cert.ocsp.RevokedStatus) {
-                        throw new IOException(
-                                MessageLocalization
-                                        .getComposedMessage("ocsp.status.is.revoked"));
-                    } else {
-                        throw new IOException(
-                                MessageLocalization
-                                        .getComposedMessage("ocsp.status.is.unknown"));
+            // Get Response
+            try (InputStream in = con.getInputStream()) { // Use try-with-resources
+                OCSPResp ocspResponse = new OCSPResp(in);
+
+                if (ocspResponse.getStatus() != 0) {
+                    throw new IOException(MessageLocalization.getComposedMessage(
+                            "invalid.status.1", ocspResponse.getStatus()));
+                }
+                BasicOCSPResp basicResponse = (BasicOCSPResp) ocspResponse.getResponseObject();
+                if (basicResponse != null) {
+                    SingleResp[] responses = basicResponse.getResponses();
+                    if (responses.length == 1) {
+                        SingleResp resp = responses[0];
+                        Object status = resp.getCertStatus();
+                        if (status == null) {
+                            return basicResponse.getEncoded();
+                        } else if (status instanceof org.bouncycastle.cert.ocsp.RevokedStatus) {
+                            throw new IOException(
+                                    MessageLocalization.getComposedMessage("ocsp.status.is.revoked"));
+                        } else {
+                            throw new IOException(
+                                    MessageLocalization.getComposedMessage("ocsp.status.is.unknown"));
+                        }
                     }
                 }
             }
         } catch (Exception ex) {
             throw new ExceptionConverter(ex);
+        } finally {
+            if (con != null) {
+                con.disconnect(); // Ensure the connection is closed properly
+            }
         }
         return new byte[0];
     }
+
 
     /**
      * Returns Proxy object used for URL connections.

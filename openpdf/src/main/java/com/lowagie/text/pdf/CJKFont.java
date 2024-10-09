@@ -60,6 +60,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.ibm.icu.util.ULocale.getBaseName;
+import static com.lowagie.text.pdf.PdfWriter.logger;
 
 
 /**
@@ -232,17 +233,18 @@ class CJKFont extends BaseFont {
                 return;
             }
             try {
-                InputStream is = getResourceStream(RESOURCE_PATH
-                        + "cjkfonts.properties");
-                cjkFonts.load(is);
-                is.close();
-                is = getResourceStream(RESOURCE_PATH
-                        + "cjkencodings.properties");
-                cjkEncodings.load(is);
-                is.close();
+                // Use try-with-resources to ensure streams are closed properly
+                try (InputStream is = getResourceStream(RESOURCE_PATH + "cjkfonts.properties")) {
+                    cjkFonts.load(is);
+                }
+                try (InputStream is = getResourceStream(RESOURCE_PATH + "cjkencodings.properties")) {
+                    cjkEncodings.load(is);
+                }
             } catch (Exception e) {
+                // Handle exception and initialize properties if loading fails
                 cjkFonts = new Properties();
                 cjkEncodings = new Properties();
+                logger.severe("Error loading properties: " + e.getMessage());
             }
             propertiesLoaded = true;
         }
@@ -537,29 +539,34 @@ class CJKFont extends BaseFont {
 
 
     static HashMap<Object, Object> readFontProperties(String name) {
-        try {
-            name += ".properties";
-            InputStream is = getResourceStream(RESOURCE_PATH + name);
+        HashMap<Object, Object> map = new HashMap<>();
+
+        name += ".properties";
+
+        // Use try-with-resources to ensure the InputStream is closed properly
+        try (InputStream is = getResourceStream(RESOURCE_PATH + name)) {
             Properties p = new Properties();
             p.load(is);
-            is.close();
+
             IntHashtable metricTable = createMetric(p.getProperty("W"));
             p.remove("W");
             IntHashtable metricTable2 = createMetric(p.getProperty("W2"));
             p.remove("W2");
-            HashMap<Object, Object> map = new HashMap<>();
+
             for (Enumeration<Object> e = p.keys(); e.hasMoreElements(); ) {
                 Object obj = e.nextElement();
                 map.put(obj, p.getProperty((String) obj));
             }
             map.put("W", metricTable);
             map.put("W2", metricTable2);
-            return map;
         } catch (Exception e) {
-            // empty on purpose
+            // Log the exception if necessary, or handle it accordingly
+            logger.severe("Error reading font properties: " + e.getMessage());
         }
-        return new HashMap<>();
+
+        return map;
     }
+
 
     /**
      * Gets the width of a <CODE>char</CODE> in normalized 1000 units.
