@@ -31,22 +31,25 @@ public class ListEncodings {
      */
     public static void main(String[] args) {
         System.out.println("Listing Font properties");
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter("encodings.txt"));
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("encodings.txt"))) {
             BaseFont bfComic = BaseFont.createFont("c:\\windows\\fonts\\comicbd.ttf", BaseFont.CP1252,
                     BaseFont.NOT_EMBEDDED);
+
             out.write("postscriptname: " + bfComic.getPostscriptFontName());
             out.write("\r\n\r\n");
+
             String[] codePages = bfComic.getCodePagesSupported();
             out.write("All available encodings:\n\n");
             for (String codePage : codePages) {
                 out.write(codePage);
                 out.write("\r\n");
             }
-            out.flush();
-            out.close();
+            out.flush(); // This is not necessary with try-with-resources, but you can keep it for clarity
         } catch (DocumentException | IOException e) {
-            //da vedere come effettuare il log
+            // Log the exception
+            System.err.println("An error occurred: " + e.getMessage());
+            e.printStackTrace(); // Print stack trace for debugging
         }
     }
+
 }
