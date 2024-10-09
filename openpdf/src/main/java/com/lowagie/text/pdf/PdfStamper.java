@@ -395,14 +395,16 @@ public class PdfStamper
         int totalBuf = (lit.getPosLength() - 2) / 2;
         byte[] buf = new byte[8192];
         int n;
-        InputStream inp = sigApp.getRangeStream();
-        try {
+
+        // Use try-with-resources to ensure the InputStream is closed properly
+        try (InputStream inp = sigApp.getRangeStream()) {
             while ((n = inp.read(buf)) > 0) {
                 sig.getSigner().update(buf, 0, n);
             }
         } catch (SignatureException se) {
             throw new ExceptionConverter(se);
         }
+
         buf = new byte[totalBuf];
         byte[] bsig = sig.getSignerContents();
         System.arraycopy(bsig, 0, buf, 0, bsig.length);

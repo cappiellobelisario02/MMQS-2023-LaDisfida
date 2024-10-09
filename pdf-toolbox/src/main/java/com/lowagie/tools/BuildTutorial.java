@@ -134,7 +134,6 @@ public class BuildTutorial {
     }
 
 
-
     // Helper method to validate and sanitize file paths
     private static File validatePath(String path) {
         File file = new File(path);
@@ -158,8 +157,8 @@ public class BuildTutorial {
      * Inspects a file or directory that is given and performs the necessary actions on it (transformation or
      * recursion).
      *
-     * @param source       a sourcedirectory (possibly with a tutorial xml-file)
-     * @param destination  a destination directory (where the html and build.xml file will be generated, if necessary)
+     * @param source        a sourcedirectory (possibly with a tutorial xml-file)
+     * @param destination   a destination directory (where the html and build.xml file will be generated, if necessary)
      * @param xslExamplesIn an xsl to transform the index.xml into a build.xml
      * @param xslSiteIn     an xsl to transform the index.xml into am index.html
      * @throws IOException when something goes wrong while reading or creating a file or directory
