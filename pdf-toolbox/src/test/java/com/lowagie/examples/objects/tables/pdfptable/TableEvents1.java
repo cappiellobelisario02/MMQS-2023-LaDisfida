@@ -25,6 +25,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPTableEvent;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.security.SecureRandom;
 
 /**
  * General example using TableEvents.
@@ -96,6 +97,8 @@ public class TableEvents1 implements PdfPTableEvent {
     public void tableLayout(PdfPTable table, float[][] width, float[] heights, int headerRows, int rowStart,
             PdfContentByte[] canvases) {
 
+        SecureRandom secureRandom = new SecureRandom();
+
         // widths of the different cells of the first row
         float[] widths = width[0];
 
@@ -133,13 +136,13 @@ public class TableEvents1 implements PdfPTableEvent {
                     cb.setAction(new PdfAction("https://github.com/LibrePDF/OpenPDF"),
                             widths[col], heights[line + 1], widths[col + 1], heights[line]);
                 }
-                cb.setRGBColorStrokeF((float) Math.random(), (float) Math.random(), (float) Math.random());
+                cb.setRGBColorStrokeF(secureRandom.nextFloat(), secureRandom.nextFloat(), secureRandom.nextFloat());
                 // horizontal borderline
                 cb.moveTo(widths[col], heights[line]);
                 cb.lineTo(widths[col + 1], heights[line]);
                 cb.stroke();
                 // vertical borderline
-                cb.setRGBColorStrokeF((float) Math.random(), (float) Math.random(), (float) Math.random());
+                cb.setRGBColorStrokeF(secureRandom.nextFloat(), secureRandom.nextFloat(), secureRandom.nextFloat());
                 cb.moveTo(widths[col], heights[line]);
                 cb.lineTo(widths[col], heights[line + 1]);
                 cb.stroke();
