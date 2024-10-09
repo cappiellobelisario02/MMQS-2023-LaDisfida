@@ -90,22 +90,26 @@ public class BuildTutorial {
 
     public static void main(String[] args) {
         if (args.length == 4) {
-            File srcdir = validatePath(args[0]);
-            File destdir = validatePath(args[1]);
-            File xslExamples = new File(srcdir, args[2]);
-            File xslSite = new File(srcdir, args[3]);
+            try {
+                File srcdir = validatePath(args[0]);
+                File destdir = validatePath(args[1]);
+                File xslExamples = new File(srcdir, args[2]);
+                File xslSite = new File(srcdir, args[3]);
 
-            try (FileWriter build = new FileWriter(new File(destdir, "build.xml"))) {
-                logger.info("Building tutorial: ");
-                root = new File(destdir, srcdir.getName()).getCanonicalPath();
-                logger.info(root);
+                try (FileWriter build = new FileWriter(new File(destdir, "build.xml"))) {
+                    logger.info("Building tutorial: ");
+                    root = new File(destdir, srcdir.getName()).getCanonicalPath();
+                    logger.info(root);
 
-                build.write("<project name=\"tutorial\" default=\"all\" basedir=\".\">\n");
-                build.write("<target name=\"all\">\n");
-                action(srcdir, destdir, xslExamples, xslSite);
-                build.write("</target>\n</project>");
-            } catch (IOException ioe) {
-                logger.severe("I/O error occurred: " + ioe.getMessage());
+                    build.write("<project name=\"tutorial\" default=\"all\" basedir=\".\">\n");
+                    build.write("<target name=\"all\">\n");
+                    action(srcdir, destdir, xslExamples, xslSite);
+                    build.write("</target>\n</project>");
+                } catch (IOException ioe) {
+                    logger.severe("I/O error occurred: " + ioe.getMessage());
+                }
+            } catch (SecurityException se) {
+                logger.severe("Security exception: " + se.getMessage());
             }
         } else {
             logger.severe("Wrong number of parameters.\nUsage: BuildSite srcdir destdir xsl_examples xsl_site");
@@ -222,7 +226,7 @@ public class BuildTutorial {
 
             // Use the factory to create a template containing the XSL file
             xslInputStream = new FileInputStream(xslfile);
-            Templates template = factory.newTemplates(new StreamSource(xslInputStream));
+            Templates template = factory.newTemplates(new StreamSource(new FileInputStream(xslfile)));
 
             // Use the template to create a transformer
             Transformer xformer = template.newTransformer();
