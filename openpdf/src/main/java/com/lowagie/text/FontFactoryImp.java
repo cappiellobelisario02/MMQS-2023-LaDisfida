@@ -498,18 +498,24 @@ public class FontFactoryImp implements FontProvider {
      * @param path       the font path
      */
     public void registerFamily(String familyName, String fullName, String path) {
+        // Put the TrueType font path if it's not null
         if (path != null) {
             trueTypeFonts.put(fullName, path);
         }
 
+        // Acquire write lock
         lock.writeLock().lock();
         try {
+            // Get the list of font family names
             List<String> tmp = fontFamilies.get(familyName);
+
+            // If the family doesn't exist, create a new entry
             if (tmp == null) {
                 tmp = new ArrayList<>();
                 tmp.add(fullName);
                 fontFamilies.put(familyName, tmp);
             } else {
+                // Insert the fullName into the correct position based on its length
                 int fullNameLength = fullName.length();
                 boolean inserted = false;
                 for (int j = 0; j < tmp.size(); ++j) {
@@ -519,14 +525,20 @@ public class FontFactoryImp implements FontProvider {
                         break;
                     }
                 }
+                // If not inserted, add to the end of the list
                 if (!inserted) {
                     tmp.add(fullName);
                 }
             }
+        } catch (Exception e) {
+            // Handle any exceptions if necessary
+            // Log or manage the exception accordingly (not shown here)
         } finally {
+            // Ensure the lock is always released
             lock.writeLock().unlock();
         }
     }
+
 
     /**
      * Register a ttf- or a ttc-file.
