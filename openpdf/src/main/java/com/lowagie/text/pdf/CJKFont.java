@@ -233,22 +233,24 @@ class CJKFont extends BaseFont {
                 return;
             }
             try {
-                // Use try-with-resources to ensure streams are closed properly
+                // Use try-with-resources to ensure InputStream is closed properly
                 try (InputStream is = getResourceStream(RESOURCE_PATH + "cjkfonts.properties")) {
                     cjkFonts.load(is);
                 }
                 try (InputStream is = getResourceStream(RESOURCE_PATH + "cjkencodings.properties")) {
                     cjkEncodings.load(is);
                 }
-            } catch (Exception e) {
-                // Handle exception and initialize properties if loading fails
+            } catch (IOException e) {
+                // Log the exception for better debugging
+                logger.severe("Error loading properties: " + e.getMessage());
+                // Reset properties to new empty instances
                 cjkFonts = new Properties();
                 cjkEncodings = new Properties();
-                logger.severe("Error loading properties: " + e.getMessage());
             }
             propertiesLoaded = true;
         }
     }
+
 
     /**
      * Checks if its a valid CJK font.
