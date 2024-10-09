@@ -1,6 +1,7 @@
 package com.lowagie.text.pdf.encryption;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.exceptions.BadPasswordException;
@@ -103,10 +104,11 @@ class DecryptAES256R6Test {
                     "Demo   Name   Signature   Date  Elizabeth Schultz (Apr 24, 2018) Elizabeth Schultz Apr 24, 2018 "
                             + "Elizabeth Schultz Sue Northrop (Apr 24, 2018) Apr 24, 2018 Sue Northrop",
                     new PdfTextExtractor(pdfReader).getTextFromPage(1), "Wrong text extracted from page 1");
-        }catch(PDFFilterException e){
+        } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
@@ -158,16 +160,17 @@ class DecryptAES256R6Test {
     void testReadCR6InPwOwner4() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/c-r6-in-pw=owner4.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "owner4".getBytes(UTF_8))) {
+
+            assertNotNull(pdfReader, "PdfReader should not be null. Check if the PDF file exists.");
             Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
             Assertions.assertTrue(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report full permissions.");
-            Assertions.assertEquals(30, pdfReader.getNumberOfPages(),
-                    "PdfReader fails to report the correct number of pages");
-            Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1),
-                    "Wrong text extracted from page 1");
-        }catch(PDFFilterException e){
+            Assertions.assertEquals(30, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages.");
+            Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1), "Wrong text extracted from page 1.");
+        } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
@@ -322,7 +325,7 @@ class DecryptAES256R6Test {
                     "PdfReader fails to report the correct number of pages");
             Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1),
                     "Wrong text extracted from page 1");
-         }catch(PDFFilterException e){
+        } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -692,10 +695,11 @@ class DecryptAES256R6Test {
                     "PdfReader fails to report the correct number of pages");
             Assertions.assertEquals("", new PdfTextExtractor(pdfReader).getTextFromPage(1),
                     "Wrong text extracted from page 1");
-         }catch(PDFFilterException e){
+        } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">

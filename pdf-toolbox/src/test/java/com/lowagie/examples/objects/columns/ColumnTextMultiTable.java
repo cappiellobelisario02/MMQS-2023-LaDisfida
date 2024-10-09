@@ -35,9 +35,7 @@ public class ColumnTextMultiTable {
     protected PdfWriter pdfWriter;
 
     public static void main(String[] args) throws IOException {
-
         ColumnTextMultiTable columnTextTable = new ColumnTextMultiTable();
-
         File outputPDF = new File("columnTextMultiTables.pdf");
 
         ColumnTextMultiTable.document = new Document(PageSize.A4);
@@ -47,11 +45,9 @@ public class ColumnTextMultiTable {
         columnTextTable.pdfWriter.setStrictImageSequence(true);
 
         document.open();
-
         document.add(new Chunk("The example page"));
 
         PdfPTable table = columnTextTable.getPdfPTable();
-
         float space = columnTextTable.getHeightOfBlock(table);
 
         ColumnText ct = new ColumnText(columnTextTable.pdfWriter.getDirectContent());
@@ -66,10 +62,11 @@ public class ColumnTextMultiTable {
 
         document.close();
 
-        FileOutputStream fos = new FileOutputStream(outputPDF);
-        fos.write(baos.toByteArray());
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(outputPDF)) {
+            fos.write(baos.toByteArray());
+        }
     }
+
 
     static float addFullBockToPage(float actualY, ColumnText ct, Element... elements) {
         int result;

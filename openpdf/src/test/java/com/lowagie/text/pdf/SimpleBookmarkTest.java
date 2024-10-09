@@ -20,15 +20,19 @@ class SimpleBookmarkTest {
         Assertions.assertThrows(InvalidPdfException.class, this::testGetBookmarkWithNoTitle);
     }
     void testGetBookmarkWithNoTitle() throws IOException {
-        InputStream is = getClass().getResourceAsStream("/OutlineUriActionWithNoTitle.pdf");
-        try(PdfReader reader = new PdfReader(is)) {
+        try (InputStream is = getClass().getResourceAsStream("/OutlineUriActionWithNoTitle.pdf");
+                PdfReader reader = new PdfReader(is)) {
+
+            assertNotNull(reader, "PdfReader should not be null. Check if the PDF file exists.");
+
             List<?> list = SimpleBookmark.getBookmarkList(reader);
-            assertNotNull(list);
-            assertEquals(3, list.size());
+            assertNotNull(list, "Bookmark list should not be null.");
+            assertEquals(3, list.size(), "Expected 3 bookmarks in the list.");
         } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     @Test
     void testGetBookmarkListWithNoTitlePass(){
@@ -36,7 +40,7 @@ class SimpleBookmarkTest {
     }
     void testGetBookmarkListWithNoTitle() throws IOException {
         InputStream is = getClass().getResourceAsStream("/OutlineUriActionWithNoTitle.pdf");
-        try (PdfReader reader = new PdfReader(is)){
+        try (PdfReader reader = new PdfReader(is)) {
             List<Map<String, Object>> list = SimpleBookmark.getBookmarkList(reader);
             assertNotNull(list);
             assertEquals(3, list.size());
@@ -47,5 +51,4 @@ class SimpleBookmarkTest {
             throw new ExceptionConverter(e);
         }
     }
-
 }

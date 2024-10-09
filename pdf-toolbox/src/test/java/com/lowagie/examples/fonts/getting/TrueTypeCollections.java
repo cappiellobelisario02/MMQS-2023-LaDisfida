@@ -37,25 +37,21 @@ public class TrueTypeCollections {
     public static void main(String[] args) {
         System.out.println("True Type Collections");
 
-        // step 1: creation of a document-object
-        Document document = new Document();
-
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter("msgothic.txt"));
+        try (Document document = new Document(); BufferedWriter out = new BufferedWriter(
+                new FileWriter("msgothic.txt"))) {
             String[] names = BaseFont.enumerateTTCNames("c:\\windows\\fonts\\msgothic.ttc");
             for (int i = 0; i < names.length; i++) {
                 out.write("font " + i + ": " + names[i]);
-                out.write("\r\n");
+                out.write(System.lineSeparator());
             }
-            out.flush();
-            out.close();
-            // step 2: creation of the writer
+
+            // Step 2: creation of the writer
             PdfWriter.getInstance(document, new FileOutputStream("truetypecollections.pdf"));
 
-            // step 3: we open the document
+            // Step 3: we open the document
             document.open();
 
-            // step 4: we add content to the document
+            // Step 4: we add content to the document
             BaseFont bf = BaseFont.createFont("c:\\windows\\fonts\\msgothic.ttc,1", BaseFont.IDENTITY_H,
                     BaseFont.EMBEDDED);
             System.out.println("postscriptname: " + bf.getPostscriptFontName());
@@ -67,8 +63,6 @@ public class TrueTypeCollections {
         } catch (DocumentException | IOException de) {
             System.err.println(de.getMessage());
         }
-
-        // step 5: we close the document
-        document.close();
     }
+
 }
