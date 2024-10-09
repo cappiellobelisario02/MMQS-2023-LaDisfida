@@ -211,17 +211,20 @@ public class PdfContentReaderTool {
                 return;
             }
 
-             handleContentStreaming(args);
+            handleContentStreaming(args);
 
             int pageNum = -1;
             if (args.length == 3) {
                 pageNum = Integer.parseInt(args[2]);
             }
 
+            // Validate the PDF file path to prevent path manipulation
+            File pdfFile = validatePath(args[0]);
+
             if (pageNum == -1) {
-                listContentStream(new File(args[0]), writer);
+                listContentStream(pdfFile, writer);
             } else {
-                listContentStream(new File(args[0]), pageNum, writer);
+                listContentStream(pdfFile, pageNum, writer);
             }
             writer.flush();
 
@@ -231,9 +234,23 @@ public class PdfContentReaderTool {
                 logger.info(stringToLog);
             }
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.severe("An error occurred: " + e.getMessage());
         }
     }
+
+    // Helper method to validate and sanitize file paths
+    private static File validatePath(String path) throws IOException {
+        File file = new File(path);
+
+        // Prevent directory traversal attacks by checking the canonical path
+        String canonicalPath = file.getCanonicalPath();
+        if (!canonicalPath.startsWith(new File(".").getCanonicalPath())) {
+            throw new SecurityException("Path manipulation attempt detected: " + path);
+        }
+
+        return file;
+    }
+
 
     private static void handleContentStreaming(String[] args) {
         try (PrintWriter writer = args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)
