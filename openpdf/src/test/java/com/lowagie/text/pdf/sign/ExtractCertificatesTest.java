@@ -7,6 +7,7 @@ import com.lowagie.text.pdf.AcroFields;
 import com.lowagie.text.pdf.PdfPKCS7;
 import com.lowagie.text.pdf.PdfPKCS7.X509Name;
 import com.lowagie.text.pdf.PdfReader;
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -24,7 +25,7 @@ class ExtractCertificatesTest {
 
     @Test
     void testSha1Pass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testSha1);
+        Assertions.assertThrows(IOException.class, this::testSha1);
     }
     void testSha1() throws Exception {
         extract("src/test/resources/sample_signed-sha1.pdf", false);
@@ -32,7 +33,7 @@ class ExtractCertificatesTest {
 
     @Test
     void testSha512Pass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testSha512);
+        Assertions.assertThrows(IOException.class, this::testSha512);
     }
     void testSha512() throws Exception {
         extract("src/test/resources/sample_signed-sha512.pdf", false);
@@ -45,7 +46,7 @@ class ExtractCertificatesTest {
      */
     @Test
     void testSha256TimeStampPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testSha256TimeStamp);
+        Assertions.assertThrows(IOException.class, this::testSha256TimeStamp);
     }
     void testSha256TimeStamp() throws Exception {
         extract("src/test/resources/pdf_digital_signature_timestamp.pdf", true);

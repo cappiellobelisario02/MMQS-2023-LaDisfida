@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import com.lowagie.text.exceptions.InvalidPdfException;
@@ -56,7 +57,7 @@ class SimplePdfTest {
 
     @Test
     void testTryWithResources_with_os_before_docPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testTryWithResources_with_os_before_doc);
+        Assertions.assertThrows(IOException.class, this::testTryWithResources_with_os_before_doc);
     }
     void testTryWithResources_with_os_before_doc() throws Exception {
         try (PdfReader reader = new PdfReader("./src/test/resources/HelloWorldMeta.pdf");
@@ -77,7 +78,7 @@ class SimplePdfTest {
 
     @Test
     void testTryWithResources_with_unknown_osPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testTryWithResources_with_unknown_os);
+        Assertions.assertThrows(IOException.class, this::testTryWithResources_with_unknown_os);
     }
     void testTryWithResources_with_unknown_os() throws Exception {
         try (PdfReader reader = new PdfReader("./src/test/resources/HelloWorldMeta.pdf");

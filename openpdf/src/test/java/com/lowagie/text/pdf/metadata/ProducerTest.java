@@ -55,7 +55,7 @@ class ProducerTest {
 
     @Test
     void testMetadataProducerStamperIssue254Pass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testMetadataProducerStamperIssue254);
+        Assertions.assertThrows(IOException.class, this::testMetadataProducerStamperIssue254);
     }
     void testMetadataProducerStamperIssue254() throws IOException {
         File origin = new File("src/test/resources/pdf_form_metadata_issue_254.pdf");

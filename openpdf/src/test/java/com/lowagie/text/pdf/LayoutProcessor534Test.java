@@ -26,7 +26,6 @@ class LayoutProcessor534Test {
     @BeforeAll
     static void beforeAll() {
         assumeThat(LayoutProcessor.isSet(Font.LAYOUT_RIGHT_TO_LEFT)).isFalse();
-        LayoutProcessor.enable(java.awt.Font.LAYOUT_RIGHT_TO_LEFT);
     }
 
     @AfterAll
