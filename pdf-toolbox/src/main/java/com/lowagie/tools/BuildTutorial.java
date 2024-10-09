@@ -165,6 +165,14 @@ public class BuildTutorial {
      * @throws IOException when something goes wrong while reading or creating a file or directory
      */
     public static void action(File source, File destination, File xslExamplesIn, File xslSiteIn) throws IOException {
+        // Define a base directory for safe operations
+        File baseDirectory = new File("/expected/base/directory");
+
+        // Check if the source is part of the allowed base directory
+        if (!source.getCanonicalPath().startsWith(baseDirectory.getCanonicalPath())) {
+            throw new SecurityException("Access to the specified path is denied.");
+        }
+
         if (".svn".equals(source.getName())) {
             return;
         }
@@ -179,34 +187,25 @@ public class BuildTutorial {
 
             if (xmlFiles != null) {
                 for (File xmlFile : xmlFiles) {
-                    // Validate the file type and ensure it is a trusted XML file
-                    if (isValidXmlFile(xmlFile)) {
-                        action(xmlFile, dest, xslExamplesIn, xslSiteIn);
-                    } else {
-                        logger.info("... skipped (invalid XML file)");
-                    }
+                    action(xmlFile, dest, xslExamplesIn, xslSiteIn);
                 }
             } else {
                 logger.info("... skipped");
             }
         } else if (source.getName().equals("index.xml")) {
             logger.info("... transformed");
-
-            // Convert the XML using the XSLT and check for valid transformations
             convert(source, xslSiteIn, new File(destination, "index.php"));
+
             File buildfile = new File(destination, "build.xml");
-            String path = buildfile.getCanonicalPath().substring(root.length()).replace(File.separatorChar, '/');
+            String path = buildfile.getCanonicalPath().substring(root.length());
+            path = path.replace(File.separatorChar, '/');
 
             if ("/build.xml".equals(path)) {
                 return;
             }
 
             convert(source, xslExamplesIn, buildfile);
-
-            // Ensure the build file content is safe to write
-            build.write("\t<ant antfile=\"${basedir}");
-            build.write(path);
-            build.write("\" target=\"install\" inheritAll=\"false\" />\n");
+            build.write("\t<ant antfile=\"${basedir}" + path + "\" target=\"install\" inheritAll=\"false\" />\n");
         } else {
             logger.info("... skipped");
         }
