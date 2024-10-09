@@ -87,12 +87,13 @@ public class SplitPdf{
         String destFile2 = args[2];
         int pageNumber = Integer.parseInt(args[3]);
 
-        try (PdfReader reader = new PdfReader(srcFile);
-                Document document1 = new Document(reader.getPageSizeWithRotation(1));
-                Document document2 = new Document(reader.getPageSizeWithRotation(pageNumber))) {
+        try (PdfReader reader = new PdfReader(srcFile)) {
             validatePageNumber(reader, pageNumber);
             logTotalPages(reader);
-            try (FileOutputStream fos1 = new FileOutputStream(destFile1);
+
+            try (Document document1 = new Document(reader.getPageSizeWithRotation(1));
+                    Document document2 = new Document(reader.getPageSizeWithRotation(pageNumber));
+                    FileOutputStream fos1 = new FileOutputStream(destFile1);
                     FileOutputStream fos2 = new FileOutputStream(destFile2);
                     PdfWriter writer1 = PdfWriter.getInstance(document1, fos1);
                     PdfWriter writer2 = PdfWriter.getInstance(document2, fos2)) {
@@ -104,7 +105,6 @@ public class SplitPdf{
             }
         } catch (Exception e) {
             logger.severe("Error occurred: " + e.getMessage());
-            //da vedere come effettuare il log
         }
     }
 

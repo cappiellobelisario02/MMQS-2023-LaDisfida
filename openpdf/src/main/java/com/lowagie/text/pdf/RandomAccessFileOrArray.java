@@ -101,6 +101,11 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
             file = validatePath(filename);  // Revalidate the resolved filename
         }
 
+        // Check for potential symlink or unsafe path manipulation
+        if (!isValidFilePath(file)) {
+            throw new IOException("Invalid file path: " + filename);
+        }
+
         if (!file.canRead()) {
             handleUnreadableFile(filename);
         } else if (forceRead) {
@@ -110,6 +115,18 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
             openRandomAccessFile(filename, plainRandomAccess);
         }
     }
+
+    private boolean isValidFilePath(File file) {
+        try {
+            // Ensure the file is within an expected directory
+            File canonicalFile = file.getCanonicalFile();
+            File expectedDirectory = new File("expected/directory"); // Specify your base directory
+            return canonicalFile.getPath().startsWith(expectedDirectory.getCanonicalPath());
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
 
     // Helper method to validate and sanitize file paths
     private File validatePath(String path) throws IOException {
