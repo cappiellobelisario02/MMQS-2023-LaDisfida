@@ -263,19 +263,24 @@ class CJKFont extends BaseFont {
     }
 
     static char[] readCMap(String name) {
-        try {
-            name = name + ".cmap";
-            InputStream is = getResourceStream(RESOURCE_PATH + name);
-            char[] c = new char[0x10000];
+        name = name + ".cmap";  // Append .cmap to the filename
+
+        // Using try-with-resources for automatic resource management
+        try (InputStream is = getResourceStream(RESOURCE_PATH + name)) {
+            char[] c = new char[0x10000];  // Initialize a character array to hold the cmap values
+
+            // Read characters from the input stream
             for (int k = 0; k < 0x10000; ++k) {
                 c[k] = (char) ((is.read() << 8) + is.read());
             }
-            is.close();
-            return c;
+
+            return c;  // Return the character array after reading
         } catch (Exception e) {
-            // empty on purpose
+            // Log the exception if needed (optional)
+            // logger.severe("Error reading CMap: " + e.getMessage());
         }
-        return new char[0];
+
+        return new char[0];  // Return an empty array on failure
     }
 
     static IntHashtable createMetric(String s) {
