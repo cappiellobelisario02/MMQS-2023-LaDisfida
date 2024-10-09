@@ -226,28 +226,22 @@ public class BuildTutorial {
      * @param outfile the path for the output file
      */
     public static void convert(File infile, File xslfile, File outfile) {
-        // Initialize streams as null for later use in try-with-resources
-        FileInputStream xslInputStream = null;
-        FileInputStream sourceInputStream = null;
-        FileOutputStream outputStream = null;
-
+        // Use try-with-resources to ensure all streams are closed properly
         try {
-            // Create transformer factory with secure settings
+            // Create transformer factory
             TransformerFactory factory = TransformerFactory.newInstance();
-
-            // Disable external entity processing to prevent XXE attacks
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");  // Disable DTDs
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");  // Disable external stylesheets
 
-            // Use the factory to create a template containing the XSL file
-            xslInputStream = new FileInputStream(xslfile);
-            Templates template = factory.newTemplates(new StreamSource(new FileInputStream(xslfile)));
+            // Use the factory to create a template containing the xsl file
+            Templates template;
+            try (FileInputStream xslInputStream = new FileInputStream(xslfile)) {
+                template = factory.newTemplates(new StreamSource(xslInputStream));
+            }
 
             // Use the template to create a transformer
             Transformer xformer = template.newTransformer();
 
-            // Pass 2 parameters
+            // Passing 2 parameters
             String branch = outfile.getParentFile().getCanonicalPath().substring(root.length());
             branch = branch.replace(File.separatorChar, '/');
             StringBuilder path = new StringBuilder();
@@ -261,30 +255,17 @@ public class BuildTutorial {
             xformer.setParameter("root", path.toString());
 
             // Prepare the input and output files
-            sourceInputStream = new FileInputStream(infile);
-            outputStream = new FileOutputStream(outfile);
-            Source source = new StreamSource(sourceInputStream);
-            Result result = new StreamResult(outputStream);
+            try (FileInputStream inputFileStream = new FileInputStream(infile);
+                    FileOutputStream outputFileStream = new FileOutputStream(outfile)) {
+                Source source = new StreamSource(inputFileStream);
+                Result result = new StreamResult(outputFileStream);
 
-            // Apply the XSL file to the source file and write the result to the output file
-            xformer.transform(source, result);
-        } catch (Exception e) {
-            logger.severe("Error during XML transformation: " + e.getMessage());  // Log safely
-        } finally {
-            // Close resources in the finally block to ensure they are always released
-            try {
-                if (xslInputStream != null) {
-                    xslInputStream.close();
-                }
-                if (sourceInputStream != null) {
-                    sourceInputStream.close();
-                }
-                if (outputStream != null) {
-                    outputStream.close();
-                }
-            } catch (IOException e) {
-                logger.severe("Error closing streams: " + e.getMessage());
+                // Apply the xsl file to the source file and write the result to the output file
+                xformer.transform(source, result);
             }
+        } catch (Exception e) {
+            // Log the exception for better diagnostics
+            logger.severe("Error during transformation: " + e.getMessage());
         }
     }
 }
