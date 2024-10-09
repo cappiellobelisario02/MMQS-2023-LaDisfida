@@ -83,20 +83,45 @@ public class ConcatPdf {
      */
     public static void main(String[] args) {
         if (args.length < 2) {
-            logger.severe("arguments: file1 [file2 ...] destfile");
+            logger.severe("Invalid arguments: expected file1 [file2 ...] destfile");
         } else {
             try {
-                File outFile = new File(args[args.length - 1]);
+                // Validate the destination file path
+                File outFile = validatePath(args[args.length - 1]);
                 List<File> sources = new ArrayList<>();
+
                 for (int i = 0; i < args.length - 1; i++) {
-                    sources.add(new File(args[i]));
+                    // Validate the source file paths
+                    File sourceFile = validatePath(args[i]);
+                    sources.add(sourceFile);
                 }
+
                 concat(sources, outFile);
             } catch (IOException e) {
-                //da vedere come effettuare il log
+                logger.severe("I/O error during file concatenation: " + e.getMessage());
+            } catch (SecurityException e) {
+                logger.severe("Invalid file path detected: " + e.getMessage());
             }
         }
     }
+
+    // Helper method to validate and sanitize file paths
+    private static File validatePath(String path) throws SecurityException {
+        File file = new File(path);
+
+        // Perform security checks: prevent directory traversal attacks
+        try {
+            String canonicalPath = file.getCanonicalPath();
+            if (!canonicalPath.startsWith(new File(".").getCanonicalPath())) {
+                throw new SecurityException("Path manipulation attempt detected: " + path);
+            }
+        } catch (IOException e) {
+            throw new SecurityException("Invalid file path: " + path);
+        }
+
+        return file;
+    }
+
 
     public static void concat(List<File> sources, File target) throws IOException {
 
