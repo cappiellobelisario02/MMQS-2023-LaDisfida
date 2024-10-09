@@ -189,54 +189,46 @@ public class FontFactoryImp implements FontProvider {
         if (fontname == null) {
             return new Font(Font.UNDEFINED, size, style, color);
         }
-        String lowerCaseFontname = fontname.toLowerCase(Locale.ROOT);
 
-        lock.readLock().lock();
+        String lowerCaseFontname = fontname.toLowerCase(Locale.ROOT);
+        lock.readLock().lock(); // Acquire the read lock
         try {
             List<String> fontFamilie = fontFamilies.get(lowerCaseFontname);
             if (fontFamilie != null) {
-                // some bugs were fixed here by Daniel Marczisovszky
                 int s = style == Font.UNDEFINED ? Font.NORMAL : style;
                 for (String font : fontFamilie) {
                     int fontStyle = Font.getFontStyleFromName(font);
                     if ((s & Font.BOLDITALIC) == fontStyle) {
                         fontname = font;
                         lowerCaseFontname = fontname.toLowerCase(Locale.ROOT);
-                        // If a styled font already exists, we don't want to use the separate style-Attribute.
-                        // For example: Helvetica-Bold should have a normal style, because it's already bold.
-                        // Remove all styles already present in the BaseFont
-                        style = s ^ fontStyle;
+                        style = s ^ fontStyle; // Remove already present styles
                         break;
                     }
                 }
             }
         } finally {
-            lock.readLock().unlock();
+            lock.readLock().unlock(); // Ensure the lock is always released
         }
 
         BaseFont basefont = null;
         try {
             basefont = createBaseFont(fontname, encoding, embedded, cached, true);
             if (basefont == null) {
-                // the font is a true type font or an unknown font
+                // Check for TrueType font registration
                 fontname = trueTypeFonts.get(lowerCaseFontname);
-                // the font is not registered as truetype font
                 if (fontname == null) {
                     return new Font(Font.UNDEFINED, size, style, color);
                 }
-                // the font is registered as truetype font
                 basefont = BaseFont.createFont(fontname, encoding, embedded, cached, null, null);
             }
         } catch (DocumentException de) {
-            // this shouldn't happen
-            throw new ExceptionConverter(de);
+            throw new ExceptionConverter(de); // Handle document exceptions
         } catch (IOException | NullPointerException ioe) {
-            // the font is registered as a true type font, but the path was wrong
-            // or null was entered as fontname and/or encoding
+            // Handle I/O or null exceptions safely
             return new Font(Font.UNDEFINED, size, style, color);
         }
 
-        return new Font(basefont, size, style, color);
+        return new Font(basefont, size, style, color); // Return the constructed Font
     }
 
     private BaseFont createBaseFont(String fontname, String encoding, boolean embedded, boolean cached, boolean isType1) throws DocumentException, IOException {
