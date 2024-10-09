@@ -79,11 +79,12 @@ public class InspectPDF extends AbstractTool {
     public static void main(String[] args) {
         InspectPDF tool = new InspectPDF();
         if (args.length < 1) {
-            logger.severe(tool.getUsage());
+            logger.severe("Invalid arguments provided. Please refer to the usage guidelines.");
         }
         tool.setMainArguments(args);
         tool.execute();
     }
+
 
     /**
      * @see com.lowagie.toolbox.AbstractTool#createFrame()
