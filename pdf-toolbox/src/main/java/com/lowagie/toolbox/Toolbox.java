@@ -219,61 +219,65 @@ public class Toolbox extends JFrame implements ActionListener {
      */
     private JMenuBar getMenubar() {
         Properties p = new Properties();
+
         try {
-            p.load(com.lowagie.toolbox.Toolbox.class.getClassLoader().getResourceAsStream(
-                    "tools.txt"));
-            String usertoolstxt = System.getProperty("user.home") +
-                    System.getProperty("file.separator") +
-                    "tools.txt";
-            File uttf = new File(usertoolstxt);
-            if (uttf.isFile() && uttf.exists()) {
-                try (FileInputStream fis = new FileInputStream(usertoolstxt)) {
+            p.load(com.lowagie.toolbox.Toolbox.class.getClassLoader().getResourceAsStream("tools.txt"));
+
+            String usertoolsTxtPath = System.getProperty("user.home") + System.getProperty("file.separator") + "tools.txt";
+            File userToolsFile = new File(usertoolsTxtPath);
+
+            if (userToolsFile.isFile() && userToolsFile.exists()) {
+                try (FileInputStream fis = new FileInputStream(usertoolsTxtPath)) {
                     p.load(fis);
                 }
             }
         } catch (IOException e) {
-            //da vedere come effettuare il log
+            logger.severe("Error loading tools properties: " + e.getMessage());
         }
+
         toolmap = new Properties();
         JMenuBar menubar = new JMenuBar();
+
+        // File Menu
         JMenu file = new JMenu(ToolMenuItems.FILE);
         file.setMnemonic(KeyEvent.VK_T);
         JMenuItem close = new JMenuItem(ToolMenuItems.CLOSE);
         close.setMnemonic(KeyEvent.VK_C);
         close.addActionListener(this);
         file.add(close);
+
+        // View Menu
         JMenu view = new JMenu(ToolMenuItems.VIEW);
         JMenuItem reset = new JMenuItem(ToolMenuItems.RESET);
         reset.addActionListener(this);
         view.add(reset);
-        // JMenuItem filelist = new JMenuItem(FILELIST)
-        // filelist.addActionListener(this
-        // view.add(filelist
+
+        // Tools Menu
         JMenu tools = new JMenu(ToolMenuItems.TOOLS);
-        // Here one day should be the wizard to help you create a new beanshell script
-        // JMenuItem create = new JMenuItem(CREATE)
-        // create.addActionListener(this
-        // tools.add(create
         buildPluginMenuItems(new TreeMap<>(p), tools);
+
+        // Help Menu
         JMenu help = new JMenu(ToolMenuItems.HELP);
+
         JMenuItem about = new JMenuItem(ToolMenuItems.ABOUT);
-        // about.setIcon(new ImageIcon(Toolbox.class.getResource(
-        // "Help24.gif")))
         about.setMnemonic(KeyEvent.VK_A);
         about.addActionListener(this);
         help.add(about);
+
         JMenuItem versions = new JMenuItem(ToolMenuItems.VERSION);
-        // versions.setIcon(new ImageIcon(Toolbox.class.getResource(
-        // "About24.gif")))
         versions.addActionListener(this);
         help.add(versions);
+
+        // Adding menus to menubar
         menubar.add(file);
         menubar.add(tools);
         menubar.add(view);
         menubar.add(Box.createGlue());
         menubar.add(help);
+
         return menubar;
     }
+
 
     /**
      * BuildPluginMenuItems

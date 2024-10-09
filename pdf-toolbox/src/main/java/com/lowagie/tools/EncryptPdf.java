@@ -105,34 +105,38 @@ public class EncryptPdf {
      * @param args input_file output_file user_password owner_password permissions 128|40 [new info string pairs]
      */
     public static void main(String[] args) {
-        String stringToLog;
         logger.info("PDF document encryptor");
+
         if (args.length <= STRENGTH || args[PERMISSIONS].length() != 8) {
             usage();
             return;
         }
+
         try (PdfReader reader = new PdfReader(args[INPUT_FILE]);
-             FileOutputStream fouts = new FileOutputStream(args[OUTPUT_FILE])){
+                FileOutputStream fouts = new FileOutputStream(args[OUTPUT_FILE])) {
+
             int permissions = 0;
             String p = args[PERMISSIONS];
             for (int k = 0; k < p.length(); ++k) {
                 permissions |= (p.charAt(k) == '0' ? 0 : permit[k]);
             }
-            stringToLog = "Reading " + args[INPUT_FILE];
-            logger.info(stringToLog);
 
-            stringToLog = "Writing " + args[OUTPUT_FILE];
-            logger.info(stringToLog);
+            logger.info("Reading " + args[INPUT_FILE]);
+            logger.info("Writing " + args[OUTPUT_FILE]);
+
             Map<String, String> moreInfo = new HashMap<>();
             for (int k = MOREINFO; k < args.length - 1; k += 2) {
                 moreInfo.put(args[k], args[k + 1]);
             }
+
             PdfEncryptor.encrypt(reader, fouts,
                     args[USER_PASSWORD].getBytes(), args[OWNER_PASSWORD].getBytes(), permissions,
                     args[STRENGTH].equals("128"), moreInfo);
+
             logger.info("Done.");
         } catch (Exception e) {
-            //da vedere come effettuare il logs
+            logger.severe("Error occurred: " + e.getMessage());
         }
     }
+
 }

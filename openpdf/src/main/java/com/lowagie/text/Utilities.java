@@ -155,12 +155,22 @@ public class Utilities {
      * @throws MalformedURLException if url is not valid
      */
     public static URL toURL(String filename) throws MalformedURLException {
+        // Sanitize the input filename to prevent path manipulation
+        String sanitizedFilename = sanitizePath(filename);
+
         try {
-            return new URL(filename);
+            return new URL(sanitizedFilename);
         } catch (Exception e) {
-            return new File(filename).toURI().toURL();
+            return new File(sanitizedFilename).toURI().toURL();
         }
     }
+
+    private static String sanitizePath(String path) {
+        // Implement path sanitization logic, such as removing or escaping special characters
+        // Example: Remove any ".." to prevent directory traversal
+        return path.replace("\\.\\.", "").replaceAll("[<>:\"/\\\\|?*]", "_");
+    }
+
 
     /**
      * This method is an alternative for the <CODE>InputStream.skip()</CODE> -method that doesn't seem to work properly

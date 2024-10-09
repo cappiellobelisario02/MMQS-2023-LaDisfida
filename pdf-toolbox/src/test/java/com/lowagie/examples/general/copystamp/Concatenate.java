@@ -42,59 +42,57 @@ public class Concatenate {
     public static void main(String[] args) {
         if (args.length < 2) {
             System.err.println("arguments: file1 [file2 ...] destfile");
-        } else {
-            System.out.println("PdfCopy example");
-            try {
-                int pageOffset = 0;
-                List<Map<String, Object>> master = new ArrayList<>();
-                int f = 0;
-                String outFile = args[args.length - 1];
-                Document document = null;
-                PdfCopy writer = null;
-                while (f < args.length - 1) {
-                    // we create a reader for a certain document
-                    PdfReader reader = new PdfReader(args[f]);
-                    reader.consolidateNamedDestinations();
-                    // we retrieve the total number of pages
-                    int n = reader.getNumberOfPages();
-                    List<Map<String, Object>> bookmarks = SimpleBookmark.getBookmarkList(reader);
-                    if (bookmarks != null) {
-                        if (pageOffset != 0) {
-                            SimpleBookmark.shiftPageNumbersInRange(bookmarks, pageOffset, null);
-                        }
-                        master.addAll(bookmarks);
-                    }
-                    pageOffset += n;
+            return;
+        }
 
-                    if (f == 0) {
-                        // step 1: creation of a document-object
-                        document = new Document(reader.getPageSizeWithRotation(1));
-                        // step 2: we create a writer that listens to the document
-                        writer = new PdfCopy(document, new FileOutputStream(outFile));
-                        // step 3: we open the document
-                        document.open();
+        System.out.println("PdfCopy example");
+        String outFile = args[args.length - 1];
+
+        try {
+            int pageOffset = 0;
+            List<Map<String, Object>> master = new ArrayList<>();
+            Document document = null;
+            PdfCopy writer = null;
+
+            for (int f = 0; f < args.length - 1; f++) {
+                PdfReader reader = new PdfReader(args[f]);
+                reader.consolidateNamedDestinations();
+
+                int n = reader.getNumberOfPages();
+                List<Map<String, Object>> bookmarks = SimpleBookmark.getBookmarkList(reader);
+                if (bookmarks != null) {
+                    if (pageOffset != 0) {
+                        SimpleBookmark.shiftPageNumbersInRange(bookmarks, pageOffset, null);
                     }
-                    // step 4: we add content
-                    PdfImportedPage page;
-                    for (int i = 0; i < n; ) {
-                        ++i;
-                        page = writer.getImportedPage(reader, i);
-                        writer.addPage(page);
-                    }
-                    PRAcroForm form = reader.getAcroForm();
-                    if (form != null) {
-                        writer.copyAcroForm(reader);
-                    }
-                    f++;
+                    master.addAll(bookmarks);
                 }
-                if (!master.isEmpty()) {
-                    writer.setOutlines(master);
+                pageOffset += n;
+
+                if (f == 0) {
+                    document = new Document(reader.getPageSizeWithRotation(1));
+                    writer = new PdfCopy(document, new FileOutputStream(outFile));
+                    document.open();
                 }
-                // step 5: we close the document
-                document.close();
-            } catch (Exception e) {
-                //da vedere come effettuare il log
+
+                for (int i = 1; i <= n; i++) {
+                    PdfImportedPage page = writer.getImportedPage(reader, i);
+                    writer.addPage(page);
+                }
+
+                PRAcroForm form = reader.getAcroForm();
+                if (form != null) {
+                    writer.copyAcroForm(reader);
+                }
             }
+
+            if (!master.isEmpty()) {
+                writer.setOutlines(master);
+            }
+
+            document.close();
+        } catch (Exception e) {
+            System.err.println("Error occurred: " + e.getMessage());
         }
     }
+
 }

@@ -108,9 +108,10 @@ public class BuildTutorial {
                 logger.severe("I/O error occurred: " + ioe.getMessage());
             }
         } else {
-            logger.severe("Wrong number of parameters.\nUsage: BuildSite srcdr destdir xsl_examples xsl_site");
+            logger.severe("Wrong number of parameters.\nUsage: BuildSite srcdir destdir xsl_examples xsl_site");
         }
     }
+
 
     // Helper method to validate and sanitize file paths
     private static File validatePath(String path) {
