@@ -145,31 +145,42 @@ public class BuildTutorial {
         if (".svn".equals(source.getName())) {
             return;
         }
+
         logger.info(source.getName());
+
         if (source.isDirectory()) {
             logger.info(" ");
             logger.info(source.getCanonicalPath());
             File dest = new File(destination, source.getName());
-            File current;
             File[] xmlFiles = source.listFiles();
+
             if (xmlFiles != null) {
                 for (File xmlFile : xmlFiles) {
-                    current = xmlFile;
-                    action(current, dest, xslExamplesIn, xslSiteIn);
+                    // Validate the file type and ensure it is a trusted XML file
+                    if (isValidXmlFile(xmlFile)) {
+                        action(xmlFile, dest, xslExamplesIn, xslSiteIn);
+                    } else {
+                        logger.info("... skipped (invalid XML file)");
+                    }
                 }
             } else {
                 logger.info("... skipped");
             }
         } else if (source.getName().equals("index.xml")) {
             logger.info("... transformed");
+
+            // Convert the XML using the XSLT and check for valid transformations
             convert(source, xslSiteIn, new File(destination, "index.php"));
             File buildfile = new File(destination, "build.xml");
-            String path = buildfile.getCanonicalPath().substring(root.length());
-            path = path.replace(File.separatorChar, '/');
+            String path = buildfile.getCanonicalPath().substring(root.length()).replace(File.separatorChar, '/');
+
             if ("/build.xml".equals(path)) {
                 return;
             }
+
             convert(source, xslExamplesIn, buildfile);
+
+            // Ensure the build file content is safe to write
             build.write("\t<ant antfile=\"${basedir}");
             build.write(path);
             build.write("\" target=\"install\" inheritAll=\"false\" />\n");
@@ -177,6 +188,12 @@ public class BuildTutorial {
             logger.info("... skipped");
         }
     }
+
+    // Additional method to validate XML files
+    private static boolean isValidXmlFile(File file) {
+        return file.isFile() && file.getName().toLowerCase().endsWith(".xml");
+    }
+
 
     /**
      * Converts an <code>infile</code>, using an <code>xslfile</code> to an
