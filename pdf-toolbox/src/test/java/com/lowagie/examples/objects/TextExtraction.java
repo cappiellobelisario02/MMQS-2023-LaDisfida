@@ -62,13 +62,13 @@ public class TextExtraction {
 
             document.close();
 
-            FileOutputStream fos = new FileOutputStream("TextExtraction.pdf");
-            fos.write(baos.toByteArray());
-            fos.close();
-
+            try (FileOutputStream fos = new FileOutputStream("TextExtraction.pdf")) {
+                fos.write(baos.toByteArray());
+            }
         } catch (DocumentException | IOException de) {
             System.err.println(de.getMessage());
         }
         return baos;
     }
+
 }

@@ -7,6 +7,7 @@ import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Utilities;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,10 +80,11 @@ class PdfSignatureRangeTest {
         Assertions.assertThrows(InvalidPdfException.class, this::objectXrefDocumentSignature);
     }
     void objectXrefDocumentSignature() throws DocumentException, IOException {
-        byte[] pdf = Utilities.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream("/objectXref.pdf")));
-        checkSignature(pdf);
-        checkSignature(enlarge(pdf, 100001));
-        checkSignature(enlarge(pdf, 16777217)); // must be odd, as only the last bit is lost
+        try (InputStream resource = getClass().getResourceAsStream("/objectXref.pdf")) {
+            byte[] pdf = Utilities.toByteArray(Objects.requireNonNull(resource));
+            checkSignature(pdf);
+            checkSignature(enlarge(pdf, 100001));
+            checkSignature(enlarge(pdf, 16777217)); // must be odd, as only the last bit is lost
+        }
     }
-
 }

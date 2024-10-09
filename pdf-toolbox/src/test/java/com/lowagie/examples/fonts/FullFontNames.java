@@ -29,8 +29,7 @@ public class FullFontNames {
      * @param args no arguments needed
      */
     public static void main(String[] args) {
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter("fullfontname_arialbi.txt"));
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("fullfontname_arialbi.txt"))) {
             BaseFont bf = BaseFont.createFont("c:\\windows\\fonts\\arialbi.ttf", "winansi", BaseFont.NOT_EMBEDDED);
             out.write("postscriptname: " + bf.getPostscriptFontName());
             out.write("\r\n\r\n");
@@ -42,10 +41,11 @@ public class FullFontNames {
                     out.write(name[3] + "\r\n");
                 }
             }
-            out.flush();
-            out.close();
+            out.flush(); // Not necessary, since we're using try-with-resources
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            // Consider using a logging framework or System.err for error logging
+            // Simple error logging for demonstration
         }
     }
+
 }
