@@ -47,6 +47,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
@@ -220,20 +221,25 @@ public class Toolbox extends JFrame implements ActionListener {
     private JMenuBar getMenubar() {
         Properties p = new Properties();
 
-        try {
-            p.load(com.lowagie.toolbox.Toolbox.class.getClassLoader().getResourceAsStream("tools.txt"));
+        try (InputStream resourceStream = com.lowagie.toolbox.Toolbox.class.getClassLoader().getResourceAsStream("tools.txt")) {
+            if (resourceStream != null) {
+                p.load(resourceStream);
+            } else {
+                logger.warning("Resource 'tools.txt' not found in classpath.");
+            }
 
-            String usertoolsTxtPath = System.getProperty("user.home") + System.getProperty("file.separator") + "tools.txt";
-            File userToolsFile = new File(usertoolsTxtPath);
+            String userToolsTxtPath = System.getProperty("user.home") + System.getProperty("file.separator") + "tools.txt";
+            File userToolsFile = new File(userToolsTxtPath);
 
             if (userToolsFile.isFile() && userToolsFile.exists()) {
-                try (FileInputStream fis = new FileInputStream(usertoolsTxtPath)) {
+                try (FileInputStream fis = new FileInputStream(userToolsFile)) {
                     p.load(fis);
                 }
             }
         } catch (IOException e) {
             logger.severe("Error loading tools properties: " + e.getMessage());
         }
+
 
         toolmap = new Properties();
         JMenuBar menubar = new JMenuBar();
