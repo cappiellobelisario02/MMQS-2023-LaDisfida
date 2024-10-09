@@ -76,14 +76,33 @@ public class CMapParser {
         // Validate the provided file path
         File cmapFile = validatePath(args[0]);
 
-        try (FileInputStream fileInputStream = new FileInputStream(cmapFile)) {
-            com.lowagie.text.pdf.fonts.cmaps.CMapParser parser = new com.lowagie.text.pdf.fonts.cmaps.CMapParser();
-            CMap result = parser.parse(fileInputStream);
-            logger.warning("Result: " + result);
+        // Ensure the file is located in a specific directory
+        try {
+            // Define a base directory where CMAP files are allowed
+            File baseDirectory = new File("/path/to/allowed/directory");
+
+            // Get the canonical path of the CMAP file
+            String canonicalBasePath = baseDirectory.getCanonicalPath();
+            String canonicalCmapFilePath = cmapFile.getCanonicalPath();
+
+            // Check if the CMAP file is within the allowed directory
+            if (!canonicalCmapFilePath.startsWith(canonicalBasePath)) {
+                logger.severe("Access to this file is denied: " + cmapFile.getAbsolutePath());
+                System.exit(-1);
+            }
+
+            try (FileInputStream fileInputStream = new FileInputStream(cmapFile)) {
+                com.lowagie.text.pdf.fonts.cmaps.CMapParser parser = new com.lowagie.text.pdf.fonts.cmaps.CMapParser();
+                CMap result = parser.parse(fileInputStream);
+                logger.warning("Result: " + result);
+            } catch (IOException e) {
+                logger.severe("Error processing the CMAP file: " + e.getMessage());
+            }
         } catch (IOException e) {
-            logger.severe("Error processing the CMAP file: " + e.getMessage());
+            logger.severe("Error resolving file path: " + e.getMessage());
         }
     }
+
 
     // Helper method to validate the file path
     private static File validatePath(String path) {
