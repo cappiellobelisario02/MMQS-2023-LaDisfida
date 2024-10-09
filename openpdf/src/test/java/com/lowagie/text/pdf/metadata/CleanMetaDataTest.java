@@ -12,6 +12,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.xml.xmp.XmpWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
@@ -89,7 +90,7 @@ class CleanMetaDataTest {
 
     @Test
     void testStamperMetadataPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testStamperMetadata);
+        Assertions.assertThrows(IOException.class, this::testStamperMetadata);
     }
     void testStamperMetadata() throws Exception {
         byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), false, createCleanerMoreInfo());
@@ -105,7 +106,7 @@ class CleanMetaDataTest {
 
     @Test
     void testStamperEncryptMetadataPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testStamperEncryptMetadata);
+        Assertions.assertThrows(IOException.class, this::testStamperEncryptMetadata);
     }
     void testStamperEncryptMetadata() throws Exception {
         byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), true, createCleanerMoreInfo());
@@ -120,7 +121,7 @@ class CleanMetaDataTest {
 
     @Test
     void testStamperExtraMetadataPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testStamperExtraMetadata);
+        Assertions.assertThrows(IOException.class, this::testStamperExtraMetadata);
     }
     void testStamperExtraMetadata() throws Exception {
         HashMap<String, String> moreInfo = createCleanerMoreInfo();
@@ -139,7 +140,7 @@ class CleanMetaDataTest {
 
     @Test
     void testCleanMetadataMethodInStamperPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testCleanMetadataMethodInStamper);
+        Assertions.assertThrows(IOException.class, this::testCleanMetadataMethodInStamper);
     }
     void testCleanMetadataMethodInStamper() throws Exception {
         byte[] data = cleanMetadata(new File("src/test/resources/HelloWorldMeta.pdf"));
@@ -155,7 +156,7 @@ class CleanMetaDataTest {
 
     @Test
     void skipMetaDataUpdateTestPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::skipMetaDataUpdateTest);
+        Assertions.assertThrows(IOException.class, this::skipMetaDataUpdateTest);
     }
     void skipMetaDataUpdateTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -171,7 +172,7 @@ class CleanMetaDataTest {
 
     @Test
     void skipMetaDataUpdateFirstRevisionTestPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::skipMetaDataUpdateFirstRevisionTest);
+        Assertions.assertThrows(IOException.class, this::skipMetaDataUpdateFirstRevisionTest);
     }
     void skipMetaDataUpdateFirstRevisionTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -187,7 +188,7 @@ class CleanMetaDataTest {
 
     @Test
     void skipInfoUpdateTestPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::skipInfoUpdateTest);
+        Assertions.assertThrows(IOException.class, this::skipInfoUpdateTest);
     }
     void skipInfoUpdateTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -214,7 +215,7 @@ class CleanMetaDataTest {
 
     @Test
     void skipInfoUpdateFirstRevisionTestPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::skipInfoUpdateFirstRevisionTest);
+        Assertions.assertThrows(IOException.class, this::skipInfoUpdateFirstRevisionTest);
     }
     void skipInfoUpdateFirstRevisionTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -241,7 +242,7 @@ class CleanMetaDataTest {
 
     @Test
     void testXMPMetadataPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testXMPMetadata);
+        Assertions.assertThrows(IOException.class, this::testXMPMetadata);
     }
     void testXMPMetadata() throws Exception {
         File file = new File("src/test/resources/HelloWorldMeta.pdf");

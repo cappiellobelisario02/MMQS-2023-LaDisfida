@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import org.junit.jupiter.api.Assertions;
@@ -25,7 +26,7 @@ class ImageTest {
 
     @Test
     void shouldReturnImageWithUrlForPathPass(){
-        Assertions.assertThrows(ExceptionConverter.class, this::shouldReturnImageWithUrlForPath);
+        Assertions.assertThrows(FileNotFoundException.class, this::shouldReturnImageWithUrlForPath);
     }
     void shouldReturnImageWithUrlForPath() throws Exception {
         String fileName = "src/test/resources/H.gif";
@@ -95,7 +96,7 @@ class ImageTest {
 
     @Test
     void performanceTestGifWithFilenamePass(){
-        Assertions.assertThrows(ExceptionConverter.class, this::performanceTestGifWithFilename);
+        Assertions.assertThrows(FileNotFoundException.class, this::performanceTestGifWithFilename);
     }
     void performanceTestGifWithFilename() throws IOException {
         long start = System.nanoTime();

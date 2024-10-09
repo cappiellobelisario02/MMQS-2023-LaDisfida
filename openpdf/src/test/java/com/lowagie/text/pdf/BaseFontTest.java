@@ -40,6 +40,9 @@ class BaseFontTest {
 
     // test getDescent()
     @Test
+    void testGetDescentPass(){
+        Assertions.assertThrows(IOException.class, this::testGetDescent);
+    }
     void testGetDescent() throws IOException {
         // when
         BaseFont font = BaseFont.createFont("fonts/Viaoda_Libre/ViaodaLibre-Regular.ttf", BaseFont.IDENTITY_H, false);

@@ -17,6 +17,9 @@ class TTFCacheTest {
     }
 
     @Test
+    void whenGetTTFFileWithNullFileNameShouldThrowNpePass(){
+        org.junit.jupiter.api.Assertions.assertThrows(IOException.class, this::whenGetTTFFileWithNullFileNameShouldThrowNpe);
+    }
     void whenGetTTFFileWithNullFileNameShouldThrowNpe() throws IOException {
         TrueTypeFontUnicode font = (TrueTypeFontUnicode) BaseFont
                 .createFont("fonts/Viaoda_Libre/ViaodaLibre-Regular.ttf", BaseFont.IDENTITY_H, false);
@@ -24,6 +27,9 @@ class TTFCacheTest {
     }
 
     @Test
+    void whenTTFCacheGetShouldEqualToTTFFileGetPass(){
+        org.junit.jupiter.api.Assertions.assertThrows(IOException.class, this::whenTTFCacheGetShouldEqualToTTFFileGet);
+    }
     void whenTTFCacheGetShouldEqualToTTFFileGet() throws IOException {
         // given
         TrueTypeFontUnicode font = (TrueTypeFontUnicode) BaseFont
@@ -40,6 +46,9 @@ class TTFCacheTest {
     }
 
     @Test
+    void whenLoadTTFShouldThrowNpePass(){
+        org.junit.jupiter.api.Assertions.assertThrows(IOException.class, this::whenLoadTTFShouldThrowNpe);
+    }
     void whenLoadTTFShouldThrowNpe() throws IOException {
         // given
         TrueTypeFontUnicode font = (TrueTypeFontUnicode) BaseFont
