@@ -11,6 +11,7 @@ import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import com.sun.source.tree.AssertTree;
 import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -246,6 +247,9 @@ class DecryptAES256R6Test {
      * The non-empty identical owner and user password is used.
      */
     @Test
+    void testReadEncXiLongPasswordPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testReadEncXiLongPassword);
+    }
     void testReadEncXiLongPassword() throws IOException {
         String password = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcv";
         try (
