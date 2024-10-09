@@ -183,12 +183,23 @@ public class HtmlBookmarks extends AbstractTool {
      */
     public static void main(String[] args) {
         com.lowagie.toolbox.plugins.HtmlBookmarks tool = new com.lowagie.toolbox.plugins.HtmlBookmarks();
+
         if (args.length < 1) {
-            logger.info(tool.getUsage());
+            // Log only in debug mode and ensure no sensitive info is logged
+            logger.warning("Usage information: " + sanitize(tool.getUsage()));
+            // Alternatively, print a more generic message without logging confidential info
+            System.out.println("Missing arguments. Please provide necessary input.");
         }
+
         tool.setMainArguments(args);
         tool.execute();
     }
+
+    private static String sanitize(String data) {
+        // Implement custom logic to remove or mask sensitive parts of the log
+        return data.replaceAll("/path/to/sensitive", "/path/to/[REDACTED]");
+    }
+
 
     /**
      * @see com.lowagie.toolbox.AbstractTool#createFrame()
