@@ -170,17 +170,21 @@ public class BuildTutorial {
      */
     public static void convert(File infile, File xslfile, File outfile) {
         try {
-            // Create transformer factory
+            // Create transformer factory with secure settings
             TransformerFactory factory = TransformerFactory.newInstance();
+
+            // Disable external entity processing to prevent XXE attacks
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            // Use the factory to create a template containing the xsl file
-            Templates template = factory.newTemplates(new StreamSource(
-                    new FileInputStream(xslfile)));
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");  // Disable DTDs
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");  // Disable external stylesheets
+
+            // Use the factory to create a template containing the XSL file
+            Templates template = factory.newTemplates(new StreamSource(new FileInputStream(xslfile)));
 
             // Use the template to create a transformer
             Transformer xformer = template.newTransformer();
 
-            // passing 2 parameters
+            // Pass 2 parameters
             String branch = outfile.getParentFile().getCanonicalPath().substring(root.length());
             branch = branch.replace(File.separatorChar, '/');
             StringBuilder path = new StringBuilder();
@@ -197,12 +201,12 @@ public class BuildTutorial {
             Source source = new StreamSource(new FileInputStream(infile));
             Result result = new StreamResult(new FileOutputStream(outfile));
 
-            // Apply the xsl file to the source file and write the result to the
-            // output file
+            // Apply the XSL file to the source file and write the result to the output file
             xformer.transform(source, result);
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Error during XML transformation: " + e.getMessage());  // Log safely
         }
     }
+
 }
 //The End
