@@ -246,18 +246,12 @@ class DecryptAES256R6Test {
      * The non-empty identical owner and user password is used.
      */
     @Test
-    void testReadEncXiLongPasswordPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiLongPassword);
-    }
     void testReadEncXiLongPassword() throws IOException {
+        String password = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcv";
         try (
                 InputStream resource = getClass().getResourceAsStream(
-                        "/issue375/enc-XI-long-password"
-                                +
-                                "=qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcv.pdf");
-                PdfReader pdfReader = new PdfReader(resource,
-                        "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcv".getBytes(
-                        UTF_8))
+                        "/issue375/enc-XI-long-password=qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcv.pdf");
+                PdfReader pdfReader = new PdfReader(resource, password.getBytes(UTF_8))
         ) {
             Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
             Assertions.assertTrue(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report full permissions.");
@@ -265,10 +259,11 @@ class DecryptAES256R6Test {
                     "PdfReader fails to report the correct number of pages");
             Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1),
                     "Wrong text extracted from page 1");
-         }catch(PDFFilterException e){
+        } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
