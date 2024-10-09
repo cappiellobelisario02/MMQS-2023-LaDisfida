@@ -90,28 +90,46 @@ public class BuildTutorial {
 
     public static void main(String[] args) {
         if (args.length == 4) {
-            File srcdir = new File(args[0]);
-            File destdir = new File(args[1]);
+            File srcdir = validatePath(args[0]);
+            File destdir = validatePath(args[1]);
             File xslExamples = new File(srcdir, args[2]);
             File xslSite = new File(srcdir, args[3]);
-            try {
+
+            try (FileWriter build = new FileWriter(new File(destdir, "build.xml"))) {
                 logger.info("Building tutorial: ");
-                root = new File(args[1], srcdir.getName()).getCanonicalPath();
+                root = new File(destdir, srcdir.getName()).getCanonicalPath();
                 logger.info(root);
-                build = new FileWriter(new File(root, "build.xml"));
+
                 build.write("<project name=\"tutorial\" default=\"all\" basedir=\".\">\n");
                 build.write("<target name=\"all\">\n");
                 action(srcdir, destdir, xslExamples, xslSite);
                 build.write("</target>\n</project>");
-                build.flush();
-                build.close();
             } catch (IOException ioe) {
-                //da vedere come effettuare il log
+                logger.severe("I/O error occurred: " + ioe.getMessage());
             }
         } else {
             logger.severe("Wrong number of parameters.\nUsage: BuildSite srcdr destdir xsl_examples xsl_site");
         }
     }
+
+    // Helper method to validate and sanitize file paths
+    private static File validatePath(String path) {
+        File file = new File(path);
+
+        // Prevent directory traversal attacks by checking the canonical path
+        try {
+            String canonicalPath = file.getCanonicalPath();
+            String userHomePath = new File(System.getProperty("user.home")).getCanonicalPath();
+            if (!canonicalPath.startsWith(userHomePath)) {
+                throw new SecurityException("Path manipulation attempt detected: " + path);
+            }
+        } catch (IOException e) {
+            throw new SecurityException("Invalid file path: " + path);
+        }
+
+        return file;
+    }
+
 
     /**
      * Inspects a file or directory that is given and performs the necessary actions on it (transformation or
