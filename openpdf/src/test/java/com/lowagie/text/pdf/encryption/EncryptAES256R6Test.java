@@ -100,16 +100,12 @@ class EncryptAES256R6Test {
             canvas.lineTo(box.getLeft(), box.getTop());
             canvas.stroke();
 
-            pdfStamper.close();
-            pdfReader.close();
-
             Assertions.assertTrue(pdfReader2.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
-            Assertions.assertEquals(1, pdfReader2.getNumberOfPages(),
-                    "PdfReader fails to report the correct number of pages");
-            Assertions.assertEquals("TEST", new PdfTextExtractor(pdfReader2).getTextFromPage(1),
-                    "Wrong text extracted from page 1");
-        }catch (PDFFilterException | NoSuchAlgorithmException e){
+            Assertions.assertEquals(1, pdfReader2.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
+            Assertions.assertEquals("TEST", new PdfTextExtractor(pdfReader2).getTextFromPage(1), "Wrong text extracted from page 1");
+        } catch (PDFFilterException | NoSuchAlgorithmException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 }

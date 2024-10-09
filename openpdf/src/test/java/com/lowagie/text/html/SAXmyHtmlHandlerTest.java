@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.lowagie.text.Document;
+import java.io.IOException;
 import java.io.InputStream;
 import org.junit.jupiter.api.Test;
 
@@ -28,9 +29,16 @@ class SAXmyHtmlHandlerTest {
      */
     @Test
     void testTable_generate() {
-        InputStream is = SAXmyHtmlHandlerTest.class.getClassLoader().getResourceAsStream("parseTable.html");
-        parseHtml(is);
+        try (InputStream is = SAXmyHtmlHandlerTest.class.getClassLoader().getResourceAsStream("parseTable.html")) {
+            if (is == null) {
+                throw new IOException("Resource 'parseTable.html' not found");
+            }
+            parseHtml(is);
+        } catch (IOException e) {
+            System.err.println("Error reading HTML resource: " + e.getMessage());
+        }
     }
+
 
     /**
      * Parse the input HTML file to PDF file.

@@ -36,7 +36,6 @@ public class RegisterFont {
      * @param args no arguments needed
      */
     public static void main(String[] args) {
-
         System.out.println("Registering fonts with the FontFactory");
 
         FontFactory.register("c:\\windows\\fonts\\comicbd.ttf");
@@ -57,34 +56,42 @@ public class RegisterFont {
             Font font0 = FontFactory.getFont(BaseFont.HELVETICA, BaseFont.WINANSI, 12);
             String text0 = "This is the quite popular built in font '" + BaseFont.HELVETICA + "'.";
             document.add(new Paragraph(text0, font0));
+
             Font font1 = FontFactory.getFont("ComicSansMS", BaseFont.WINANSI, 12);
             String text1 = "This is the quite popular True Type font 'ComicSansMS'.";
             document.add(new Paragraph(text1, font1));
+
             Font font2 = FontFactory.getFont("ComicSansMS-Bold", BaseFont.WINANSI, 12);
             String text2 = "This is the quite popular True Type font 'ComicSansMS-Bold'.";
             document.add(new Paragraph(text2, font2));
+
             Font font3 = FontFactory.getFont("MS-PGothic", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, 12);
             String text3 = "\u5951\u7d04\u8005\u4f4f\u6240\u30e9\u30a4\u30f3\uff11";
             document.add(new Paragraph(text3, font3));
-            BufferedWriter out = new BufferedWriter(new FileWriter("registered.txt"));
-            out.write("These fonts were registered at the FontFactory:\r\n");
-            for (Object o1 : FontFactory.getRegisteredFonts()) {
-                out.write((String) o1);
-                out.write("\r\n");
+
+            // Logging registered fonts to a file
+            try (BufferedWriter out = new BufferedWriter(new FileWriter("registered.txt"))) {
+                out.write("These fonts were registered at the FontFactory:\r\n");
+                for (String o1 : FontFactory.getRegisteredFonts()) {
+                    out.write(o1);
+                    out.write("\r\n");
+                }
+                out.write("\r\n\r\nThese are the families these fonts belong to:\r\n");
+                for (String o : FontFactory.getRegisteredFamilies()) {
+                    out.write(o);
+                    out.write("\r\n");
+                }
+                out.flush();
             }
-            out.write("\r\n\r\nThese are the families these fonts belong to:\r\n");
-            for (Object o : FontFactory.getRegisteredFamilies()) {
-                out.write((String) o);
-                out.write("\r\n");
-            }
-            out.flush();
-            out.close();
+
         } catch (DocumentException | IOException de) {
             System.err.println(de.getMessage());
+        } finally {
+            // step 5: we close the document
+            if (document.isOpen()) {
+                document.close();
+            }
         }
-
-        // step 5: we close the document
-        document.close();
-
     }
+
 }

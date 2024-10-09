@@ -204,8 +204,7 @@ public class PdfContentReaderTool {
      * @param args the arguments passed to the command line
      */
     public static void main(String[] args) {
-        try {
-            PrintWriter writer = new PrintWriter(System.out);
+        try (PrintWriter writer = new PrintWriter(System.out)) {
             if (args.length < 1 || args.length > 3) {
                 logger.info("Usage:  PdfContentReaderTool <pdf file> [<output file>|stdout] [<page num>]");
                 return;
@@ -230,7 +229,6 @@ public class PdfContentReaderTool {
 
             if (args.length >= 2) {
                 String stringToLog = "Finished writing content to " + args[1];
-                writer.close();
                 logger.info(stringToLog);
             }
         } catch (Exception e) {

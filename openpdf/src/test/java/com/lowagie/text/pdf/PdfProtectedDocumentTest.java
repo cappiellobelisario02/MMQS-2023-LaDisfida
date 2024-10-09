@@ -33,7 +33,7 @@ class PdfProtectedDocumentTest {
         byte[] expectedDigestPreClose = null;
         byte[] expectedDigestClose = null;
 
-        byte[] originalDocId = null;
+        byte[] originalDocId;
         byte[] changingId = null;
 
         // Sign and compare the generated range
@@ -118,7 +118,7 @@ class PdfProtectedDocumentTest {
         Calendar signDate = Calendar.getInstance();
 
         // override with custom FileID to ensure deterministic behaviour
-        byte[] originalDocId = null;
+        byte[] originalDocId;
         PdfObject overrideFileId = new PdfLiteral("<123><123>".getBytes());
 
         byte[] documentBytes;
@@ -192,8 +192,8 @@ class PdfProtectedDocumentTest {
                 assertEquals("123", idArray.getPdfObject(1).toString());
             }
         }
-
     }
+
 
     private byte[] getSHA256(byte[] bytes) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");

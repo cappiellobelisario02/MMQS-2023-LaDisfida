@@ -98,8 +98,7 @@ class DecryptAES256R6Test {
 
             Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
             Assertions.assertFalse(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report limited permissions.");
-            Assertions.assertEquals(1, pdfReader.getNumberOfPages(),
-                    "PdfReader fails to report the correct number of pages");
+            Assertions.assertEquals(1, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
             Assertions.assertEquals(
                     "Demo   Name   Signature   Date  Elizabeth Schultz (Apr 24, 2018) Elizabeth Schultz Apr 24, 2018 "
                             + "Elizabeth Schultz Sue Northrop (Apr 24, 2018) Apr 24, 2018 Sue Northrop",
@@ -411,14 +410,14 @@ class DecryptAES256R6Test {
                 PdfReader pdfReader = new PdfReader(resource, "view".getBytes(UTF_8))) {
             Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
             Assertions.assertFalse(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report limited permissions.");
-            Assertions.assertEquals(30, pdfReader.getNumberOfPages(),
-                    "PdfReader fails to report the correct number of pages");
+            Assertions.assertEquals(30, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
             Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1),
                     "Wrong text extracted from page 1");
-         }catch(PDFFilterException e){
+        } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
@@ -439,16 +438,20 @@ class DecryptAES256R6Test {
     void testReadEncXiR6V5UViewOMaster_Owner() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,U=view,O=master.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "master".getBytes(UTF_8))) {
+
+            // Validate the PDF properties
             Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
             Assertions.assertTrue(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report full permissions.");
-            Assertions.assertEquals(30, pdfReader.getNumberOfPages(),
-                    "PdfReader fails to report the correct number of pages");
+            Assertions.assertEquals(30, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
             Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1),
                     "Wrong text extracted from page 1");
-         }catch(PDFFilterException e){
+
+        } catch (PDFFilterException e) {
+            // Wrap and rethrow the exception as an ExceptionConverter
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
@@ -595,14 +598,14 @@ class DecryptAES256R6Test {
                 PdfReader pdfReader = new PdfReader(resource, "user".getBytes(UTF_8))) {
             Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
             Assertions.assertFalse(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report limited permissions.");
-            Assertions.assertEquals(1, pdfReader.getNumberOfPages(),
-                    "PdfReader fails to report the correct number of pages");
+            Assertions.assertEquals(1, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
             Assertions.assertEquals("Mu PD F  a lightweight PDF and XPS viewer",
                     new PdfTextExtractor(pdfReader).getTextFromPage(1), "Wrong text extracted from page 1");
-         }catch(PDFFilterException e){
+        } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
@@ -625,14 +628,14 @@ class DecryptAES256R6Test {
                 PdfReader pdfReader = new PdfReader(resource, "owner".getBytes(UTF_8))) {
             Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
             Assertions.assertTrue(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report full permissions.");
-            Assertions.assertEquals(1, pdfReader.getNumberOfPages(),
-                    "PdfReader fails to report the correct number of pages");
+            Assertions.assertEquals(1, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
             Assertions.assertEquals("Mu PD F  a lightweight PDF and XPS viewer",
                     new PdfTextExtractor(pdfReader).getTextFromPage(1), "Wrong text extracted from page 1");
-         }catch(PDFFilterException e){
+        } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">

@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class GlyphLayoutFormDin91379 {
 
-    public static String TEXT_INTRO = """
+    public static String textIntro = """
             Test of formatting for letters and sequences defined in:
             DIN 91379:2022-08: Characters and defined character sequences in Unicode for the
             electronic processing of names and data exchange in Europe, with CD-ROM.
@@ -39,7 +39,7 @@ public class GlyphLayoutFormDin91379 {
             Using LayoutProcessor for glyph layout with Java built-in routines.
             """;
 
-    public static String LATIN_CHARS_DIN_91379 = """
+    public static String latinCharsDin91379 = """
             bll; Latin Letters (normative)
             A B C D E F G H I J K L M N O P Q R S T U V W X Y Z a b c d e f g h i j k l m n o p q r s t u v w x y z 
             À Á Â Ã Ä Å Æ Ç È É Ê Ë Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö Ø Ù Ú Û Ü Ý Þ ß à á â ã ä å æ ç è é ê ë ì í î ï ð ñ ò ó ô 
@@ -93,7 +93,7 @@ public class GlyphLayoutFormDin91379 {
      */
     public static void test(String fileName) throws Exception {
         String formPath = "com/lowagie/examples/fonts/form/PdfFormLayoutProcessor.pdf";
-        String text = TEXT_INTRO + LATIN_CHARS_DIN_91379;
+        String text = textIntro + latinCharsDin91379;
 
         // Enable the LayoutProcessor with kerning and ligatures
         LayoutProcessor.enableKernLiga();
@@ -101,7 +101,8 @@ public class GlyphLayoutFormDin91379 {
         try (InputStream acroFormInputStream = GlyphLayoutFormDin91379.class.getClassLoader()
                 .getResourceAsStream(formPath);
                 FileOutputStream outputStream = new FileOutputStream(fileName);
-                PdfReader reader = new PdfReader(acroFormInputStream)
+                PdfReader reader = new PdfReader(acroFormInputStream);
+                PdfStamper stamper = new PdfStamper(reader, outputStream)
         ) {
 
             // The OpenType fonts loaded with FontFactory.register() are
@@ -114,8 +115,6 @@ public class GlyphLayoutFormDin91379 {
             FontFactory.register("com/lowagie/examples/fonts/noto/NotoSansMath-Regular.ttf", "sans-math");
             Font fontMath = FontFactory.getFont("sans-math", BaseFont.IDENTITY_H);
             BaseFont baseFontMath = fontMath.getBaseFont();
-
-            PdfStamper stamper = new PdfStamper(reader, outputStream);
             final AcroFields fields = stamper.getAcroFields();
             fields.addSubstitutionFont(baseFontMath);
 
