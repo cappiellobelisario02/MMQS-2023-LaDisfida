@@ -114,12 +114,17 @@ public class Txt2Pdf extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        BufferedReader in = null;
         Document document = null;
         Font f;
-        try {
+
+        // Using try-with-resources for automatic resource management
+        try (BufferedReader in = new BufferedReader(new FileReader((File) getValue(SRCFILE)));
+                FileOutputStream fos = new FileOutputStream((File) getValue(DESTFILE))) {
+
             String line = null;
             Rectangle pagesize = (Rectangle) getValue("pagesize");
+
+            // Set the font and document orientation
             if ("LANDSCAPE".equals(getValue("orientation"))) {
                 f = FontFactory.getFont(FontFactory.COURIER, 10);
                 document = new Document(pagesize.rotate(), 36, 9, 36, 36);
@@ -127,36 +132,31 @@ public class Txt2Pdf extends AbstractTool {
                 f = FontFactory.getFont(FontFactory.COURIER, 11);
                 document = new Document(pagesize, 72, 36, 36, 36);
             }
-            in = new BufferedReader(new FileReader((File) getValue(SRCFILE)));
-            PdfWriter.getInstance(document, new FileOutputStream((File) getValue(DESTFILE)));
+
+            PdfWriter.getInstance(document, fos);
             document.open();
+
+            // Read lines from the input file and add to the document
             while ((line = in.readLine()) != null) {
                 document.add(new Paragraph(12, line, f));
             }
-            document.close();
+
         } catch (Exception e) {
+            // Show error message in a dialog box and log the error
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
             logger.severe(e.getMessage());
+
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (Exception e) {
-                    //da vedere come effettuare il log
-                }
-            }
-            if(document != null) {
-                try{
-                    document.close();
-                }catch (Exception e){
-                    //da vedere come effettuare il log
-                }
+            // Close document only if it was opened
+            if (document != null && document.isOpen()) {
+                document.close();
             }
         }
     }
+
 
     /**
      * @param arg StringArgument

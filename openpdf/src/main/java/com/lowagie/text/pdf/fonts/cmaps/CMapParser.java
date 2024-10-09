@@ -23,6 +23,7 @@
 package com.lowagie.text.pdf.fonts.cmaps;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,16 +67,42 @@ public class CMapParser {
      * @param args Some command line arguments.
      * @throws Exception If there is an error parsing the file.
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         if (args.length != 1) {
             logger.warning("usage: java org.pdfbox.cmapparser.CMapParser <CMAP File>");
             System.exit(-1);
         }
-        com.lowagie.text.pdf.fonts.cmaps.CMapParser parser = new com.lowagie.text.pdf.fonts.cmaps.CMapParser();
-        CMap result = parser.parse(new FileInputStream(args[0]));
-        String stringToLog = "Result: " + result;
-        logger.warning(stringToLog);
+
+        // Validate the provided file path
+        File cmapFile = validatePath(args[0]);
+
+        try (FileInputStream fileInputStream = new FileInputStream(cmapFile)) {
+            com.lowagie.text.pdf.fonts.cmaps.CMapParser parser = new com.lowagie.text.pdf.fonts.cmaps.CMapParser();
+            CMap result = parser.parse(fileInputStream);
+            logger.warning("Result: " + result);
+        } catch (IOException e) {
+            logger.severe("Error processing the CMAP file: " + e.getMessage());
+        }
     }
+
+    // Helper method to validate the file path
+    private static File validatePath(String path) {
+        File file = new File(path);
+
+        // Perform security checks: prevent directory traversal attacks
+        try {
+            String canonicalPath = file.getCanonicalPath();
+            String currentDir = new File(".").getCanonicalPath();
+            if (!canonicalPath.startsWith(currentDir)) {
+                throw new SecurityException("Path manipulation attempt detected: " + path);
+            }
+        } catch (IOException e) {
+            throw new SecurityException("Invalid file path: " + path, e);
+        }
+
+        return file;
+    }
+
 
     /**
      * This will parse the stream and create a cmap object.
