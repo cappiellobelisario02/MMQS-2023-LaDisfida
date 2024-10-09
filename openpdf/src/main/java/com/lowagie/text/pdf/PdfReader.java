@@ -72,6 +72,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.Key;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -3237,13 +3238,18 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      * @return the subset prefix
      */
+
+
     private String createRandomSubsetPrefix() {
+        SecureRandom secureRandom = new SecureRandom();
         StringBuilder s = new StringBuilder();
         for (int k = 0; k < 6; ++k) {
-            s.append((char) (Math.random() * 26 + 'A'));
+            int randomIndex = secureRandom.nextInt(26); // Get a random index between 0 and 25
+            s.append((char) (randomIndex + 'A')); // Append the corresponding character (A-Z)
         }
         return s + "+";
     }
+
 
     /**
      * Finds all the fonts not subset but embedded and marks them as subset.
