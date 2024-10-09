@@ -92,11 +92,13 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
 
     public RandomAccessFileOrArray(String filename, boolean forceRead, boolean plainRandomAccess) throws IOException {
         this.plainRandomAccess = plainRandomAccess;
-        File file = new File(filename);
+
+        // Validate the file path to prevent path manipulation
+        File file = validatePath(filename);
 
         if (!file.exists()) {
             filename = tryResolveFilename(filename);
-            file = new File(filename);
+            file = validatePath(filename);  // Revalidate the resolved filename
         }
 
         if (!file.canRead()) {
@@ -108,6 +110,20 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
             openRandomAccessFile(filename, plainRandomAccess);
         }
     }
+
+    // Helper method to validate and sanitize file paths
+    private File validatePath(String path) throws IOException {
+        File file = new File(path);
+
+        // Prevent directory traversal attacks by checking the canonical path
+        String canonicalPath = file.getCanonicalPath();
+        if (!canonicalPath.startsWith(new File(".").getCanonicalPath())) {
+            throw new SecurityException("Path manipulation attempt detected: " + path);
+        }
+
+        return file;
+    }
+
 
     private String tryResolveFilename(String filename) {
         if (FontFactory.isRegistered(filename)) {
