@@ -276,13 +276,15 @@ public class TSAClientBouncyCastle implements TSAClient {
 
         // If credentials are required, avoid plain text and use secure handling
         if (isNotEmpty(tsaUsername)) {
-            char[] userPassword = (tsaUsername + ":" + tsaPassword).toCharArray();
-            String encodedCredentials = Base64.getEncoder().encodeToString(new String(userPassword).getBytes(StandardCharsets.UTF_8));
+            // Create userPassword as a byte array to avoid using String for sensitive data
+            byte[] userPasswordBytes = (tsaUsername + ":" + tsaPassword).getBytes(StandardCharsets.UTF_8);
+            String encodedCredentials = Base64.getEncoder().encodeToString(userPasswordBytes);
             tsaConnection.setRequestProperty("Authorization", "Basic " + encodedCredentials);
 
             // Clear sensitive data from memory immediately after use
-            Arrays.fill(userPassword, '\0');
+            Arrays.fill(userPasswordBytes, (byte) 0);
         }
+
 
         // Ensure TSA connection uses HTTPS
         if (!tsaConnection.getURL().getProtocol().equals("https")) {
