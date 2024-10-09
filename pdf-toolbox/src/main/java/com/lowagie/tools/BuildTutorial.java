@@ -205,6 +205,11 @@ public class BuildTutorial {
      * @param outfile the path for the output file
      */
     public static void convert(File infile, File xslfile, File outfile) {
+        // Initialize streams as null for later use in try-with-resources
+        FileInputStream xslInputStream = null;
+        FileInputStream sourceInputStream = null;
+        FileOutputStream outputStream = null;
+
         try {
             // Create transformer factory with secure settings
             TransformerFactory factory = TransformerFactory.newInstance();
@@ -215,7 +220,8 @@ public class BuildTutorial {
             factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");  // Disable external stylesheets
 
             // Use the factory to create a template containing the XSL file
-            Templates template = factory.newTemplates(new StreamSource(new FileInputStream(xslfile)));
+            xslInputStream = new FileInputStream(xslfile);
+            Templates template = factory.newTemplates(new StreamSource(xslInputStream));
 
             // Use the template to create a transformer
             Transformer xformer = template.newTransformer();
@@ -234,15 +240,32 @@ public class BuildTutorial {
             xformer.setParameter("root", path.toString());
 
             // Prepare the input and output files
-            Source source = new StreamSource(new FileInputStream(infile));
-            Result result = new StreamResult(new FileOutputStream(outfile));
+            sourceInputStream = new FileInputStream(infile);
+            outputStream = new FileOutputStream(outfile);
+            Source source = new StreamSource(sourceInputStream);
+            Result result = new StreamResult(outputStream);
 
             // Apply the XSL file to the source file and write the result to the output file
             xformer.transform(source, result);
         } catch (Exception e) {
             logger.severe("Error during XML transformation: " + e.getMessage());  // Log safely
+        } finally {
+            // Close resources in the finally block to ensure they are always released
+            try {
+                if (xslInputStream != null) {
+                    xslInputStream.close();
+                }
+                if (sourceInputStream != null) {
+                    sourceInputStream.close();
+                }
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+            } catch (IOException e) {
+                logger.severe("Error closing streams: " + e.getMessage());
+            }
         }
     }
-
 }
+
 //The End
