@@ -112,7 +112,10 @@ public class ConcatPdf {
         // Perform security checks: prevent directory traversal attacks
         try {
             String canonicalPath = file.getCanonicalPath();
-            if (!canonicalPath.startsWith(new File(".").getCanonicalPath())) {
+            String userHomePath = new File(System.getProperty("user.home")).getCanonicalPath();
+
+            // Check if the canonical path starts with the user's home directory
+            if (!canonicalPath.startsWith(userHomePath)) {
                 throw new SecurityException("Path manipulation attempt detected: " + path);
             }
         } catch (IOException e) {
@@ -121,6 +124,7 @@ public class ConcatPdf {
 
         return file;
     }
+
 
 
     public static void concat(List<File> sources, File target) throws IOException {
