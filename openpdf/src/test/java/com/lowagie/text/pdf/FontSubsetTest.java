@@ -59,9 +59,10 @@ class FontSubsetTest {
      * This test is to ensure creation of CIDSet dictionary according to the includeCidSet flag
      */
     @Test
-    void includeCidSetTestPass(){
+    void includeCidSetTestPass() {
         Assertions.assertThrows(NullPointerException.class, this::includeCidSetTest);
     }
+
     void includeCidSetTest() throws Exception {
         assertCidSetPresence(true);
         assertCidSetPresence(false);
