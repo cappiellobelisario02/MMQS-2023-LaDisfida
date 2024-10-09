@@ -90,26 +90,43 @@ public class BuildTutorial {
 
     public static void main(String[] args) {
         if (args.length == 4) {
+            File srcdir = new File(args[0]);
+            File destdir = new File(args[1]);
+            File xslExamples = new File(srcdir, args[2]);
+            File xslSite = new File(srcdir, args[3]);
+
+            // Validate source and destination directories
+            if (!srcdir.isDirectory() || !destdir.isDirectory()) {
+                logger.severe("Source or destination directory is invalid.");
+                return;
+            }
+
+            // Get canonical paths for security checks
             try {
-                File srcdir = validatePath(args[0]);
-                File destdir = validatePath(args[1]);
-                File xslExamples = new File(srcdir, args[2]);
-                File xslSite = new File(srcdir, args[3]);
+                String root = new File(destdir, srcdir.getName()).getCanonicalPath();
+                String allowedDirectory = "/allowed/directory/"; // Replace with your allowed directory
 
-                try (FileWriter build = new FileWriter(new File(destdir, "build.xml"))) {
-                    logger.info("Building tutorial: ");
-                    root = new File(destdir, srcdir.getName()).getCanonicalPath();
-                    logger.info(root);
+                // Check if the root path is within an allowed directory
+                if (!root.startsWith(allowedDirectory)) {
+                    logger.severe("Access to the directory is denied: " + root);
+                    return;
+                }
 
+                logger.info("Building tutorial: ");
+                logger.info(root);
+
+                // Use try-with-resources to ensure proper closure of FileWriter
+                try (FileWriter build = new FileWriter(new File(root, "build.xml"))) {
                     build.write("<project name=\"tutorial\" default=\"all\" basedir=\".\">\n");
                     build.write("<target name=\"all\">\n");
                     action(srcdir, destdir, xslExamples, xslSite);
                     build.write("</target>\n</project>");
+                    build.flush();
                 } catch (IOException ioe) {
                     logger.severe("I/O error occurred: " + ioe.getMessage());
                 }
-            } catch (SecurityException se) {
-                logger.severe("Security exception: " + se.getMessage());
+            } catch (IOException e) {
+                logger.severe("Error obtaining canonical path: " + e.getMessage());
             }
         } else {
             logger.severe("Wrong number of parameters.\nUsage: BuildSite srcdir destdir xsl_examples xsl_site");
