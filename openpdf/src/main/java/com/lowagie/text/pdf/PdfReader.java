@@ -1413,7 +1413,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 readDocObj();
             } catch (Exception e) {
                 if (e instanceof BadPasswordException) {
-                    throw new BadPasswordException(e.getMessage());
+                    throw new BadPasswordException();
                 }
                 if (rebuilt || encryptionError) {
                     throw new InvalidPdfException(e.getMessage());
@@ -1689,7 +1689,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         if (!equalsArray(uValue, decrypt.userKey, (rValue == 3 || rValue == 4) ? 16 : 32)) {
             decrypt.setupByUserPassword(documentID, password, uValue, pValue);
             if (!equalsArray(uValue, decrypt.userKey, (rValue == 3 || rValue == 4) ? 16 : 32)) {
-                throw new BadPasswordException(MessageLocalization.getComposedMessage(BAD_USER_PASSWORD_CONST));
+                throw new BadPasswordException();
             }
         } else {
             ownerPasswordUsed = true;
@@ -1719,11 +1719,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             if (!ownerPasswordUsed) {
                 hashAlg2B = decrypt.hashAlg2B(password, Arrays.copyOfRange(uValue, 32, 40), null);
                 if (!equalsArray(hashAlg2B, uValue, 32)) {
-                    throw new BadPasswordException(MessageLocalization.getComposedMessage(BAD_USER_PASSWORD_CONST));
+                    throw new BadPasswordException();
                 }
                 decrypt.setupByUserPassword(documentID, password, uValue, pValue);
                 if (!decrypt.decryptAndCheckPerms(permsValue)) {
-                    throw new BadPasswordException(MessageLocalization.getComposedMessage(BAD_USER_PASSWORD_CONST));
+                    throw new BadPasswordException();
                 }
             }
             pValue = decrypt.permissions;

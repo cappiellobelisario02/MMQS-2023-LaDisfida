@@ -148,8 +148,7 @@ class PdfStamperImp extends PdfWriter {
 
     private void validateReader(PdfReader reader) throws DocumentException, BadPasswordException {
         if (!reader.isOpenedWithFullPermissions()) {
-            throw new BadPasswordException(
-                    MessageLocalization.getComposedMessage("pdfreader.not.opened.with.owner.password"));
+            throw new BadPasswordException();
         }
         if (reader.isTampered()) {
             throw new DocumentException(

@@ -176,8 +176,7 @@ class PdfCopyFieldsImp extends PdfWriter {
 
     void addDocument(PdfReader reader) throws DocumentException, IOException {
         if (!reader.isOpenedWithFullPermissions()) {
-            throw new BadPasswordException(
-                    MessageLocalization.getComposedMessage("pdfreader.not.opened.with.owner.password"));
+            throw new BadPasswordException();
         }
         openDoc();
         if (readers2intrefs.containsKey(reader)) {

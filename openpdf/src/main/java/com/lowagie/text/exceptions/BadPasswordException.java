@@ -67,9 +67,10 @@ public class BadPasswordException extends IOException {
     /**
      * Creates an exception saying the user password was incorrect.
      *
-     * @param message The message to give to the user
+     *  The message to give to the user
      */
-    public BadPasswordException(String message) {
-        super(message);
+    public BadPasswordException() {
+        super("An invalid password was provided.");
     }
+
 }
