@@ -60,9 +60,6 @@ class DecryptAES256R6Test {
      * The empty user password is used.
      */
     @Test
-    void testReadPwProtectedAES256_openPDFiss375Pass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadPwProtectedAES256_openPDFiss375);
-    }
     void testReadPwProtectedAES256_openPDFiss375() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/pwProtectedAES256_openPDFiss375.pdf");
                 PdfReader pdfReader = new PdfReader(resource)) {
@@ -71,12 +68,21 @@ class DecryptAES256R6Test {
             Assertions.assertFalse(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report limited permissions.");
             Assertions.assertEquals(1, pdfReader.getNumberOfPages(),
                     "PdfReader fails to report the correct number of pages");
-            Assertions.assertEquals("TEST", new PdfTextExtractor(pdfReader).getTextFromPage(1),
-                    "Wrong text extracted from page 1");
-        }catch(PDFFilterException e){
+
+            // Extracting text from page 1 and ensuring proper error handling
+            String extractedText;
+            try {
+                extractedText = new PdfTextExtractor(pdfReader).getTextFromPage(1);
+            } catch (Exception e) {
+                throw new IOException("Error extracting text from the PDF.", e);
+            }
+
+            Assertions.assertEquals("TEST", extractedText, "Wrong text extracted from page 1");
+        } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
