@@ -120,9 +120,11 @@ class PdfSignatureAppearanceTest {
         byte[] resultDocument = null;
 
         for (int i = 0; i < 10; i++) {
+            // Try-with-resources for InputStream and PdfReader
             try (InputStream is = getClass().getResourceAsStream("/EmptyPage.pdf");
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     PdfReader reader = new PdfReader(is)) {
+
                 originalDocId = reader.getDocumentId();
 
                 PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
@@ -169,8 +171,10 @@ class PdfSignatureAppearanceTest {
                 throw new ExceptionConverter(e);
             }
 
-            try (InputStream resultIS = new ByteArrayInputStream(
-                    resultDocument); PdfReader resultReader = new PdfReader(resultIS)) {
+            // Ensure that PdfReader is closed
+            try (InputStream resultIS = new ByteArrayInputStream(resultDocument);
+                    PdfReader resultReader = new PdfReader(resultIS)) {
+
                 byte[] documentId = resultReader.getDocumentId();
                 assertNotNull(documentId);
                 assertArrayEquals(originalDocId, documentId);
@@ -183,6 +187,7 @@ class PdfSignatureAppearanceTest {
             }
         }
     }
+
 
     private byte[] getSHA256(byte[] bytes) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
