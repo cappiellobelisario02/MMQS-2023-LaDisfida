@@ -69,11 +69,18 @@ class PdfSignatureRangeTest {
         Assertions.assertThrows(InvalidPdfException.class, this::bigFileSignature);
     }
     void bigFileSignature() throws DocumentException, IOException {
-        byte[] pdf = Utilities.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream("/EmptyPage.pdf")));
+        byte[] pdf;
+
+        // Ensure stream is closed properly
+        try (InputStream pdfStream = Objects.requireNonNull(getClass().getResourceAsStream("/EmptyPage.pdf"))) {
+            pdf = Utilities.toByteArray(pdfStream);
+        }
+
         checkSignature(pdf);
         checkSignature(enlarge(pdf, 100001));
         checkSignature(enlarge(pdf, 16777217)); // must be odd, as only the last bit is lost
     }
+
 
     @Test
     void objectXrefDocumentSignaturePass(){
