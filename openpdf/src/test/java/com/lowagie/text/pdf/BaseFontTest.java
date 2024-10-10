@@ -44,10 +44,20 @@ class BaseFontTest {
         Assertions.assertThrows(IOException.class, this::testGetDescent);
     }
     void testGetDescent() throws IOException {
-        // when
-        BaseFont font = BaseFont.createFont("fonts/Viaoda_Libre/ViaodaLibre-Regular.ttf", BaseFont.IDENTITY_H, false);
-        // then
-        assertThat(font.getDescent("byte")).isEqualTo(-264);
+        // Use InputStream to load the font file properly
+        try (InputStream fontStream = getClass().getResourceAsStream("/fonts/Viaoda_Libre/ViaodaLibre-Regular.ttf")) {
+
+            if (fontStream == null) {
+                throw new IOException("Font resource not found: /fonts/Viaoda_Libre/ViaodaLibre-Regular.ttf");
+            }
+
+            // Create the font using the InputStream
+            BaseFont font = BaseFont.createFont("/fonts/Viaoda_Libre/ViaodaLibre-Regular.ttf", BaseFont.IDENTITY_H, false);
+
+            // Validate the descent value
+            assertThat(font.getDescent("byte")).isEqualTo(-264);
+
+        }
     }
 
     private byte[] getTestFontBytes() throws IOException {
