@@ -26,6 +26,7 @@ public class ColumnTextSeparator {
         filePath = System.getProperty("user.dir") + "/src/test/resources";
 
         File RESULT = new File(filePath + "/columnTextSeparator.pdf");
+
         // step 1
         Document document = new Document(PageSize.A4);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -65,9 +66,10 @@ public class ColumnTextSeparator {
 
         document.close();
 
-        FileOutputStream fos = new FileOutputStream(RESULT);
-        fos.write(baos.toByteArray());
-        fos.close();
+        // Write output file and handle FileOutputStream with try-with-resources
+        try (FileOutputStream fos = new FileOutputStream(RESULT)) {
+            fos.write(baos.toByteArray());
+        }
 
         // Assertion to check if the file has been created
         assertTrue(RESULT.exists());
