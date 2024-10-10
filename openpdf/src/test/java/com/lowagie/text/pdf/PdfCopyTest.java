@@ -19,27 +19,34 @@ class PdfCopyTest {
     }
 
     private void pdfCopyTest() throws IOException, PDFFilterException {
-        InputStream stream = getClass().getResourceAsStream("/openpdf_bug_test.pdf");
+        // Use try-with-resources to ensure the InputStream is closed properly
+        try (InputStream stream = getClass().getResourceAsStream("/openpdf_bug_test.pdf")) {
+            if (stream == null) {
+                throw new IOException("Resource not found: /openpdf_bug_test.pdf");
+            }
 
-        PdfReader reader = new PdfReader(stream);
+            PdfReader reader = new PdfReader(stream);
 
-        byte[] bytes;
+            byte[] bytes;
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            // Use try-with-resources for ByteArrayOutputStream to ensure it is closed properly
+            try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                PdfCopyFields pdfCopyFields = new PdfCopyFields(baos);
 
-            PdfCopyFields pdfCopyFields = new PdfCopyFields(baos);
+                pdfCopyFields.addDocument(reader, "1"); // <-- just the table of contents
 
-            pdfCopyFields.addDocument(reader, "1"); // <-- just the table of contents
+                pdfCopyFields.close(); // <-- close to ensure resources are released
 
-            pdfCopyFields.close(); // <-- bang
+                baos.flush();
 
-            baos.flush();
+                bytes = baos.toByteArray();
+            }
 
-            bytes = baos.toByteArray();
-        }
-
-        try (OutputStream os = new FileOutputStream("output.pdf")) {
-            os.write(bytes);
+            // Write output to file
+            try (OutputStream os = new FileOutputStream("output.pdf")) {
+                os.write(bytes);
+            }
         }
     }
+
 }

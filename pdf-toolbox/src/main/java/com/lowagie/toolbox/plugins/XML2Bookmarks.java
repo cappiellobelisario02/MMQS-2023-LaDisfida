@@ -121,8 +121,8 @@ public class XML2Bookmarks extends AbstractTool {
     public void execute() {
         FileOutputStream fouts = null;
         PdfStamper stamper = null;
-        try(FileInputStream bmReader = new FileInputStream((File) getValue(XMLFILE));
-            PdfReader reader = new PdfReader(((File) getValue(PDFFILE)).getAbsolutePath())){
+        try (FileInputStream bmReader = new FileInputStream((File) getValue(XMLFILE));
+                PdfReader reader = new PdfReader(((File) getValue(PDFFILE)).getAbsolutePath())) {
 
             if (getValue(XMLFILE) == null) {
                 throw new InstantiationException("You need to choose an xml file");
@@ -143,9 +143,7 @@ public class XML2Bookmarks extends AbstractTool {
             stamper = new PdfStamper(reader, fouts);
             stamper.setOutlines(bookmarks);
             stamper.setViewerPreferences(reader.getSimpleViewerPreferences() | PdfWriter.PAGE_MODE_USE_OUTLINES);
-            stamper.close();
         } catch (Exception e) {
-            //da vedere come effettuare il log
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),
@@ -168,6 +166,7 @@ public class XML2Bookmarks extends AbstractTool {
             }
         }
     }
+
 
     /**
      * @param arg StringArgument

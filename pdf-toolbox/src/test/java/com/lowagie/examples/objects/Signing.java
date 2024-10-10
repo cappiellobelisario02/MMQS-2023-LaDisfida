@@ -59,22 +59,19 @@ public class Signing {
             document.add(new Paragraph(description));
             document.close();
 
-            PdfReader reader = null;
+            PdfReader reader;
             try {
                 reader = new PdfReader(baos.toByteArray());
             } catch (PDFFilterException e) {
                 throw new ExceptionConverter(e);
             }
-            // A verified signature would require a private key plus a valid certificate. see the JavaDoc of this
-            // method for details
-            PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
 
+            PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
             Calendar signDate = Calendar.getInstance();
             stp.setEnforcedModificationDate(signDate);
 
             PdfSignatureAppearance sap = stp.getSignatureAppearance();
             PdfDictionary dic = new PdfDictionary();
-            // self signed
             dic.put(PdfName.FILTER, PdfName.ADOBE_PPKLITE);
             dic.put(PdfName.M, new PdfDate(signDate));
             sap.setCryptoDictionary(dic);
@@ -85,7 +82,6 @@ public class Signing {
                 sap.setLayer2Text("Test signer");
             }
 
-            // exclude the signature from the hash of the PDF and fill the resulting gap
             Map<PdfName, Integer> exc = new HashMap<>();
             exc.put(PdfName.CONTENTS, 10);
             sap.preClose(exc);
@@ -94,61 +90,73 @@ public class Signing {
             sap.close(update);
 
             String fileNamePrefix = visibility.substring(0, 1).toUpperCase() + visibility.substring(1);
-            FileOutputStream fos = new FileOutputStream(fileNamePrefix + "Signature.pdf");
-            fos.write(baos.toByteArray());
-            fos.close();
 
-            InputStream resultIS = new ByteArrayInputStream(baos.toByteArray());
-            PdfReader resultReader;
-            try {
-                resultReader = new PdfReader(resultIS);
-            } catch (PDFFilterException e) {
-                throw new ExceptionConverter(e);
+            // Use try-with-resources for FileOutputStream
+            try (FileOutputStream fos = new FileOutputStream(fileNamePrefix + "Signature.pdf")) {
+                fos.write(baos.toByteArray());
+            } catch (IOException e) {
+                System.err.println("Error writing file: " + e.getMessage());
             }
 
-            AcroFields fields = resultReader.getAcroFields();
+            // Use try-with-resources for InputStream
+            try (InputStream resultIS = new ByteArrayInputStream(baos.toByteArray());
+                    PdfReader resultReader = new PdfReader(resultIS)) {
 
-            List<String> signatures = fields.getSignedFieldNames();
-            for (String signature : signatures) {
-                printSignatureDetails(fields, signature);
+                AcroFields fields = resultReader.getAcroFields();
+                List<String> signatures = fields.getSignedFieldNames();
+                for (String signature : signatures) {
+                    printSignatureDetails(fields, signature);
+                }
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
             }
         } catch (DocumentException | IOException e) {
             System.err.println(e.getMessage());
         }
     }
 
-    private static void extractVerifiedCryptoSignature() {
 
+    private static void extractVerifiedCryptoSignature() {
         System.out.println("Signature extraction");
 
+        // Caricamento del KeyStore CA per la verifica della firma
         PdfPKCS7.loadCacertsKeyStore();
 
-        try {
-            InputStream is = Signing.class.getResourceAsStream("/CryptoSignedSha256.pdf");
-            PdfReader reader = new PdfReader(is);
-            AcroFields fields = reader.getAcroFields();
+        // Utilizzo di try-with-resources per la corretta gestione delle risorse
+        try (InputStream is = Signing.class.getResourceAsStream("/CryptoSignedSha256.pdf");
+                PdfReader reader = new PdfReader(is)) {
 
+            AcroFields fields = reader.getAcroFields();
             List<String> signatures = fields.getSignedFieldNames();
+
             for (String signature : signatures) {
                 printSignatureDetails(fields, signature);
 
                 PdfPKCS7 pk = fields.verifySignature(signature);
 
+                // Estrazione del certificato firmatario
                 X509Certificate certificate = pk.getSigningCertificate();
                 X509Name subjectFields = PdfPKCS7.getSubjectFields(certificate);
+
+                // Stampa dei dettagli del certificato e della firma
                 System.out.println("Certificate subject fields: " + subjectFields);
                 System.out.println("Certificate verified: " + pk.verify());
 
+                // Formattazione della data della firma
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 System.out.println("Date signed: " + sdf.format(pk.getSignDate().getTime()));
                 System.out.println("Timestamp verified: " + pk.verifyTimestampImprint());
             }
+
         } catch (SignatureException | IOException | NoSuchAlgorithmException e) {
-            System.err.println(e.getMessage());
+            // Gestione delle eccezioni
+            System.err.println("Error during signature extraction: " + e.getMessage());
         } catch (PDFFilterException e) {
+            // Eccezione specifica di PDF Filter
             throw new ExceptionConverter(e);
         }
     }
+
 
     private static void printSignatureDetails(AcroFields fields, String signature) {
         System.out.println("Signature: " + signature);

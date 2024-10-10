@@ -46,13 +46,18 @@ class TextExtractTest {
         Assertions.assertThrows(InvalidPdfException.class, this::textExtractTest2);
     }
     void textExtractTest2() throws IOException {
-        try (PdfReader reader = new PdfReader(TextExtractTest.class.getResourceAsStream("/HelloWorldMeta.pdf"))){
+        // Usa try-with-resources per garantire la chiusura automatica delle risorse
+        try (InputStream resource = TextExtractTest.class.getResourceAsStream("/HelloWorldMeta.pdf");
+                PdfReader reader = new PdfReader(resource)) {
+
             PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(reader);
             Assertions.assertEquals("Hello World", pdfTextExtractor.getTextFromPage(1));
+
         } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     @Test
     void extCreateAndExtractTest2Pass(){

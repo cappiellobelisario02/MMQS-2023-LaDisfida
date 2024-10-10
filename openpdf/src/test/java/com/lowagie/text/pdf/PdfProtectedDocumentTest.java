@@ -24,9 +24,6 @@ import org.junit.jupiter.api.Test;
 class PdfProtectedDocumentTest {
 
     @Test
-    void signPasswordProtectedPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::signPasswordProtected);
-    }
     void signPasswordProtected() throws Exception {
         Calendar signDate = Calendar.getInstance();
 
@@ -42,11 +39,11 @@ class PdfProtectedDocumentTest {
             byte[] documentId; // Move this out of try to avoid scope issues
             try (InputStream is = getClass().getResourceAsStream("/open_protected.pdf");
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    PdfReader reader = new PdfReader(is, new byte[]{' '})) {
+                    PdfReader reader = new PdfReader(is, new byte[]{' '});
+                    PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true)) {
 
                 originalDocId = reader.getDocumentId();
 
-                PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
                 stp.setEnforcedModificationDate(signDate);
 
                 PdfSignatureAppearance sap = stp.getSignatureAppearance();
@@ -64,7 +61,12 @@ class PdfProtectedDocumentTest {
                 exc.put(PdfName.CONTENTS, 10);
                 sap.preClose(exc);
 
-                byte[] result = Utilities.toByteArray(sap.getRangeStream());
+                // Ensure range stream is closed after use
+                byte[] result;
+                try (InputStream rangeStream = sap.getRangeStream()) {
+                    result = Utilities.toByteArray(rangeStream);
+                }
+
                 byte[] sha256 = getSHA256(result);
                 if (expectedDigestPreClose == null) {
                     expectedDigestPreClose = sha256;
@@ -76,7 +78,11 @@ class PdfProtectedDocumentTest {
                 update.put(PdfName.CONTENTS, new PdfString("aaaa").setHexWriting(true));
                 sap.close(update);
 
-                byte[] resultClose = Utilities.toByteArray(sap.getRangeStream());
+                byte[] resultClose;
+                try (InputStream rangeStreamClose = sap.getRangeStream()) {
+                    resultClose = Utilities.toByteArray(rangeStreamClose);
+                }
+
                 assertArrayEquals(result, resultClose);
 
                 byte[] sha256Close = getSHA256(resultClose);
@@ -112,6 +118,7 @@ class PdfProtectedDocumentTest {
             }
         }
     }
+
 
 
     @Test
@@ -159,7 +166,11 @@ class PdfProtectedDocumentTest {
 
                     byte[] result = Utilities.toByteArray(sap.getRangeStream());
                     byte[] sha256 = getSHA256(result);
-                    expectedDigestPreClose = expectedDigestPreClose == null ? sha256 : expectedDigestPreClose;
+                    if (expectedDigestPreClose == null) {
+                        expectedDigestPreClose = sha256;
+                    } else {
+                        assertArrayEquals(expectedDigestPreClose, sha256);
+                    }
 
                     PdfDictionary update = new PdfDictionary();
                     update.put(PdfName.CONTENTS, new PdfString("aaaa").setHexWriting(true));
@@ -175,11 +186,16 @@ class PdfProtectedDocumentTest {
                     assertArrayEquals(result, resultClose);
 
                     byte[] sha256Close = getSHA256(resultClose);
-                    expectedDigestClose = expectedDigestClose == null ? sha256Close : expectedDigestClose;
+                    if (expectedDigestClose == null) {
+                        expectedDigestClose = sha256Close;
+                    } else {
+                        assertArrayEquals(expectedDigestClose, sha256Close);
+                    }
 
                     documentBytes = baos.toByteArray();
                 }
 
+                // Verifica che il documento sia leggibile
                 try (InputStream is2 = new ByteArrayInputStream(documentBytes);
                         PdfReader reader2 = new PdfReader(is2, new byte[]{' '})) {
 
@@ -198,6 +214,7 @@ class PdfProtectedDocumentTest {
             }
         }
     }
+
 
     private byte[] getSHA256(byte[] bytes) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");

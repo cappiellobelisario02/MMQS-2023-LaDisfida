@@ -59,6 +59,7 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.util.logging.Logger;
 
@@ -121,11 +122,26 @@ public class HandoutPdf {
 
     private static void processDocument(String srcFile, String destFile, int pages,
             float[] xCoordinates, float[][] yCoordinates)
-            throws DocumentException{
-        try(PdfReader reader = new PdfReader(srcFile);
+            throws DocumentException {
+        // Validate and sanitize the destination file path
+        File destFilePath = new File(destFile);
+
+        // Check if the destination file is a valid path and inside a safe directory
+        if (!destFilePath.getAbsolutePath().startsWith(new File("safe_directory").getAbsolutePath())) {
+            throw new IllegalArgumentException("Destination path is not allowed.");
+        }
+
+        // Ensure the parent directory exists
+        File parentDir = destFilePath.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs(); // Create the directory if it does not exist
+        }
+
+        // Use try-with-resources for automatic resource management
+        try (PdfReader reader = new PdfReader(srcFile);
                 Document document = new Document(PageSize.A4);
-                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destFile))
-        ){
+                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destFilePath))) {
+
             int totalPages = reader.getNumberOfPages();
             String stringToLog = "There are " + totalPages + " pages in the original file.";
             logger.info(stringToLog);
@@ -141,8 +157,9 @@ public class HandoutPdf {
                     document.newPage();
                 }
             }
-        }catch(Exception e){
-            //da vedere come effettuare il log
+        } catch (Exception e) {
+            logger.severe("Error processing document: " + e.getMessage());
+            // Handle exception as needed
         }
     }
 

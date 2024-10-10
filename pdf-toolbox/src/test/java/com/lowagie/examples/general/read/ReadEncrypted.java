@@ -29,11 +29,9 @@ public class ReadEncrypted {
      * @param args no arguments needed
      */
     public static void main(String[] args) {
-        try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(
-                    "info_encrypted.txt"));
-            PdfReader r = new PdfReader("HelloEncrypted.pdf", "Hello"
-                    .getBytes());
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("info_encrypted.txt"));
+                PdfReader r = new PdfReader("HelloEncrypted.pdf", "Hello".getBytes())) {
+
             out.write(r.getInfo().toString());
             out.write("\r\n");
             int permissions = r.getPermissions();
@@ -53,10 +51,14 @@ public class ReadEncrypted {
             out.write("\r\n");
             out.write("Degraded printing allowed: " + ((PdfWriter.ALLOW_DEGRADED_PRINTING & permissions) > 0));
             out.write("\r\n");
+
+            // Flush the BufferedWriter to ensure all data is written
             out.flush();
-            out.close();
+
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            // Implement proper logging mechanism for error handling
+            System.err.println("Error: " + e.getMessage());
         }
     }
+
 }

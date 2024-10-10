@@ -114,17 +114,18 @@ class PdfSignatureAppearanceTest {
 
         Calendar signDate = Calendar.getInstance();
 
-        byte[] originalDocId = null;
+        byte[] originalDocId;
         PdfObject overrideFileId = new PdfLiteral("<123><123>".getBytes());
 
-        byte[] resultDocument = null;
-
         for (int i = 0; i < 10; i++) {
+            // Try-with-resources for InputStream and PdfReader
             try (InputStream is = getClass().getResourceAsStream("/EmptyPage.pdf");
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     PdfReader reader = new PdfReader(is)) {
+
                 originalDocId = reader.getDocumentId();
 
+                // Create the PdfStamper for signature
                 PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
                 stp.setEnforcedModificationDate(signDate);
                 stp.setOverrideFileId(overrideFileId);
@@ -144,45 +145,55 @@ class PdfSignatureAppearanceTest {
                 exc.put(PdfName.CONTENTS, 10);
                 sap.preClose(exc);
 
-                byte[] result = Utilities.toByteArray(sap.getRangeStream());
-                byte[] sha256 = getSHA256(result);
-                if (expectedDigestPreClose == null) {
-                    expectedDigestPreClose = sha256;
-                } else {
-                    assertArrayEquals(expectedDigestPreClose, sha256);
+                // Get the range stream for the digest calculation
+                try (InputStream rangeStream = sap.getRangeStream()) { // Use try-with-resources here
+                    byte[] result = Utilities.toByteArray(rangeStream);
+                    byte[] sha256 = getSHA256(result);
+                    if (expectedDigestPreClose == null) {
+                        expectedDigestPreClose = sha256;
+                    } else {
+                        assertArrayEquals(expectedDigestPreClose, sha256);
+                    }
                 }
 
+                // Update the signature
                 PdfDictionary update = new PdfDictionary();
                 update.put(PdfName.CONTENTS, new PdfString("aaaa").setHexWriting(true));
                 sap.close(update);
 
-                byte[] resultClose = Utilities.toByteArray(sap.getRangeStream());
-                byte[] sha256Close = getSHA256(resultClose);
-                if (expectedDigestClose == null) {
-                    expectedDigestClose = sha256Close;
-                } else {
-                    assertArrayEquals(expectedDigestClose, sha256Close);
+                // Calculate SHA-256 of the updated result
+                try (InputStream rangeStreamClose = sap.getRangeStream()) { // Use try-with-resources here
+                    byte[] resultClose = Utilities.toByteArray(rangeStreamClose);
+                    byte[] sha256Close = getSHA256(resultClose);
+                    if (expectedDigestClose == null) {
+                        expectedDigestClose = sha256Close;
+                    } else {
+                        assertArrayEquals(expectedDigestClose, sha256Close);
+                    }
                 }
 
-                resultDocument = baos.toByteArray();
+                byte[] resultDocument = baos.toByteArray();
+
+                // Ensure that PdfReader is closed
+                try (InputStream resultIS = new ByteArrayInputStream(resultDocument);
+                        PdfReader resultReader = new PdfReader(resultIS)) {
+
+                    byte[] documentId = resultReader.getDocumentId();
+                    assertNotNull(documentId);
+                    assertArrayEquals(originalDocId, documentId);
+
+                    PdfArray idArray = resultReader.getTrailer().getAsArray(PdfName.ID);
+                    assertEquals(2, idArray.size());
+                    assertArrayEquals(documentId,
+                            com.lowagie.text.DocWriter.getISOBytes(idArray.getPdfObject(0).toString()));
+                    assertEquals("123", idArray.getPdfObject(1).toString());
+                }
             } catch (PDFFilterException e) {
                 throw new ExceptionConverter(e);
             }
-
-            try (InputStream resultIS = new ByteArrayInputStream(
-                    resultDocument); PdfReader resultReader = new PdfReader(resultIS)) {
-                byte[] documentId = resultReader.getDocumentId();
-                assertNotNull(documentId);
-                assertArrayEquals(originalDocId, documentId);
-
-                PdfArray idArray = resultReader.getTrailer().getAsArray(PdfName.ID);
-                assertEquals(2, idArray.size());
-                assertArrayEquals(documentId,
-                        com.lowagie.text.DocWriter.getISOBytes(idArray.getPdfObject(0).toString()));
-                assertEquals("123", idArray.getPdfObject(1).toString());
-            }
         }
     }
+
 
     private byte[] getSHA256(byte[] bytes) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
