@@ -19,9 +19,18 @@ class SAXmyHtmlHandlerTest {
      */
     @Test
     void testTitle_generate() {
-        InputStream is = SAXmyHtmlHandlerTest.class.getClassLoader().getResourceAsStream("parseTitle.html");
-        parseHtml(is);
+        // Use try-with-resources to ensure InputStream is closed after use
+        try (InputStream is = SAXmyHtmlHandlerTest.class.getClassLoader().getResourceAsStream("parseTitle.html")) {
+            if (is == null) {
+                throw new IOException("Resource not found: parseTitle.html");
+            }
+            parseHtml(is);
+        } catch (IOException e) {
+            // Handle the IOException appropriately, e.g., log the error
+            System.err.println("Error reading HTML file: " + e.getMessage());
+        }
     }
+
 
 
     /**

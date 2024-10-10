@@ -17,7 +17,6 @@ import org.opentest4j.AssertionFailedError;
 
 class PdfFormFlatteningTest {
 
-
     /**
      * Flattens a problematic document. Issue described here: <a href="https://stackoverflow.com/questions/47797647">...</a>
      *
@@ -145,45 +144,36 @@ class PdfFormFlatteningTest {
         }
     }
 
-
     @Test
     void testFlattenFieldsWithPdfIndirectObjectInRectPass() {
         Assertions.assertThrows(ExceptionConverter.class, this::testFlattenFieldsWithPdfIndirectObjectInRect);
     }
-    void testFlattenFieldsWithPdfIndirectObjectInRect() throws IOException {
+    void testFlattenFieldsWithPdfIndirectObjectInRect(){
         final Path targetFilePath = Paths.get("target/indirect_object_in_rectangle-flattened.pdf");
 
-        // Creazione del PDF e salvataggio
-        try (InputStream resource = getClass().getResourceAsStream(
-                "/flattening/indirect_object_in_rectangle.pdf")) {
+        // Create the PDF and save it
+        try (InputStream resource = getClass().getResourceAsStream("/flattening/indirect_object_in_rectangle.pdf");
+                OutputStream fos = Files.newOutputStream(targetFilePath);
+                PdfReader pdfReader = new PdfReader(resource);
+                PdfStamper stamper = new PdfStamper(pdfReader, fos)) {
 
-            OutputStream fos = Files.newOutputStream(targetFilePath);
-
-            try (PdfReader pdfReader = new PdfReader(resource);
-                    PdfStamper stamper = new PdfStamper(pdfReader, fos)) {
-                stamper.getAcroFields().setGenerateAppearances(true);
-                stamper.setFormFlattening(true);
-            } catch (Exception e) {
-                throw new ExceptionConverter(e);
-            }
+            stamper.getAcroFields().setGenerateAppearances(true);
+            stamper.setFormFlattening(true);
+        } catch (Exception e) {
+            throw new ExceptionConverter(e);
         }
 
-        // Verifica che non ci siano campi nel PDF
-        try (InputStream resource = Files.newInputStream(targetFilePath)) {
-            // Qui, vogliamo verificare che il PDF non abbia campi
+        // Verify that there are no fields in the PDF
+        try (InputStream resource = Files.newInputStream(targetFilePath);
+                PdfReader pdfReader = new PdfReader(resource)) {
 
-
-            try (PdfReader pdfReader = new PdfReader(resource)) {
-                PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
-                        pdfReader.getCatalog().get(PdfName.ACROFORM));
-                Assertions.assertTrue(acroForm == null
-                        || acroForm.getAsArray(PdfName.FIELDS) == null
-                        || acroForm.getAsArray(PdfName.FIELDS).isEmpty());
-            } catch (Exception e) {
-                throw new ExceptionConverter(e);
-            }
-
+            PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
+                    pdfReader.getCatalog().get(PdfName.ACROFORM));
+            Assertions.assertTrue(acroForm == null
+                    || acroForm.getAsArray(PdfName.FIELDS) == null
+                    || acroForm.getAsArray(PdfName.FIELDS).isEmpty());
+        } catch (Exception e) {
+            throw new ExceptionConverter(e);
         }
     }
-
 }

@@ -59,7 +59,7 @@ public class Signing {
             document.add(new Paragraph(description));
             document.close();
 
-            PdfReader reader = null;
+            PdfReader reader;
             try {
                 reader = new PdfReader(baos.toByteArray());
             } catch (PDFFilterException e) {
@@ -118,37 +118,46 @@ public class Signing {
     }
 
     private static void extractVerifiedCryptoSignature() {
-
         System.out.println("Signature extraction");
 
+        // Caricamento del KeyStore CA per la verifica della firma
         PdfPKCS7.loadCacertsKeyStore();
 
-        try {
-            InputStream is = Signing.class.getResourceAsStream("/CryptoSignedSha256.pdf");
-            PdfReader reader = new PdfReader(is);
-            AcroFields fields = reader.getAcroFields();
+        // Utilizzo di try-with-resources per la corretta gestione delle risorse
+        try (InputStream is = Signing.class.getResourceAsStream("/CryptoSignedSha256.pdf");
+                PdfReader reader = new PdfReader(is)) {
 
+            AcroFields fields = reader.getAcroFields();
             List<String> signatures = fields.getSignedFieldNames();
+
             for (String signature : signatures) {
                 printSignatureDetails(fields, signature);
 
                 PdfPKCS7 pk = fields.verifySignature(signature);
 
+                // Estrazione del certificato firmatario
                 X509Certificate certificate = pk.getSigningCertificate();
                 X509Name subjectFields = PdfPKCS7.getSubjectFields(certificate);
+
+                // Stampa dei dettagli del certificato e della firma
                 System.out.println("Certificate subject fields: " + subjectFields);
                 System.out.println("Certificate verified: " + pk.verify());
 
+                // Formattazione della data della firma
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 System.out.println("Date signed: " + sdf.format(pk.getSignDate().getTime()));
                 System.out.println("Timestamp verified: " + pk.verifyTimestampImprint());
             }
+
         } catch (SignatureException | IOException | NoSuchAlgorithmException e) {
-            System.err.println(e.getMessage());
+            // Gestione delle eccezioni
+            System.err.println("Error during signature extraction: " + e.getMessage());
         } catch (PDFFilterException e) {
+            // Eccezione specifica di PDF Filter
             throw new ExceptionConverter(e);
         }
     }
+
 
     private static void printSignatureDetails(AcroFields fields, String signature) {
         System.out.println("Signature: " + signature);

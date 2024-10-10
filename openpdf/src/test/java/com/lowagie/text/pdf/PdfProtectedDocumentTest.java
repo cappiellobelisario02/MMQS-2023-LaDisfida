@@ -166,7 +166,11 @@ class PdfProtectedDocumentTest {
 
                     byte[] result = Utilities.toByteArray(sap.getRangeStream());
                     byte[] sha256 = getSHA256(result);
-                    expectedDigestPreClose = expectedDigestPreClose == null ? sha256 : expectedDigestPreClose;
+                    if (expectedDigestPreClose == null) {
+                        expectedDigestPreClose = sha256;
+                    } else {
+                        assertArrayEquals(expectedDigestPreClose, sha256);
+                    }
 
                     PdfDictionary update = new PdfDictionary();
                     update.put(PdfName.CONTENTS, new PdfString("aaaa").setHexWriting(true));
@@ -182,11 +186,16 @@ class PdfProtectedDocumentTest {
                     assertArrayEquals(result, resultClose);
 
                     byte[] sha256Close = getSHA256(resultClose);
-                    expectedDigestClose = expectedDigestClose == null ? sha256Close : expectedDigestClose;
+                    if (expectedDigestClose == null) {
+                        expectedDigestClose = sha256Close;
+                    } else {
+                        assertArrayEquals(expectedDigestClose, sha256Close);
+                    }
 
                     documentBytes = baos.toByteArray();
                 }
 
+                // Verifica che il documento sia leggibile
                 try (InputStream is2 = new ByteArrayInputStream(documentBytes);
                         PdfReader reader2 = new PdfReader(is2, new byte[]{' '})) {
 
@@ -205,6 +214,7 @@ class PdfProtectedDocumentTest {
             }
         }
     }
+
 
     private byte[] getSHA256(byte[] bytes) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
