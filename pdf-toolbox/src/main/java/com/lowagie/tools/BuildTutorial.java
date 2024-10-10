@@ -92,17 +92,39 @@ public class BuildTutorial {
         if (args.length == 4) {
             File srcdir = new File(args[0]);
             File destdir = new File(args[1]);
-            File xslExamples = new File(srcdir, args[2]);
-            File xslSite = new File(srcdir, args[3]);
 
-            // Validate source and destination directories
+            // Validate that srcdir and destdir are directories
             if (!srcdir.isDirectory() || !destdir.isDirectory()) {
                 logger.severe("Source or destination directory is invalid.");
                 return;
             }
 
-            // Get canonical paths for security checks
+            // Validate xslExamples and xslSite parameters
+            String xslExamplesName = args[2];
+            String xslSiteName = args[3];
+
+            // Basic input validation to prevent directory traversal
+            if (xslExamplesName.contains("..") || xslSiteName.contains("..")) {
+                logger.severe("Invalid input: Path traversal attempt detected.");
+                return;
+            }
+
+            File xslExamples = new File(srcdir, xslExamplesName);
+            File xslSite = new File(srcdir, xslSiteName);
+
+            // Validate that the constructed files are indeed within the source directory
             try {
+                String canonicalSrcDir = srcdir.getCanonicalPath();
+                String canonicalXslExamples = xslExamples.getCanonicalPath();
+                String canonicalXslSite = xslSite.getCanonicalPath();
+
+                if (!canonicalXslExamples.startsWith(canonicalSrcDir) ||
+                        !canonicalXslSite.startsWith(canonicalSrcDir)) {
+                    logger.severe("Access to the specified files is denied.");
+                    return;
+                }
+
+                // Get canonical path for security checks
                 String root = new File(destdir, srcdir.getName()).getCanonicalPath();
                 String allowedDirectory = "/allowed/directory/"; // Replace with your allowed directory
 
@@ -132,6 +154,7 @@ public class BuildTutorial {
             logger.severe("Wrong number of parameters.\nUsage: BuildSite srcdir destdir xsl_examples xsl_site");
         }
     }
+
 
 
     // Helper method to validate and sanitize file paths
