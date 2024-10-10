@@ -30,22 +30,31 @@ public class Info {
      * @param args the names of paths to PDF files.
      */
     public static void main(String[] args) {
+        // Assicurati di avere almeno un argomento
+        if (args.length == 0) {
+            System.err.println("No PDF files provided.");
+            return;
+        }
+
+        // Usa try-with-resources per BufferedWriter
         try (BufferedWriter out = new BufferedWriter(new FileWriter("info.txt"))) {
             for (String arg : args) {
+                // Utilizza un try-with-resources per PdfReader
                 try (PdfReader r = new PdfReader(arg)) {
+                    // Scrive il nome del file PDF e le sue informazioni
                     out.write(arg);
                     out.write("\r\n------------------------------------\r\n");
                     out.write(r.getInfo().toString());
                     out.write("\r\n------------------------------------\r\n");
                 } catch (IOException | PDFFilterException e) {
+                    // Messaggio di errore specifico per ogni file
                     System.err.println("Error reading PDF file: " + arg + " - " + e.getMessage());
                 }
             }
-            out.flush();
         } catch (IOException e) {
+            // Gestione degli errori di scrittura su file
             System.err.println("Error writing to file: " + e.getMessage());
         }
     }
-
 
 }

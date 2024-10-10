@@ -112,26 +112,34 @@ class PdfFormFlatteningTest {
         Assertions.assertThrows(AssertionFailedError.class, this::testFlattenTextfieldsWithRotationAndMatrix);
     }
     void testFlattenTextfieldsWithRotationAndMatrix() throws IOException {
-        try (InputStream resource = getClass().getResourceAsStream("/flattening/20231027-DistortedFlatteningSmall.pdf")) {
+        String inputFilePath = "/flattening/20231027-DistortedFlatteningSmall.pdf";
+        String outputFilePath = "target/20231027-DistortedFlatteningSmall-flattened.pdf";
+
+        // Verifica e appiattisci il PDF
+        try (InputStream resource = getClass().getResourceAsStream(inputFilePath)) {
             Assertions.assertNotNull(resource, "File could not be found!");
-            try (FileOutputStream fos = new FileOutputStream("target/20231027-DistortedFlatteningSmall-flattened.pdf");
+
+            try (FileOutputStream fos = new FileOutputStream(outputFilePath);
                     PdfReader pdfReader = new PdfReader(resource);
                     PdfStamper stamper = new PdfStamper(pdfReader, fos)) {
+
                 stamper.setFormFlattening(true);
             } catch (Exception e) {
                 throw new ExceptionConverter(e);
             }
         }
 
-        // Verify no form fields left
-        try (InputStream resource = new FileInputStream("target/20231027-DistortedFlatteningSmall-flattened.pdf");
+        // Verifica che non ci siano campi di modulo rimasti
+        try (InputStream resource = new FileInputStream(outputFilePath);
                 PdfReader pdfReader = new PdfReader(resource)) {
-            Assertions.assertNotNull(resource, "File could not be found!");
+
+            Assertions.assertNotNull(pdfReader, "File could not be found!");
+
             PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
                     pdfReader.getCatalog().get(PdfName.ACROFORM));
             Assertions.assertTrue(
-                    acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(
-                            PdfName.FIELDS).isEmpty());
+                    acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(PdfName.FIELDS).isEmpty(),
+                    "PDF should have no form fields remaining.");
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }

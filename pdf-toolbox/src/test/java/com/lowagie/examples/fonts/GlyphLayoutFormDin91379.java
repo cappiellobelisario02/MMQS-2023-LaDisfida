@@ -18,6 +18,7 @@ import com.lowagie.text.pdf.LayoutProcessor;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -98,38 +99,50 @@ public class GlyphLayoutFormDin91379 {
         // Enable the LayoutProcessor with kerning and ligatures
         LayoutProcessor.enableKernLiga();
 
+        // Verifica se il file della risorsa esiste
         try (InputStream acroFormInputStream = GlyphLayoutFormDin91379.class.getClassLoader()
-                .getResourceAsStream(formPath);
-                FileOutputStream outputStream = new FileOutputStream(fileName);
-                PdfReader reader = new PdfReader(acroFormInputStream);
-                PdfStamper stamper = new PdfStamper(reader, outputStream)
-        ) {
+                .getResourceAsStream(formPath)) {
 
-            // The OpenType fonts loaded with FontFactory.register() are
-            // available for glyph layout
-            String fontFileName = "com/lowagie/examples/fonts/noto/NotoSans-Regular.ttf";
-            FontFactory.register(fontFileName, "sans");
-            Font font = FontFactory.getFont("sans", BaseFont.IDENTITY_H);
-            BaseFont baseFont = font.getBaseFont();
-            float fontSize = 10f;
-            FontFactory.register("com/lowagie/examples/fonts/noto/NotoSansMath-Regular.ttf", "sans-math");
-            Font fontMath = FontFactory.getFont("sans-math", BaseFont.IDENTITY_H);
-            BaseFont baseFontMath = fontMath.getBaseFont();
-            final AcroFields fields = stamper.getAcroFields();
-            fields.addSubstitutionFont(baseFontMath);
-
-            Map<String, AcroFields.Item> allFields = fields.getAllFields();
-
-            for (final String fieldName : allFields.keySet()) {
-                fields.setFieldProperty(fieldName, "textfont", baseFont, null);
-                fields.setFieldProperty(fieldName, "textsize", fontSize, null);
-                fields.setField(fieldName, text);
+            if (acroFormInputStream == null) {
+                throw new IOException("Resource not found: " + formPath);
             }
 
-            stamper.setFormFlattening(true);
-            stamper.setFullCompression();
-            stamper.close();
+            try (FileOutputStream outputStream = new FileOutputStream(fileName);
+                    PdfReader reader = new PdfReader(acroFormInputStream);
+                    PdfStamper stamper = new PdfStamper(reader, outputStream)) {
+
+                // The OpenType fonts loaded with FontFactory.register() are available for glyph layout
+                String fontFileName = "com/lowagie/examples/fonts/noto/NotoSans-Regular.ttf";
+                FontFactory.register(fontFileName, "sans");
+                Font font = FontFactory.getFont("sans", BaseFont.IDENTITY_H);
+                BaseFont baseFont = font.getBaseFont();
+                float fontSize = 10f;
+
+                FontFactory.register("com/lowagie/examples/fonts/noto/NotoSansMath-Regular.ttf", "sans-math");
+                Font fontMath = FontFactory.getFont("sans-math", BaseFont.IDENTITY_H);
+                BaseFont baseFontMath = fontMath.getBaseFont();
+
+                final AcroFields fields = stamper.getAcroFields();
+                fields.addSubstitutionFont(baseFontMath);
+
+                Map<String, AcroFields.Item> allFields = fields.getAllFields();
+
+                for (final String fieldName : allFields.keySet()) {
+                    fields.setFieldProperty(fieldName, "textfont", baseFont, null);
+                    fields.setFieldProperty(fieldName, "textsize", fontSize, null);
+                    fields.setField(fieldName, text);
+                }
+
+                stamper.setFormFlattening(true);
+                stamper.setFullCompression();
+            }
+        } catch (IOException e) {
+            // Gestione delle eccezioni relative alle risorse
+            throw new Exception("An error occurred during PDF processing", e);
+        } finally {
+            // Assicurati di disabilitare LayoutProcessor anche in caso di errore
             LayoutProcessor.disable();
         }
     }
+
 }

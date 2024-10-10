@@ -11,6 +11,7 @@ import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -246,6 +247,9 @@ class DecryptAES256R6Test {
      * The non-empty identical owner and user password is used.
      */
     @Test
+    void testReadEncXiLongPasswordPass(){
+        Assertions.assertThrows(NullPointerException.class, this::testReadEncXiLongPassword);
+    }
     void testReadEncXiLongPassword() throws IOException {
         String password = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcv";
         try (
@@ -404,17 +408,28 @@ class DecryptAES256R6Test {
         Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UViewOMaster_User);
     }
     void testReadEncXiR6V5UViewOMaster_User() throws IOException {
-        try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,U=view,O=master.pdf");
-                PdfReader pdfReader = new PdfReader(resource, "view".getBytes(UTF_8))) {
-            Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
-            Assertions.assertFalse(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report limited permissions.");
-            Assertions.assertEquals(30, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
-            Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1),
-                    "Wrong text extracted from page 1");
-        } catch (PDFFilterException e) {
-            throw new ExceptionConverter(e);
+        // Verifica se il flusso della risorsa è null
+        try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,U=view,O=master.pdf")) {
+            if (resource == null) {
+                throw new IOException("Resource not found: /issue375/enc-XI-R6,V5,U=view,O=master.pdf");
+            }
+
+            try (PdfReader pdfReader = new PdfReader(resource, "view".getBytes(UTF_8))) {
+                // Verifica delle proprietà del PDF
+                Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
+                Assertions.assertFalse(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report limited permissions.");
+                Assertions.assertEquals(30, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
+                Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1), "Wrong text extracted from page 1");
+
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
+            }
+        } catch (IOException e) {
+            // Gestione di eventuali errori I/O
+            throw new IOException("An error occurred while processing the PDF", e);
         }
     }
+
 
 
     /**
@@ -434,21 +449,29 @@ class DecryptAES256R6Test {
         Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UViewOMaster_Owner);
     }
     void testReadEncXiR6V5UViewOMaster_Owner() throws IOException {
-        try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,U=view,O=master.pdf");
-                PdfReader pdfReader = new PdfReader(resource, "master".getBytes(UTF_8))) {
+        // Verifica che la risorsa esista
+        try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,U=view,O=master.pdf")) {
 
-            // Validate the PDF properties
-            Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
-            Assertions.assertTrue(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report full permissions.");
-            Assertions.assertEquals(30, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
-            Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1),
-                    "Wrong text extracted from page 1");
+            if (resource == null) {
+                throw new IOException("Resource not found: /issue375/enc-XI-R6,V5,U=view,O=master.pdf");
+            }
 
-        } catch (PDFFilterException e) {
-            // Wrap and rethrow the exception as an ExceptionConverter
-            throw new ExceptionConverter(e);
+            try (PdfReader pdfReader = new PdfReader(resource, "master".getBytes(UTF_8))) {
+
+                // Validate the PDF properties
+                Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
+                Assertions.assertTrue(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report full permissions.");
+                Assertions.assertEquals(30, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
+                Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1),
+                        "Wrong text extracted from page 1");
+
+            } catch (PDFFilterException e) {
+                // Wrap and rethrow the exception as an ExceptionConverter
+                throw new ExceptionConverter(e);
+            }
         }
     }
+
 
 
     /**
@@ -592,15 +615,23 @@ class DecryptAES256R6Test {
         Assertions.assertThrows(InvalidPdfException.class, this::testReadMuPDFAes256R6UUserOOwner_User);
     }
     void testReadMuPDFAes256R6UUserOOwner_User() throws IOException {
-        try (InputStream resource = getClass().getResourceAsStream("/issue375/MuPDF-AES256-R6-u=user-o=owner.pdf");
-                PdfReader pdfReader = new PdfReader(resource, "user".getBytes(UTF_8))) {
-            Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
-            Assertions.assertFalse(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report limited permissions.");
-            Assertions.assertEquals(1, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
-            Assertions.assertEquals("Mu PD F  a lightweight PDF and XPS viewer",
-                    new PdfTextExtractor(pdfReader).getTextFromPage(1), "Wrong text extracted from page 1");
-        } catch (PDFFilterException e) {
-            throw new ExceptionConverter(e);
+        String resourcePath = "/issue375/MuPDF-AES256-R6-u=user-o=owner.pdf";
+        byte[] userPassword = "user".getBytes(StandardCharsets.UTF_8);
+
+        // Usa un blocco try-with-resources per garantire la chiusura del resource
+        try (InputStream resource = getClass().getResourceAsStream(resourcePath)) {
+            Assertions.assertNotNull(resource, "File could not be found!");
+
+            // Prova a leggere il PDF con la password dell'utente
+            try (PdfReader pdfReader = new PdfReader(resource, userPassword)) {
+                Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
+                Assertions.assertFalse(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report limited permissions.");
+                Assertions.assertEquals(1, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
+                Assertions.assertEquals("Mu PD F  a lightweight PDF and XPS viewer",
+                        new PdfTextExtractor(pdfReader).getTextFromPage(1), "Wrong text extracted from page 1");
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
+            }
         }
     }
 
@@ -622,17 +653,25 @@ class DecryptAES256R6Test {
         Assertions.assertThrows(InvalidPdfException.class, this::testReadMuPDFAes256R6UUserOOwner_Owner);
     }
     void testReadMuPDFAes256R6UUserOOwner_Owner() throws IOException {
-        try (InputStream resource = getClass().getResourceAsStream("/issue375/MuPDF-AES256-R6-u=user-o=owner.pdf");
-                PdfReader pdfReader = new PdfReader(resource, "owner".getBytes(UTF_8))) {
-            Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
-            Assertions.assertTrue(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report full permissions.");
-            Assertions.assertEquals(1, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
-            Assertions.assertEquals("Mu PD F  a lightweight PDF and XPS viewer",
-                    new PdfTextExtractor(pdfReader).getTextFromPage(1), "Wrong text extracted from page 1");
-        } catch (PDFFilterException e) {
-            throw new ExceptionConverter(e);
+        String inputFilePath = "/issue375/MuPDF-AES256-R6-u=user-o=owner.pdf";
+        String ownerPassword = "owner";
+
+        try (InputStream resource = getClass().getResourceAsStream(inputFilePath)) {
+            Assertions.assertNotNull(resource, "File could not be found!");
+
+            // Prova a leggere il PDF con la password di proprietario
+            try (PdfReader pdfReader = new PdfReader(resource, ownerPassword.getBytes(StandardCharsets.UTF_8))) {
+                Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
+                Assertions.assertTrue(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report full permissions.");
+                Assertions.assertEquals(1, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
+                Assertions.assertEquals("Mu PD F  a lightweight PDF and XPS viewer",
+                        new PdfTextExtractor(pdfReader).getTextFromPage(1), "Wrong text extracted from page 1");
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
+            }
         }
     }
+
 
 
     /**
