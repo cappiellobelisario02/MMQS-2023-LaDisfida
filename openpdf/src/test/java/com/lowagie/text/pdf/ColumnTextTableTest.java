@@ -34,7 +34,6 @@ public class ColumnTextTableTest {
         Assertions.assertThrows(NullPointerException.class, this::testGenerateTableByColumnText);
     }
     void testGenerateTableByColumnText() throws Exception {
-
         File outputPDF = new File("target/columnTextTableTest.pdf");
 
         Document document = new Document(PageSize.A4);
@@ -44,26 +43,22 @@ public class ColumnTextTableTest {
         pdfWriter.setStrictImageSequence(true);
 
         document.open();
-
         document.add(new Chunk("Single table example page"));
 
         PdfPTable table = getPdfPTable();
-
         ColumnText ct = new ColumnText(pdfWriter.getDirectContent());
         ct.setSimpleColumn(a4Marginleft, a4MarginBottom, a4WidthBody + a4Marginleft,
                 a4HeightBody + a4MarginBottom);
-
         ct.addElement(table);
-
         ct.setYLine(ct.getYLine() - 10);
-
         ct.go(false);
 
         document.close();
 
-        FileOutputStream fos = new FileOutputStream(outputPDF);
-        fos.write(baos.toByteArray());
-        fos.close();
+        // Use try-with-resources for the FileOutputStream
+        try (FileOutputStream fos = new FileOutputStream(outputPDF)) {
+            fos.write(baos.toByteArray());
+        } // fos is automatically closed here
 
         // Assertion to check if the file has been created
         assertTrue(outputPDF.exists());
@@ -110,9 +105,9 @@ public class ColumnTextTableTest {
 
         document.close();
 
-        FileOutputStream fos = new FileOutputStream(outputPDF);
-        fos.write(baos.toByteArray());
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(outputPDF)) { // Use try-with-resources for FileOutputStream
+            fos.write(baos.toByteArray());
+        } // fos will be closed automatically
 
         // Assertion to check if the file has been created
         assertTrue(outputPDF.exists());

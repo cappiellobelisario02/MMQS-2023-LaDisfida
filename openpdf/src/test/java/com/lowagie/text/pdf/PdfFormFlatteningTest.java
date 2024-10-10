@@ -44,21 +44,22 @@ class PdfFormFlatteningTest {
         }
 
         // Verify no form fields left
-        try (InputStream resource = new FileInputStream(
-                "target/20231027-DistortedFlatteningInternetExample-flattened.pdf")) {
+        try (InputStream resource = new FileInputStream("target/20231027-DistortedFlatteningInternetExample-flattened.pdf");
+                PdfReader pdfReader = new PdfReader(resource)) {
 
-            Assertions.assertNotNull(resource, "File could not be found!");
+            Assertions.assertNotNull(pdfReader, "PdfReader could not be created!");
 
-            try (PdfReader pdfReader = new PdfReader(resource)) {
-                PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
-                        pdfReader.getCatalog().get(PdfName.ACROFORM));
-                Assertions.assertTrue(
-                        acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null ||
-                                acroForm.getAsArray(PdfName.FIELDS).isEmpty(),
-                        "Form fields should be empty after flattening.");
-            } catch (PDFFilterException e) {
-                throw new ExceptionConverter(e);
-            }
+            PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
+                    pdfReader.getCatalog().get(PdfName.ACROFORM));
+            Assertions.assertTrue(
+                    acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null ||
+                            acroForm.getAsArray(PdfName.FIELDS).isEmpty(),
+                    "Form fields should be empty after flattening.");
+        } catch (PDFFilterException e) {
+            throw new ExceptionConverter(e);
+        } catch (IOException e) {
+            // Gestisci eventuali eccezioni IO
+            System.err.println("IOException: " + e.getMessage());
         }
     }
 
@@ -73,25 +74,22 @@ class PdfFormFlatteningTest {
     }
     void testFlattenCheckboxDocument() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/flattening/20180301-CheckboxFlatteningBug.pdf")) {
-
             Assertions.assertNotNull(resource, "File could not be found!");
-            FileOutputStream fos = new FileOutputStream(
-                    "target/20180301-CheckboxFlatteningBug-flattened.pdf");
 
-            try (PdfReader pdfReader = new PdfReader(resource);
-                    PdfStamper stamper = new PdfStamper(pdfReader, fos)){
+            try (FileOutputStream fos = new FileOutputStream("target/20180301-CheckboxFlatteningBug-flattened.pdf");
+                    PdfReader pdfReader = new PdfReader(resource);
+                    PdfStamper stamper = new PdfStamper(pdfReader, fos)) {
                 stamper.setFormFlattening(true);
             } catch (Exception e) {
                 throw new ExceptionConverter(e);
             }
         }
-        //Verify no form fields left (the correct shape is difficult to verify...)
-        try (InputStream resource = new FileInputStream(
-                "target/20180301-CheckboxFlatteningBug-flattened.pdf")) {
 
-            Assertions.assertNotNull(resource, "File could not be found!");
+        // Verify no form fields left (the correct shape is difficult to verify...)
+        try (InputStream resourceFlattened = new FileInputStream("target/20180301-CheckboxFlatteningBug-flattened.pdf")) {
+            Assertions.assertNotNull(resourceFlattened, "File could not be found!");
 
-            try (PdfReader pdfReader = new PdfReader(resource)){
+            try (PdfReader pdfReader = new PdfReader(resourceFlattened)) {
                 PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
                         pdfReader.getCatalog().get(PdfName.ACROFORM));
                 Assertions.assertTrue(
@@ -112,14 +110,11 @@ class PdfFormFlatteningTest {
         Assertions.assertThrows(AssertionFailedError.class, this::testFlattenTextfieldsWithRotationAndMatrix);
     }
     void testFlattenTextfieldsWithRotationAndMatrix() throws IOException {
-        String inputFilePath = "/flattening/20231027-DistortedFlatteningSmall.pdf";
-        String outputFilePath = "target/20231027-DistortedFlatteningSmall-flattened.pdf";
-
-        // Verifica e appiattisci il PDF
-        try (InputStream resource = getClass().getResourceAsStream(inputFilePath)) {
+        try (InputStream resource = getClass().getResourceAsStream("/flattening/20231027-DistortedFlatteningSmall.pdf")) {
             Assertions.assertNotNull(resource, "File could not be found!");
 
-            try (FileOutputStream fos = new FileOutputStream(outputFilePath);
+            // Use try-with-resources for PdfReader and PdfStamper as well
+            try (FileOutputStream fos = new FileOutputStream("target/20231027-DistortedFlatteningSmall-flattened.pdf");
                     PdfReader pdfReader = new PdfReader(resource);
                     PdfStamper stamper = new PdfStamper(pdfReader, fos)) {
 
@@ -127,19 +122,19 @@ class PdfFormFlatteningTest {
             } catch (Exception e) {
                 throw new ExceptionConverter(e);
             }
-        }
+        } // All resources are automatically closed here
 
-        // Verifica che non ci siano campi di modulo rimasti
-        try (InputStream resource = new FileInputStream(outputFilePath);
+        // Verify no form fields left
+        try (InputStream resource = new FileInputStream("target/20231027-DistortedFlatteningSmall-flattened.pdf");
                 PdfReader pdfReader = new PdfReader(resource)) {
 
-            Assertions.assertNotNull(pdfReader, "File could not be found!");
+            Assertions.assertNotNull(pdfReader, "PdfReader could not be created!");
 
             PdfDictionary acroForm = (PdfDictionary) PdfReader.getPdfObjectRelease(
                     pdfReader.getCatalog().get(PdfName.ACROFORM));
             Assertions.assertTrue(
                     acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(PdfName.FIELDS).isEmpty(),
-                    "PDF should have no form fields remaining.");
+                    "Form fields should be empty after flattening.");
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }

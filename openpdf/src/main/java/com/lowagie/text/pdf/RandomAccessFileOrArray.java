@@ -64,6 +64,8 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * An implementation of a RandomAccessFile for input only that accepts a file or a byte array as data source.
@@ -93,15 +95,21 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
     public RandomAccessFileOrArray(String filename, boolean forceRead, boolean plainRandomAccess) throws IOException {
         this.plainRandomAccess = plainRandomAccess;
 
-        // Validate the file path to prevent path manipulation
-        File file = validatePath(filename);
+        // Normalizza il nome del file per garantire compatibilità tra sistemi operativi
+        filename = filename.replace("/", File.separator).replace("\\", File.separator);
+
+        // Converte il nome del file in un oggetto Path per una gestione migliore
+        Path filePath = Paths.get(filename).normalize();
+        File file = validatePath(filePath.toString());
 
         if (!file.exists()) {
-            filename = tryResolveFilename(filename);
-            file = validatePath(filename);  // Revalidate the resolved filename
+            // Se il file non esiste, prova a risolvere il nome del file
+            String resolvedFilename = tryResolveFilename(filename);
+            filePath = Paths.get(resolvedFilename).normalize();
+            file = validatePath(filePath.toString());  // Riconvalida il nome del file risolto
         }
 
-        // Check for potential symlink or unsafe path manipulation
+        // Controlla se il percorso è valido e non è una potenziale vulnerabilità
         if (!isValidFilePath(file)) {
             throw new IOException("Invalid file path: " + filename);
         }
@@ -112,7 +120,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
             readFileToArray(file);
         } else {
             this.filename = filename;
-            openRandomAccessFile(filename, plainRandomAccess);
+            openRandomAccessFile(filePath.toString(), plainRandomAccess);
         }
     }
 

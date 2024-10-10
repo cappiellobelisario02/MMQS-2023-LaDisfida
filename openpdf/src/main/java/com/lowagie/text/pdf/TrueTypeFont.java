@@ -494,8 +494,9 @@ class TrueTypeFont extends BaseFont {
                 }
             }
         }
+        // Modifica qui per utilizzare File.separator
         File file = new File(fileName);
-        return file.getName().replace(' ', '-');
+        return file.getName().replace(' ', '-').replace(File.separator, "-");
     }
 
     /**

@@ -163,7 +163,6 @@ public class DvdCover {
      * Method that generates the actual PDF file.
      */
     public void generatePdf() {
-
         // step 1: creation of a document-object
         Rectangle pageSize = new Rectangle(780, 525);
         if (backgroundcolor != null) {
@@ -178,6 +177,12 @@ public class DvdCover {
             if (filename == null) {
                 filename = "dvdcover.pdf";
             }
+
+            // Validate the filename to prevent path manipulation
+            if (!isValidFileName(filename)) {
+                throw new IllegalArgumentException("Invalid filename: " + filename);
+            }
+
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(filename));
 
             // step 3: we open the document
@@ -224,5 +229,10 @@ public class DvdCover {
 
         // step 5: we close the document
         document.close();
+    }
+
+    private boolean isValidFileName(String filename) {
+        // Check if the filename contains illegal characters or attempts to traverse directories
+        return !filename.contains("..") && !filename.contains("/") && !filename.contains("\\") && filename.matches("[\\w\\-.]+\\.pdf");
     }
 }

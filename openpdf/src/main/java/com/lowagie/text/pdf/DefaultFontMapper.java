@@ -49,6 +49,8 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.ExceptionConverter;
 import java.awt.Font;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 
@@ -240,15 +242,21 @@ public class DefaultFontMapper implements FontMapper {
      * @param dir the directory to scan
      * @return the number of files processed
      */
+
     public int insertDirectory(String dir) {
-        File file = new File(dir);
+        // Normalizza il percorso utilizzando Path
+        Path normalizedPath = Paths.get(dir).normalize();
+        File file = normalizedPath.toFile();
+
         if (!file.exists() || !file.isDirectory()) {
             return 0;
         }
+
         File[] files = file.listFiles();
         if (files == null) {
             return 0;
         }
+
         int count = 0;
         for (File file1 : files) {
             file = file1;
@@ -268,7 +276,7 @@ public class DefaultFontMapper implements FontMapper {
                     ++count;
                 }
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                // Implementa qui la logica per il logging degli errori
             }
         }
         return count;

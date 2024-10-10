@@ -171,7 +171,7 @@ public class PdfContentReaderTool {
      */
     public static void listContentStream(File pdfFile, PrintWriter out) throws IOException, PDFFilterException {
         try(PdfReader reader = new PdfReader(pdfFile.getCanonicalPath())){
-        
+
             int maxPageNum = reader.getNumberOfPages();
 
             for (int pageNum = 1; pageNum <= maxPageNum; pageNum++) {
@@ -238,12 +238,29 @@ public class PdfContentReaderTool {
 
     // Helper method to validate and sanitize file paths
     private static File validatePath(String path) throws IOException {
+        // Rimuovi eventuali spazi bianchi
+        path = path.trim();
+
+        // Controlla se il percorso è vuoto o contiene caratteri indesiderati
+        if (path.isEmpty() || path.contains("..") || path.contains("/") || path.contains("\\")) {
+            throw new SecurityException("Invalid path: " + path);
+        }
+
+        // Crea un oggetto File
         File file = new File(path);
 
         // Prevent directory traversal attacks by checking the canonical path
         String canonicalPath = file.getCanonicalPath();
-        if (!canonicalPath.startsWith(new File(".").getCanonicalPath())) {
+        String basePath = new File(".").getCanonicalPath();
+
+        // Controlla se il percorso canonico inizia con il percorso di base
+        if (!canonicalPath.startsWith(basePath)) {
             throw new SecurityException("Path manipulation attempt detected: " + path);
+        }
+
+        // Aggiungi un controllo sull'estensione del file se necessario
+        if (!path.endsWith(".pdf")) {
+            throw new SecurityException("Invalid file extension: " + path);
         }
 
         return file;
@@ -251,45 +268,33 @@ public class PdfContentReaderTool {
 
 
     private static void handleContentStreaming(String[] args) {
-        String outputPath = (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) ? args[1] : null;
+        try (PrintWriter writer = args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)
+                ? new PrintWriter(new FileOutputStream(args[1]))
+                : new PrintWriter(System.out)) {
 
-        try (PrintWriter writer = outputPath != null ? new PrintWriter(new FileOutputStream(outputPath)) : new PrintWriter(System.out)) {
-            if (outputPath != null) {
-                logger.info("Writing PDF content to " + outputPath);
+            if (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) {
+                String stringToLog = "Writing PDF content to " + args[1];
+                logger.info(stringToLog);
             }
 
             int pageNum = -1;
             if (args.length >= 3) {
-                try {
-                    pageNum = Integer.parseInt(args[2]);
-                } catch (NumberFormatException e) {
-                    logger.warning("Invalid page number provided, defaulting to -1");
-                }
+                pageNum = Integer.parseInt(args[2]);
             }
 
-            // Verifica se esiste il file prima di procedere
-            File inputFile = new File(args[0]);
-            if (!inputFile.exists()) {
-                logger.severe("Input file does not exist: " + args[0]);
-                return;
-            }
-
-            // Elenca il contenuto del flusso
             if (pageNum == -1) {
-                listContentStream(inputFile, writer);
+                listContentStream(new File(args[0]), writer);
             } else {
-                listContentStream(inputFile, pageNum, writer);
+                listContentStream(new File(args[0]), pageNum, writer);
             }
             writer.flush();
 
-            if (outputPath != null) {
-                logger.info("Finished writing content to " + outputPath);
+            if (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) {
+                String stringToLog = "Finished writing content to " + args[1];
+                logger.info(stringToLog);
             }
-        } catch (IOException e) {
-            logger.severe("An error occurred while handling the content streaming: " + e.getMessage());
         } catch (Exception e) {
-            logger.severe("Unexpected error: " + e.getMessage());
+            logger.info(e.getMessage());
         }
     }
-
 }

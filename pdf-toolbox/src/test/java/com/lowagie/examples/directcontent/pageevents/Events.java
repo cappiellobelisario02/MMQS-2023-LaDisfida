@@ -315,13 +315,18 @@ public class Events {
          * Constructs a TagMap based on an XML file and/or on XmlPeer objects that are added.
          */
         RomeoJulietMap() throws IOException {
-            super(new FileInputStream("tagmapRomeoJuliet.xml"));
+            super(createInputStream("tagmapRomeoJuliet.xml")); // Call the superclass constructor with the InputStream
             XmlPeer peer = new XmlPeer(ElementTags.CHUNK, "SPEAKER");
             peer.addValue(Markup.CSS_KEY_FONTSIZE, "10");
             peer.addValue(Markup.CSS_KEY_FONTWEIGHT, Markup.CSS_VALUE_BOLD);
             peer.addValue(ElementTags.GENERICTAG, "");
             put(peer.getAlias(), peer);
         }
+
+        private static FileInputStream createInputStream(String fileName) throws IOException {
+            return new FileInputStream(fileName); // This method creates and returns the FileInputStream
+        }
+
     }
 
     /**
