@@ -19,6 +19,7 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.html.HtmlParser;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -36,17 +37,30 @@ public class ParseTitleHtml {
      * @param args no arguments needed here
      */
     public static void main(String[] args) {
+        System.out.println("Parse ParseTitle");
 
-        // step 1: creation of a document-object
-        try (Document document = new Document()) {
+        // Step 1: Creation of a document-object
+        try (Document document = new Document();
+                // Use try-with-resources to ensure the InputStream is closed properly
+                InputStream htmlStream = ParseHelloHtml.class.getClassLoader()
+                        .getResourceAsStream("com/lowagie/examples/html/parseTitle.html")) {
+
+            // Check if the HTML resource was found
+            if (htmlStream == null) {
+                throw new IOException("Resource not found: com/lowagie/examples/html/parseTitle.html");
+            }
+
             PdfWriter.getInstance(document, Files.newOutputStream(Paths.get("parseTitle.pdf")));
-            // step 2: we open the document
+
+            // Step 2: Open the document
             document.open();
-            // step 3: parsing the HTML document to convert it in PDF
-            HtmlParser.parse(document, ParseHelloHtml.class.getClassLoader()
-                    .getResourceAsStream("com/lowagie/examples/html/parseTitle.html"));
+
+            // Step 3: Parsing the HTML document to convert it into PDF
+            HtmlParser.parse(document, htmlStream);
+
         } catch (DocumentException | IOException de) {
-            //da vedere come effettuare il log
+            System.err.println("Error: " + de.getMessage());
         }
     }
+
 }

@@ -3,6 +3,7 @@ package com.lowagie.examples.objects.columns;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.PageSize;
@@ -38,34 +39,41 @@ public class ColumnTextMultiTable {
         ColumnTextMultiTable columnTextTable = new ColumnTextMultiTable();
         File outputPDF = new File("columnTextMultiTables.pdf");
 
-        ColumnTextMultiTable.document = new Document(PageSize.A4);
-        ColumnTextMultiTable.document.setMargins(a4MarginLeft, a4MarginRight, a4MarginTop, a4MarginBottom);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        columnTextTable.pdfWriter = PdfWriter.getInstance(document, baos);
-        columnTextTable.pdfWriter.setStrictImageSequence(true);
+        // Usa try-with-resources per gestire il ByteArrayOutputStream e FileOutputStream
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                FileOutputStream fos = new FileOutputStream(outputPDF)) {
 
-        document.open();
-        document.add(new Chunk("The example page"));
+            ColumnTextMultiTable.document = new Document(PageSize.A4);
+            ColumnTextMultiTable.document.setMargins(a4MarginLeft, a4MarginRight, a4MarginTop, a4MarginBottom);
 
-        PdfPTable table = columnTextTable.getPdfPTable();
-        float space = columnTextTable.getHeightOfBlock(table);
+            columnTextTable.pdfWriter = PdfWriter.getInstance(ColumnTextMultiTable.document, baos);
+            columnTextTable.pdfWriter.setStrictImageSequence(true);
 
-        ColumnText ct = new ColumnText(columnTextTable.pdfWriter.getDirectContent());
-        ct.setSimpleColumn(a4MarginLeft, a4MarginBottom, a4WidthBody + a4MarginLeft,
-                a4HeightBody + a4MarginBottom);
-        float actualY = ColumnTextMultiTable.addFullBockToPage(a4MarginBottom + space, ct, table);
+            ColumnTextMultiTable.document.open();
+            ColumnTextMultiTable.document.add(new Chunk("The example page"));
 
-        ct = new ColumnText(columnTextTable.pdfWriter.getDirectContent());
-        ct.setSimpleColumn(a4MarginLeft, a4MarginBottom, a4WidthBody + a4MarginLeft,
-                a4HeightBody + a4MarginBottom);
-        addFullBockToPage(actualY, ct, table);
+            PdfPTable table = columnTextTable.getPdfPTable();
+            float space = columnTextTable.getHeightOfBlock(table);
 
-        document.close();
+            ColumnText ct = new ColumnText(columnTextTable.pdfWriter.getDirectContent());
+            ct.setSimpleColumn(a4MarginLeft, a4MarginBottom, a4WidthBody + a4MarginLeft,
+                    a4HeightBody + a4MarginBottom);
+            float actualY = ColumnTextMultiTable.addFullBockToPage(a4MarginBottom + space, ct, table);
 
-        try (FileOutputStream fos = new FileOutputStream(outputPDF)) {
+            ct = new ColumnText(columnTextTable.pdfWriter.getDirectContent());
+            ct.setSimpleColumn(a4MarginLeft, a4MarginBottom, a4WidthBody + a4MarginLeft,
+                    a4HeightBody + a4MarginBottom);
+            ColumnTextMultiTable.addFullBockToPage(actualY, ct, table);
+
+            ColumnTextMultiTable.document.close();
+
             fos.write(baos.toByteArray());
+
+        } catch (DocumentException e) {
+            System.err.println("Error creating PDF document: " + e.getMessage());
         }
     }
+
 
 
     static float addFullBockToPage(float actualY, ColumnText ct, Element... elements) {

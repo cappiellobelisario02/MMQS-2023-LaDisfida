@@ -9,12 +9,14 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 public class SpanTableHtml {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         testRowspan();
         testColspan();
     }
@@ -23,31 +25,37 @@ public class SpanTableHtml {
      * Converts an HTML page to pdf with the table containing rolspan tags
      */
     public static void testRowspan() {
-        try (Document doc = new Document(PageSize.A4)) {
-            PdfWriter.getInstance(doc, Files.newOutputStream(Paths.get("testRowspanOut.pdf")));
+        // Usa try-with-resources per garantire la corretta chiusura delle risorse
+        try (Document doc = new Document(PageSize.A4);
+                OutputStream outputStream = Files.newOutputStream(Paths.get("testRowspanOut.pdf"));
+                InputStream stream = SpanTableHtml.class.getResourceAsStream("example1forHTMLWorker.html");
+                InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(stream), UTF_8)) {
+
+            PdfWriter.getInstance(doc, outputStream);
             doc.open();
-            InputStream stream = SpanTableHtml.class.getResourceAsStream("example1forHTMLWorker.html");
+
             HTMLWorker worker = new HTMLWorker(doc);
-            worker.parse(new InputStreamReader(stream, UTF_8));
+            worker.parse(reader);
+
             assert (true);
+
         } catch (IOException e) {
-            //da vedere come effettuare il log
+            // Aggiungere log appropriato o gestione dell'eccezione
+            // È possibile usare un logger in produzione
         }
     }
+
 
     /**
      * Converts an HTML page to pdf with the table containing colspan tags
      */
     public static void testColspan() {
         try (Document doc = new Document(PageSize.A4);
-                InputStream stream = SpanTableHtml.class.getResourceAsStream("example2forHTMLWorker.html");
-                InputStreamReader reader = new InputStreamReader(stream, UTF_8)) {
-
+                InputStream stream = SpanTableHtml.class.getResourceAsStream("example2forHTMLWorker.html")) {
             PdfWriter.getInstance(doc, Files.newOutputStream(Paths.get("testColspanOut.pdf")));
             doc.open();
             HTMLWorker worker = new HTMLWorker(doc);
-            worker.parse(reader);
-
+            worker.parse(new InputStreamReader(Objects.requireNonNull(stream), UTF_8));
             assert (true);
         } catch (IOException e) {
             //da vedere come effettuare il log

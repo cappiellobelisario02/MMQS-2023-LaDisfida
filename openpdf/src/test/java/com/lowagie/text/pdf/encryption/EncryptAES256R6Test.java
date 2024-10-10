@@ -85,27 +85,30 @@ class EncryptAES256R6Test {
     void testStampPwProtectedAES256_openPDFiss375() throws IOException {
         File result = new File(RESULT_FOLDER, "pwProtectedAES256_openPDFiss375-Stamped.pdf");
 
-        // Verifica se la risorsa esiste
+        // Verifica se la risorsa esiste e gestisce correttamente le risorse con try-with-resources
         try (InputStream resource = getClass().getResourceAsStream("/issue375/pwProtectedAES256_openPDFiss375.pdf")) {
             if (resource == null) {
                 throw new IOException("Resource not found: /issue375/pwProtectedAES256_openPDFiss375.pdf");
             }
 
+            // Utilizzo di try-with-resources per la gestione automatica delle risorse
             try (OutputStream os = new FileOutputStream(result);
                     PdfReader pdfReader = new PdfReader(resource);
-                    PdfStamper pdfStamper = new PdfStamper(pdfReader, os, (char) 0, true);
-                    PdfReader pdfReader2 = new PdfReader(result.getAbsolutePath())) {
+                    PdfStamper pdfStamper = new PdfStamper(pdfReader, os, (char) 0, true)) {
 
+                // Modifica del PDF
                 Rectangle box = pdfReader.getPageSize(1);
                 PdfContentByte canvas = pdfStamper.getOverContent(1);
-                canvas.setRGBColorStroke(255, 0, 0);
+                canvas.setRGBColorStroke(255, 0, 0);  // Imposta il colore della linea a rosso
                 canvas.moveTo(box.getLeft(), box.getBottom());
                 canvas.lineTo(box.getRight(), box.getTop());
                 canvas.moveTo(box.getRight(), box.getBottom());
                 canvas.lineTo(box.getLeft(), box.getTop());
                 canvas.stroke();
+            }
 
-                // Validazioni sul PDF
+            // Validazioni sul PDF modificato
+            try (PdfReader pdfReader2 = new PdfReader(result.getAbsolutePath())) {
                 Assertions.assertTrue(pdfReader2.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
                 Assertions.assertEquals(1, pdfReader2.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
                 Assertions.assertEquals("TEST", new PdfTextExtractor(pdfReader2).getTextFromPage(1), "Wrong text extracted from page 1");
@@ -116,6 +119,5 @@ class EncryptAES256R6Test {
             throw new ExceptionConverter(e);
         }
     }
-
 
 }
