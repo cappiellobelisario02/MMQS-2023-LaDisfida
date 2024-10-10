@@ -65,16 +65,13 @@ public class Signing {
             } catch (PDFFilterException e) {
                 throw new ExceptionConverter(e);
             }
-            // A verified signature would require a private key plus a valid certificate. see the JavaDoc of this
-            // method for details
-            PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
 
+            PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
             Calendar signDate = Calendar.getInstance();
             stp.setEnforcedModificationDate(signDate);
 
             PdfSignatureAppearance sap = stp.getSignatureAppearance();
             PdfDictionary dic = new PdfDictionary();
-            // self signed
             dic.put(PdfName.FILTER, PdfName.ADOBE_PPKLITE);
             dic.put(PdfName.M, new PdfDate(signDate));
             sap.setCryptoDictionary(dic);
@@ -85,7 +82,6 @@ public class Signing {
                 sap.setLayer2Text("Test signer");
             }
 
-            // exclude the signature from the hash of the PDF and fill the resulting gap
             Map<PdfName, Integer> exc = new HashMap<>();
             exc.put(PdfName.CONTENTS, 10);
             sap.preClose(exc);
@@ -94,28 +90,31 @@ public class Signing {
             sap.close(update);
 
             String fileNamePrefix = visibility.substring(0, 1).toUpperCase() + visibility.substring(1);
-            FileOutputStream fos = new FileOutputStream(fileNamePrefix + "Signature.pdf");
-            fos.write(baos.toByteArray());
-            fos.close();
 
-            InputStream resultIS = new ByteArrayInputStream(baos.toByteArray());
-            PdfReader resultReader;
-            try {
-                resultReader = new PdfReader(resultIS);
-            } catch (PDFFilterException e) {
-                throw new ExceptionConverter(e);
+            // Use try-with-resources for FileOutputStream
+            try (FileOutputStream fos = new FileOutputStream(fileNamePrefix + "Signature.pdf")) {
+                fos.write(baos.toByteArray());
+            } catch (IOException e) {
+                System.err.println("Error writing file: " + e.getMessage());
             }
 
-            AcroFields fields = resultReader.getAcroFields();
+            // Use try-with-resources for InputStream
+            try (InputStream resultIS = new ByteArrayInputStream(baos.toByteArray());
+                    PdfReader resultReader = new PdfReader(resultIS)) {
 
-            List<String> signatures = fields.getSignedFieldNames();
-            for (String signature : signatures) {
-                printSignatureDetails(fields, signature);
+                AcroFields fields = resultReader.getAcroFields();
+                List<String> signatures = fields.getSignedFieldNames();
+                for (String signature : signatures) {
+                    printSignatureDetails(fields, signature);
+                }
+            } catch (PDFFilterException e) {
+                throw new ExceptionConverter(e);
             }
         } catch (DocumentException | IOException e) {
             System.err.println(e.getMessage());
         }
     }
+
 
     private static void extractVerifiedCryptoSignature() {
         System.out.println("Signature extraction");
