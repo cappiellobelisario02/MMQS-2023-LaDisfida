@@ -455,7 +455,7 @@ class DecryptAES256R6Test {
         Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UViewOMaster_Owner);
     }
     void testReadEncXiR6V5UViewOMaster_Owner() throws IOException {
-        // Verifica che la risorsa esista
+        // Ensure the resource exists
         try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,U=view,O=master.pdf")) {
 
             if (resource == null) {
@@ -468,8 +468,16 @@ class DecryptAES256R6Test {
                 Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
                 Assertions.assertTrue(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report full permissions.");
                 Assertions.assertEquals(30, pdfReader.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
-                Assertions.assertEquals("Potato 0", new PdfTextExtractor(pdfReader).getTextFromPage(1),
-                        "Wrong text extracted from page 1");
+
+                // Extract text from page 1 and handle the process carefully
+                String extractedText;
+                try {
+                    extractedText = new PdfTextExtractor(pdfReader).getTextFromPage(1);
+                } catch (Exception e) {
+                    throw new IOException("Error extracting text from the PDF.", e);
+                }
+
+                Assertions.assertEquals("Potato 0", extractedText, "Wrong text extracted from page 1");
 
             } catch (PDFFilterException e) {
                 // Wrap and rethrow the exception as an ExceptionConverter
@@ -477,6 +485,7 @@ class DecryptAES256R6Test {
             }
         }
     }
+
 
 
 
