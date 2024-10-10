@@ -85,27 +85,37 @@ class EncryptAES256R6Test {
     void testStampPwProtectedAES256_openPDFiss375() throws IOException {
         File result = new File(RESULT_FOLDER, "pwProtectedAES256_openPDFiss375-Stamped.pdf");
 
-        try (InputStream resource = getClass().getResourceAsStream("/issue375/pwProtectedAES256_openPDFiss375.pdf");
-                OutputStream os = new FileOutputStream(result);
-                PdfReader pdfReader = new PdfReader(resource);
-                PdfStamper pdfStamper = new PdfStamper(pdfReader, os, (char) 0, true);
-                PdfReader pdfReader2 = new PdfReader(result.getAbsolutePath()))
-        {
-            Rectangle box = pdfReader.getPageSize(1);
-            PdfContentByte canvas = pdfStamper.getOverContent(1);
-            canvas.setRGBColorStroke(255, 0, 0);
-            canvas.moveTo(box.getLeft(), box.getBottom());
-            canvas.lineTo(box.getRight(), box.getTop());
-            canvas.moveTo(box.getRight(), box.getBottom());
-            canvas.lineTo(box.getLeft(), box.getTop());
-            canvas.stroke();
+        // Verifica se la risorsa esiste
+        try (InputStream resource = getClass().getResourceAsStream("/issue375/pwProtectedAES256_openPDFiss375.pdf")) {
+            if (resource == null) {
+                throw new IOException("Resource not found: /issue375/pwProtectedAES256_openPDFiss375.pdf");
+            }
 
-            Assertions.assertTrue(pdfReader2.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
-            Assertions.assertEquals(1, pdfReader2.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
-            Assertions.assertEquals("TEST", new PdfTextExtractor(pdfReader2).getTextFromPage(1), "Wrong text extracted from page 1");
+            try (OutputStream os = new FileOutputStream(result);
+                    PdfReader pdfReader = new PdfReader(resource);
+                    PdfStamper pdfStamper = new PdfStamper(pdfReader, os, (char) 0, true);
+                    PdfReader pdfReader2 = new PdfReader(result.getAbsolutePath())) {
+
+                Rectangle box = pdfReader.getPageSize(1);
+                PdfContentByte canvas = pdfStamper.getOverContent(1);
+                canvas.setRGBColorStroke(255, 0, 0);
+                canvas.moveTo(box.getLeft(), box.getBottom());
+                canvas.lineTo(box.getRight(), box.getTop());
+                canvas.moveTo(box.getRight(), box.getBottom());
+                canvas.lineTo(box.getLeft(), box.getTop());
+                canvas.stroke();
+
+                // Validazioni sul PDF
+                Assertions.assertTrue(pdfReader2.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
+                Assertions.assertEquals(1, pdfReader2.getNumberOfPages(), "PdfReader fails to report the correct number of pages");
+                Assertions.assertEquals("TEST", new PdfTextExtractor(pdfReader2).getTextFromPage(1), "Wrong text extracted from page 1");
+            }
+
         } catch (PDFFilterException | NoSuchAlgorithmException e) {
+            // Gestione delle eccezioni
             throw new ExceptionConverter(e);
         }
     }
+
 
 }

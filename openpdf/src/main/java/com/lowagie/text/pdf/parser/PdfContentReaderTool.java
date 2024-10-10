@@ -251,33 +251,45 @@ public class PdfContentReaderTool {
 
 
     private static void handleContentStreaming(String[] args) {
-        try (PrintWriter writer = args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)
-                ? new PrintWriter(new FileOutputStream(args[1]))
-                : new PrintWriter(System.out)) {
+        String outputPath = (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) ? args[1] : null;
 
-            if (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) {
-                String stringToLog = "Writing PDF content to " + args[1];
-                logger.info(stringToLog);
+        try (PrintWriter writer = outputPath != null ? new PrintWriter(new FileOutputStream(outputPath)) : new PrintWriter(System.out)) {
+            if (outputPath != null) {
+                logger.info("Writing PDF content to " + outputPath);
             }
 
             int pageNum = -1;
             if (args.length >= 3) {
-                pageNum = Integer.parseInt(args[2]);
+                try {
+                    pageNum = Integer.parseInt(args[2]);
+                } catch (NumberFormatException e) {
+                    logger.warning("Invalid page number provided, defaulting to -1");
+                }
             }
 
+            // Verifica se esiste il file prima di procedere
+            File inputFile = new File(args[0]);
+            if (!inputFile.exists()) {
+                logger.severe("Input file does not exist: " + args[0]);
+                return;
+            }
+
+            // Elenca il contenuto del flusso
             if (pageNum == -1) {
-                listContentStream(new File(args[0]), writer);
+                listContentStream(inputFile, writer);
             } else {
-                listContentStream(new File(args[0]), pageNum, writer);
+                listContentStream(inputFile, pageNum, writer);
             }
             writer.flush();
 
-            if (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) {
-                String stringToLog = "Finished writing content to " + args[1];
-                logger.info(stringToLog);
+            if (outputPath != null) {
+                logger.info("Finished writing content to " + outputPath);
             }
+        } catch (IOException e) {
+            logger.severe("An error occurred while handling the content streaming: " + e.getMessage());
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.severe("Unexpected error: " + e.getMessage());
         }
     }
+
 }
