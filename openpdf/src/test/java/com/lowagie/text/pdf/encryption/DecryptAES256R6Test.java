@@ -517,22 +517,29 @@ class DecryptAES256R6Test {
      * The non-empty user password is used.
      */
     @Test
-    void testReadGraphEncryptedPwUserPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadGraphEncryptedPwUser);
-    }
     void testReadGraphEncryptedPwUser() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/graph-encrypted-pw=user.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "user".getBytes(UTF_8))) {
+
             Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
             Assertions.assertFalse(isOwnerPasswordUsed(pdfReader), "PdfReader fails to report limited permissions.");
             Assertions.assertEquals(1, pdfReader.getNumberOfPages(),
                     "PdfReader fails to report the correct number of pages");
-            Assertions.assertEquals("", new PdfTextExtractor(pdfReader).getTextFromPage(1),
-                    "Wrong text extracted from page 1");
-         }catch(PDFFilterException e){
+
+            // Extracting text from page 1 and handling the stream/resource
+            String extractedText;
+            try {
+                extractedText = new PdfTextExtractor(pdfReader).getTextFromPage(1);
+            } catch (Exception e) {
+                throw new IOException("Error extracting text from the PDF.", e);
+            }
+
+            Assertions.assertEquals("", extractedText, "Wrong text extracted from page 1");
+        } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
