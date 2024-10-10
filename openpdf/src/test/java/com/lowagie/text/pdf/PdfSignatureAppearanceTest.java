@@ -146,12 +146,14 @@ class PdfSignatureAppearanceTest {
                 sap.preClose(exc);
 
                 // Get the range stream for the digest calculation
-                byte[] result = Utilities.toByteArray(sap.getRangeStream());
-                byte[] sha256 = getSHA256(result);
-                if (expectedDigestPreClose == null) {
-                    expectedDigestPreClose = sha256;
-                } else {
-                    assertArrayEquals(expectedDigestPreClose, sha256);
+                try (InputStream rangeStream = sap.getRangeStream()) { // Use try-with-resources here
+                    byte[] result = Utilities.toByteArray(rangeStream);
+                    byte[] sha256 = getSHA256(result);
+                    if (expectedDigestPreClose == null) {
+                        expectedDigestPreClose = sha256;
+                    } else {
+                        assertArrayEquals(expectedDigestPreClose, sha256);
+                    }
                 }
 
                 // Update the signature
@@ -160,12 +162,14 @@ class PdfSignatureAppearanceTest {
                 sap.close(update);
 
                 // Calculate SHA-256 of the updated result
-                byte[] resultClose = Utilities.toByteArray(sap.getRangeStream());
-                byte[] sha256Close = getSHA256(resultClose);
-                if (expectedDigestClose == null) {
-                    expectedDigestClose = sha256Close;
-                } else {
-                    assertArrayEquals(expectedDigestClose, sha256Close);
+                try (InputStream rangeStreamClose = sap.getRangeStream()) { // Use try-with-resources here
+                    byte[] resultClose = Utilities.toByteArray(rangeStreamClose);
+                    byte[] sha256Close = getSHA256(resultClose);
+                    if (expectedDigestClose == null) {
+                        expectedDigestClose = sha256Close;
+                    } else {
+                        assertArrayEquals(expectedDigestClose, sha256Close);
+                    }
                 }
 
                 byte[] resultDocument = baos.toByteArray();
