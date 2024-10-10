@@ -39,12 +39,15 @@ public class SpanTableHtml {
      * Converts an HTML page to pdf with the table containing colspan tags
      */
     public static void testColspan() {
-        try (Document doc = new Document(PageSize.A4)) {
+        try (Document doc = new Document(PageSize.A4);
+                InputStream stream = SpanTableHtml.class.getResourceAsStream("example2forHTMLWorker.html");
+                InputStreamReader reader = new InputStreamReader(stream, UTF_8)) {
+
             PdfWriter.getInstance(doc, Files.newOutputStream(Paths.get("testColspanOut.pdf")));
             doc.open();
-            InputStream stream = SpanTableHtml.class.getResourceAsStream("example2forHTMLWorker.html");
             HTMLWorker worker = new HTMLWorker(doc);
-            worker.parse(new InputStreamReader(stream, UTF_8));
+            worker.parse(reader);
+
             assert (true);
         } catch (IOException e) {
             //da vedere come effettuare il log
