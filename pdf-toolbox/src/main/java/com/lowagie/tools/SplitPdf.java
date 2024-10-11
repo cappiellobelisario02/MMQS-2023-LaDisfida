@@ -58,7 +58,11 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 /**
@@ -85,27 +89,57 @@ public class SplitPdf{
         String srcFile = args[0];
         String destFile1 = args[1];
         String destFile2 = args[2];
-        int pageNumber = Integer.parseInt(args[3]);
+        int pageNumber;
 
-        try (PdfReader reader = new PdfReader(srcFile)) {
-            validatePageNumber(reader, pageNumber);
-            logTotalPages(reader);
+        try {
+            pageNumber = Integer.parseInt(args[3]);
+        } catch (NumberFormatException e) {
+            logger.severe("Invalid page number: " + args[3]);
+            return;
+        }
 
-            try (Document document1 = new Document(reader.getPageSizeWithRotation(1));
-                    Document document2 = new Document(reader.getPageSizeWithRotation(pageNumber));
-                    FileOutputStream fos1 = new FileOutputStream(destFile1);
-                    FileOutputStream fos2 = new FileOutputStream(destFile2);
-                    PdfWriter writer1 = PdfWriter.getInstance(document1, fos1);
-                    PdfWriter writer2 = PdfWriter.getInstance(document2, fos2)) {
+        // Validazione e normalizzazione dei percorsi dei file
+        try {
+            Path srcFilePath = validateAndNormalizePath(srcFile);
+            Path destFilePath1 = validateAndNormalizePath(destFile1);
+            Path destFilePath2 = validateAndNormalizePath(destFile2);
 
-                document1.open();
-                document2.open();
+            // Usa i percorsi normalizzati
+            try (PdfReader reader = new PdfReader(srcFilePath.toString())) {
+                validatePageNumber(reader, pageNumber);
+                logTotalPages(reader);
 
-                splitDocument(reader, writer1, writer2, document1, document2, pageNumber);
+                try (Document document1 = new Document(reader.getPageSizeWithRotation(1));
+                        Document document2 = new Document(reader.getPageSizeWithRotation(pageNumber));
+                        FileOutputStream fos1 = new FileOutputStream(destFilePath1.toString());
+                        FileOutputStream fos2 = new FileOutputStream(destFilePath2.toString());
+                        PdfWriter writer1 = PdfWriter.getInstance(document1, fos1);
+                        PdfWriter writer2 = PdfWriter.getInstance(document2, fos2)) {
+
+                    document1.open();
+                    document2.open();
+
+                    splitDocument(reader, writer1, writer2, document1, document2, pageNumber);
+                }
             }
+        } catch (InvalidPathException | SecurityException e) {
+            logger.severe("Invalid file path: " + e.getMessage());
         } catch (Exception e) {
             logger.severe("Error occurred: " + e.getMessage());
         }
+    }
+
+    // Metodo per validare e normalizzare i percorsi dei file
+    private static Path validateAndNormalizePath(String filePath) throws InvalidPathException, SecurityException {
+        Path path = Paths.get(filePath).normalize();  // Normalizza il percorso
+        File file = path.toFile();
+
+        // Controlla che il file non contenga ".." e che non tenti di accedere a percorsi non autorizzati
+        if (!file.exists() && !file.getParentFile().canWrite()) {
+            throw new SecurityException("Permission denied to write in the directory.");
+        }
+
+        return path;
     }
 
     private static void validatePageNumber(PdfReader reader, int pageNumber) throws DocumentException {

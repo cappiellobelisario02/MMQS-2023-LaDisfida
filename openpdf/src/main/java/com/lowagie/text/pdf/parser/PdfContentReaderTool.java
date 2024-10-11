@@ -58,6 +58,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -241,15 +244,16 @@ public class PdfContentReaderTool {
         // Rimuovi eventuali spazi bianchi
         path = path.trim();
 
-        // Controlla se il percorso è vuoto o contiene caratteri indesiderati
-        if (path.isEmpty() || path.contains("..") || path.contains("/") || path.contains("\\")) {
+        // Usa Paths per convertire in un percorso sicuro
+        Path filePath = Paths.get(path).normalize();
+
+        // Controlla se il percorso è assoluto o contiene ".."
+        if (filePath.isAbsolute() || filePath.toString().contains("..")) {
             throw new SecurityException("Invalid path: " + path);
         }
 
-        // Crea un oggetto File
-        File file = new File(path);
-
-        // Prevent directory traversal attacks by checking the canonical path
+        // Ottieni il percorso canonico del file e quello della directory base
+        File file = filePath.toFile();
         String canonicalPath = file.getCanonicalPath();
         String basePath = new File(".").getCanonicalPath();
 
@@ -258,8 +262,13 @@ public class PdfContentReaderTool {
             throw new SecurityException("Path manipulation attempt detected: " + path);
         }
 
-        // Aggiungi un controllo sull'estensione del file se necessario
-        if (!path.endsWith(".pdf")) {
+        // Controlla se è un file e non una directory
+        if (Files.isDirectory(filePath)) {
+            throw new SecurityException("Path points to a directory, not a file: " + path);
+        }
+
+        // Controlla l'estensione del file
+        if (!canonicalPath.endsWith(".pdf")) {
             throw new SecurityException("Invalid file extension: " + path);
         }
 

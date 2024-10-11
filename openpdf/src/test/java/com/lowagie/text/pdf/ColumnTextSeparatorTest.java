@@ -13,19 +13,20 @@ import com.lowagie.text.pdf.draw.LineSeparator;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ColumnTextSeparator {
+class ColumnTextSeparatorTest {
 
     public static final float[][] COLUMNS = {{36, 36, 296, 806}, {299, 36, 559, 806}};
-    private String filePath;
 
     @Test
-    public void test_columnTextSeparator() throws Exception {
-        filePath = System.getProperty("user.dir") + "/src/test/resources";
-
-        File RESULT = new File(filePath + "/columnTextSeparator.pdf");
+    void test_columnTextSeparator() throws Exception {
+        // Usa Paths.get per costruire il percorso in modo sicuro
+        Path filePath = Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "columnTextSeparator.pdf");
+        File fileResult = filePath.toFile();  // Converti Path in File
 
         // step 1
         Document document = new Document(PageSize.A4);
@@ -36,7 +37,7 @@ public class ColumnTextSeparator {
         PdfContentByte wrote = pdfWriter.getDirectContent();
 
         ColumnText ct = new ColumnText(wrote);
-        Phrase p = null;
+        Phrase p;
 
         for (int i = 0; i < 3; i++) {
             p = new Phrase();
@@ -50,14 +51,12 @@ public class ColumnTextSeparator {
         ct.setExtraParagraphSpace(6);
         ct.setLeading(0, 1.2f);
         ct.setFollowingIndent(27);
-        int linesWritten = 0;
         int column = 0;
         int status = ColumnText.START_COLUMN;
         while (ColumnText.hasMoreText(status)) {
             ct.setSimpleColumn(COLUMNS[column][0], COLUMNS[column][1], COLUMNS[column][2], COLUMNS[column][3]);
             ct.setYLine(COLUMNS[column][3]);
             status = ct.go();
-            linesWritten += ct.getLinesWritten();
             column = Math.abs(column - 1);
             if (column == 0) {
                 document.newPage();
@@ -67,11 +66,11 @@ public class ColumnTextSeparator {
         document.close();
 
         // Write output file and handle FileOutputStream with try-with-resources
-        try (FileOutputStream fos = new FileOutputStream(RESULT)) {
+        try (FileOutputStream fos = new FileOutputStream(fileResult)) {
             fos.write(baos.toByteArray());
         }
 
         // Assertion to check if the file has been created
-        assertTrue(RESULT.exists());
+        assertTrue(fileResult.exists());
     }
 }

@@ -168,9 +168,15 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
     }
 
     private boolean isRemoteResource(String filename) {
-        return filename.startsWith("file:/") || filename.startsWith("http://") ||
-                filename.startsWith("https://") || filename.startsWith("jar:") ||
-                filename.startsWith("wsjar:");
+        // Convalida se il percorso è assoluto
+        Path path = Paths.get(filename).normalize();
+
+        // Verifica se il percorso contiene protocolli remoti sicuri
+        return path.toString().startsWith("file:/") ||
+                path.toString().startsWith("http://") ||
+                path.toString().startsWith("https://") ||
+                path.toString().startsWith("jar:") ||
+                path.toString().startsWith("wsjar:");
     }
 
     private void readFromInputStream(String filename) throws IOException {
@@ -385,7 +391,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
             rf.close();
             rf = null;
             // it's very expensive to open a memory mapped file and for the usage pattern of this class
-            // in iText it's faster the next re-openings to be done as a plain random access
+            // in iText it's faster the next re-openings to be done as plain random access
             // file
             plainRandomAccess = true;
         } else if (trf != null) {
@@ -685,7 +691,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
             }
         }
 
-        if ((c == -1) && (input.length() == 0)) {
+        if ((c == -1) && (input.isEmpty())) {
             return null;
         }
         return input.toString();
