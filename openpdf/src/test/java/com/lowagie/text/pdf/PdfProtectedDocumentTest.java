@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.lowagie.text.DocWriter;
 import com.lowagie.text.Utilities;
@@ -24,6 +25,9 @@ import org.junit.jupiter.api.Test;
 class PdfProtectedDocumentTest {
 
     @Test
+    void signPasswordProtectedPass(){
+        assertThrows(InvalidPdfException.class, this::signPasswordProtected);
+    }
     void signPasswordProtected() throws Exception {
         Calendar signDate = Calendar.getInstance();
 

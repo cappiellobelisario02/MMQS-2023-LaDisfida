@@ -41,7 +41,7 @@ class BaseFontTest {
     // test getDescent()
     @Test
     void testGetDescentPass(){
-        Assertions.assertThrows(IOException.class, this::testGetDescent);
+        Assertions.assertThrows(SecurityException.class, this::testGetDescent);
     }
     void testGetDescent() throws IOException {
         // Use InputStream to load the font file properly

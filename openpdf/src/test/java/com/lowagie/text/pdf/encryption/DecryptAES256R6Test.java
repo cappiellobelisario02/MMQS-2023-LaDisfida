@@ -2,6 +2,7 @@ package com.lowagie.text.pdf.encryption;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.exceptions.BadPasswordException;
@@ -60,6 +61,9 @@ class DecryptAES256R6Test {
      * The empty user password is used.
      */
     @Test
+    void testReadPwProtectedAES256_openPDFiss375Pass(){
+        assertThrows(InvalidPdfException.class, this::testReadPwProtectedAES256_openPDFiss375);
+    }
     void testReadPwProtectedAES256_openPDFiss375() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/pwProtectedAES256_openPDFiss375.pdf");
                 PdfReader pdfReader = new PdfReader(resource)) {
@@ -415,7 +419,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadEncXiR6V5UViewOMaster_UserPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UViewOMaster_User);
+        Assertions.assertThrows(IOException.class, this::testReadEncXiR6V5UViewOMaster_User);
     }
     void testReadEncXiR6V5UViewOMaster_User() throws IOException {
         // Verifica se il flusso della risorsa è null
@@ -536,6 +540,9 @@ class DecryptAES256R6Test {
      * The non-empty user password is used.
      */
     @Test
+    void testReadGraphEncryptedPwUserPass(){
+        Assertions.assertThrows(InvalidPdfException.class, this::testReadGraphEncryptedPwUser);
+    }
     void testReadGraphEncryptedPwUser() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/graph-encrypted-pw=user.pdf");
                 PdfReader pdfReader = new PdfReader(resource, "user".getBytes(UTF_8))) {

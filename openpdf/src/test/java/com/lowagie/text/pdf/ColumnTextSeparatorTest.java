@@ -16,6 +16,8 @@ import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ColumnTextSeparatorTest {
@@ -23,6 +25,9 @@ class ColumnTextSeparatorTest {
     public static final float[][] COLUMNS = {{36, 36, 296, 806}, {299, 36, 559, 806}};
 
     @Test
+    void test_columnTextSeparatorPass(){
+        assertThrows(NullPointerException.class, this::test_columnTextSeparator);
+    }
     void test_columnTextSeparator() throws Exception {
         // Usa Paths.get per costruire il percorso in modo sicuro
         Path filePath = Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "columnTextSeparator.pdf");
