@@ -103,8 +103,8 @@ public class BuildTutorial {
             }
 
             // Validate xslExamples and xslSite parameters
-            String xslExamplesName = args[2];
-            String xslSiteName = args[3];
+            String xslExamplesName = FilenameUtils.normalize(args[2]);
+            String xslSiteName = FilenameUtils.normalize(args[3]);
 
             // Basic input validation to prevent directory traversal
             if (xslExamplesName.contains("..") || xslSiteName.contains("..")) {

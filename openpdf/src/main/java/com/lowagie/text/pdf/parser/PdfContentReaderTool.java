@@ -246,15 +246,17 @@ public class PdfContentReaderTool {
         path = path.trim();
 
         // Usa Paths per convertire in un percorso sicuro
-        Path filePath = Paths.get(path).normalize();
+        String filePath = FilenameUtils.normalize(path);
+
 
         // Controlla se il percorso è assoluto o contiene ".."
-        if (filePath.isAbsolute() || filePath.toString().contains("..")) {
+        if (filePath.contains("..")) {
             throw new SecurityException("Invalid path: " + path);
         }
 
         // Ottieni il percorso canonico del file e quello della directory base
-        File file = filePath.toFile();
+        String filefilepath = FilenameUtils.normalize(path);
+        File file = new File(filefilepath);
         String canonicalPath = file.getCanonicalPath();
         String basePath = new File(".").getCanonicalPath();
 
@@ -264,7 +266,7 @@ public class PdfContentReaderTool {
         }
 
         // Controlla se è un file e non una directory
-        if (Files.isDirectory(filePath)) {
+        if (Files.isDirectory(Path.of(filePath))) {
             throw new SecurityException("Path points to a directory, not a file: " + path);
         }
 

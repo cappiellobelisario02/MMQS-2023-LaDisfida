@@ -59,6 +59,7 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.logging.Logger;
@@ -124,7 +125,8 @@ public class HandoutPdf {
             float[] xCoordinates, float[][] yCoordinates)
             throws DocumentException {
         // Validate and sanitize the destination file path
-        File destFilePath = new File(destFile);
+        String destfilepath = FilenameUtils.normalize(destFile);
+        File destFilePath = new File(destfilepath);
 
         // Check if the destination file is a valid path and inside a safe directory
         if (!destFilePath.getAbsolutePath().startsWith(new File("safe_directory").getAbsolutePath())) {

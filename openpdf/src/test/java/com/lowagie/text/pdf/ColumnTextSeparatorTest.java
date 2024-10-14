@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,8 +31,10 @@ class ColumnTextSeparatorTest {
     }
     void test_columnTextSeparator() throws Exception {
         // Usa Paths.get per costruire il percorso in modo sicuro
-        Path filePath = Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "columnTextSeparator.pdf");
-        File fileResult = filePath.toFile();  // Converti Path in File
+        String systemPropertiescentral = FilenameUtils.normalize(System.getProperty("user.dir"));
+
+        Path filePath = Paths.get(systemPropertiescentral, "src", "test", "resources", "columnTextSeparator.pdf");
+        File fileResult = new File(systemPropertiescentral);  // Converti Path in File
 
         // step 1
         Document document = new Document(PageSize.A4);

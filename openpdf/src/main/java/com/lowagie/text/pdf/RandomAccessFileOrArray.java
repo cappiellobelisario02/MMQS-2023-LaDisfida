@@ -100,12 +100,14 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         filename = filename.replace("/", File.separator).replace("\\", File.separator);
 
         // Converte il nome del file in un oggetto Path per una gestione migliore
-        Path filePath = Paths.get(filename).normalize();
+        String filenamepath = FilenameUtils.normalize(filename);
+
+        Path filePath = Paths.get(filenamepath).normalize();
         File file = validatePath(filePath.toString());
 
         if (!file.exists()) {
             // Se il file non esiste, prova a risolvere il nome del file
-            String resolvedFilename = tryResolveFilename(filename);
+            String resolvedFilename = FilenameUtils.normalize(filename);
             filePath = Paths.get(resolvedFilename).normalize();
             file = validatePath(filePath.toString());  // Riconvalida il nome del file risolto
         }
@@ -139,7 +141,8 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
 
     // Helper method to validate and sanitize file paths
     private File validatePath(String path) throws IOException {
-        File file = new File(path);
+        String pathtotoFile = FilenameUtils.normalize(path);
+        File file = new File(pathtotoFile);
 
         // Prevent directory traversal attacks by checking the canonical path
         String canonicalPath = file.getCanonicalPath();
@@ -367,12 +370,14 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         return newpos - pos + adj;
     }
 
+
     public void reOpen() throws IOException {
         if (filename != null && rf == null && trf == null) {
+            String randomizerfile = FilenameUtils.normalize(filename);
             if (plainRandomAccess) {
-                trf = new RandomAccessFile(filename, "r");
+                trf = new RandomAccessFile(randomizerfile, "r");
             } else {
-                rf = new MappedRandomAccessFile(filename, "r");
+                rf = new MappedRandomAccessFile(randomizerfile, "r");
             }
         }
         seek(0);
