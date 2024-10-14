@@ -51,6 +51,7 @@ package com.lowagie.tools;
 import com.lowagie.text.pdf.PdfEncryptor;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.commons.io.FilenameUtils;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -111,9 +112,11 @@ public class EncryptPdf {
             usage();
             return;
         }
+        String foutsPathTo = FilenameUtils.normalize(args[OUTPUT_FILE]);
+        String readerPathTo = FilenameUtils.normalize(args[INPUT_FILE]);
 
-        try (PdfReader reader = new PdfReader(args[INPUT_FILE]);
-                FileOutputStream fouts = new FileOutputStream(args[OUTPUT_FILE])) {
+        try (PdfReader reader = new PdfReader(readerPathTo);
+                FileOutputStream fouts = new FileOutputStream(foutsPathTo)) {
 
             int permissions = 0;
             String p = args[PERMISSIONS];
@@ -121,8 +124,10 @@ public class EncryptPdf {
                 permissions |= (p.charAt(k) == '0' ? 0 : permit[k]);
             }
 
-            logger.info("Reading " + args[INPUT_FILE]);
-            logger.info("Writing " + args[OUTPUT_FILE]);
+            String stringToLog = "Reading " + readerPathTo;
+            logger.info(stringToLog);
+            stringToLog = "Writing " + foutsPathTo;
+            logger.info(stringToLog);
 
             Map<String, String> moreInfo = new HashMap<>();
             for (int k = MOREINFO; k < args.length - 1; k += 2) {

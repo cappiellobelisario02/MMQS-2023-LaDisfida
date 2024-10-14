@@ -51,6 +51,7 @@ import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.RandomAccessFileOrArray;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.fop.pdf.PDFFilterException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -277,11 +278,15 @@ public class PdfContentReaderTool {
 
 
     private static void handleContentStreaming(String[] args) {
-        try (PrintWriter writer = args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)
-                ? new PrintWriter(new FileOutputStream(args[1]))
+
+        String args1StringCured = FilenameUtils.normalize(args[1]);
+
+
+        try (PrintWriter writer = !args1StringCured.equalsIgnoreCase(STDOUT)
+                ? new PrintWriter(new FileOutputStream(args1StringCured))
                 : new PrintWriter(System.out)) {
 
-            if (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) {
+            if (!args[1].equalsIgnoreCase(STDOUT)) {
                 String stringToLog = "Writing PDF content to " + args[1];
                 logger.info(stringToLog);
             }
@@ -291,10 +296,13 @@ public class PdfContentReaderTool {
                 pageNum = Integer.parseInt(args[2]);
             }
 
+            String argsToFile = FilenameUtils.normalize(args[0]);
+            File fileInput = new File(argsToFile);
+
             if (pageNum == -1) {
-                listContentStream(new File(args[0]), writer);
+                listContentStream(fileInput, writer);
             } else {
-                listContentStream(new File(args[0]), pageNum, writer);
+                listContentStream(fileInput, pageNum, writer);
             }
             writer.flush();
 

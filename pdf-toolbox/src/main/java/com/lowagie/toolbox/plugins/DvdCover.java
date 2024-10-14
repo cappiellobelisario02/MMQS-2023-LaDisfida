@@ -38,6 +38,7 @@ package com.lowagie.toolbox.plugins;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.BaseFont;
@@ -50,6 +51,7 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.ImageArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import org.apache.commons.io.FilenameUtils;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -120,10 +122,17 @@ public class DvdCover extends AbstractTool {
      */
     public void execute() {
         Rectangle pageSize = new Rectangle(780, 525);
+        File destfileInput;
+        try {
+            String destFileString = FilenameUtils.normalize(DESTFILE);
+            destfileInput = (File) getValue(destFileString);
+        } catch (InstantiationException e) {
+            throw new ExceptionConverter(e);
+        }
         try(Document document = new Document(pageSize);
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream((File) getValue(DESTFILE)))){
-            // step 1: creation of a document-object
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(destfileInput))){
 
+            // step 1: creation of a document-object
             if (getValue(BACKGROUNDCOLOR) != null) {
                 pageSize.setBackgroundColor((Color) getValue(BACKGROUNDCOLOR));
             }

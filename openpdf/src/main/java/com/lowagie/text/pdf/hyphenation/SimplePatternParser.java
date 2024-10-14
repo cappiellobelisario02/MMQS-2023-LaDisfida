@@ -54,6 +54,7 @@ package com.lowagie.text.pdf.hyphenation;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
 import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
+import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -125,13 +126,14 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
     public static void main(String[] args) {
         try {
             if (args.length > 0) {
-                String filePath = args[0];
+                String filePath = FilenameUtils.normalize(args[0]);
 
                 // Validate the file path
                 File file = new File(filePath);
                 // Ensure the file exists and is a valid file
+                String stringToLog = "Invalid file path: " + filePath;
                 if (!file.isFile() || !file.exists()) {
-                    System.err.println("Invalid file path: " + filePath);
+                    logger.severe(stringToLog);
                     return;
                 }
 
@@ -139,7 +141,8 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
                 String absolutePath = file.getCanonicalPath();
                 // Check if the file is within a designated safe directory (e.g., "/allowed/directory/")
                 if (!absolutePath.startsWith("/allowed/directory/")) {
-                    System.err.println("Access denied to: " + absolutePath);
+                    stringToLog = "Access denied to: " + absolutePath;
+                    logger.severe(stringToLog);
                     return;
                 }
 
@@ -171,10 +174,9 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
         List<Object> res = new ArrayList<>();
         for (Object item : ex) {
             if (item instanceof String stringItem) {
-                String str = stringItem;
                 StringBuilder buf = new StringBuilder();
-                for (int j = 0; j < str.length(); j++) {
-                    char c = str.charAt(j);
+                for (int j = 0; j < stringItem.length(); j++) {
+                    char c = stringItem.charAt(j);
                     if (c != hyphenChar) {
                         buf.append(c);
                     } else {
@@ -187,7 +189,7 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
                         res.add(new Hyphen(new String(h), null, null));
                     }
                 }
-                if (buf.length() > 0) {
+                if (!buf.isEmpty()) {
                     res.add(buf.toString());
                 }
             } else {
@@ -218,7 +220,7 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
 
     @Override
     public void endElement(String tag) {
-        if (token.length() > 0) {
+        if (!token.isEmpty()) {
             String word = token.toString();
             switch (currElement) {
                 case ELEM_CLASSES:
@@ -276,7 +278,7 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
                 exception = new ArrayList<>();
                 break;
             case "hyphen":
-                if (token.length() > 0) {
+                if (!token.isEmpty()) {
                     exception.add(token.toString());
                 }
                 exception.add(new Hyphen(h.get("pre"), h.get("no"), h.get("post")));

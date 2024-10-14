@@ -36,6 +36,7 @@
 package com.lowagie.toolbox;
 
 import com.lowagie.tools.Executable;
+import org.apache.commons.io.FilenameUtils;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -52,6 +53,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.io.Serial;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -228,8 +230,9 @@ public class Toolbox extends JFrame implements ActionListener {
                 logger.warning("Resource 'tools.txt' not found in classpath.");
             }
 
-            String userToolsTxtPath = System.getProperty("user.home") + System.getProperty("file.separator") + "tools.txt";
-            File userToolsFile = new File(userToolsTxtPath);
+            String userToolsTxtPath = System.getProperty("user.home") + FileSystems.getDefault().getSeparator() + "tools.txt";
+            String usersToolsPathCured = FilenameUtils.normalize(userToolsTxtPath);
+            File userToolsFile = new File(usersToolsPathCured);
 
             if (userToolsFile.isFile() && userToolsFile.exists()) {
                 try (FileInputStream fis = new FileInputStream(userToolsFile)) {

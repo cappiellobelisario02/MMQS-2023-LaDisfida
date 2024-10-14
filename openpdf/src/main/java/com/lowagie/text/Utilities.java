@@ -49,6 +49,7 @@
 package com.lowagie.text;
 
 import com.lowagie.text.pdf.PRTokeniser;
+import org.apache.commons.io.FilenameUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -161,7 +162,9 @@ public class Utilities {
         try {
             return new URL(sanitizedFilename);
         } catch (Exception e) {
-            return new File(sanitizedFilename).toURI().toURL();
+            String trulySanitizedFilename = FilenameUtils.normalize(sanitizedFilename);
+            File fileToReturn = new File(trulySanitizedFilename);
+            return fileToReturn.toURI().toURL();
         }
     }
 

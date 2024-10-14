@@ -24,6 +24,7 @@ import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.SimpleBookmark;
+import org.apache.commons.io.FilenameUtils;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,8 @@ public class Concatenate {
 
                 if (f == 0) {
                     document = new Document(reader.getPageSizeWithRotation(1));
-                    writer = new PdfCopy(document, new FileOutputStream(outFile));
+                    String outfilePath = FilenameUtils.normalize(outFile);
+                    writer = new PdfCopy(document, new FileOutputStream(outfilePath));
                     document.open();
                 }
 

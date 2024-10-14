@@ -48,6 +48,7 @@
  */
 package com.lowagie.tools;
 
+import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -90,8 +91,10 @@ public class BuildTutorial {
 
     public static void main(String[] args) {
         if (args.length == 4) {
-            File srcdir = new File(args[0]);
-            File destdir = new File(args[1]);
+            String path = FilenameUtils.normalize(args[0]);
+            File srcdir = new File(path);
+            path = FilenameUtils.normalize(args[1]);
+            File destdir = new File(path);
 
             // Validate that srcdir and destdir are directories
             if (!srcdir.isDirectory() || !destdir.isDirectory()) {
@@ -114,9 +117,9 @@ public class BuildTutorial {
 
             // Validate that the constructed files are indeed within the source directory
             try {
-                String canonicalSrcDir = srcdir.getCanonicalPath();
-                String canonicalXslExamples = xslExamples.getCanonicalPath();
-                String canonicalXslSite = xslSite.getCanonicalPath();
+                String canonicalSrcDir = FilenameUtils.normalize(srcdir.getCanonicalPath());
+                String canonicalXslExamples = FilenameUtils.normalize(xslExamples.getCanonicalPath());
+                String canonicalXslSite = FilenameUtils.normalize(xslSite.getCanonicalPath());
 
                 if (!canonicalXslExamples.startsWith(canonicalSrcDir) ||
                         !canonicalXslSite.startsWith(canonicalSrcDir)) {
@@ -125,12 +128,13 @@ public class BuildTutorial {
                 }
 
                 // Get canonical path for security checks
-                String root = new File(destdir, srcdir.getName()).getCanonicalPath();
+                String root = FilenameUtils.normalize(new File(destdir, srcdir.getName()).getCanonicalPath());
                 String allowedDirectory = "/allowed/directory/"; // Replace with your allowed directory
 
                 // Check if the root path is within an allowed directory
                 if (!root.startsWith(allowedDirectory)) {
-                    logger.severe("Access to the directory is denied: " + root);
+                    String stringToLog = "Access to the directory is denied: " + root;
+                    logger.severe(stringToLog);
                     return;
                 }
 
@@ -156,34 +160,14 @@ public class BuildTutorial {
     }
 
 
-
-    // Helper method to validate and sanitize file paths
-    private static File validatePath(String path) {
-        File file = new File(path);
-
-        // Prevent directory traversal attacks by checking the canonical path
-        try {
-            String canonicalPath = file.getCanonicalPath();
-            String userHomePath = new File(System.getProperty("user.home")).getCanonicalPath();
-            if (!canonicalPath.startsWith(userHomePath)) {
-                throw new SecurityException("Path manipulation attempt detected: " + path);
-            }
-        } catch (IOException e) {
-            throw new SecurityException("Invalid file path: " + path);
-        }
-
-        return file;
-    }
-
-
     /**
      * Inspects a file or directory that is given and performs the necessary actions on it (transformation or
      * recursion).
      *
      * @param source        a sourcedirectory (possibly with a tutorial xml-file)
      * @param destination   a destination directory (where the html and build.xml file will be generated, if necessary)
-     * @param xslExamplesIn an xsl to transform the index.xml into a build.xml
-     * @param xslSiteIn     an xsl to transform the index.xml into am index.html
+     * @param xslExamplesIn a xsl to transform the index.xml into a build.xml
+     * @param xslSiteIn     a xsl to transform the index.xml into am index.html
      * @throws IOException when something goes wrong while reading or creating a file or directory
      */
     public static void action(File source, File destination, File xslExamplesIn, File xslSiteIn) throws IOException {
@@ -204,7 +188,9 @@ public class BuildTutorial {
         if (source.isDirectory()) {
             logger.info(" ");
             logger.info(source.getCanonicalPath());
-            File dest = new File(destination, source.getName());
+            String destinationPath = FilenameUtils.normalize(destination.getCanonicalPath());
+            String sourcePath = FilenameUtils.normalize(source.getCanonicalPath());
+            File dest = new File(destinationPath, sourcePath);
             File[] xmlFiles = source.listFiles();
 
             if (xmlFiles != null) {
@@ -232,12 +218,6 @@ public class BuildTutorial {
             logger.info("... skipped");
         }
     }
-
-    // Additional method to validate XML files
-    private static boolean isValidXmlFile(File file) {
-        return file.isFile() && file.getName().toLowerCase().endsWith(".xml");
-    }
-
 
     /**
      * Converts an <code>infile</code>, using an <code>xslfile</code> to an

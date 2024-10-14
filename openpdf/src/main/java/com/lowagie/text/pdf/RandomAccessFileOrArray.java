@@ -66,6 +66,7 @@ import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * An implementation of a RandomAccessFile for input only that accepts a file or a byte array as data source.
@@ -217,10 +218,12 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
     }
 
     private void openRandomAccessFile(String filename, boolean plainRandomAccess) throws IOException {
+        String filenamePathSecure = FilenameUtils.normalize(filename);
+
         if (plainRandomAccess) {
-            trf = new RandomAccessFile(filename, "r");
+            trf = new RandomAccessFile(filenamePathSecure, "r");
         } else {
-            rf = new MappedRandomAccessFile(filename, "r");
+            rf = new MappedRandomAccessFile(filenamePathSecure, "r");
         }
     }
 

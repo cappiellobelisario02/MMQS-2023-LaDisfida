@@ -56,6 +56,7 @@ import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStream;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.SimpleBookmark;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.fop.pdf.PDFFilterException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -112,7 +113,8 @@ public class ConcatPdf {
         // Perform security checks: prevent directory traversal attacks
         try {
             String canonicalPath = file.getCanonicalPath();
-            String userHomePath = new File(System.getProperty("user.home")).getCanonicalPath();
+            String userProperties = FilenameUtils.normalize(System.getProperty("user.home"));
+            String userHomePath = new File(userProperties).getCanonicalPath();
 
             // Check if the canonical path starts with the user's home directory
             if (!canonicalPath.startsWith(userHomePath)) {
@@ -131,7 +133,7 @@ public class ConcatPdf {
 
         try (Document document = new Document();
                 BufferedOutputStream bouts = new BufferedOutputStream(Files.newOutputStream(target.toPath()));
-                PdfCopy writer = new PdfCopy(document, bouts);) {
+                PdfCopy writer = new PdfCopy(document, bouts)) {
             validateSourceFiles(sources);
             writer.setPdfVersion(PdfWriter.VERSION_1_7);
             writer.setFullCompression();
