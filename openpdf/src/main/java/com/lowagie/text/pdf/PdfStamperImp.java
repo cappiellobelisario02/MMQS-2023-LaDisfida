@@ -73,7 +73,7 @@ import com.sun.jdi.InternalException;
 import org.xml.sax.SAXException;
 
 
-class PdfStamperImp extends PdfWriter {
+public class PdfStamperImp extends PdfWriter {
 
     public static final Logger logger = Logger.getLogger(PdfStamperImp.class.getName());
     public static final String ACTIONTYPE_PDFACTION_ACTION_INT_PAGE = "use.setpageaction.pdfname.actiontype.pdfaction.action.int.page";

@@ -74,6 +74,8 @@ import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static com.lowagie.text.pdf.PdfStamperImp.logger;
+
 
 /**
  * An <CODE>Image</CODE> is the representation of a graphic element (JPEG, PNG or GIF) that has to be inserted into the
@@ -486,14 +488,27 @@ public abstract class Image extends Rectangle {
 
             return img;
         } finally {
-            if (is != null) {
-                is.close();
+            // Close InputStream and set the image URL, while catching any exceptions that may occur
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException e) {
+                // Log the error but don't rethrow, to not override previous exceptions
+                logger.warning("Error closing InputStream for URL: " + url + " >> " + e.getMessage());
             }
-            if (img != null) {
-                img.setUrl(url);
+
+            try {
+                if (img != null) {
+                    img.setUrl(url);
+                }
+            } catch (Exception e) {
+                // Log this error as well without throwing it
+                logger.warning("Error setting URL for image: " + url + " >> " + e.getMessage());
             }
         }
     }
+
 
     private static Image identifyAndLoadImage(byte[] headerBytes, URL url) throws IOException {
         if (isGifHeader(headerBytes)) {

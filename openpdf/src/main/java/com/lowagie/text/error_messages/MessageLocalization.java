@@ -60,6 +60,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.lowagie.text.pdf.PdfStamperImp.logger;
+
 /**
  * Localizes error messages. The messages are located in the package com.lowagie.text.error_messages in the form
  * language_country.lng. The internal file encoding is UTF-8 without any escape chars, it's not a normal property file.
@@ -76,13 +78,17 @@ public final class MessageLocalization {
     static {
         try {
             defaultLanguage = getLanguageMessages("en", null);
-        } catch (Exception ex) {
-            // do nothing
-        }
-        if (defaultLanguage == null) {
-            defaultLanguage = new HashMap<>();
+        } catch (IOException ex) {
+            logger.info("Error reading language messages: ");
+        } catch (NullPointerException ex) {
+            logger.info("Null pointer exception occurred: ");
+        } finally {
+            if (defaultLanguage == null) {
+                defaultLanguage = new HashMap<>();
+            }
         }
     }
+
 
     private MessageLocalization() {
     }
@@ -251,15 +257,16 @@ public final class MessageLocalization {
                 return Collections.emptyMap();
             }
         } finally {
-            try {
-                if (is != null) {
+            if (is != null) {
+                try {
                     is.close();
+                } catch (IOException e) {
+                    logger.warning("Failed to close InputStream for language file: " + language + " >> " + e.getMessage());
                 }
-            } catch (Exception ignored) {
-                // do nothing
             }
         }
     }
+
 
     private static Map<String, String> readLanguageStream(InputStream is) throws IOException {
         return readLanguageStream(new InputStreamReader(is, StandardCharsets.UTF_8));

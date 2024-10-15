@@ -212,7 +212,8 @@ public class Paragraph extends Phrase {
         if (phrase instanceof Paragraph) {
             Paragraph p = (Paragraph) phrase;
             setAlignment(p.alignment);
-            setLeading(phrase.getLeading(), p.multipliedLeading);
+            // Validate and set leading with a controlled method
+            validateAndSetLeading(phrase.getLeading(), p.multipliedLeading);
             setIndentationLeft(p.getIndentationLeft());
             setIndentationRight(p.getIndentationRight());
             setFirstLineIndent(p.getFirstLineIndent());
@@ -222,6 +223,16 @@ public class Paragraph extends Phrase {
             setRunDirection(p.getRunDirection());
         }
     }
+
+    private void validateAndSetLeading(float leading, float multipliedLeading) {
+        // Add validation logic to prevent invalid values
+        if (leading < 0) {
+            throw new IllegalArgumentException("Leading cannot be negative.");
+        }
+        // Set the leading safely
+        setLeading(leading, multipliedLeading);
+    }
+
 
     // implementation of the Element-methods
 

@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the License.
  *
  * The Original Code is 'iText, a free JAVA-PDF library'.
- * 
+ *
  * The Initial Developer of the Original Code is Bruno Lowagie. Portions created by
  * the Initial Developer are Copyright (C) 1999, 2000, 2001, 2002 by Bruno Lowagie.
  * All Rights Reserved.
@@ -258,10 +258,15 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @throws IOException on error
      */
     public PdfReader(URL url, byte[] ownerPassword) throws IOException, PDFFilterException {
-        password = ownerPassword;
-        tokens = new PRTokeniser(new RandomAccessFileOrArray(url));
+        if (ownerPassword == null || ownerPassword.length == 0) {
+            throw new IllegalArgumentException("Password cannot be null or empty for security reasons.");
+        }
+
+        this.password = ownerPassword;
+        this.tokens = new PRTokeniser(new RandomAccessFileOrArray(url));
         readPdf();
     }
+
 
     /**
      * Reads and parses a PDF document.
@@ -1428,7 +1433,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
             strings.clear();
             readPages();
-            
+
             removeUnusedObjects();
         } finally {
             try {

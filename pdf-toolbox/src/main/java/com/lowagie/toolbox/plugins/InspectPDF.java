@@ -77,13 +77,16 @@ public class InspectPDF extends AbstractTool {
      * @param args String[]
      */
     public static void main(String[] args) {
-        InspectPDF tool = new InspectPDF();
         if (args.length < 1) {
             logger.severe("Invalid arguments provided. Please refer to the usage guidelines.");
+            System.exit(1); // Exit the program to avoid unintended behavior
         }
+
+        InspectPDF tool = new InspectPDF();
         tool.setMainArguments(args);
         tool.execute();
     }
+
 
 
     /**

@@ -467,25 +467,30 @@ public class PdfEncryption {
 
     // gets keylength and revision and uses revision to choose the initial values
     // for permissions
-    public void setupAllKeys(byte[] userPassword, byte[] ownerPassword,
-            int permissions) throws NoSuchAlgorithmException {
+    public void setupAllKeys(byte[] userPassword, byte[] ownerPassword, int permissions) throws NoSuchAlgorithmException {
+        // Securely handle the owner password
         if (ownerPassword == null || ownerPassword.length == 0) {
             ownerPassword = md5.digest(createDocumentId());
         }
-        permissions |=
-                (revision == STANDARD_ENCRYPTION_128 || revision == AES_128 || revision == AES_256_V3) ? 0xfffff0c0
-                        : 0xffffffc0;
+
+        // Set permissions based on the revision
+        permissions |= (revision == STANDARD_ENCRYPTION_128 || revision == AES_128 || revision == AES_256_V3) ? 0xfffff0c0 : 0xffffffc0;
         permissions &= 0xfffffffc;
         this.permissions = permissions;
         documentID = createDocumentId();
+
+        // Securely handle password and permissions
         if (revision < AES_256_V3) {
-            // PDF reference 3.5.2 Standard Security Handler, Algorithm 3.3-1
-            // If there is no owner password, use the user password instead.
+            // Pad user and owner passwords securely
             byte[] userPad = padPassword(userPassword);
             byte[] ownerPad = padPassword(ownerPassword);
 
             this.ownerKey = computeOwnerKey(userPad, ownerPad);
             setupByUserPad(this.documentID, userPad, this.ownerKey, permissions);
+
+            // Clear sensitive data from memory after use
+            Arrays.fill(userPad, (byte) 0);
+            Arrays.fill(ownerPad, (byte) 0);
         } else {
             try {
                 key = IVGenerator.getIV(32);
@@ -497,7 +502,12 @@ public class PdfEncryption {
                 throw new ExceptionConverter(e);
             }
         }
+
+        // Clear passwords to minimize exposure
+        Arrays.fill(userPassword, (byte) 0);
+        Arrays.fill(ownerPassword, (byte) 0);
     }
+
 
     /**
      * @param documentID   byte array of document id

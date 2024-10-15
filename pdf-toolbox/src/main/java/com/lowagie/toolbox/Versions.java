@@ -118,41 +118,51 @@ public class Versions
      * @throws InitializationException
      */
     private void initialize() throws InitializationException {
-        try{
+        try {
             this.getContentPane().setLayout(new BorderLayout());
             scroll_versions.setViewportView(plugin_versions);
-            library_versions.setIcon(new ImageIcon(com.lowagie.toolbox.Versions.class.getResource(
-                    "1t3xt.gif")));
+            library_versions.setIcon(new ImageIcon(com.lowagie.toolbox.Versions.class.getResource("1t3xt.gif")));
             this.getContentPane().add(library_versions, BorderLayout.NORTH);
             this.getContentPane().add(scroll_versions, BorderLayout.CENTER);
+
             Properties properties = System.getProperties();
             Runtime runtime = Runtime.getRuntime();
-            StringBuilder sb = new StringBuilder();
+
+            // Set an initial capacity based on an estimated size
+            StringBuilder sb = new StringBuilder(512); // Adjust the size as needed
             sb.append("<html>");
-            sb.append("<p>iTexttoolbox version: ").append(com.lowagie.toolbox.Versions.class.getPackage().getImplementationVersion())
-                    .append("</p>");
-            sb.append("<p>iText version: ").append(Document.getVersion()).append("</p>");
-            sb.append("<p>java.version: ").append(properties.getProperty("java.version")).append("</p>");
-            sb.append("<p>java.vendor: ").append(properties.getProperty("java.vendor")).append("</p>");
-            sb.append("<p>java.home: ").append(properties.getProperty("java.home")).append("</p>");
-            sb.append("<p>java.freeMemory: ").append(runtime.freeMemory()).append(" bytes").append("</p>");
-            sb.append("<p>java.totalMemory: ").append(runtime.totalMemory()).append(" bytes").append("</p>");
-            sb.append("<p>user.home: ").append(properties.getProperty("user.home")).append("</p>");
-            sb.append("<p>os.name: ").append(properties.getProperty("os.name")).append("</p>");
-            sb.append("<p>os.arch: ").append(properties.getProperty("os.arch")).append("</p>");
-            sb.append("<p>os.version: ").append(properties.getProperty("os.version")).append("</p>");
+            appendVersionInfo(sb, "iTexttoolbox version", com.lowagie.toolbox.Versions.class.getPackage().getImplementationVersion());
+            appendVersionInfo(sb, "iText version", Document.getVersion());
+            appendVersionInfo(sb, "java.version", properties.getProperty("java.version"));
+            appendVersionInfo(sb, "java.vendor", properties.getProperty("java.vendor"));
+            appendVersionInfo(sb, "java.home", properties.getProperty("java.home"));
+            sb.append("<p>java.freeMemory: ").append(runtime.freeMemory()).append(" bytes</p>");
+            sb.append("<p>java.totalMemory: ").append(runtime.totalMemory()).append(" bytes</p>");
+            appendVersionInfo(sb, "user.home", properties.getProperty("user.home"));
+            appendVersionInfo(sb, "os.name", properties.getProperty("os.name"));
+            appendVersionInfo(sb, "os.arch", properties.getProperty("os.arch"));
+            appendVersionInfo(sb, "os.version", properties.getProperty("os.version"));
             sb.append("</html>");
+
             library_versions.setText(sb.toString());
 
             TableModel model = getVersionTableModel(AbstractTool.versionsarray);
-            RowSorter<TableModel> sorter =
-                    new TableRowSorter<>(model);
+            RowSorter<TableModel> sorter = new TableRowSorter<>(model);
             plugin_versions.setRowSorter(sorter);
             plugin_versions.setModel(model);
 
             pack();
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new InitializationException("Error during initialization", e);
+        }
+    }
+
+    // Helper method to append version info with basic validation
+    private void appendVersionInfo(StringBuilder sb, String label, String value) {
+        if (value != null) {
+            sb.append("<p>").append(label).append(": ").append(value).append("</p>");
+        } else {
+            sb.append("<p>").append(label).append(": Not Available</p>");
         }
     }
 

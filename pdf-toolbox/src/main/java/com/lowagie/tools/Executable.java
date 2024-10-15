@@ -82,29 +82,25 @@ public class Executable {
     private static Process action(final String fileName,
             String parameters, boolean waitForTermination) throws IOException {
         Process process = null;
-        if (parameters.trim().length() > 0) {
-            parameters = " " + parameters.trim();
-        } else {
-            parameters = "";
-        }
+        String sanitizedFileName = sanitizeInput(fileName);
+        String sanitizedParameters = sanitizeInput(parameters.trim());
+
         if (acroread != null) {
-            process = Runtime.getRuntime().exec(createCommand(
-                    acroread, parameters, " \"", fileName, "\""));
+            process = Runtime.getRuntime().exec(new String[]{
+                    acroread, sanitizedParameters, sanitizedFileName});
         } else if (isWindows()) {
             if (isWindows9X()) {
-                process = Runtime.getRuntime().exec(createCommand(
-                        "command.com /C start acrord32", parameters, " \"", fileName, "\""));
+                process = Runtime.getRuntime().exec(new String[]{
+                        "command.com", "/C", "start", "acrord32", sanitizedParameters, sanitizedFileName});
             } else {
-                process = Runtime.getRuntime().exec(createCommand(
-                        "cmd /c start acrord32", parameters, " \"", fileName, "\""));
+                process = Runtime.getRuntime().exec(new String[]{
+                        "cmd", "/c", "start", "acrord32", sanitizedParameters, sanitizedFileName});
             }
         } else if (isMac()) {
-            if (parameters.trim().length() == 0) {
-                process = Runtime.getRuntime().exec(
-                        new String[]{"/usr/bin/open", fileName});
+            if (sanitizedParameters.isEmpty()) {
+                process = Runtime.getRuntime().exec(new String[]{"/usr/bin/open", sanitizedFileName});
             } else {
-                process = Runtime.getRuntime().exec(
-                        new String[]{"/usr/bin/open", parameters.trim(), fileName});
+                process = Runtime.getRuntime().exec(new String[]{"/usr/bin/open", sanitizedParameters, sanitizedFileName});
             }
         }
         try {
@@ -118,6 +114,12 @@ public class Executable {
         }
         return process;
     }
+
+    private static String sanitizeInput(String input) {
+        // Example of a simple sanitization. Customize this to your needs.
+        return input.replaceAll("[^a-zA-Z0-9._/-]", "");
+    }
+
 
     /**
      * Creates a command string array from the string arguments.
