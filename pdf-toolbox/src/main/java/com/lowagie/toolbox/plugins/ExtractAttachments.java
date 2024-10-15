@@ -46,7 +46,7 @@ import com.lowagie.text.pdf.PdfString;
 import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
 import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
@@ -78,20 +78,6 @@ public class ExtractAttachments extends AbstractTool {
                 "The file you want to operate on", false, new PdfFilter());
         f.setLabel(new PdfInformationPanel());
         arguments.add(f);
-    }
-
-    /**
-     * Extract the attachments of a PDF.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        com.lowagie.toolbox.plugins.ExtractAttachments tool = new com.lowagie.toolbox.plugins.ExtractAttachments();
-        if (args.length < 1) {
-            logger.info(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
     }
 
     /**

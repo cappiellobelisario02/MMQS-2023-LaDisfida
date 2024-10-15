@@ -24,32 +24,24 @@ import javax.swing.WindowConstants;
 import com.lowagie.rups.controller.RupsController;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.io.Serial;
+import java.io.Serializable;
 import javax.swing.JFrame;
 
 /**
  * iText RUPS is a tool that allows you to inspect the internal structure of a PDF file.
  */
-public class Rups {
+public class Rups implements Serializable {
 
     // main method
 
     /**
      * Serial Version UID.
      */
+    @Serial
     private static final long serialVersionUID = 4386633640535735848L;
 
     // methods
-
-    /**
-     * Main method. Starts the RUPS application.
-     *
-     * @param args no arguments needed
-     */
-    public static void main(String[] args) {
-        startApplication();
-    }
-
-    // other member variables
 
     /**
      * Initializes the main components of the Rups application.

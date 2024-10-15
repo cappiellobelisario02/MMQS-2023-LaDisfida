@@ -45,7 +45,7 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.OptionArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -86,20 +86,6 @@ public class NUp extends AbstractTool {
     }
 
     /**
-     * Generates an NUp version of an existing PDF file.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        NUp tool = new NUp();
-        if (args.length < 2) {
-            logger.severe(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
-    }
-
-    /**
      * @see com.lowagie.toolbox.AbstractTool#createFrame()
      */
     protected void createFrame() {
@@ -115,7 +101,7 @@ public class NUp extends AbstractTool {
     public void execute() {
         PdfReader reader = null;
         Document document = null;
-        String stringToLog = null;
+        String stringToLog;
         try {
             if (getValue(SRCFILE) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");

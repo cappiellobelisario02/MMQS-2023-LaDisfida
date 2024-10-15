@@ -50,7 +50,7 @@ import com.lowagie.toolbox.arguments.ColorArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.ImageArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import org.apache.commons.io.FilenameUtils;
 import java.awt.Color;
 import java.io.File;
@@ -90,21 +90,6 @@ public class DvdCover extends AbstractTool {
         arguments.add(new ImageArgument(this, FRONT, "The front image of the DVD Cover"));
         arguments.add(new ImageArgument(this, "back", "The back image of the DVD Cover"));
         arguments.add(new ImageArgument(this, "side", "The side image of the DVD Cover"));
-    }
-
-    /**
-     * Generates a DVD Cover in PDF.
-     *
-     * @param args an array containing [0] a filename [1] a title [2] a backgroundcolor [3] a front image [4] a back
-     *             image [5] a side image
-     */
-    public static void main(String[] args) {
-        DvdCover tool = new DvdCover();
-        if (args.length == 0) {
-            logger.info(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
     }
 
     /**

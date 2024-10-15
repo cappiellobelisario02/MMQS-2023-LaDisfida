@@ -56,7 +56,7 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.toolbox.arguments.filters.U3DFilter;
 import com.lowagie.toolbox.plugins.watermarker.WatermarkerTool;
 

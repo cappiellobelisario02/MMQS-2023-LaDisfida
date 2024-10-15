@@ -44,7 +44,7 @@ import com.lowagie.text.pdf.PdfStream;
 import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.toolbox.swing.EventDispatchingThread;
 import org.apache.fop.pdf.PDFFilterException;
 import java.awt.BorderLayout;

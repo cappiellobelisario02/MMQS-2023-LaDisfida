@@ -38,7 +38,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.toolbox.plugins.watermarker.WatermarkerTool;
 
 import java.io.File;
@@ -63,7 +63,7 @@ public class Normalize
         addVersion("$Id: Normalize.java 3736 2009-02-26 08:52:21Z xlv $");
     }
 
-    FileArgument destinationfile = null;
+    FileArgument destinationfile;
     int pagecount;
     float width;
     float height;
@@ -89,20 +89,6 @@ public class Normalize
     }
 
     /**
-     * Normalize PDF file.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        Normalize tool = new Normalize();
-        if (args.length < 2) {
-            logger.severe(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
-    }
-
-    /**
      * @see com.lowagie.toolbox.AbstractTool#createFrame()
      */
     protected void createFrame() {
@@ -112,11 +98,11 @@ public class Normalize
         logger.info("=== Normalize OPENED ===");
     }
 
-    protected void iteratePages(PdfDictionary page, PdfReader pdfreader,
+    protected void iteratePages(PdfDictionary page,
             ArrayList<PdfDictionary> pageInh,
             int countInLeaf, PdfWriter writer) throws
             IOException {
-        String stringToLog = null;
+        String stringToLog;
         float curwidth;
         float curheight;
         PdfArray kidsPR = page.getAsArray(PdfName.KIDS);
@@ -156,9 +142,6 @@ public class Normalize
 
             }
 
-            /**
-             * Bei ungeraden Seiten die Seitenabmessungen speichern
-             */
             if (((pagecount + 1) % 2) == 1) {
                 width = curwidth;
                 height = curheight;
@@ -172,7 +155,7 @@ public class Normalize
 
             for (int k = 0; k < kidsPR.size(); ++k) {
                 PdfDictionary kid = kidsPR.getAsDict(k);
-                iteratePages(kid, pdfreader, pageInh, k, writer);
+                iteratePages(kid, pageInh, k, writer);
             }
         }
     }
@@ -180,7 +163,7 @@ public class Normalize
     private void seitehinzufuegen(PdfDictionary page, int countInLeaf,
             PdfWriter writer,
             PdfArray array) throws IOException {
-        String stringToLog = null;
+        String stringToLog;
         logger.info("change!");
 
         PdfDictionary parent = page.getAsDict(PdfName.PARENT);
@@ -195,7 +178,7 @@ public class Normalize
         newPage.put(PdfName.RESOURCES, new PdfDictionary());
         writer.addToBody(newPage, ref);
 
-        PdfNumber count = null;
+        PdfNumber count;
 
         while (parent != null) {
             count = parent.getAsNumber(PdfName.COUNT);
@@ -217,7 +200,7 @@ public class Normalize
         PdfReader reader = null;
         FileOutputStream fouts = null;
         PdfStamper stp = null;
-        String stringToLog = null;
+        String stringToLog;
         try {
             if (getValue(SRCFILE) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
@@ -241,7 +224,7 @@ public class Normalize
             ArrayList<PdfDictionary> pageInh = new ArrayList<>();
             PdfDictionary catalog = reader.getCatalog();
             PdfDictionary rootPages = catalog.getAsDict(PdfName.PAGES);
-            iteratePages(rootPages, reader, pageInh, 0, writer);
+            iteratePages(rootPages, pageInh, 0, writer);
 
             if (((pagecount) % 2) == 1) {
                 appendemptypageatend(reader, writer);
@@ -287,7 +270,7 @@ public class Normalize
         newPage.put(PdfName.RESOURCES, new PdfDictionary());
         writer.addToBody(newPage, ref);
 
-        PdfNumber count = null;
+        PdfNumber count;
 
         while (parent != null) {
             count = parent.getAsNumber(PdfName.COUNT);
@@ -380,27 +363,14 @@ public class Normalize
         }
 
         public String toString() {
-            String back;
-            switch (type) {
-                case UNKNOWN:
-                    back = rect.getWidth() + "*" + rect.getHeight();
-                    break;
-                case A_3_LANDSCAPE:
-                    back = "A3 Landscape";
-                    break;
-                case A_3_PORTRAIT:
-                    back = "A3 Portrait";
-                    break;
-                case A_4_LANDSCAPE:
-                    back = "A4 Landscape";
-                    break;
-                case A_4_PORTRAIT:
-                    back = "A4 Portrait";
-                    break;
-                default:
-                    back = "";
-            }
-            return back;
+            return switch (type) {
+                case UNKNOWN -> rect.getWidth() + "*" + rect.getHeight();
+                case A_3_LANDSCAPE -> "A3 Landscape";
+                case A_3_PORTRAIT -> "A3 Portrait";
+                case A_4_LANDSCAPE -> "A4 Landscape";
+                case A_4_PORTRAIT -> "A4 Portrait";
+                default -> "";
+            };
         }
 
         public void rotate() {

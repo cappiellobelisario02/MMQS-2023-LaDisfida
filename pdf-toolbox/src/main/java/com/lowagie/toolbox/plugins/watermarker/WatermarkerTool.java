@@ -48,7 +48,7 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.FloatArgument;
 import com.lowagie.toolbox.arguments.IntegerArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -118,21 +118,7 @@ public class WatermarkerTool extends AbstractTool {
      * (Optional) "#FF0000" is the color (in hex format like #nnnnnn or 0xnnnnnn), #000000 (black) by default
      *
      * <p>
-     * Call it from within other Java code:
-     *
-     * <p>
-     * Watermarker.main(new String[]{"input.pdf","Draft","230","0.2","output.pdf","#FF000000"});
-     *
-     * @param args the srcfile, watermark text and destfile
      */
-    public static void main(String[] args) {
-        WatermarkerTool watermarkerTool = new WatermarkerTool();
-        if (args.length < 5 || args.length > 6) {
-            logger.severe(watermarkerTool.getUsage());
-        }
-        watermarkerTool.setMainArguments(args);
-        watermarkerTool.execute();
-    }
 
     /**
      * Creates the internal frame.

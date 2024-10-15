@@ -47,7 +47,7 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.OptionArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -87,20 +87,6 @@ public class Handouts extends AbstractTool {
         oa.addOption("7 pages on 1", "7");
         oa.addOption("8 pages on 1", "8");
         arguments.add(oa);
-    }
-
-    /**
-     * Converts a PDF file to a PDF file usable as Handout.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        Handouts tool = new Handouts();
-        if (args.length < 2) {
-            logger.info(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
     }
 
     /**

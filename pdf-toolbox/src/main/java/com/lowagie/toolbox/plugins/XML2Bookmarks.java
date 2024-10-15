@@ -55,7 +55,7 @@ import com.lowagie.text.pdf.SimpleBookmark;
 import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -89,20 +89,6 @@ public class XML2Bookmarks extends AbstractTool {
         arguments.add(new FileArgument(this, PDFFILE, "the PDF to which you want to add bookmarks", false,
                 new PdfFilter()));
         arguments.add(new FileArgument(this, DESTFILE, "the resulting PDF", true, new PdfFilter()));
-    }
-
-    /**
-     * Allows you to generate an index file in HTML containing Bookmarks to an existing PDF file.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        XML2Bookmarks tool = new XML2Bookmarks();
-        if (args.length < 3) {
-            logger.severe(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
     }
 
     /**

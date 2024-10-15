@@ -45,7 +45,7 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.FileArrayArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -81,20 +81,6 @@ public class ConcatN extends AbstractTool {
         arguments.add(new FileArgument(this, DESTFILE,
                 "The file to which the concatenated PDF has to be written", true,
                 new PdfFilter()));
-    }
-
-    /**
-     * Concatenates two PDF files.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        com.lowagie.toolbox.plugins.ConcatN tool = new com.lowagie.toolbox.plugins.ConcatN();
-        if (args.length < 2) {
-            logger.severe(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
     }
 
     /**
@@ -216,9 +202,6 @@ public class ConcatN extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-        }
         // represent the changes of the argument in the internal frame
     }
 

@@ -34,17 +34,15 @@
 
 package com.lowagie.toolbox.plugins;
 
+import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.text.Document;
 import com.lowagie.text.pdf.PdfReader;
-import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.OptionArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -81,20 +79,6 @@ public class CompressDecompressPageContent extends AbstractTool {
     }
 
     /**
-     * Compresses/decompresses the page content streams in a PDF file.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        com.lowagie.toolbox.plugins.CompressDecompressPageContent tool = new com.lowagie.toolbox.plugins.CompressDecompressPageContent();
-        if (args.length < 2) {
-            logger.severe(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
-    }
-
-    /**
      * @see com.lowagie.toolbox.AbstractTool#createFrame()
      */
     protected void createFrame() {
@@ -125,9 +109,7 @@ public class CompressDecompressPageContent extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#execute()
      */
     public void execute() {
-        try (PdfReader reader = new PdfReader(((File) getValue(SRCFILE_ARG)).getAbsolutePath());
-                FileOutputStream fos = new FileOutputStream(getDestPathPDF());
-                PdfStamper stamper = new PdfStamper(reader, fos); ){
+        try (PdfReader reader = new PdfReader(((File) getValue(SRCFILE_ARG)).getAbsolutePath())){
             if (getValue(SRCFILE_ARG) == null) {
                 throw new InstantiationException("You need to choose a sourcefile");
             }

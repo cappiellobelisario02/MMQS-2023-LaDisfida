@@ -44,7 +44,7 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.logging.Logger;
@@ -77,20 +77,6 @@ public class SelectedPages extends AbstractTool {
     }
 
     /**
-     * Generates a PDF file with selected pages from an existing PDF.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        com.lowagie.toolbox.plugins.SelectedPages tool = new com.lowagie.toolbox.plugins.SelectedPages();
-        if (args.length < 4) {
-            logger.severe(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
-    }
-
-    /**
      * @see com.lowagie.toolbox.AbstractTool#createFrame()
      */
     protected void createFrame() {
@@ -108,7 +94,7 @@ public class SelectedPages extends AbstractTool {
         Document document = null;
         FileOutputStream fouts = null;
         PdfCopy copy = null;
-        String stringToLog = null;
+        String stringToLog;
 
         try {
             if (getValue(SRCFILE) == null) {
@@ -211,10 +197,6 @@ public class SelectedPages extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

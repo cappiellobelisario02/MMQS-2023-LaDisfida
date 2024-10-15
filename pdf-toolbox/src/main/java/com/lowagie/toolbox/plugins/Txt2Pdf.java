@@ -46,7 +46,7 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.OptionArgument;
 import com.lowagie.toolbox.arguments.PageSizeArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -88,20 +88,6 @@ public class Txt2Pdf extends AbstractTool {
     }
 
     /**
-     * Converts a monospaced txt file to a PDF file.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        Txt2Pdf tool = new Txt2Pdf();
-        if (args.length < 3) {
-            logger.severe(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
-    }
-
-    /**
      * @see com.lowagie.toolbox.AbstractTool#createFrame()
      */
     protected void createFrame() {
@@ -122,7 +108,7 @@ public class Txt2Pdf extends AbstractTool {
         try (BufferedReader in = new BufferedReader(new FileReader((File) getValue(SRCFILE)));
                 FileOutputStream fos = new FileOutputStream((File) getValue(DESTFILE))) {
 
-            String line = null;
+            String line;
             Rectangle pagesize = (Rectangle) getValue("pagesize");
 
             // Set the font and document orientation

@@ -44,7 +44,7 @@ import com.lowagie.toolbox.arguments.BitsetArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.OptionArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.logging.Logger;

@@ -46,7 +46,7 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.IntegerArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
 import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
@@ -72,7 +72,7 @@ public class Split extends AbstractTool {
     }
 
     /**
-     * Constructs an Split object.
+     * Constructs a Split object.
      */
     public Split() {
         FileArgument f = new FileArgument(this, SRCFILE, "The file you want to split", false, new PdfFilter());
@@ -83,20 +83,6 @@ public class Split extends AbstractTool {
         arguments.add(new FileArgument(this, DESTFILE_2,
                 "The file to which the second part of the original PDF has to be written", true, new PdfFilter()));
         arguments.add(new IntegerArgument(this, "pagenumber", "The pagenumber where you want to split"));
-    }
-
-    /**
-     * Split a PDF in two separate PDF files.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        Split tool = new Split();
-        if (args.length < 4) {
-            logger.severe(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
     }
 
     /**

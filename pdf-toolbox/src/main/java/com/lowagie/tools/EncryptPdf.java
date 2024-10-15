@@ -48,13 +48,7 @@
  */
 package com.lowagie.tools;
 
-import com.lowagie.text.pdf.PdfEncryptor;
-import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
-import org.apache.commons.io.FilenameUtils;
-import java.io.FileOutputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -67,14 +61,14 @@ public class EncryptPdf {
 
     public static final Logger logger = Logger.getLogger(EncryptPdf.class.getName());
 
-    private static final int INPUT_FILE = 0;
-    private static final int OUTPUT_FILE = 1;
-    private static final int USER_PASSWORD = 2;
-    private static final int OWNER_PASSWORD = 3;
-    private static final int PERMISSIONS = 4;
-    private static final int STRENGTH = 5;
-    private static final int MOREINFO = 6;
-    private static final int[] permit = {
+    protected static final int INPUT_FILE = 0;
+    protected static final int OUTPUT_FILE = 1;
+    protected static final int USER_PASSWORD = 2;
+    protected static final int OWNER_PASSWORD = 3;
+    protected static final int PERMISSIONS = 4;
+    protected static final int STRENGTH = 5;
+    protected static final int MOREINFO = 6;
+    protected static final int[] permit = {
             PdfWriter.ALLOW_PRINTING,
             PdfWriter.ALLOW_MODIFY_CONTENTS,
             PdfWriter.ALLOW_COPY,
@@ -84,7 +78,7 @@ public class EncryptPdf {
             PdfWriter.ALLOW_ASSEMBLY,
             PdfWriter.ALLOW_DEGRADED_PRINTING};
 
-    private static void usage() {
+    public static void usage() {
         logger.info(
                 "usage: input_file output_file user_password owner_password permissions 128|40 [new info string pairs]");
         logger.info("permissions is 8 digit long 0 or 1. Each digit has a particular security function:");
@@ -98,50 +92,6 @@ public class EncryptPdf {
         logger.info("AllowAssembly (128 bit only)");
         logger.info("AllowDegradedPrinting (128 bit only)");
         logger.info("Example permissions to copy and print would be: 10100000");
-    }
-
-    /**
-     * Encrypts a PDF document.
-     *
-     * @param args input_file output_file user_password owner_password permissions 128|40 [new info string pairs]
-     */
-    public static void main(String[] args) {
-        logger.info("PDF document encryptor");
-
-        if (args.length <= STRENGTH || args[PERMISSIONS].length() != 8) {
-            usage();
-            return;
-        }
-        String foutsPathTo = FilenameUtils.normalize(args[OUTPUT_FILE]);
-        String readerPathTo = FilenameUtils.normalize(args[INPUT_FILE]);
-
-        try (PdfReader reader = new PdfReader(readerPathTo);
-                FileOutputStream fouts = new FileOutputStream(foutsPathTo)) {
-
-            int permissions = 0;
-            String p = args[PERMISSIONS];
-            for (int k = 0; k < p.length(); ++k) {
-                permissions |= (p.charAt(k) == '0' ? 0 : permit[k]);
-            }
-
-            String stringToLog = "Reading " + readerPathTo;
-            logger.info(stringToLog);
-            stringToLog = "Writing " + foutsPathTo;
-            logger.info(stringToLog);
-
-            Map<String, String> moreInfo = new HashMap<>();
-            for (int k = MOREINFO; k < args.length - 1; k += 2) {
-                moreInfo.put(args[k], args[k + 1]);
-            }
-
-            PdfEncryptor.encrypt(reader, fouts,
-                    args[USER_PASSWORD].getBytes(), args[OWNER_PASSWORD].getBytes(), permissions,
-                    args[STRENGTH].equals("128"), moreInfo);
-
-            logger.info("Done.");
-        } catch (Exception e) {
-            logger.severe("Error occurred: " + e.getMessage());
-        }
     }
 
 }

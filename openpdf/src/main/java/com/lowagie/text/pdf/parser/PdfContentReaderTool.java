@@ -205,38 +205,34 @@ public class PdfContentReaderTool {
     /**
      * Writes information about each page in a PDF file to the specified file, or System.out.
      *
-     * @param args the arguments passed to the command line
      */
-    public static void main(String[] args) {
+    public void processPdf(String pdfFilePath, String outputFilePath, Integer pageNum) throws IOException {
         try (PrintWriter writer = new PrintWriter(System.out)) {
-            if (args.length < 1 || args.length > 3) {
-                logger.info("Usage:  PdfContentReaderTool <pdf file> [<output file>|stdout] [<page num>]");
+            // Validate input
+            if (pdfFilePath == null || pdfFilePath.isEmpty()) {
+                logger.info("Invalid PDF file path");
                 return;
             }
 
-            handleContentStreaming(args);
-
-            int pageNum = -1;
-            if (args.length == 3) {
-                pageNum = Integer.parseInt(args[2]);
-            }
+            handleContentStreaming(pdfFilePath);  // Assuming you have a method for this
 
             // Validate the PDF file path to prevent path manipulation
-            File pdfFile = validatePath(args[0]);
+            File pdfFile = validatePath(pdfFilePath);
 
-            if (pageNum == -1) {
+            // Check if specific page content needs to be processed
+            if (pageNum == null) {
                 listContentStream(pdfFile, writer);
             } else {
                 listContentStream(pdfFile, pageNum, writer);
             }
             writer.flush();
 
-            if (args.length >= 2) {
-                String stringToLog = "Finished writing content to " + args[1];
+            if (outputFilePath != null && !outputFilePath.isEmpty()) {
+                String stringToLog = "Finished writing content to " + outputFilePath;
                 logger.info(stringToLog);
             }
-        } catch (Exception e) {
-            logger.severe("An error occurred: " + e.getMessage());
+        } catch (PDFFilterException e) {
+            logger.severe("An error occurred");
         }
     }
 
@@ -277,26 +273,26 @@ public class PdfContentReaderTool {
     }
 
 
-    private static void handleContentStreaming(String[] args) {
+    private static void handleContentStreaming(String args) {
 
-        String args1StringCured = FilenameUtils.normalize(args[1]);
+        String args1StringCured = FilenameUtils.normalize(args);
 
 
         try (PrintWriter writer = !args1StringCured.equalsIgnoreCase(STDOUT)
                 ? new PrintWriter(new FileOutputStream(args1StringCured))
                 : new PrintWriter(System.out)) {
 
-            if (!args[1].equalsIgnoreCase(STDOUT)) {
-                String stringToLog = "Writing PDF content to " + args[1];
+            if (!args.equalsIgnoreCase(STDOUT)) {
+                String stringToLog = "Writing PDF content to " + args;
                 logger.info(stringToLog);
             }
 
             int pageNum = -1;
-            if (args.length >= 3) {
-                pageNum = Integer.parseInt(args[2]);
+            if (args.length() >= 3) {
+                pageNum = Integer.parseInt(args);
             }
 
-            String argsToFile = FilenameUtils.normalize(args[0]);
+            String argsToFile = FilenameUtils.normalize(args);
             File fileInput = new File(argsToFile);
 
             if (pageNum == -1) {
@@ -306,8 +302,8 @@ public class PdfContentReaderTool {
             }
             writer.flush();
 
-            if (args.length >= 2 && !args[1].equalsIgnoreCase(STDOUT)) {
-                String stringToLog = "Finished writing content to " + args[1];
+            if (!args.equalsIgnoreCase(STDOUT)) {
+                String stringToLog = "Finished writing content to " + args;
                 logger.info(stringToLog);
             }
         } catch (Exception e) {

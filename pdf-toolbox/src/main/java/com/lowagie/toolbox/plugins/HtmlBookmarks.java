@@ -64,7 +64,7 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.tools.Executable;
 import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
@@ -174,25 +174,6 @@ public class HtmlBookmarks extends AbstractTool {
         }
         s.setNumberDepth(0);
         return s;
-    }
-
-    /**
-     * Allows you to generate an index file in HTML containing Bookmarks to an existing PDF file.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        com.lowagie.toolbox.plugins.HtmlBookmarks tool = new com.lowagie.toolbox.plugins.HtmlBookmarks();
-
-        if (args.length < 1) {
-            // Log only in debug mode and ensure no sensitive info is logged
-            logger.warning("Usage information: " + sanitize(tool.getUsage()));
-            // Alternatively, print a more generic message without logging confidential info
-            System.out.println("Missing arguments. Please provide necessary input.");
-        }
-
-        tool.setMainArguments(args);
-        tool.execute();
     }
 
     private static String sanitize(String data) {

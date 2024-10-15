@@ -49,7 +49,7 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.filters.DirFilter;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.TreeSet;
@@ -84,20 +84,6 @@ public class PhotoAlbum extends AbstractTool {
         arguments.add(new FileArgument(this, DESTFILE,
                 "The file to which the converted TIFF has to be written", true,
                 new PdfFilter()));
-    }
-
-    /**
-     * Converts a tiff file to PDF.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        PhotoAlbum tool = new PhotoAlbum();
-        if (args.length < 2) {
-            logger.severe(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
     }
 
     /**
@@ -228,10 +214,6 @@ public class PhotoAlbum extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

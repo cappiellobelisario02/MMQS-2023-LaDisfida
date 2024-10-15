@@ -24,7 +24,6 @@ package com.lowagie.text.pdf.fonts.cmaps;
 
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -61,49 +60,6 @@ public class CMapParser {
         throw new UnsupportedOperationException("This constructor is not supported or implemented.");
     }
 
-    /**
-     * A simple class to test parsing of cmap files.
-     *
-     * @param args Some command line arguments.
-     * @throws Exception If there is an error parsing the file.
-     */
-    public static void main(String[] args) {
-        if (args.length != 1) {
-            logger.warning("usage: java org.pdfbox.cmapparser.CMapParser <CMAP File>");
-            System.exit(-1);
-        }
-
-        // Validate the provided file path
-        File cmapFile = validatePath(args[0]);
-
-        // Ensure the file is located in a specific directory
-        try {
-            // Define a base directory where CMAP files are allowed
-            File baseDirectory = new File("/path/to/allowed/directory");
-
-            // Get the canonical path of the CMAP file
-            String canonicalBasePath = baseDirectory.getCanonicalPath();
-            String canonicalCmapFilePath = cmapFile.getCanonicalPath();
-
-            // Check if the CMAP file is within the allowed directory
-            if (!canonicalCmapFilePath.startsWith(canonicalBasePath)) {
-                logger.severe("Access to this file is denied: " + cmapFile.getAbsolutePath());
-                System.exit(-1);
-            }
-
-            try (FileInputStream fileInputStream = new FileInputStream(cmapFile)) {
-                com.lowagie.text.pdf.fonts.cmaps.CMapParser parser = new com.lowagie.text.pdf.fonts.cmaps.CMapParser();
-                CMap result = parser.parse(fileInputStream);
-                logger.warning("Result: " + result);
-            } catch (IOException e) {
-                logger.severe("Error processing the CMAP file: " + e.getMessage());
-            }
-        } catch (IOException e) {
-            logger.severe("Error resolving file path: " + e.getMessage());
-        }
-    }
-
-
     // Helper method to validate the file path
     private static File validatePath(String path) {
         File file = new File(path);
@@ -134,7 +90,7 @@ public class CMapParser {
         PushbackInputStream cmapStream = new PushbackInputStream(input);
         CMap result = new CMap();
         Object previousToken = null;
-        Object token = null;
+        Object token;
 
         while ((token = parseNextToken(cmapStream)) != null) {
             if (token instanceof com.lowagie.text.pdf.fonts.cmaps.CMapParser.Operator operator) {
@@ -226,7 +182,7 @@ public class CMapParser {
 
 
     private void processCodeRange(CMap result, byte[] startCode, byte[] endCode, List<Object> array, byte[] tokenBytes) throws IOException {
-        String value = null;
+        String value;
         int arrayIndex = 0;
         boolean done = false;
 
@@ -251,26 +207,17 @@ public class CMapParser {
 
     private Object parseNextToken(PushbackInputStream is) throws IOException {
         int nextByte = readNextNonWhitespaceByte(is);
-        switch (nextByte) {
-            case '%':
-                return parseComment(is);
-            case '(':
-                return parseString(is);
-            case '>':
-                return parseEndOfDictionary(is);
-            case ']':
-                return MARK_END_OF_ARRAY;
-            case '[':
-                return parseArray(is);
-            case '<':
-                return parseDictionaryOrHex(is);
-            case '/':
-                return parseLiteralName(is);
-            case -1:
-                return null;
-            default:
-                return parseNumberOrOperator(is, nextByte);
-        }
+        return switch (nextByte) {
+            case '%' -> parseComment(is);
+            case '(' -> parseString(is);
+            case '>' -> parseEndOfDictionary(is);
+            case ']' -> MARK_END_OF_ARRAY;
+            case '[' -> parseArray(is);
+            case '<' -> parseDictionaryOrHex(is);
+            case '/' -> parseLiteralName(is);
+            case -1 -> null;
+            default -> parseNumberOrOperator(is, nextByte);
+        };
     }
 
     private int readNextNonWhitespaceByte(PushbackInputStream is) throws IOException {
@@ -329,7 +276,7 @@ public class CMapParser {
     private Map<String, Object> parseDictionary(PushbackInputStream is) throws IOException {
         Map<String, Object> result = new HashMap<>();
         Object key = parseNextToken(is);
-        while (key instanceof com.lowagie.text.pdf.fonts.cmaps.CMapParser.LiteralName literalName && key != MARK_END_OF_DICTIONARY) {
+        while (key instanceof com.lowagie.text.pdf.fonts.cmaps.CMapParser.LiteralName literalName) {
             Object value = parseNextToken(is);
             result.put(literalName.name, value);
             key = parseNextToken(is);
@@ -373,7 +320,7 @@ public class CMapParser {
     private Object parseLiteralName(PushbackInputStream is) throws IOException {
         StringBuilder buffer = new StringBuilder();
         int stringByte = is.read();
-        while (!isWhitespaceOrEOF(stringByte)) {
+        while (isWhitespaceOrEOF(stringByte)) {
             buffer.append((char) stringByte);
             stringByte = is.read();
         }
@@ -384,7 +331,7 @@ public class CMapParser {
         StringBuilder buffer = new StringBuilder();
         buffer.append((char) firstByte);
         int nextByte = is.read();
-        while (!isWhitespaceOrEOF(nextByte)) {
+        while (isWhitespaceOrEOF(nextByte)) {
             buffer.append((char) nextByte);
             nextByte = is.read();
         }
@@ -406,7 +353,7 @@ public class CMapParser {
     }
 
     private boolean isWhitespaceOrEOF(int aByte) {
-        return aByte == -1 || aByte == 0x20 || aByte == 0x0D || aByte == 0x0A;
+        return aByte != -1 && aByte != 0x20 && aByte != 0x0D && aByte != 0x0A;
     }
 
     private void increment(byte[] data) {
@@ -423,7 +370,7 @@ public class CMapParser {
     }
 
     private String createStringFromBytes(byte[] bytes) {
-        String retval = null;
+        String retval;
         if (bytes.length == 1) {
             retval = new String(bytes);
         } else {
@@ -436,14 +383,11 @@ public class CMapParser {
         int retval = 1;
         boolean done = false;
         for (int i = 0; i < first.length && !done; i++) {
-            if (first[i] == second[i]) {
-                //move to next position
-            } else if (((first[i] + 256) % 256) < ((second[i] + 256) % 256)) {
+            if (((first[i] + 256) % 256) < ((second[i] + 256) % 256)) {
                 done = true;
                 retval = -1;
             } else {
                 done = true;
-                retval = 1;
             }
         }
         return retval;

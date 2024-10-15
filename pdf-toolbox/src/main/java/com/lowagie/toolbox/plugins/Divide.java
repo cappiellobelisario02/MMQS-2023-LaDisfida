@@ -43,7 +43,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.logging.Logger;
@@ -73,20 +73,6 @@ public class Divide extends AbstractTool {
                 "The file you want to divide", false, new PdfFilter()));
         arguments.add(new FileArgument(this, DESTFILE, "The resulting PDF",
                 true, new PdfFilter()));
-    }
-
-    /**
-     * Generates a divided version of an NUp version of an existing PDF file.
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        com.lowagie.toolbox.plugins.Divide tool = new com.lowagie.toolbox.plugins.Divide();
-        if (args.length < 2) {
-            logger.info(tool.getUsage());
-        }
-        tool.setMainArguments(args);
-        tool.execute();
     }
 
     /**

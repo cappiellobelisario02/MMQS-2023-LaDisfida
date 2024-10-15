@@ -45,18 +45,20 @@ package com.lowagie.toolbox;
 import com.lowagie.text.Document;
 import com.lowagie.text.exceptions.InitializationException;
 import java.awt.BorderLayout;
+import java.io.Serial;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
-import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -72,22 +74,25 @@ public class Versions
     /**
      * The serial version UID of this class.
      */
+    @Serial
     private static final long serialVersionUID = 2925242862240301106L;
+
+    private static final Logger logger = Logger.getLogger(Versions.class.getName());
 
     /**
      * A label with info about the library, JVM,...
      */
-    JLabel library_versions = new JLabel();
+    JLabel libraryVersions = new JLabel();
 
     /**
      * The table with all the plug-ins (name, version and date).
      */
-    JTable plugin_versions = new JTable();
+    JTable pluginVersions = new JTable();
 
     /**
      * A scrollpane for the plugin_versions table.
      */
-    JScrollPane scroll_versions = new JScrollPane();
+    JScrollPane scrollVersions = new JScrollPane();
 
     /**
      * Constructs a Versions object.
@@ -97,33 +102,21 @@ public class Versions
         try {
             initialize();
         } catch (Exception ex) {
-//da vedere come effettuare il log
+            logger.severe("Exception raised in constructor of Versions");
         }
-    }
-
-    /**
-     * Main method (test purposes only)
-     *
-     * @param args String[]
-     */
-    public static void main(String[] args) {
-        com.lowagie.toolbox.Versions version = new com.lowagie.toolbox.Versions();
-        version.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        version.setVisible(true);
     }
 
     /**
      * Initialization of the jFrame.
      *
-     * @throws InitializationException
      */
     private void initialize() throws InitializationException {
         try {
             this.getContentPane().setLayout(new BorderLayout());
-            scroll_versions.setViewportView(plugin_versions);
-            library_versions.setIcon(new ImageIcon(com.lowagie.toolbox.Versions.class.getResource("1t3xt.gif")));
-            this.getContentPane().add(library_versions, BorderLayout.NORTH);
-            this.getContentPane().add(scroll_versions, BorderLayout.CENTER);
+            scrollVersions.setViewportView(pluginVersions);
+            libraryVersions.setIcon(new ImageIcon(Objects.requireNonNull(Versions.class.getResource("1t3xt.gif"))));
+            this.getContentPane().add(libraryVersions, BorderLayout.NORTH);
+            this.getContentPane().add(scrollVersions, BorderLayout.CENTER);
 
             Properties properties = System.getProperties();
             Runtime runtime = Runtime.getRuntime();
@@ -144,12 +137,12 @@ public class Versions
             appendVersionInfo(sb, "os.version", properties.getProperty("os.version"));
             sb.append("</html>");
 
-            library_versions.setText(sb.toString());
+            libraryVersions.setText(sb.toString());
 
             TableModel model = getVersionTableModel(AbstractTool.versionsarray);
             RowSorter<TableModel> sorter = new TableRowSorter<>(model);
-            plugin_versions.setRowSorter(sorter);
-            plugin_versions.setModel(model);
+            pluginVersions.setRowSorter(sorter);
+            pluginVersions.setModel(model);
 
             pack();
         } catch (Exception e) {
@@ -175,6 +168,7 @@ public class Versions
     public TableModel getVersionTableModel(final ArrayList<String> versionsarray) {
         return new AbstractTableModel() {
 
+            @Serial
             private static final long serialVersionUID = 5105003782164682777L;
 
             public int getColumnCount() {
@@ -215,34 +209,22 @@ public class Versions
 
             @Override
             public String getColumnName(int column) {
-                switch (column) {
-                    case 0:
-                        return "Name";
-                    case 1:
-                        return "Version";
-                    case 2:
-                        return "Changed";
-                    case 3:
-                        return "ChangeBy";
-                    default:
-                        return "";
-                }
+                return switch (column) {
+                    case 0 -> "Name";
+                    case 1 -> "Version";
+                    case 2 -> "Changed";
+                    case 3 -> "ChangeBy";
+                    default -> "";
+                };
             }
 
             @Override
-            public Class<? extends Object> getColumnClass(int column) {
-                switch (column) {
-                    case 0:
-                        return String.class;
-                    case 1:
-                        return String.class;
-                    case 2:
-                        return java.util.Date.class;
-                    case 3:
-                        return String.class;
-                    default:
-                        return null;
-                }
+            public Class<?> getColumnClass(int column) {
+                return switch (column) {
+                    case 0, 1, 3 -> String.class;
+                    case 2 -> java.util.Date.class;
+                    default -> null;
+                };
             }
         };
 

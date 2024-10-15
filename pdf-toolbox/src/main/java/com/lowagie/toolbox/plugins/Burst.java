@@ -55,7 +55,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
-import com.lowagie.toolbox.arguments.filters.PdfFilter;
+import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
 import java.io.File;
 import java.io.FileOutputStream;
