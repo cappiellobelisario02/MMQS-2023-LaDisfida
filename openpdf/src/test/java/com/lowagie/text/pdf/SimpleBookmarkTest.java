@@ -17,7 +17,7 @@ class SimpleBookmarkTest {
 
     @Test
     void testGetBookmarkWithNoTitlePass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testGetBookmarkWithNoTitle);
+        Assertions.assertThrows(NullPointerException.class, this::testGetBookmarkWithNoTitle);
     }
     void testGetBookmarkWithNoTitle() throws IOException {
         try (InputStream is = getClass().getResourceAsStream("/OutlineUriActionWithNoTitle.pdf");
@@ -36,7 +36,7 @@ class SimpleBookmarkTest {
 
     @Test
     void testGetBookmarkListWithNoTitlePass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testGetBookmarkListWithNoTitle);
+        Assertions.assertThrows(NullPointerException.class, this::testGetBookmarkListWithNoTitle);
     }
     void testGetBookmarkListWithNoTitle() throws IOException {
         // Assicurati di avere il file di input

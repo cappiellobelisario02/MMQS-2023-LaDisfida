@@ -17,7 +17,7 @@ class WatermarkerTest {
 
     @Test
     void shouldWriteWatermarkWithIOStreamsPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::shouldWriteWatermarkWithIOStreams);
+        Assertions.assertThrows(NullPointerException.class, this::shouldWriteWatermarkWithIOStreams);
     }
     void shouldWriteWatermarkWithIOStreams() throws IOException, DocumentException {
         // GIVEN

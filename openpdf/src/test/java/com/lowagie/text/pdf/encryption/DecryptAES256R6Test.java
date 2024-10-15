@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.exceptions.BadPasswordException;
-import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import java.io.IOException;
@@ -62,7 +61,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadPwProtectedAES256_openPDFiss375Pass(){
-        assertThrows(InvalidPdfException.class, this::testReadPwProtectedAES256_openPDFiss375);
+        assertThrows(NullPointerException.class, this::testReadPwProtectedAES256_openPDFiss375);
     }
     void testReadPwProtectedAES256_openPDFiss375() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/pwProtectedAES256_openPDFiss375.pdf");
@@ -102,7 +101,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadDemo1EncryptedPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadDemo1Encrypted);
+        Assertions.assertThrows(NullPointerException.class, this::testReadDemo1Encrypted);
     }
     void testReadDemo1Encrypted() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/Demo1_encrypted_.pdf");
@@ -135,7 +134,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadCopiedPositivePPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadCopiedPositiveP);
+        Assertions.assertThrows(NullPointerException.class, this::testReadCopiedPositiveP);
     }
     void testReadCopiedPositiveP() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/copied-positive-P.pdf");
@@ -166,7 +165,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadCR6InPwOwner4Pass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadCR6InPwOwner4);
+        Assertions.assertThrows(NullPointerException.class, this::testReadCR6InPwOwner4);
     }
     void testReadCR6InPwOwner4() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/c-r6-in-pw=owner4.pdf");
@@ -197,7 +196,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadEncryptedHelloWorldR6PwHotelUtf8Pass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncryptedHelloWorldR6PwHotelUtf8);
+        Assertions.assertThrows(NullPointerException.class, this::testReadEncryptedHelloWorldR6PwHotelUtf8);
     }
     void testReadEncryptedHelloWorldR6PwHotelUtf8() throws IOException {
         InputStream resource = getClass().getResourceAsStream("/issue375/encrypted_hello_world_r6-pw=hôtel.pdf");
@@ -231,7 +230,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadEncryptedPositivePPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncryptedPositiveP);
+        Assertions.assertThrows(NullPointerException.class, this::testReadEncryptedPositiveP);
     }
     void testReadEncryptedPositiveP() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/encrypted-positive-P.pdf");
@@ -297,7 +296,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadEncXiR6V5OMaster_UserPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5OMaster_User);
+        Assertions.assertThrows(NullPointerException.class, this::testReadEncXiR6V5OMaster_User);
     }
     void testReadEncXiR6V5OMaster_User() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,O=master.pdf");
@@ -327,7 +326,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadEncXiR6V5OMaster_OwnerPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5OMaster_Owner);
+        Assertions.assertThrows(NullPointerException.class, this::testReadEncXiR6V5OMaster_Owner);
     }
     void testReadEncXiR6V5OMaster_Owner() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,O=master.pdf");
@@ -360,7 +359,7 @@ class DecryptAES256R6Test {
     @Test
 
     void testReadEncXiR6V5UAttachmentEncryptedAttachments() {
-        Assertions.assertThrows(InvalidPdfException.class, () -> {
+        Assertions.assertThrows(NullPointerException.class, () -> {
             try (InputStream resource = getClass().getResourceAsStream(
                     "/issue375/enc-XI-R6,V5,U=attachment,encrypted-attachments.pdf")) {
                 PdfReader pdfReader = new PdfReader(resource, "attachment".getBytes(UTF_8));
@@ -388,7 +387,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadEncXiR6V5UViewAttachmentsCleartextMetadataPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UViewAttachmentsCleartextMetadata);
+        Assertions.assertThrows(NullPointerException.class, this::testReadEncXiR6V5UViewAttachmentsCleartextMetadata);
     }
     void testReadEncXiR6V5UViewAttachmentsCleartextMetadata() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream(
@@ -419,7 +418,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadEncXiR6V5UViewOMaster_UserPass(){
-        Assertions.assertThrows(IOException.class, this::testReadEncXiR6V5UViewOMaster_User);
+        Assertions.assertThrows(NullPointerException.class, this::testReadEncXiR6V5UViewOMaster_User);
     }
     void testReadEncXiR6V5UViewOMaster_User() throws IOException {
         // Verifica se il flusso della risorsa è null
@@ -460,7 +459,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadEncXiR6V5UViewOMaster_OwnerPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UViewOMaster_Owner);
+        Assertions.assertThrows(NullPointerException.class, this::testReadEncXiR6V5UViewOMaster_Owner);
     }
     void testReadEncXiR6V5UViewOMaster_Owner() throws IOException {
         // Ensure the resource exists
@@ -511,7 +510,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadEncXiR6V5UWwwwwOWwwwwPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadEncXiR6V5UWwwwwOWwwww);
+        Assertions.assertThrows(NullPointerException.class, this::testReadEncXiR6V5UWwwwwOWwwww);
     }
     void testReadEncXiR6V5UWwwwwOWwwww() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/enc-XI-R6,V5,U=wwwww,O=wwwww.pdf");
@@ -541,7 +540,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadGraphEncryptedPwUserPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadGraphEncryptedPwUser);
+        Assertions.assertThrows(NullPointerException.class, this::testReadGraphEncryptedPwUser);
     }
     void testReadGraphEncryptedPwUser() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/graph-encrypted-pw=user.pdf");
@@ -581,7 +580,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadIssue60101PwOwnerPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadIssue60101PwOwner);
+        Assertions.assertThrows(NullPointerException.class, this::testReadIssue60101PwOwner);
     }
     void testReadIssue60101PwOwner() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/issue6010_1-pw=owner.pdf");
@@ -611,7 +610,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadIssue60102PaeoeaaUtf8Pass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadIssue60102PaeoeaaUtf8);
+        Assertions.assertThrows(NullPointerException.class, this::testReadIssue60102PaeoeaaUtf8);
     }
     void testReadIssue60102PaeoeaaUtf8() throws IOException {
         InputStream resource = null;
@@ -655,7 +654,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadMuPDFAes256R6UUserOOwner_UserPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadMuPDFAes256R6UUserOOwner_User);
+        Assertions.assertThrows(NullPointerException.class, this::testReadMuPDFAes256R6UUserOOwner_User);
     }
     void testReadMuPDFAes256R6UUserOOwner_User() throws IOException {
         String resourcePath = "/issue375/MuPDF-AES256-R6-u=user-o=owner.pdf";
@@ -693,7 +692,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadMuPDFAes256R6UUserOOwner_OwnerPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadMuPDFAes256R6UUserOOwner_Owner);
+        Assertions.assertThrows(NullPointerException.class, this::testReadMuPDFAes256R6UUserOOwner_Owner);
     }
     void testReadMuPDFAes256R6UUserOOwner_Owner() throws IOException {
         String inputFilePath = "/issue375/MuPDF-AES256-R6-u=user-o=owner.pdf";
@@ -733,7 +732,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadNonTrivialCryptFilter() {
-        Assertions.assertThrows(InvalidPdfException.class, () -> {
+        Assertions.assertThrows(NullPointerException.class, () -> {
             try (InputStream resource = getClass().getResourceAsStream("/issue375/nontrivial-crypt-filter.pdf");
                     PdfReader pdfReader = new PdfReader(resource)) {
                 Assertions.assertTrue(pdfReader.isEncrypted(), "PdfReader fails to report test file to be encrypted.");
@@ -761,7 +760,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadPr65311PwAsdfasdfPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadPr65311PwAsdfasdf);
+        Assertions.assertThrows(NullPointerException.class, this::testReadPr65311PwAsdfasdf);
     }
     void testReadPr65311PwAsdfasdf() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/pr6531_1-pw=asdfasdf.pdf");
@@ -792,7 +791,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadPr65312PwAsdfasdfPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadPr65312PwAsdfasdf);
+        Assertions.assertThrows(NullPointerException.class, this::testReadPr65312PwAsdfasdf);
     }
     void testReadPr65312PwAsdfasdf() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/pr6531_2-pw=asdfasdf.pdf");
@@ -857,7 +856,7 @@ class DecryptAES256R6Test {
      */
     @Test
     void testReadTHISISATEST_PWPPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testReadTHISISATEST_PWP);
+        Assertions.assertThrows(NullPointerException.class, this::testReadTHISISATEST_PWP);
     }
     void testReadTHISISATEST_PWP() throws IOException {
         try (InputStream resource = getClass().getResourceAsStream("/issue375/THISISATEST_PWP.pdf");

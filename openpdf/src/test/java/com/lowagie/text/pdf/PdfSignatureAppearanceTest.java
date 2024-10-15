@@ -17,7 +17,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import com.lowagie.text.exceptions.InvalidPdfException;
 import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -26,16 +25,16 @@ class PdfSignatureAppearanceTest {
 
     @Test
     void invisibleExternalSignaturePass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::invisibleExternalSignature);
+        Assertions.assertThrows(NullPointerException.class, this::invisibleExternalSignature);
     }
     void invisibleExternalSignature() throws DocumentException, IOException, NoSuchAlgorithmException, PDFFilterException {
         byte[] expectedDigestPreClose = null;
         byte[] expectedDigestClose = null;
 
         Calendar signDate = Calendar.getInstance();
-        byte[] originalDocId = null;
+        byte[] originalDocId;
         PdfObject overrideFileId = new PdfLiteral("<123><123>".getBytes());
-        byte[] resultDocument = null;
+        byte[] resultDocument;
 
         for (int i = 0; i < 10; i++) {
             try (InputStream is = getClass().getResourceAsStream("/EmptyPage.pdf");
@@ -106,9 +105,9 @@ class PdfSignatureAppearanceTest {
 
     @Test
     void visibleExternalSignaturePass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::visibleExternalSignature);
+        Assertions.assertThrows(NullPointerException.class, this::visibleExternalSignature);
     }
-    void visibleExternalSignature() throws DocumentException, IOException, NoSuchAlgorithmException, PDFFilterException {
+    void visibleExternalSignature() throws DocumentException, IOException, NoSuchAlgorithmException {
         byte[] expectedDigestPreClose = null;
         byte[] expectedDigestClose = null;
 

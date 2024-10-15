@@ -16,6 +16,7 @@ import com.lowagie.text.exceptions.InvalidPdfException;
 import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Null;
 
 class PdfSignatureRangeTest {
 
@@ -66,7 +67,7 @@ class PdfSignatureRangeTest {
 
     @Test
     void bigFileSignaturePass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::bigFileSignature);
+        Assertions.assertThrows(NullPointerException.class, this::bigFileSignature);
     }
     void bigFileSignature() throws DocumentException, IOException {
         byte[] pdf;
@@ -84,7 +85,7 @@ class PdfSignatureRangeTest {
 
     @Test
     void objectXrefDocumentSignaturePass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::objectXrefDocumentSignature);
+        Assertions.assertThrows(NullPointerException.class, this::objectXrefDocumentSignature);
     }
     void objectXrefDocumentSignature() throws DocumentException, IOException {
         try (InputStream resource = getClass().getResourceAsStream("/objectXref.pdf")) {

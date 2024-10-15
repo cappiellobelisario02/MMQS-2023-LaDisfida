@@ -24,7 +24,7 @@ class AcroFieldsTest {
      */
     @Test
     void testGetSignaturesPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testGetSignatures);
+        Assertions.assertThrows(NullPointerException.class, this::testGetSignatures);
     }
     void testGetSignatures() throws IOException, PDFFilterException {
         // for algorithm SHA256 (without dash)

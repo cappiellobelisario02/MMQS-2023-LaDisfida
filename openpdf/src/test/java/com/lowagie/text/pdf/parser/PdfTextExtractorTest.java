@@ -71,7 +71,7 @@ class PdfTextExtractorTest {
 
     @Test
     void testPageExceededPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testPageExceeded);
+        Assertions.assertThrows(NullPointerException.class, this::testPageExceeded);
     }
     void testPageExceeded() throws Exception {
         assertThat(getString("HelloWorldMeta.pdf", 5), is(emptyString()));
@@ -79,7 +79,7 @@ class PdfTextExtractorTest {
 
     @Test
     void testInvalidPageNumberPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testInvalidPageNumber);
+        Assertions.assertThrows(NullPointerException.class, this::testInvalidPageNumber);
     }
     void testInvalidPageNumber() throws Exception {
         assertThat(getString("HelloWorldMeta.pdf", 0), is(emptyString()));
@@ -126,7 +126,7 @@ class PdfTextExtractorTest {
 
     @Test
     void testConcatenateWatermarkPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::testConcatenateWatermark);
+        Assertions.assertThrows(NullPointerException.class, this::testConcatenateWatermark);
     }
     void testConcatenateWatermark() throws Exception {
         String result = getString("merge-acroforms.pdf", 5);

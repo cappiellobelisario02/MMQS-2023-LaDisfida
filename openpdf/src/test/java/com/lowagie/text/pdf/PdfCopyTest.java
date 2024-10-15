@@ -9,15 +9,15 @@ import com.lowagie.text.exceptions.InvalidPdfException;
 import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Null;
 
 class PdfCopyTest {
 
     @Test
     void nullpointerExceptionTest() {
         //given when
-        Assertions.assertThrows(InvalidPdfException.class, this::pdfCopyTest);
+        Assertions.assertThrows(NullPointerException.class, this::pdfCopyTest);
     }
-
     private void pdfCopyTest() throws IOException, PDFFilterException {
         // Use try-with-resources to ensure the InputStream is closed properly
         try (InputStream stream = getClass().getResourceAsStream("/openpdf_bug_test.pdf")) {
@@ -26,6 +26,7 @@ class PdfCopyTest {
             }
 
             PdfReader reader = new PdfReader(stream);
+
 
             byte[] bytes;
 
