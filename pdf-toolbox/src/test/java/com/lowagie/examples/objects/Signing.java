@@ -30,8 +30,12 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Signing {
+
+    private static final Logger logger = Logger.getLogger(Signing.class.getName());
 
     public static void main(String[] args) {
         try {
@@ -40,7 +44,7 @@ public class Signing {
             extractVerifiedCryptoSignature();
 
         } catch (DocumentException e) {
-            System.err.println(e.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", e);
         }
     }
 
@@ -111,7 +115,7 @@ public class Signing {
                 throw new ExceptionConverter(e);
             }
         } catch (DocumentException | IOException e) {
-            System.err.println(e.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", e);
         }
     }
 

@@ -55,6 +55,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * Instance of PdfReader in each output document.
@@ -72,6 +74,8 @@ class PdfReaderInstance {
     PdfWriter writer;
     HashMap<Integer, ?> visited = new HashMap<>();
     ArrayList<Integer> nextRound = new ArrayList<>();
+
+    private static final Logger logger = Logger.getLogger(PdfReaderInstance.class.getName());
 
     PdfReaderInstance(PdfReader reader, PdfWriter writer) {
         this.reader = reader;
@@ -142,11 +146,7 @@ class PdfReaderInstance {
         PdfImportedPage impPage = importedPages.get(pageNumber);
         dic.put(PdfName.BBOX, new PdfRectangle(impPage.getBoundingBox()));
         PdfArray matrix = impPage.getMatrix();
-        if (matrix == null) {
-            dic.put(PdfName.MATRIX, IDENTITYMATRIX);
-        } else {
-            dic.put(PdfName.MATRIX, matrix);
-        }
+        dic.put(PdfName.MATRIX, Objects.requireNonNullElse(matrix, IDENTITYMATRIX));
         dic.put(PdfName.FORMTYPE, ONE);
         PRStream stream;
         if (bout == null) {
@@ -183,8 +183,9 @@ class PdfReaderInstance {
             try {
                 reader.close();
                 file.close();
-            } catch (Exception e) {
-                //Empty on purpose
+            } catch (IOException e) {
+                String stringToLog = "Exception raised in PdfReaderInstance";
+                logger.severe(stringToLog);
             }
         }
     }

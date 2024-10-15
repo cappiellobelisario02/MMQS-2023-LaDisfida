@@ -454,14 +454,12 @@ public class PdfPTable implements LargeElement {
      * Calculates the heights of the table.
      *
      * @param firsttime if true, the heights of the rows will be recalculated. This takes time; normally the heights of
-     *                  the rows are already calcultated, so in most cases, it's save to use false as parameter.
-     * @return the total height of the table. Note that it will be 0 if you didn't specify the width of the table with
-     * setTotalWidth().
+     *                  the rows are already calcultated, so in most cases, it's safe to use false as parameter.
      * @since 2.1.5    added a parameter and a return type to an existing method, and made it public
      */
-    public float calculateHeights(boolean firsttime) {
+    public void calculateHeights(boolean firsttime) {
         if (totalWidth <= 0) {
-            return 0;
+            return;
         }
         totalHeight = 0;
         for (int k = 0; k < rows.size(); ++k) {
@@ -469,14 +467,9 @@ public class PdfPTable implements LargeElement {
         }
         if (firsttime) {
             // Redistribute row height for row span once
-            try {
-                this.redistributeRowspanHeight();
-            } catch (Exception err) {
-                // Exception redistributing rowspan height.
-            }
+            this.redistributeRowspanHeight();
             calculateHeights(false);
         }
-        return totalHeight;
     }
 
     /**

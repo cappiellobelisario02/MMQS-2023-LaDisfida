@@ -22,6 +22,8 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates some Chunk functionality.
@@ -30,6 +32,8 @@ import java.io.IOException;
  */
 
 public class Chunks {
+
+    private static final Logger logger = Logger.getLogger(Chunks.class.getName());
 
     /**
      * Demonstrates some Chunk functionality.
@@ -65,7 +69,7 @@ public class Chunks {
             document.add(jumps);
             document.add(dog);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

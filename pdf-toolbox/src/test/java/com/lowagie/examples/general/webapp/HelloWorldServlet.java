@@ -24,6 +24,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Hello World example as a Servlet.
@@ -33,6 +35,7 @@ import java.util.Date;
 public class HelloWorldServlet extends HttpServlet {
 
     private static final long serialVersionUID = -6033026500372479591L;
+    private static final Logger logger = Logger.getLogger(HelloWorldServlet.class.getName());
 
     /**
      * Returns a PDF, RTF or HTML document.
@@ -57,6 +60,7 @@ public class HelloWorldServlet extends HttpServlet {
             } else {
                 response.sendRedirect(
                         "https://web.archive.org/web/20071005033458/http://itextdocs.lowagie.com:80/tutorial/general/webapp/index.html#HelloWorld");
+                return; // Termina l'esecuzione dopo il redirect
             }
 
             // step 3
@@ -66,11 +70,11 @@ public class HelloWorldServlet extends HttpServlet {
             document.add(new Paragraph("Hello World"));
             document.add(new Paragraph(new Date().toString()));
         } catch (DocumentException de) {
-            //da vedere come effettuare il log
-            System.err.println("document: " + de.getMessage());
+            // Registrazione del messaggio di errore nel logger
+            logger.log(Level.SEVERE, "Error while processing the document.", de);
+        } finally {
+            // step 5: we close the document (the outputstream is also closed internally)
+            document.close();
         }
-
-        // step 5: we close the document (the outputstream is also closed internally)
-        document.close();
     }
 }

@@ -64,7 +64,6 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  * This class demonstrates how to split a PDF file using iText.
@@ -109,13 +108,11 @@ public class SplitPdf{
             try (PdfReader reader = new PdfReader(srcFilePath.toString())) {
                 validatePageNumber(reader, pageNumber);
                 logTotalPages(reader);
-                String filepatters = FilenameUtils.normalize(destFilePath1.toString());
-                String filepatters2 = FilenameUtils.normalize(destFilePath2.toString());
 
                 try (Document document1 = new Document(reader.getPageSizeWithRotation(1));
                         Document document2 = new Document(reader.getPageSizeWithRotation(pageNumber));
-                        FileOutputStream fos1 = new FileOutputStream(filepatters);
-                        FileOutputStream fos2 = new FileOutputStream(filepatters2);
+                        FileOutputStream fos1 = new FileOutputStream(destFilePath1.toString());
+                        FileOutputStream fos2 = new FileOutputStream(destFilePath2.toString());
                         PdfWriter writer1 = PdfWriter.getInstance(document1, fos1);
                         PdfWriter writer2 = PdfWriter.getInstance(document2, fos2)) {
 
@@ -134,9 +131,8 @@ public class SplitPdf{
 
     // Metodo per validare e normalizzare i percorsi dei file
     private static Path validateAndNormalizePath(String filePath) throws InvalidPathException, SecurityException {
-        String filepaths = FilenameUtils.normalize(filePath);
-        Path path = Paths.get(filepaths).normalize();  // Normalizza il percorso
-        File file = new File(filepaths);
+        Path path = Paths.get(filePath).normalize();  // Normalizza il percorso
+        File file = path.toFile();
 
         // Controlla che il file non contenga ".." e che non tenti di accedere a percorsi non autorizzati
         if (!file.exists() && !file.getParentFile().canWrite()) {

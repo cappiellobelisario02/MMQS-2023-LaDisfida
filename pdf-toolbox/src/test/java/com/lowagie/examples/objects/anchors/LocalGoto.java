@@ -24,6 +24,8 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Creates a document with a Local Goto and a Local Destination.
@@ -32,6 +34,8 @@ import java.io.IOException;
  */
 
 public class LocalGoto {
+
+    private static final Logger logger = Logger.getLogger(LocalGoto.class.getName());
 
     /**
      * Creates a document with a Local Goto and a Local Destination.
@@ -83,10 +87,11 @@ public class LocalGoto {
             document.add(p2);
             document.add(p3);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            // Log dell'errore invece di stampare direttamente
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
+        } finally {
+            // step 5: we close the document
+            document.close();
         }
-
-        // step 5: we close the document
-        document.close();
     }
 }

@@ -1,13 +1,10 @@
 package com.lowagie.text.pdf.hyphenation;
 
 import com.lowagie.text.pdf.BaseFont;
-import com.lowagie.text.pdf.hyphenation.HyphenationTree;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -26,9 +23,9 @@ public class Hyphenator {
      * Holds value of property hyphenDir.
      */
     private static String hyphenDir = "";
-    private HyphenationTree hyphenTree = null;
-    private int remainCharCount = 2;
-    private int pushCharCount = 2;
+    private HyphenationTree hyphenTree;
+    private int remainCharCount;
+    private int pushCharCount;
 
     /**
      * @param lang     The language
@@ -90,7 +87,7 @@ public class Hyphenator {
             HyphenationTree hTree = new HyphenationTree();
             hTree.loadSimplePatterns(stream);
             return hTree;
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             return null;
         }
     }
@@ -124,7 +121,7 @@ public class Hyphenator {
         try {
             stream = new FileInputStream(hyphenFile);
         } catch (Exception e) {
-            logger.info("ERROR FileInputStream >> " + e);
+            logger.warning("Failed to open file: " + hyphenFile.getName());
         }
         return stream;
     }

@@ -66,6 +66,7 @@ import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
 
 /**
@@ -74,6 +75,8 @@ import org.apache.commons.io.FilenameUtils;
  * @author Paulo Soares (psoares@consiste.pt)
  */
 public class RandomAccessFileOrArray implements DataInput, Closeable {
+
+    private static final Logger logger = Logger.getLogger(RandomAccessFileOrArray.class.getName());
 
     MappedRandomAccessFile rf;
     RandomAccessFile trf;
@@ -100,14 +103,12 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         filename = filename.replace("/", File.separator).replace("\\", File.separator);
 
         // Converte il nome del file in un oggetto Path per una gestione migliore
-        String filenamepath = FilenameUtils.normalize(filename);
-
-        Path filePath = Paths.get(filenamepath).normalize();
+        Path filePath = Paths.get(filename).normalize();
         File file = validatePath(filePath.toString());
 
         if (!file.exists()) {
             // Se il file non esiste, prova a risolvere il nome del file
-            String resolvedFilename = FilenameUtils.normalize(filename);
+            String resolvedFilename = tryResolveFilename(filename);
             filePath = Paths.get(resolvedFilename).normalize();
             file = validatePath(filePath.toString());  // Riconvalida il nome del file risolto
         }
@@ -141,8 +142,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
 
     // Helper method to validate and sanitize file paths
     private File validatePath(String path) throws IOException {
-        String pathtotoFile = FilenameUtils.normalize(path);
-        File file = new File(pathtotoFile);
+        File file = new File(path);
 
         // Prevent directory traversal attacks by checking the canonical path
         String canonicalPath = file.getCanonicalPath();
@@ -255,14 +255,21 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
     public static byte[] inputStreamToArray(InputStream is) throws IOException {
         byte[] b = new byte[8192];
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        while (true) {
-            int read = is.read(b);
-            if (read < 1) {
-                break;
+        try {
+            while (true) {
+                int read = is.read(b);
+                if (read < 1) {
+                    break;
+                }
+                out.write(b, 0, read);
             }
-            out.write(b, 0, read);
+        } catch (IOException e) {
+            // Log a generic error message without revealing sensitive information
+            logger.warning("An error occurred while reading the input stream.");
+            throw e; // Rethrow the exception after logging
+        } finally {
+            out.close();
         }
-        out.close();
         return out.toByteArray();
     }
 
@@ -370,14 +377,12 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
         return newpos - pos + adj;
     }
 
-
     public void reOpen() throws IOException {
         if (filename != null && rf == null && trf == null) {
-            String randomizerfile = FilenameUtils.normalize(filename);
             if (plainRandomAccess) {
-                trf = new RandomAccessFile(randomizerfile, "r");
+                trf = new RandomAccessFile(filename, "r");
             } else {
-                rf = new MappedRandomAccessFile(randomizerfile, "r");
+                rf = new MappedRandomAccessFile(filename, "r");
             }
         }
         seek(0);

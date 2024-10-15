@@ -15,12 +15,15 @@
 package com.lowagie.examples.general.faq;
 
 
+import com.lowagie.examples.directcontent.graphics.Shapes;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of getVersion.
@@ -28,6 +31,8 @@ import java.io.IOException;
  * @author blowagie
  */
 public class OpenPdfVersion {
+
+    private static final Logger logger = Logger.getLogger(OpenPdfVersion.class.getName());
 
     /**
      * Creates a PDF document and shows the iText version.
@@ -53,7 +58,7 @@ public class OpenPdfVersion {
             // step 4:
             document.add(new Paragraph("This page was made using " + Document.getVersion()));
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

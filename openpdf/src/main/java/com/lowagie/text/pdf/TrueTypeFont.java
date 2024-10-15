@@ -484,7 +484,7 @@ class TrueTypeFont extends BaseFont {
         tableLocation = tables.get("name");
         if (tableLocation == null) {
             throw new DocumentException(
-                    MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "name", fileName + style));
+                    MessageLocalization.getComposedMessage(TABLE_NOT_EXIST_MESSAGE, "name", "a file with the specified style"));
         }
         rf.seek(tableLocation[0] + 2);
         int numRecords = rf.readUnsignedShort();

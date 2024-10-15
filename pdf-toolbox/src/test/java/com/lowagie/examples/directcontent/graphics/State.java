@@ -13,6 +13,7 @@
  */
 package com.lowagie.examples.directcontent.graphics;
 
+import com.lowagie.examples.objects.Signing;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfContentByte;
@@ -20,11 +21,15 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Changing the Graphics State with saveState() and restoreState().
  */
 public class State {
+
+    private static final Logger logger = Logger.getLogger(State.class.getName());
 
     /**
      * Changing the Graphics State with saveState() and restoreState().
@@ -70,7 +75,7 @@ public class State {
 
             cb.sanityCheck();
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

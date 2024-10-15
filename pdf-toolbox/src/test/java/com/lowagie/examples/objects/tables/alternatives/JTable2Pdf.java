@@ -23,6 +23,8 @@ import java.awt.Shape;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -34,6 +36,7 @@ import javax.swing.JToolBar;
  */
 public class JTable2Pdf extends JFrame {
 
+    private static final Logger logger = Logger.getLogger(JTable2Pdf.class.getName());
     private static final long serialVersionUID = 8461166420041411734L;
     /**
      * The JTable we will show in a Swing app and print to PDF.
@@ -156,7 +159,7 @@ public class JTable2Pdf extends JFrame {
 
         } catch (Exception e) {
             //da vedere come effettuare il log
-            System.err.println(e.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while printing.", e);
         }
 
         document.close();

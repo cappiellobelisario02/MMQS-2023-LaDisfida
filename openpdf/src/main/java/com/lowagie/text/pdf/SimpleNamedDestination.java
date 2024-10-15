@@ -58,6 +58,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.TagException;
@@ -73,6 +74,7 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
 
     private HashMap<String, String> xmlNames;
     private Map<String, String> xmlLast;
+    private static final Logger logger = Logger.getLogger(SimpleNamedDestination.class.getName());
 
     private SimpleNamedDestination() {
     }
@@ -97,7 +99,7 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
                     s.append(' ').append(arr.getPdfObject(k).toString());
                 }
                 entry.setValue(s.toString());
-            } catch (Exception e) {
+            } catch (NullPointerException e) {
                 it.remove();
             }
         }
@@ -143,10 +145,9 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
         wrt.write("<?xml version=\"1.0\" encoding=\"");
         wrt.write(XMLUtil.escapeXML(encoding, onlyASCII));
         wrt.write("\"?>\n<Destination>\n");
-        for (Object o : names.entrySet()) {
-            Map.Entry<?,?> entry = (Map.Entry<?,?>) o;
-            String key = (String) entry.getKey();
-            String value = (String) entry.getValue();
+        for (Entry<?,?> o : names.entrySet()) {
+            String key = (String) o.getKey();
+            String value = (String) o.getValue();
             wrt.write("  <Name Page=\"");
             wrt.write(XMLUtil.escapeXML(value, onlyASCII));
             wrt.write("\">");
@@ -211,18 +212,18 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
 
     public static PdfDictionary outputNamedDestinationAsNames(HashMap<?,?> names, PdfWriter writer) {
         PdfDictionary dic = new PdfDictionary();
-        for (Object o : names.entrySet()) {
-            Map.Entry<?,?> entry = (Map.Entry<?,?>) o;
+        names.entrySet().stream().map(o -> (Entry<?, ?>) o).forEachOrdered(entry -> {
             try {
                 String key = (String) entry.getKey();
                 String value = (String) entry.getValue();
                 PdfArray ar = createDestinationArray(value, writer);
                 PdfName kn = new PdfName(key);
                 dic.put(kn, ar);
-            } catch (Exception e) {
-                // empty on purpose
+            } catch (NullPointerException e) {
+                String stringToLog = "Exception raised in SimpleNamedDestination";
+                logger.severe(stringToLog);
             }
-        }
+        });
         return dic;
     }
 
@@ -235,7 +236,7 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
                 String value = entry.getValue();
                 PdfArray ar = createDestinationArray(value, writer);
                 n2.put(entry.getKey(), writer.addToBody(ar).getIndirectReference());
-            } catch (Exception e) {
+            } catch (NullPointerException e) {
                 it.remove();
             }
         }

@@ -69,6 +69,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.CRL;
@@ -81,6 +83,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -264,8 +267,8 @@ public class PdfSignatureAppearance {
     public static float fitText(Font font, String text, Rectangle rect,
             float maxFontSize, int runDirection) {
         try {
-            ColumnText ct = null;
-            int status = 0;
+            ColumnText ct;
+            int status;
             if (maxFontSize <= 0) {
                 int cr = 0;
                 int lf = 0;
@@ -313,7 +316,7 @@ public class PdfSignatureAppearance {
                 }
             }
             return size;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -550,9 +553,7 @@ public class PdfSignatureAppearance {
             default:
                 throw new IllegalStateException("Unexpected value: " + rotation);
         }
-        if (rotation != 0) {
-            pageRect.normalize();
-        }
+        pageRect.normalize();
         rect = new Rectangle(this.pageRect.getWidth(), this.pageRect.getHeight());
     }
 
@@ -701,27 +702,26 @@ public class PdfSignatureAppearance {
             }
 
             if (render == SIGNATURE_RENDER_NAME_AND_DESCRIPTION) {
-                String signedBy = PdfPKCS7.getSubjectFields((X509Certificate) certChain[0]).getField("CN");
-                Rectangle sr2 = new Rectangle(signatureRect.getWidth() - MARGIN,
-                        signatureRect.getHeight() - MARGIN);
-                float signedSize = fitText(font, signedBy, sr2, -1, runDirection);
-
-                ColumnText ct2 = new ColumnText(t);
-                ct2.setRunDirection(runDirection);
-                ct2.setSimpleColumn(new Phrase(signedBy, font),
-                        signatureRect.getLeft(), signatureRect.getBottom(),
-                        signatureRect.getRight(), signatureRect.getTop(), signedSize,
-                        Element.ALIGN_LEFT);
-
                 try {
+                    String signedBy = PdfPKCS7.getSubjectFields((X509Certificate) certChain[0]).getField("CN");
+                    Rectangle sr2 = new Rectangle(Objects.requireNonNull(signatureRect).getWidth() - MARGIN,
+                            signatureRect.getHeight() - MARGIN);
+                    float signedSize = fitText(font, signedBy, sr2, -1, runDirection);
+
+                    ColumnText ct2 = new ColumnText(t);
+                    ct2.setRunDirection(runDirection);
+                    ct2.setSimpleColumn(new Phrase(signedBy, font),
+                            signatureRect.getLeft(), signatureRect.getBottom(),
+                            signatureRect.getRight(), signatureRect.getTop(), signedSize,
+                            Element.ALIGN_LEFT);
                     ct2.go();
-                } catch (IOException e) {
+                } catch (IOException | NullPointerException e) {
                     //may need some logging or some other operation
                 }
             } else if (render == SIGNATURE_RENDER_GRAPHIC_AND_DESCRIPTION) {
                 ColumnText ct2 = new ColumnText(t);
                 ct2.setRunDirection(runDirection);
-                ct2.setSimpleColumn(signatureRect.getLeft(), signatureRect.getBottom(),
+                ct2.setSimpleColumn(Objects.requireNonNull(signatureRect).getLeft(), signatureRect.getBottom(),
                         signatureRect.getRight(), signatureRect.getTop(), 0,
                         Element.ALIGN_RIGHT);
 
@@ -750,7 +750,7 @@ public class PdfSignatureAppearance {
             } else if (this.render == SIGNATURE_RENDER_GRAPHIC) {
                 ColumnText ct2 = new ColumnText(t);
                 ct2.setRunDirection(this.runDirection);
-                ct2.setSimpleColumn(signatureRect.getLeft(), signatureRect.getBottom(), signatureRect.getRight(),
+                ct2.setSimpleColumn(Objects.requireNonNull(signatureRect).getLeft(), signatureRect.getBottom(), signatureRect.getRight(),
                         signatureRect.getTop(), 0, Element.ALIGN_RIGHT);
 
                 Image im = Image.getInstance(this.signatureGraphic);
@@ -773,12 +773,12 @@ public class PdfSignatureAppearance {
 
             if (this.render != SIGNATURE_RENDER_GRAPHIC) {
                 if (size <= 0) {
-                    Rectangle sr = new Rectangle(dataRect.getWidth(), dataRect.getHeight());
+                    Rectangle sr = new Rectangle(Objects.requireNonNull(dataRect).getWidth(), dataRect.getHeight());
                     size = fitText(font, text, sr, 12, runDirection);
                 }
                 ColumnText ct = new ColumnText(t);
                 ct.setRunDirection(runDirection);
-                ct.setSimpleColumn(new Phrase(text, font), dataRect.getLeft(), dataRect.getBottom(),
+                ct.setSimpleColumn(new Phrase(text, font), Objects.requireNonNull(dataRect).getLeft(), dataRect.getBottom(),
                         dataRect.getRight(), dataRect.getTop(), size, Element.ALIGN_LEFT);
                 try {
                     ct.go();
@@ -804,7 +804,7 @@ public class PdfSignatureAppearance {
             } else {
                 font = new Font(layer2Font);
             }
-            float size = font.getSize();
+            float size;
             String text = "Signature Not Verified";
             if (layer4Text != null) {
                 text = layer4Text;
@@ -1302,41 +1302,38 @@ public class PdfSignatureAppearance {
             bout = sigout.getBuffer();
             boutLen = sigout.size();
             range[range.length - 1] = boutLen - range[range.length - 2];
-            ByteBuffer bf = null;
-            try{
-                bf = new ByteBuffer();
-            } catch(Exception e){
+
+            try(ByteBuffer bf = new ByteBuffer()){
+                bf.append('[');
+                for (long i : range) {
+                    bf.append(i).append(' ');
+                }
+                bf.append(']');
+                System.arraycopy(bf.getBuffer(), 0, bout, (int) byteRangePosition, bf.size());
+            } catch(NullPointerException e){
                 logger.info("ByteBuffer error: " + e.getMessage());
             }
-            bf.append('[');
-            for (long i : range) {
-                bf.append(i).append(' ');
-            }
-            bf.append(']');
-            System.arraycopy(bf.getBuffer(), 0, bout, (int) byteRangePosition, bf.size());
         } else {
-            try {
+            try (ByteBuffer bf = createByteBuffer()) {
                 raf = new RandomAccessFile(tempFile, "rw");
                 long boutL = raf.length();
                 range[range.length - 1] = boutL - range[range.length - 2];
-                ByteBuffer bf;
-                bf = createByteBuffer();
-                bf.append('[');
+                Objects.requireNonNull(bf).append('[');
                 for (long i : range) {
                     bf.append(i).append(' ');
                 }
                 bf.append(']');
                 raf.seek(byteRangePosition);
                 raf.write(bf.getBuffer(), 0, bf.size());
-            } catch (IOException e) {
+            } catch (NullPointerException e) {
                 try {
                     raf.close();
-                } catch (Exception ee) {
+                } catch (IOException ee) {
                     //da vedere come effettuare il log
                 }
                 try {
-                    tempFile.delete();
-                } catch (Exception ee) {
+                    Files.delete(Path.of(tempFile.getCanonicalPath()));
+                } catch (NullPointerException ee) {
                     //da vedere come effettuare il log
                 }
                 throw e;
@@ -1347,7 +1344,7 @@ public class PdfSignatureAppearance {
     private ByteBuffer createByteBuffer() {
         try {
             return new ByteBuffer();
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             logger.info("ByteBuffer error: " + e.getMessage());
             return null;
         }
@@ -1366,13 +1363,12 @@ public class PdfSignatureAppearance {
      * @throws IOException       on error
      */
     public void close(PdfDictionary update) throws IOException, DocumentException {
-        try {
+        try (ByteBuffer bf = new ByteBuffer()){
             if (!preClosed) {
                 throw new DocumentException(
                         MessageLocalization
                                 .getComposedMessage("preclose.must.be.called.first"));
             }
-            ByteBuffer bf = new ByteBuffer();
             for (PdfName key : update.getKeys()) {
                 PdfObject obj = update.get(key);
                 PdfLiteral lit = exclusionLocations.get(key);
@@ -1424,22 +1420,28 @@ public class PdfSignatureAppearance {
             if (tempFile != null) {
                 try {
                     raf.close();
-                } catch (Exception ee) {
-                    //da vedere come effettuare il log
+                } catch (IOException ee) {
+                    String stringToLog = "Exception raised in PdfSignatureAppearance in method 'close' while closing "
+                            + "raf";
+                    logger.severe(stringToLog);
                 }
                 if (originalout != null) {
                     try {
-                        tempFile.delete();
-                    } catch (Exception ee) {
-                        //da vedere come effettuare il log
+                        Files.delete(Path.of(tempFile.getCanonicalPath()));
+                    } catch (IOException ee) {
+                        String stringToLog = "Exception raised in PdfSignatureAppearance in method 'close' while "
+                                + "deleting tempFile";
+                        logger.severe(stringToLog);
                     }
                 }
             }
             if (originalout != null) {
                 try {
                     originalout.close();
-                } catch (Exception e) {
-                    //da vedere come effettuare il log
+                } catch (IOException e) {
+                    String stringToLog = "Exception raised in PdfSignatureAppearance in method 'close' while closing "
+                            + "originalout";
+                    logger.severe(stringToLog);
                 }
             }
         }

@@ -208,16 +208,14 @@ public final class MessageLocalization {
      *
      * @param language the language
      * @param country  the country
-     * @return true if the language was found, false otherwise
      * @throws IOException on error
      */
-    public static boolean setLanguage(String language, String country) throws IOException {
+    public static void setLanguage(String language, String country) throws IOException {
         Map<String, String> lang = getLanguageMessages(language, country);
         if (lang == null) {
-            return false;
+            return;
         }
         currentLanguage = lang;
-        return true;
     }
 
     /**
@@ -242,7 +240,7 @@ public final class MessageLocalization {
             } else {
                 file = language + ".lng";
             }
-            is = BaseFont.getResourceStream(BASE_PATH + file, MessageLocalization.class.getClassLoader());
+            is = BaseFont.getResourceStream(BASE_PATH + file, com.lowagie.text.error_messages.MessageLocalization.class.getClassLoader());
             if (is != null) {
                 return readLanguageStream(is);
             }
@@ -250,7 +248,7 @@ public final class MessageLocalization {
                 return Collections.emptyMap();
             }
             file = language + ".lng";
-            is = BaseFont.getResourceStream(BASE_PATH + file, MessageLocalization.class.getClassLoader());
+            is = BaseFont.getResourceStream(BASE_PATH + file, com.lowagie.text.error_messages.MessageLocalization.class.getClassLoader());
             if (is != null) {
                 return readLanguageStream(is);
             } else {

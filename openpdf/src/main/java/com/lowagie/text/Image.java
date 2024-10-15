@@ -73,6 +73,8 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.lowagie.text.pdf.PdfStamperImp.logger;
 
@@ -86,6 +88,8 @@ import static com.lowagie.text.pdf.PdfStamperImp.logger;
  */
 
 public abstract class Image extends Rectangle {
+
+    private static final Logger logger = Logger.getLogger(Image.class.getName());
 
     // static final membervariables
 
@@ -360,7 +364,7 @@ public abstract class Image extends Rectangle {
     /**
      * The image that serves as a mask for this image.
      */
-    protected Image imageMask;
+    protected com.lowagie.text.Image imageMask;
     /**
      * this is the transparency information of the raw image
      */
@@ -414,7 +418,7 @@ public abstract class Image extends Rectangle {
      *
      * @param image another Image object.
      */
-    protected Image(Image image) {
+    protected Image(com.lowagie.text.Image image) {
         super(image);
         this.type = image.type;
         this.url = image.url;
@@ -470,9 +474,9 @@ public abstract class Image extends Rectangle {
      * @throws MalformedURLException if bad url
      * @throws IOException           if image is not recognized
      */
-    public static Image getInstance(URL url) throws BadElementException, IOException {
+    public static com.lowagie.text.Image getInstance(URL url) throws BadElementException, IOException {
         InputStream is = null;
-        Image img = null;
+        com.lowagie.text.Image img = null;
         try {
             is = url.openStream();
             byte[] headerBytes = new byte[8]; // Read 8 bytes for identification
@@ -510,7 +514,7 @@ public abstract class Image extends Rectangle {
     }
 
 
-    private static Image identifyAndLoadImage(byte[] headerBytes, URL url) throws IOException {
+    private static com.lowagie.text.Image identifyAndLoadImage(byte[] headerBytes, URL url) throws IOException {
         if (isGifHeader(headerBytes)) {
             return ImageLoader.getGifImage(url);
         } else if (isJpegHeader(headerBytes)) {
@@ -526,7 +530,11 @@ public abstract class Image extends Rectangle {
         } else if (isTiffHeader(headerBytes)) {
             return ImageLoader.getTiffImage(url);
         } else {
-            throw new IOException(url.toString() + " is not a recognized image format.");
+            // Log del messaggio dettagliato per la diagnosi interna
+            logger.log(Level.WARNING, "Unrecognized image format for URL: " + url);
+
+            // Lancia un'eccezione con un messaggio generico
+            throw new IOException("The provided file is not a recognized image format.");
         }
     }
 
@@ -571,7 +579,7 @@ public abstract class Image extends Rectangle {
      * @throws BadElementException if error in creating {@link ImgWMF#ImgWMF(byte[]) ImgWMF}
      * @throws IOException         if image is not recognized
      */
-    public static Image getInstance(String filename)
+    public static com.lowagie.text.Image getInstance(String filename)
             throws BadElementException, IOException {
         return getInstance(Utilities.toURL(filename));
     }
@@ -585,9 +593,9 @@ public abstract class Image extends Rectangle {
      * @throws BadElementException if error in creating {@link ImgWMF#ImgWMF(byte[]) ImgWMF}
      * @throws IOException         if image is not recognized
      */
-    public static Image getInstanceFromClasspath(String filename)
+    public static com.lowagie.text.Image getInstanceFromClasspath(String filename)
             throws BadElementException, IOException {
-        URL url = Image.class.getResource("/" + filename);
+        URL url = com.lowagie.text.Image.class.getResource("/" + filename);
         return getInstance(url);
     }
 
@@ -599,14 +607,14 @@ public abstract class Image extends Rectangle {
      * @throws BadElementException if error in creating {@link ImgWMF#ImgWMF(byte[]) ImgWMF}
      * @throws IOException         if image is not recognized
      */
-    public static Image getInstance(byte[] imgb) throws BadElementException, IOException {
+    public static com.lowagie.text.Image getInstance(byte[] imgb) throws BadElementException, IOException {
         try (InputStream is = new ByteArrayInputStream(imgb)) {
             byte[] headerBytes = new byte[8]; // Read 8 bytes for identification
             if (is.read(headerBytes) != 8) {
                 throw new IOException("Failed to read image header from byte array");
             }
 
-            Image img = identifyAndLoadImage(headerBytes, imgb);
+            com.lowagie.text.Image img = identifyAndLoadImage(headerBytes, imgb);
 
             if (img == null) {
                 throw new IOException(
@@ -617,7 +625,7 @@ public abstract class Image extends Rectangle {
         }
     }
 
-    private static Image identifyAndLoadImage(byte[] headerBytes, byte[] imageData) throws IOException {
+    private static com.lowagie.text.Image identifyAndLoadImage(byte[] headerBytes, byte[] imageData) throws IOException {
         if (isGifHeader(headerBytes)) {
             return ImageLoader.getGifImage(imageData);
         } else if (isJpegHeader(headerBytes)) {
@@ -674,9 +682,9 @@ public abstract class Image extends Rectangle {
      * @return an object of type <CODE>ImgRaw</CODE>
      * @throws BadElementException on error
      */
-    public static Image getInstance(int width, int height, int components,
+    public static com.lowagie.text.Image getInstance(int width, int height, int components,
             int bpc, byte[] data) throws BadElementException {
-        return Image.getInstance(width, height, components, bpc, data, null);
+        return com.lowagie.text.Image.getInstance(width, height, components, bpc, data, null);
     }
 
     /**
@@ -689,7 +697,7 @@ public abstract class Image extends Rectangle {
      * @return an <code>Image</code> Object
      * @since 2.1.5
      */
-    public static Image getInstance(int width, int height, byte[] data, byte[] globals) {
+    public static com.lowagie.text.Image getInstance(int width, int height, byte[] data, byte[] globals) {
         return new ImgJBIG2(width, height, data, globals);
     }
 
@@ -706,10 +714,10 @@ public abstract class Image extends Rectangle {
      * @return an Image object
      * @throws BadElementException on error
      */
-    public static Image getInstance(int width, int height, boolean reverseBits,
+    public static com.lowagie.text.Image getInstance(int width, int height, boolean reverseBits,
             int typeCCITT, int parameters, byte[] data)
             throws BadElementException {
-        return Image.getInstance(width, height, reverseBits, typeCCITT,
+        return com.lowagie.text.Image.getInstance(width, height, reverseBits, typeCCITT,
                 parameters, data, null);
     }
 
@@ -727,14 +735,14 @@ public abstract class Image extends Rectangle {
      * @return an Image object
      * @throws BadElementException on error
      */
-    public static Image getInstance(int width, int height, boolean reverseBits,
+    public static com.lowagie.text.Image getInstance(int width, int height, boolean reverseBits,
             int typeCCITT, int parameters, byte[] data, int[] transparency)
             throws BadElementException {
         if (transparency != null && transparency.length != 2) {
             throw new BadElementException(
                     MessageLocalization.getComposedMessage("transparency.length.must.be.equal.to.2.with.ccitt.images"));
         }
-        Image img = new ImgCCITT(width, height, reverseBits, typeCCITT,
+        com.lowagie.text.Image img = new ImgCCITT(width, height, reverseBits, typeCCITT,
                 parameters, data);
         img.transparency = transparency;
         return img;
@@ -752,7 +760,7 @@ public abstract class Image extends Rectangle {
      * @return an object of type <CODE>ImgRaw</CODE>
      * @throws BadElementException on error
      */
-    public static Image getInstance(int width, int height, int components,
+    public static com.lowagie.text.Image getInstance(int width, int height, int components,
             int bpc, byte[] data, int[] transparency)
             throws BadElementException {
         if (transparency != null && transparency.length != components * 2) {
@@ -761,10 +769,10 @@ public abstract class Image extends Rectangle {
         }
         if (components == 1 && bpc == 1) {
             byte[] g4 = CCITTG4Encoder.compress(data, width, height);
-            return Image.getInstance(width, height, false, Element.CCITTG4,
+            return com.lowagie.text.Image.getInstance(width, height, false, Element.CCITTG4,
                     Element.CCITT_BLACKIS1, g4, transparency);
         }
-        Image img = new ImgRaw(width, height, components, bpc, data);
+        com.lowagie.text.Image img = new ImgRaw(width, height, components, bpc, data);
         img.transparency = transparency;
         return img;
     }
@@ -776,7 +784,7 @@ public abstract class Image extends Rectangle {
      * @return an Image object
      * @throws BadElementException on error
      */
-    public static Image getInstance(PdfTemplate template)
+    public static com.lowagie.text.Image getInstance(PdfTemplate template)
             throws BadElementException {
         return new ImgTemplate(template);
     }
@@ -791,7 +799,7 @@ public abstract class Image extends Rectangle {
      * @throws BadElementException on error
      * @throws IOException         on error
      */
-    public static Image getInstance(java.awt.Image image, java.awt.Color color, boolean forceBW)
+    public static com.lowagie.text.Image getInstance(java.awt.Image image, java.awt.Color color, boolean forceBW)
             throws BadElementException, IOException, InterruptedException {
         BufferedImage bufferedImage = convertToBufferedImage(image);
         if (bufferedImage != null && isBinaryImage(bufferedImage)) {
@@ -830,7 +838,7 @@ public abstract class Image extends Rectangle {
         return (int[]) pg.getPixels();
     }
 
-    private static Image createBlackAndWhiteImage(int[] pixels, int width, int height, java.awt.Color color) throws BadElementException {
+    private static com.lowagie.text.Image createBlackAndWhiteImage(int[] pixels, int width, int height, java.awt.Color color) throws BadElementException {
         int byteWidth = calculateByteWidth(width);
         byte[] pixelsByte = new byte[byteWidth * height];
 
@@ -861,7 +869,7 @@ public abstract class Image extends Rectangle {
             wMarker = updateWidthMarker(wMarker, width);
         }
 
-        return Image.getInstance(width, height, 1, 1, pixelsByte, transparency);
+        return com.lowagie.text.Image.getInstance(width, height, 1, 1, pixelsByte, transparency);
     }
 
     private static int calculateByteWidth(int width) {
@@ -890,7 +898,7 @@ public abstract class Image extends Rectangle {
             currByte |= 0x80;
         }
         if (color != null && alpha < 250 && transColor == 1) {
-                currByte |= 0x80;
+            currByte |= 0x80;
         }
 
         return currByte;
@@ -919,7 +927,7 @@ public abstract class Image extends Rectangle {
     }
 
 
-    private static Image createColorImage(int[] pixels, int width, int height, java.awt.Color color) throws BadElementException {
+    private static com.lowagie.text.Image createColorImage(int[] pixels, int width, int height, java.awt.Color color) throws BadElementException {
         byte[] pixelsByte = new byte[width * height * 3];
         byte[] smask = null;
 
@@ -951,9 +959,9 @@ public abstract class Image extends Rectangle {
             }
         }
 
-        Image img = Image.getInstance(width, height, 3, 8, pixelsByte, transparency);
+        com.lowagie.text.Image img = com.lowagie.text.Image.getInstance(width, height, 3, 8, pixelsByte, transparency);
         if (smask != null) {
-            Image sm = Image.getInstance(width, height, 1, 8, smask);
+            com.lowagie.text.Image sm = com.lowagie.text.Image.getInstance(width, height, 1, 8, smask);
             try {
                 sm.makeMask();
                 img.setImageMask(sm);
@@ -973,9 +981,9 @@ public abstract class Image extends Rectangle {
      * @throws BadElementException on error
      * @throws IOException         on error
      */
-    public static Image getInstance(java.awt.Image image, java.awt.Color color)
+    public static com.lowagie.text.Image getInstance(java.awt.Image image, java.awt.Color color)
             throws BadElementException, IOException, InterruptedException {
-        return Image.getInstance(image, color, false);
+        return com.lowagie.text.Image.getInstance(image, color, false);
     }
 
     /**
@@ -988,7 +996,7 @@ public abstract class Image extends Rectangle {
      * @throws BadElementException on error
      * @throws IOException         on error
      */
-    public static Image getInstance(PdfWriter writer, java.awt.Image awtImage, float quality)
+    public static com.lowagie.text.Image getInstance(PdfWriter writer, java.awt.Image awtImage, float quality)
             throws BadElementException, IOException {
         return getInstance(new PdfContentByte(writer), awtImage, quality);
     }
@@ -1005,7 +1013,7 @@ public abstract class Image extends Rectangle {
      * @throws BadElementException on error
      * @throws IOException         on error
      */
-    public static Image getInstance(PdfContentByte cb, java.awt.Image awtImage, float quality)
+    public static com.lowagie.text.Image getInstance(PdfContentByte cb, java.awt.Image awtImage, float quality)
             throws BadElementException, IOException {
         java.awt.image.PixelGrabber pg = new java.awt.image.PixelGrabber(awtImage,
                 0, 0, -1, -1, true);
@@ -1036,11 +1044,11 @@ public abstract class Image extends Rectangle {
      * @return the image
      * @throws BadElementException on error
      */
-    public static Image getInstance(PRIndirectReference ref) throws BadElementException {
+    public static com.lowagie.text.Image getInstance(PRIndirectReference ref) throws BadElementException {
         PdfDictionary dic = (PdfDictionary) PdfReader.getPdfObjectRelease(ref);
         int width = ((PdfNumber) PdfReader.getPdfObjectRelease(dic.get(PdfName.WIDTH))).intValue();
         int height = ((PdfNumber) PdfReader.getPdfObjectRelease(dic.get(PdfName.HEIGHT))).intValue();
-        Image imask = null;
+        com.lowagie.text.Image imask = null;
         PdfObject obj = dic.get(PdfName.SMASK);
         if (obj != null && obj.isIndirect()) {
             imask = getInstance((PRIndirectReference) obj);
@@ -1053,7 +1061,7 @@ public abstract class Image extends Rectangle {
                 }
             }
         }
-        Image img = new ImgRaw(width, height, 1, 1, null);
+        com.lowagie.text.Image img = new ImgRaw(width, height, 1, 1, null);
         img.imageMask = imask;
         img.directReference = ref;
         return img;
@@ -1065,13 +1073,14 @@ public abstract class Image extends Rectangle {
      * @param image an Image object
      * @return a new Image object
      */
-    public static Image getInstance(Image image) {
+    public static com.lowagie.text.Image getInstance(com.lowagie.text.Image image) {
         if (image == null) {
             return null;
         }
         try {
-            Class<? extends Image> cs = image.getClass();
-            Constructor<? extends Image> constructor = cs.getDeclaredConstructor(Image.class);
+            Class<? extends com.lowagie.text.Image> cs = image.getClass();
+            Constructor<? extends com.lowagie.text.Image> constructor = cs.getDeclaredConstructor(
+                    com.lowagie.text.Image.class);
             return constructor.newInstance(image);
         } catch (Exception e) {
             throw new ExceptionConverter(e);
@@ -1954,7 +1963,7 @@ public abstract class Image extends Rectangle {
      *
      * @return the explicit masking
      */
-    public Image getImageMask() {
+    public com.lowagie.text.Image getImageMask() {
         return imageMask;
     }
 
@@ -1964,7 +1973,7 @@ public abstract class Image extends Rectangle {
      * @param mask the mask to be applied
      * @throws DocumentException on error
      */
-    public void setImageMask(Image mask) throws DocumentException {
+    public void setImageMask(com.lowagie.text.Image mask) throws DocumentException {
         if (this.mask) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("an.image.mask.cannot.contain.another.image.mask"));

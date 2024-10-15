@@ -45,6 +45,7 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.FontCreationException;
+import com.lowagie.text.pdf.LayoutProcessor.Version;
 import java.awt.FontFormatException;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
@@ -72,7 +73,7 @@ public class LayoutProcessor {
         TWO
     }
 
-    private static Version version = Version.TWO;
+    private static com.lowagie.text.pdf.LayoutProcessor.Version version = com.lowagie.text.pdf.LayoutProcessor.Version.TWO;
 
     private static final int DEFAULT_FLAGS = -1;
     private static final Map<BaseFont, java.awt.Font> awtFontMap = new ConcurrentHashMap<>();
@@ -110,7 +111,7 @@ public class LayoutProcessor {
             throw new UnsupportedOperationException("LayoutProcessor is already enabled");
         }
         enable();
-        LayoutProcessor.flags = flags;
+        com.lowagie.text.pdf.LayoutProcessor.flags = flags;
     }
 
     /**
@@ -136,7 +137,7 @@ public class LayoutProcessor {
         setKerning();
         setLigatures();
         enable();
-        LayoutProcessor.flags = flags;
+        com.lowagie.text.pdf.LayoutProcessor.flags = flags;
     }
 
     public static boolean isEnabled() {
@@ -150,8 +151,8 @@ public class LayoutProcessor {
      * @deprecated To be used *only*, if version two produces incorrect PDF - please file an issue if this occurs
      */
     @Deprecated(forRemoval = true)
-    public static void setVersion(Version version) {
-        LayoutProcessor.version = version;
+    public static void setVersion(com.lowagie.text.pdf.LayoutProcessor.Version version) {
+        com.lowagie.text.pdf.LayoutProcessor.version = version;
     }
 
     /**
@@ -161,7 +162,7 @@ public class LayoutProcessor {
      * Oracle: The Java™ Tutorials, Using Text Attributes to Style Text</a>
      */
     public static void setKerning() {
-        LayoutProcessor.globalTextAttributes.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+        com.lowagie.text.pdf.LayoutProcessor.globalTextAttributes.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
     }
 
     /**
@@ -181,7 +182,7 @@ public class LayoutProcessor {
      * Add ligatures
      */
     public static void setLigatures() {
-        LayoutProcessor.globalTextAttributes.put(TextAttribute.LIGATURES, TextAttribute.LIGATURES_ON);
+        com.lowagie.text.pdf.LayoutProcessor.globalTextAttributes.put(TextAttribute.LIGATURES, TextAttribute.LIGATURES_ON);
     }
 
     /**
@@ -258,8 +259,8 @@ public class LayoutProcessor {
      *
      * @return current version
      */
-    public static Version getVersion() {
-        return  LayoutProcessor.version;
+    public static com.lowagie.text.pdf.LayoutProcessor.Version getVersion() {
+        return  com.lowagie.text.pdf.LayoutProcessor.version;
     }
 
     public static boolean isSet(int queryFlags) {
@@ -288,7 +289,7 @@ public class LayoutProcessor {
                 awtFont = createFontFromStream(inputStream);
                 if (awtFont != null) {
                     if (!globalTextAttributes.isEmpty()) {
-                        awtFont = awtFont.deriveFont(LayoutProcessor.globalTextAttributes);
+                        awtFont = awtFont.deriveFont(com.lowagie.text.pdf.LayoutProcessor.globalTextAttributes);
                     }
                     awtFontMap.put(baseFont, awtFont);
                 }
@@ -344,13 +345,13 @@ public class LayoutProcessor {
         FontRenderContext fontRenderContext = new FontRenderContext(new AffineTransform(), false, true);
         // specify fractional metrics to compute accurate positions
 
-        int localFlags = LayoutProcessor.flags;
+        int localFlags = com.lowagie.text.pdf.LayoutProcessor.flags;
         if (localFlags == DEFAULT_FLAGS) {
             AttributedString as = new AttributedString(text);
             Bidi bidi = new Bidi(as.getIterator());
             localFlags = bidi.isLeftToRight() ? java.awt.Font.LAYOUT_LEFT_TO_RIGHT : java.awt.Font.LAYOUT_RIGHT_TO_LEFT;
         }
-        java.awt.Font awtFont = LayoutProcessor.awtFontMap.get(baseFont).deriveFont(fontSize);
+        java.awt.Font awtFont = com.lowagie.text.pdf.LayoutProcessor.awtFontMap.get(baseFont).deriveFont(fontSize);
         Map<TextAttribute, ?> textAttributes = awtFont.getAttributes();
         if (textAttributes != null) {
             Object runDirection = textAttributes.get(TextAttribute.RUN_DIRECTION);
@@ -402,7 +403,7 @@ public class LayoutProcessor {
      */
     public static Point2D showText(PdfContentByte cb, BaseFont baseFont, float fontSize, String text) {
 
-        if (LayoutProcessor.version == Version.ONE) {
+        if (com.lowagie.text.pdf.LayoutProcessor.version == com.lowagie.text.pdf.LayoutProcessor.Version.ONE) {
             return showText1(cb, baseFont, fontSize, text);
         } else {
             return showText2(cb, baseFont, fontSize, text);

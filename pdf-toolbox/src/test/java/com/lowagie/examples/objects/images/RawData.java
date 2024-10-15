@@ -20,11 +20,15 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Using raw data to construct an Image object.
  */
 public class RawData {
+
+    private static final Logger logger = Logger.getLogger(RawData.class.getName());
 
     /**
      * Raw data.
@@ -74,7 +78,7 @@ public class RawData {
             img2.setAbsolutePosition(200, 200);
             document.add(img2);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

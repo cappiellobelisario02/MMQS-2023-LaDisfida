@@ -33,6 +33,8 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates how layers work.
@@ -41,6 +43,8 @@ import java.io.IOException;
  */
 
 public class Layers {
+
+    private static final Logger logger = Logger.getLogger(Layers.class.getName());
 
     /**
      * Demonstrates some Layer functionality.
@@ -97,7 +101,7 @@ public class Layers {
             d.put(PdfName.ORDER, order);
             p.put(PdfName.D, d);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

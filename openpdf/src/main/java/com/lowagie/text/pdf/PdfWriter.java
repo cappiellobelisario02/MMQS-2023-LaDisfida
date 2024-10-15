@@ -96,6 +96,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -3533,7 +3534,7 @@ public class PdfWriter extends DocWriter implements
                 indirect.writeTo(writer.getOs());
                 writer.crypto = enc;
             } catch (Exception e) {
-                logger.info("ERROR ByteBuffer >> " + e.getMessage());
+                logger.log(Level.SEVERE, "An error occurred while writing new xRef format.", e);
             }
         }
 

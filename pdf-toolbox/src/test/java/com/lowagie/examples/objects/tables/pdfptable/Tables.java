@@ -18,6 +18,7 @@
  */
 package com.lowagie.examples.objects.tables.pdfptable;
 
+import com.lowagie.examples.forms.create.StudentCardForm;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
@@ -29,11 +30,15 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Adds a table to a page twice.
  */
 public class Tables {
+
+    private static final Logger logger = Logger.getLogger(Tables.class.getName());
 
     /**
      * Adds a table to a page twice.
@@ -105,7 +110,7 @@ public class Tables {
 
             table.writeSelectedRows(0, -1, 50, pos, writer.getDirectContent());
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
         // step 5
         document.close();

@@ -51,6 +51,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -147,7 +148,7 @@ public class Txt2Pdf extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            logger.severe(e.getMessage());
+            logger.log(Level.SEVERE, "An unexpected error occurred during execution.", e);
 
         } finally {
             // Close document only if it was opened

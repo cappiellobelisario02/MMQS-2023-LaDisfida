@@ -234,8 +234,7 @@ class Type1Font extends BaseFont {
         try (InputStream is = getResourceStream(RESOURCE_PATH + afmFile + ".afm", resourceAnchor.getClass().getClassLoader());
                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             if (is == null) {
-                throw new DocumentException(
-                        MessageLocalization.getComposedMessage("1.not.found.as.resource", afmFile));
+                throw new DocumentException("Resource not found: " + afmFile);
             }
             byte[] buf = new byte[1024];
             int size;
@@ -243,6 +242,10 @@ class Type1Font extends BaseFont {
                 out.write(buf, 0, size);
             }
             return out.toByteArray();
+        } catch (IOException e) {
+            // Log a generic error message without exposing sensitive information
+            logger.warning("Failed to read resource font: " + afmFile + ". Check resource availability.");
+            throw e; // Re-throw the exception if necessary
         }
     }
 

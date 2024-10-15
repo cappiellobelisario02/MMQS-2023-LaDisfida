@@ -9,8 +9,12 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Footer {
+
+    private static final Logger logger = Logger.getLogger(Footer.class.getName());
 
     /**
      * Create a document with 2 empty pages and custom numbered footer without before part.
@@ -36,7 +40,7 @@ public class Footer {
             document.newPage();
             document.add(new Paragraph(" "));
         } catch (FileNotFoundException e) {
-            System.err.println(e.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while finding the file.", e);
         }
         document.close();
     }

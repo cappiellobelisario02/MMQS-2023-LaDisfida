@@ -209,8 +209,8 @@ public class Paragraph extends Phrase {
      */
     public Paragraph(Phrase phrase) {
         super(phrase);
-        if (phrase instanceof Paragraph) {
-            Paragraph p = (Paragraph) phrase;
+        if (phrase instanceof com.lowagie.text.Paragraph) {
+            com.lowagie.text.Paragraph p = (com.lowagie.text.Paragraph) phrase;
             setAlignment(p.alignment);
             setLeading(phrase.getLeading(), p.multipliedLeading);
             setIndentationLeft(p.getIndentationLeft());
@@ -272,7 +272,7 @@ public class Paragraph extends Phrase {
         } else if (o instanceof Image) {
             super.addSpecial(o);
             return true;
-        } else if (o instanceof Paragraph) {
+        } else if (o instanceof com.lowagie.text.Paragraph) {
             super.add(o);
             ArrayList<Element> chunks = getChunks();
             if (!chunks.isEmpty()) {

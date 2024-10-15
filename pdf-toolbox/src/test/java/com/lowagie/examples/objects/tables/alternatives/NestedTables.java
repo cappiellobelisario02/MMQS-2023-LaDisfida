@@ -13,6 +13,7 @@
  */
 package com.lowagie.examples.objects.tables.alternatives;
 
+import com.lowagie.examples.fonts.TrueType;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Paragraph;
@@ -22,11 +23,15 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Point;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Nested tables.
  */
 public class NestedTables {
+
+    private static final Logger logger = Logger.getLogger(NestedTables.class.getName());
 
     /**
      * Nested tables.
@@ -134,7 +139,7 @@ public class NestedTables {
             document.add(c);
 
         } catch (DocumentException | IOException | AddCellException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
         // step 5: we close the document
         document.close();

@@ -37,6 +37,7 @@ package com.lowagie.toolbox;
 
 import com.lowagie.tools.Executable;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.xmlgraphics.image.loader.ImageException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -137,7 +138,7 @@ public class Toolbox extends JFrame implements ActionListener {
         try {
             setIconImage(new ImageIcon(Objects.requireNonNull(Toolbox.class.getResource(
                     "1t3xt.gif"))).getImage());
-        } catch (Exception err) {
+        } catch (NullPointerException err) {
             logger.info("Problem loading icon image.");
         }
         com.lowagie.toolbox.Toolbox.Console c;
@@ -145,7 +146,8 @@ public class Toolbox extends JFrame implements ActionListener {
             c = new Console();
             console = new JScrollPane(c.textArea);
         } catch (IOException e) {
-            //da vedere come effettuare il log
+            String stringToLog = "Exception raised in Toolbox when creating Console and JScrollPane";
+            logger.severe(stringToLog);
         }
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 desktop,

@@ -68,6 +68,7 @@
 package com.lowagie.text;
 
 import java.io.Serial;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -164,8 +165,8 @@ public class ExceptionConverter extends RuntimeException {
         for (StackTraceElement element : stackTrace) {
             errorBuilder.append(element.toString()).append("\n");
         }
-        String stringToLog = "Exception stack trace: " + errorBuilder;
-        logger.severe(stringToLog);
+        logger.log(Level.SEVERE, "An unexpected error occurred during execution. Exception stack trace: \"{0}\"!",
+                errorBuilder);
     }
 
     /**

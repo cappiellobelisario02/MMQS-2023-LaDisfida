@@ -19,6 +19,8 @@ import com.lowagie.text.Image;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Add the image at an absolute position.
@@ -55,8 +57,12 @@ public class AbsolutePositions {
             png.setAbsolutePosition(342, 500);
             document.add(png);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            Logger logger = Logger.getLogger(AbsolutePositions.class.getName());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
+            // In alternativa, mostrare un messaggio generico all'utente senza dettagli sensibili
+            System.err.println("An unexpected error occurred. Please contact support.");
         }
+
 
         // step 5: we close the document
         document.close();

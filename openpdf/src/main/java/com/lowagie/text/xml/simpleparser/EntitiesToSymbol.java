@@ -365,7 +365,7 @@ public class EntitiesToSymbol {
         if (s == (char) 0) {
             try {
                 return new Chunk(String.valueOf((char) Integer.parseInt(e)), font);
-            } catch (Exception exception) {
+            } catch (NullPointerException exception) {
                 return new Chunk(e, font);
             }
         }

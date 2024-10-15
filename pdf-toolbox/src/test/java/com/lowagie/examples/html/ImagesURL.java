@@ -13,6 +13,7 @@
  */
 package com.lowagie.examples.html;
 
+import com.lowagie.examples.objects.images.Scaling;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
@@ -21,11 +22,15 @@ import com.lowagie.text.html.HtmlWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Images example that uses the complete URL of the Image.
  */
 public class ImagesURL {
+
+    private static final Logger logger = Logger.getLogger(ImagesURL.class.getName());
 
     /**
      * Images example with a complete path to the images.
@@ -68,7 +73,7 @@ public class ImagesURL {
             Image tiff = Image.getInstance(new URL("/examples/com/lowagie/examples/html/iText.tif"));
             document.add(tiff);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

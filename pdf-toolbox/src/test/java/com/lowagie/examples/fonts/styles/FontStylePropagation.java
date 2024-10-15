@@ -14,6 +14,7 @@
 
 package com.lowagie.examples.fonts.styles;
 
+import com.lowagie.examples.fonts.getting.FontFactoryStyles;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
@@ -23,6 +24,8 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Explains the mechanism of Font Style Propagation.
@@ -31,6 +34,8 @@ import java.io.IOException;
  */
 
 public class FontStylePropagation {
+
+    private static final Logger logger = Logger.getLogger(FontStylePropagation.class.getName());
 
     /**
      * Explains the mechanism of Font Style Propagation
@@ -79,7 +84,7 @@ public class FontStylePropagation {
                     new Paragraph("This is the end of the sentence.", new Font(Font.TIMES_ROMAN, 8, Font.ITALIC)));
             document.add(myParagraph);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

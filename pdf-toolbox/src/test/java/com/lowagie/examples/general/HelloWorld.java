@@ -14,6 +14,7 @@
 
 package com.lowagie.examples.general;
 
+import com.lowagie.examples.objects.tables.alternatives.LargeCell;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Paragraph;
@@ -22,6 +23,8 @@ import com.lowagie.text.pdf.PdfString;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Generates a simple 'Hello World' PDF file.
@@ -30,6 +33,8 @@ import java.io.IOException;
  */
 
 public class HelloWorld {
+
+    private static final Logger logger = Logger.getLogger(HelloWorld.class.getName());
 
     /**
      * Generates a PDF file with the text 'Hello World'
@@ -54,7 +59,7 @@ public class HelloWorld {
             // step 4: we add a paragraph to the document
             document.add(new Paragraph("Hello World"));
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

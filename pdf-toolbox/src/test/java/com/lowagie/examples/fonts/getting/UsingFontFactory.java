@@ -14,6 +14,7 @@
 
 package com.lowagie.examples.fonts.getting;
 
+import com.lowagie.examples.general.faq.OpenPdfVersion;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.FontFactory;
@@ -24,6 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Special rendering of Chunks.
@@ -32,6 +35,8 @@ import java.util.TreeSet;
  */
 
 public class UsingFontFactory {
+
+    private static final Logger logger = Logger.getLogger(UsingFontFactory.class.getName());
 
     /**
      * Special rendering of Chunks.
@@ -81,7 +86,7 @@ public class UsingFontFactory {
                 c--;
             }
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

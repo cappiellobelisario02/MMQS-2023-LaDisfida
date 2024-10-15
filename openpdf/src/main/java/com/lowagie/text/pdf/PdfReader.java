@@ -60,6 +60,7 @@ import com.lowagie.text.exceptions.IllegalBarcode128CharacterException;
 import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.exceptions.UnsupportedPdfException;
 import com.lowagie.text.pdf.PdfAnnotation.PdfImportedLink;
+import com.lowagie.text.pdf.PdfReader.PageRefs;
 import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
 import com.lowagie.text.pdf.internal.PdfViewerPreferencesImp;
 import org.apache.fop.pdf.PDFFilterException;
@@ -70,8 +71,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.ArrayDeque;
@@ -98,14 +101,13 @@ import java.util.zip.InflaterInputStream;
  */
 public class PdfReader implements PdfViewerPreferences, Closeable {
     private static final String FALSE_CONST = "false";
-    private static final String BAD_USER_PASSWORD_CONST = "bad.user.password";
     private static final String ENDSTREAM_CONST = "endstream";
     private static final String ILLEGAL_LENGTH_VALUE_CONST = "illegal.length.value";
 
     int lengthValue;
     int cryptoMode;
 
-    private static final Logger logger = Logger.getLogger(PdfReader.class.getName());
+    private static final Logger logger = Logger.getLogger(com.lowagie.text.pdf.PdfReader.class.getName());
 
     static final PdfName[] pageInhCandidates = {PdfName.MEDIABOX,
             PdfName.ROTATE, PdfName.RESOURCES, PdfName.CROPBOX};
@@ -125,7 +127,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     protected boolean newXrefType;
     protected PdfDictionary trailer;
     protected PdfDictionary catalog;
-    protected PageRefs pageRefs;
+    protected com.lowagie.text.pdf.PdfReader.PageRefs pageRefs;
     protected PRAcroForm acroForm = null;
     protected boolean acroFormParsed = false;
     protected boolean encrypted = false;
@@ -330,7 +332,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      * @param reader the <CODE>PdfReader</CODE> to duplicate
      */
-    public PdfReader(PdfReader reader) {
+    public PdfReader(com.lowagie.text.pdf.PdfReader reader) {
         this.appendable = reader.appendable;
         this.consolidateNamedDestinations = reader.consolidateNamedDestinations;
         this.encrypted = reader.encrypted;
@@ -353,7 +355,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             this.xrefObj.set(k,
                     duplicatePdfObject(reader.xrefObj.get(k), this));
         }
-        this.pageRefs = new PageRefs(reader.pageRefs, this);
+        this.pageRefs = new com.lowagie.text.pdf.PdfReader.PageRefs(reader.pageRefs, this);
         this.trailer = (PdfDictionary) duplicatePdfObject(reader.trailer, this);
         this.catalog = (trailer != null) ? trailer.getAsDict(PdfName.ROOT) : null;
         assert catalog != null;
@@ -487,7 +489,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 }
                 return obj;
             }
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -560,7 +562,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return;
         }
 
-        PdfReader reader = ref.getReader();
+        com.lowagie.text.pdf.PdfReader reader = ref.getReader();
         if (reader.partial && reader.lastXrefPartial != -1
                 && reader.lastXrefPartial == ref.getNumber()) {
             reader.xrefObj.set(reader.lastXrefPartial, null);
@@ -581,7 +583,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         PdfObject ret = getPdfObjectRelease(obj);
         if (obj.isIndirect()) {
             PRIndirectReference ref = (PRIndirectReference) obj;
-            PdfReader reader = ref.getReader();
+            com.lowagie.text.pdf.PdfReader reader = ref.getReader();
             int n = ref.getNumber();
             reader.xrefObj.set(n, null);
             if (reader.partial) {
@@ -598,11 +600,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return the decoded data
      */
     public static byte[] flateDecode(byte[] in) {
-        byte[] b = flateDecode(in, true);
-        if (b == null) {
-            return flateDecode(in, false);
-        }
-        return b;
+        return flateDecode(in, true);
     }
 
     /**
@@ -763,7 +761,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             zip.close();
             out.close();
             return out.toByteArray();
-        } catch (Exception e) {
+        } catch (IOException e) {
             if (strict) {
                 return new byte[]{};
             }
@@ -1007,7 +1005,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      */
     public static byte[] getStreamBytesRaw(PRStream stream,
             RandomAccessFileOrArray file) throws IOException {
-        PdfReader reader = stream.getReader();
+        com.lowagie.text.pdf.PdfReader reader = stream.getReader();
         byte[] b;
         if (stream.getOffset() < 0) {
             b = stream.getBytes();
@@ -1146,7 +1144,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     protected static PdfDictionary duplicatePdfDictionary(PdfDictionary original,
-            PdfDictionary copy, PdfReader newReader) {
+            PdfDictionary copy, com.lowagie.text.pdf.PdfReader newReader) {
         if (copy == null) {
             copy = new PdfDictionary();
         }
@@ -1157,7 +1155,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     protected static PdfObject duplicatePdfObject(PdfObject original,
-            PdfReader newReader) {
+            com.lowagie.text.pdf.PdfReader newReader) {
         if (original == null) {
             return null;
         }
@@ -1228,12 +1226,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             acroFormParsed = true;
             PdfObject form = catalog.get(PdfName.ACROFORM);
             if (form != null) {
-                try {
-                    acroForm = new PRAcroForm(this);
-                    acroForm.readAcroForm((PdfDictionary) getPdfObject(form));
-                } catch (Exception e) {
-                    acroForm = null;
-                }
+                acroForm = new PRAcroForm(this);
+                acroForm.readAcroForm((PdfDictionary) getPdfObject(form));
             }
         }
         return acroForm;
@@ -1420,12 +1414,12 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             pdfVersion = tokens.checkPdfHeader();
             try {
                 readXref();
-            } catch (Exception e) {
+            } catch (PDFFilterException e) {
                 try {
                     rebuilt = true;
                     rebuildXref();
                     lastXref = -1;
-                } catch (Exception ne) {
+                } catch (IOException ne) {
                     throw new InvalidPdfException(MessageLocalization.getComposedMessage(
                             "rebuild.failed.1.original.message.2", ne.getMessage(),
                             e.getMessage()));
@@ -1433,7 +1427,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
             try {
                 readDocObj();
-            } catch (Exception e) {
+            } catch (IOException | PDFFilterException e) {
                 if (e instanceof BadPasswordException) {
                     throw new BadPasswordException();
                 }
@@ -1454,8 +1448,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         } finally {
             try {
                 tokens.close();
-            } catch (Exception e) {
-                // empty on purpose
+            } catch (IOException e) {
+                String stringToLog = "Exception raised in PdfReader in readPdf";
+                logger.severe(stringToLog);
             }
         }
     }
@@ -1480,7 +1475,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     void readAndRebuildXRef() throws InvalidPdfException {
         try {
             readXref();
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             tryRebuildXref(e);
         }
     }
@@ -1701,7 +1696,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 md.update(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255});
             }
             return md.digest();
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1749,9 +1744,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 }
             }
             pValue = decrypt.permissions;
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (IOException | GeneralSecurityException e) {
             throw new IOException(e);
         }
     }
@@ -1860,7 +1853,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 lastXrefPartial = idx;
             }
             return obj;
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1901,7 +1894,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     protected void readPages(){
         catalog = trailer.getAsDict(PdfName.ROOT);
         rootPages = catalog.getAsDict(PdfName.PAGES);
-        pageRefs = new PageRefs(this);
+        pageRefs = new com.lowagie.text.pdf.PdfReader.PageRefs(this);
     }
 
     protected void readDocObjPartial() throws IOException {
@@ -1958,10 +1951,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             if (obj.isStream()) {
                 checkPRStreamLength((PRStream) obj);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             obj = null;
         }
         if (xref[k2 + 1] > 0) {
+            assert obj != null;
             obj = readOneObjStm((PRStream) obj, xref[k2]);
         }
         xrefObj.set(k, obj);
@@ -2054,7 +2048,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 if (obj.isStream()) {
                     streams.add(obj);
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 obj = null;
             }
             xrefObj.set(k / 2, obj);
@@ -2561,18 +2555,18 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         if (!PdfEncodings.convertToString(line, null).startsWith("trailer")) {
             return;
         }
-        tokens.seek(pos);
-        tokens.nextToken();
-        pos = tokens.getFilePointer();
 
         try {
+            tokens.seek(pos);
+            tokens.nextToken();
+            pos = tokens.getFilePointer();
             PdfDictionary dic = (PdfDictionary) readPRObject();
             if (dic.get(PdfName.ROOT) != null) {
                 trailer = dic;
             } else {
                 tokens.seek(pos);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             tokens.seek(pos);
         }
     }
@@ -2583,9 +2577,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     private int handleObjectStart(int[][] xr, byte[] line, int pos, int top) {
         int[] obj = PRTokeniser.checkObjectStart(line);
-        if (obj == null) {
-            return top;
-        }
 
         int num = obj[0];
         int gen = obj[1];
@@ -3067,7 +3058,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         } finally {
             try {
                 rf.close();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 // empty on purpose
             }
         }
@@ -3720,16 +3711,12 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected void removeUnusedNode(PdfObject obj, boolean[] hits) {
         Deque<Object> state = new ArrayDeque<>();
         state.push(obj);
 
         while (!state.isEmpty()) {
             Object current = state.pop();
-            if (current == null) {
-                continue;
-            }
 
             if (current instanceof PdfObject pdfObject) {
                 handlePdfObject(state, hits, pdfObject);
@@ -3818,10 +3805,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     /**
      * Removes all the unreachable objects.
-     *
-     * @return the number of indirect objects removed
      */
-    public int removeUnusedObjects() {
+    public void removeUnusedObjects() {
         boolean[] hits = new boolean[xrefObj.size()];
         removeUnusedNode(trailer, hits);
         int total = 0;
@@ -3842,7 +3827,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 }
             }
         }
-        return total;
     }
 
     /**
@@ -3910,19 +3894,13 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @throws IOException on error
      */
     public String getJavaScript() throws IOException {
-        RandomAccessFileOrArray rf = getSafeFile();
-        try {
+        try (RandomAccessFileOrArray rf = getSafeFile()) {
             rf.reOpen();
             return getJavaScript(rf);
         } catch (PDFFilterException e) {
             throw new IOException(e.getMessage());
-        } finally {
-            try {
-                rf.close();
-            } catch (Exception ignored) {
-                //da vedere come effettuare il log
-            }
         }
+        //da vedere come effettuare il log
     }
 
     /**
@@ -4179,7 +4157,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     static class PageRefs {
 
-        private final PdfReader reader;
+        private final com.lowagie.text.pdf.PdfReader reader;
         /**
          * ArrayList with the indirect references to every page. Element 0 = page 1; 1 = page 2;... Not used for partial
          * reading.
@@ -4204,11 +4182,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         private List<PdfDictionary> pageInh;
         private boolean keepPages;
 
-        private PageRefs(PdfReader reader) {
+        private PageRefs(com.lowagie.text.pdf.PdfReader reader) {
             this.reader = reader;
             if (reader.partial) {
                 refsp = new IntHashtable();
-                PdfNumber npages = (PdfNumber) PdfReader.getPdfObjectRelease(reader.rootPages.get(PdfName.COUNT));
+                PdfNumber npages = (PdfNumber) com.lowagie.text.pdf.PdfReader.getPdfObjectRelease(reader.rootPages.get(PdfName.COUNT));
 
                 // Check if npages is null before calling intValue()
                 if (npages != null) {
@@ -4230,7 +4208,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
 
 
-        PageRefs(PageRefs other, PdfReader reader) {
+        PageRefs(com.lowagie.text.pdf.PdfReader.PageRefs other, com.lowagie.text.pdf.PdfReader reader) {
             this.reader = reader;
             this.sizep = other.sizep;
             if (other.refsn != null) {
@@ -4279,7 +4257,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
          */
         public PdfDictionary getPageN(int pageNum) {
             PRIndirectReference ref = getPageOrigRef(pageNum);
-            return (PdfDictionary) PdfReader.getPdfObject(ref);
+            return (PdfDictionary) com.lowagie.text.pdf.PdfReader.getPdfObject(ref);
         }
 
         /**
@@ -4345,7 +4323,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                         return new PRIndirectReference(reader, n);
                     }
                 }
-            } catch (Exception e) {
+            } catch (NullPointerException e) {
                 throw new ExceptionConverter(e);
             }
         }
@@ -4519,7 +4497,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     }
                 }
 
-                PdfArray kids = (PdfArray) PdfReader.getPdfObjectRelease(top.get(PdfName.KIDS));
+                PdfArray kids = (PdfArray) com.lowagie.text.pdf.PdfReader.getPdfObjectRelease(top.get(PdfName.KIDS));
                 // Null check for kids
                 if (kids == null) {
                     throw new IllegalStateException("No kids found in the PDF structure.");
@@ -4576,7 +4554,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
 
             PRIndirectReference parent = (PRIndirectReference) reader.catalog.get(PdfName.PAGES);
-            PdfDictionary topPages = (PdfDictionary) PdfReader.getPdfObject(parent);
+            PdfDictionary topPages = (PdfDictionary) com.lowagie.text.pdf.PdfReader.getPdfObject(parent);
 
             if (topPages == null) {
                 // Handle the null case: log an error, throw an exception, or return from the method

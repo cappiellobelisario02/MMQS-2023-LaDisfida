@@ -14,6 +14,7 @@
 
 package com.lowagie.examples.objects.chunk;
 
+import com.lowagie.examples.objects.tables.ImageCell;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -21,6 +22,8 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Making chunks skew.
@@ -29,6 +32,8 @@ import java.io.IOException;
  */
 
 public class Skew {
+
+    private static final Logger logger = Logger.getLogger(Skew.class.getName());
 
     /**
      * SetSkew.
@@ -73,7 +78,7 @@ public class Skew {
             document.add(italic);
 
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

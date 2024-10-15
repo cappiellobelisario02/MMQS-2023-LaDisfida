@@ -54,6 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -109,7 +110,7 @@ public class Executable {
             }
         } catch (ThreadDeath | InterruptedException e) {
             process.destroy();
-            logger.info("Interrupted >> " + e.getMessage());
+            logger.log(Level.SEVERE, "Interrupted.", e);
             throw new ThreadDeath();
         }
         return process;

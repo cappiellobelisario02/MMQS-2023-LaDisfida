@@ -177,26 +177,12 @@ public class PdfGraphics2D extends Graphics2D {
     private boolean isCompositeFontDrawerEnabled = SystemPropertyUtil.getBoolean(
             "com.github.librepdf.openpdf.compositeFontDrawerEnabled", true);
 
-        private PdfGraphics2D() {
-            configureRenderingHints();
-        }
-
-        private void configureRenderingHints() {
-            // Set rendering hints
-            dg2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-            setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-
-            // Setting hyper link key off
-            setHyperlinkKeyOff();
-        }
-
-        private final void setHyperlinkKeyOff() {
-            // Assuming this is a method from PdfGraphics2D
-            setRenderingHint(
-                    com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE,
-                    com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF
-            );
-        }
+    private PdfGraphics2D() {
+        dg2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        setRenderingHint(
+                com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE, com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
+    }
 
     /**
      * Copy constructor for child PdfGraphics2D objects.

@@ -171,7 +171,9 @@ public class PRTokeniser implements AutoCloseable {
                 return new int[0];
             }
             return new int[]{num, gen};
-        } catch (Exception ioe) {
+        } catch (IOException ioe) {
+            String stringToLog = "Exception raised in PRTokeniser";
+            logger.severe(stringToLog);
             // empty on purpose
         }
         return new int[0];
@@ -180,7 +182,7 @@ public class PRTokeniser implements AutoCloseable {
     private static PRTokeniser initializeTokeniser(byte[] line) {
         try {
             return new PRTokeniser(line);
-        } catch (Exception e) {
+        } catch (InstantiationError e) {
             logger.info("ERROR >> PRTokeniser");
             return null;
         }

@@ -21,11 +21,15 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Specifying an encoding.
  */
 public class FontEncoding {
+
+    private static final Logger logger = Logger.getLogger(FontEncoding.class.getName());
 
     /**
      * Specifying an encoding.
@@ -55,7 +59,7 @@ public class FontEncoding {
                     font);
             document.add(chunk);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document
