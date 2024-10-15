@@ -40,6 +40,7 @@ import static java.awt.Color.decode;
 import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 
+import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.toolbox.AbstractTool;
@@ -48,10 +49,11 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.FloatArgument;
 import com.lowagie.toolbox.arguments.IntegerArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
-import com.lowagie.rups.io.filters.PdfFilter;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
@@ -119,6 +121,48 @@ public class WatermarkerTool extends AbstractTool {
      *
      * <p>
      */
+    public static void main(String[] args) {
+        // Check if the number of arguments is valid
+        if (args.length < 5 || args.length > 6) {
+            logger.info("Usage: java com.lowagie.tools.plugins.Watermarker <input.pdf> <watermarkText> <fontSize> "
+                    + "<opacity> <output.pdf> [<colorHex>]");
+            return;
+        }
+
+        try {
+            // Parse the input arguments
+            String inputPdf = args[0];
+            String watermarkText = args[1];
+            int fontSize = Integer.parseInt(args[2]);
+            float opacity = Float.parseFloat(args[3]);
+            String outputPdf = args[4];
+            String colorHex = (args.length == 6) ? args[5] : "#000000";  // Default to black if not provided
+
+            // Convert hex color string to Color object
+            Color watermarkColor;
+            if (colorHex.startsWith("#")) {
+                watermarkColor = Color.decode(colorHex);
+            } else {
+                throw new IllegalArgumentException("Invalid color format. Use hex format like #FF0000.");
+            }
+
+            // Read the input PDF and apply watermark
+            byte[] pdfBytes = Files.readAllBytes(Paths.get(inputPdf));
+            Watermarker watermarker = new Watermarker(pdfBytes, watermarkText, fontSize, opacity)
+                    .withColor(watermarkColor);
+
+            // Generate the watermarked PDF
+            byte[] watermarkedPdf = watermarker.write();
+            Files.write(Paths.get(outputPdf), watermarkedPdf);
+
+            String msg = "Watermarked PDF created successfully: " + outputPdf;
+            logger.info(msg);
+        } catch (Exception e) {
+            logger.severe("An error occurred");
+        }
+    }
+
+
 
     /**
      * Creates the internal frame.
