@@ -2,6 +2,7 @@ package com.lowagie.rups.io.filters;
 
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
+import java.util.Locale;
 
 
 /**
@@ -23,8 +24,12 @@ public class PdfFilter extends FileFilter {
         if (f.isDirectory()) {
             return true;
         }
-        return f.getName().toLowerCase().endsWith(".pdf");
+
+        // Use Locale.ENGLISH for consistent behavior across different environments
+        String fileName = f.getName().toLowerCase(Locale.ENGLISH);
+        return fileName.endsWith(".pdf");
     }
+
 
     /**
      * @return String

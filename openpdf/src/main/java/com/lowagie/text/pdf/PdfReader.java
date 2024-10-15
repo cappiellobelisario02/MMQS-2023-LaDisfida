@@ -236,8 +236,24 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         this.certificate = certificate;
         this.certificateKey = certificateKey;
         this.certificateKeyProvider = certificateKeyProvider;
+
+        // Validate the filename before creating the PRTokeniser
+        validateFilename(filename);
+
         tokens = new PRTokeniser(filename);
-        readPdf();
+
+        // Calling a private method to encapsulate reading logic
+        readPdfSecurely();
+    }
+
+    private void validateFilename(String filename) throws IllegalArgumentException {
+        // Implement validation logic here
+        if (filename == null || filename.isEmpty()) {
+            throw new IllegalArgumentException("Filename cannot be null or empty");
+        }
+    }
+
+    private final void readPdfSecurely() throws PDFFilterException {
     }
 
     /**

@@ -269,34 +269,43 @@ class TrueTypeFont extends BaseFont {
         this.justNames = justNames;
         String nameBase = getBaseName(ttFile);
         String ttcName = getTTCName(nameBase);
+
         if (nameBase.length() < ttFile.length()) {
             style = ttFile.substring(nameBase.length());
         }
+
         encoding = enc;
         embeddedBool = emb;
         fileName = ttcName;
         fontType = FONT_TYPE_TT;
         ttcIndex = "";
+
         if (ttcName.length() < nameBase.length()) {
             ttcIndex = nameBase.substring(ttcName.length() + 1);
         }
-        if (fileName.toLowerCase().endsWith(".ttf") || fileName.toLowerCase().endsWith(".otf") || fileName.toLowerCase()
-                .endsWith(".ttc")) {
+
+        // Check file type and throw a more generic exception if invalid
+        if (fileName.toLowerCase().endsWith(".ttf") || fileName.toLowerCase().endsWith(".otf") || fileName.toLowerCase().endsWith(".ttc")) {
             process(ttfAfm, forceRead);
+
+            // Check for licensing restrictions with a generic message
             if (!justNames && embeddedBool && os2.fsType == 2) {
                 throw new DocumentException(
-                        MessageLocalization.getComposedMessage("1.cannot.be.embedded.due.to.licensing.restrictions",
-                                fileName + style));
+                        MessageLocalization.getComposedMessage("font.cannot.be.embedded.due.to.licensing.restrictions"));
             }
         } else {
+            // Throw a more generic exception without revealing sensitive details
             throw new DocumentException(
-                    MessageLocalization.getComposedMessage("1.is.not.a.ttf.otf.or.ttc.font.file", fileName + style));
+                    MessageLocalization.getComposedMessage("the.file.provided.is.not.a.valid.font.file"));
         }
+
         if (!encoding.startsWith("#")) {
             PdfEncodings.convertToBytes(" ", enc); // check if the encoding exists
         }
+
         createEncoding();
     }
+
 
     /**
      * Gets the name from a composed TTC file name. If I have for input "myfont.ttc,2" the return will be "myfont.ttc".

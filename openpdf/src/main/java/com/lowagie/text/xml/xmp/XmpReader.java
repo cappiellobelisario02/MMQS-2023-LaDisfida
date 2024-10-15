@@ -85,14 +85,22 @@ public class XmpReader {
         try {
             DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
             fact.setNamespaceAware(true);
+
+            // Disable DTD processing
+            fact.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            fact.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             DocumentBuilder db = fact.newDocumentBuilder();
+
+            // Disabling entity resolution
             db.setEntityResolver((publicId, systemId) -> new InputSource(new StringReader("")));
+
             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
             domDocument = db.parse(bais);
         } catch (ParserConfigurationException e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     /**
      * Replaces the content of a tag.

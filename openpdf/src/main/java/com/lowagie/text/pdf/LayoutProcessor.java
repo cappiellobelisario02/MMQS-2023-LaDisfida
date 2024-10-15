@@ -526,6 +526,5 @@ public class LayoutProcessor {
         awtFontMap.clear();
         globalTextAttributes.clear();
         writeActualText = false;
-        setVersion(Version.TWO);
     }
 }

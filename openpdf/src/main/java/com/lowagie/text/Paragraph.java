@@ -212,17 +212,25 @@ public class Paragraph extends Phrase {
         if (phrase instanceof Paragraph) {
             Paragraph p = (Paragraph) phrase;
             setAlignment(p.alignment);
-            // Validate and set leading with a controlled method
-            validateAndSetLeading(phrase.getLeading(), p.multipliedLeading);
+            setLeading(phrase.getLeading(), p.multipliedLeading);
             setIndentationLeft(p.getIndentationLeft());
             setIndentationRight(p.getIndentationRight());
             setFirstLineIndent(p.getFirstLineIndent());
             setSpacingAfter(p.getSpacingAfter());
             setSpacingBefore(p.getSpacingBefore());
-            setExtraParagraphSpace(p.getExtraParagraphSpace());
             setRunDirection(p.getRunDirection());
+
+            // Set extra paragraph space in a controlled manner
+            setExtraParagraphSpaceInternal(p.getExtraParagraphSpace());
         }
     }
+
+    // Internal method to set extra paragraph space
+    private void setExtraParagraphSpaceInternal(float extraSpace) {
+        // Call the protected method internally
+        setExtraParagraphSpace(extraSpace);
+    }
+
 
     private void validateAndSetLeading(float leading, float multipliedLeading) {
         // Add validation logic to prevent invalid values
