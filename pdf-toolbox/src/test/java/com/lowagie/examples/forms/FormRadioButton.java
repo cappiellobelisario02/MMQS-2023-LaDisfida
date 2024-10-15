@@ -15,6 +15,7 @@
 package com.lowagie.examples.forms;
 
 
+import com.lowagie.examples.fonts.TrueType;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
@@ -26,6 +27,8 @@ import com.lowagie.text.pdf.PdfFormField;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Generates an Acroform with a RadioButton
@@ -33,6 +36,8 @@ import java.io.IOException;
  * @author blowagie
  */
 public class FormRadioButton {
+
+    private static final Logger logger = Logger.getLogger(FormRadioButton.class.getName());
 
     /**
      * Generates an Acroform with a RadioButton
@@ -96,7 +101,7 @@ public class FormRadioButton {
             writer.addAnnotation(radio);
 
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

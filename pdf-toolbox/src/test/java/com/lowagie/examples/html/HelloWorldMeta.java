@@ -14,12 +14,15 @@
 
 package com.lowagie.examples.html;
 
+import com.lowagie.examples.objects.FancyLists;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.html.HtmlWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Generates a simple PDF file with metadata.
@@ -28,6 +31,8 @@ import java.io.IOException;
  */
 
 public class HelloWorldMeta {
+
+    private static final Logger logger = Logger.getLogger(HelloWorldMeta.class.getName());
 
     /**
      * Generates a PDF file with metadata
@@ -61,7 +66,7 @@ public class HelloWorldMeta {
             // step 4: we add a paragraph to the document
             document.add(new Paragraph("Hello World"));
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

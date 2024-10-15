@@ -167,7 +167,7 @@ public class PdfEncryption {
         publicKeyHandler = new PdfPublicKeySecurityHandler();
     }
 
-    public PdfEncryption(PdfEncryption enc) {
+    public PdfEncryption(com.lowagie.text.pdf.PdfEncryption enc) {
         this();
         if (enc.mkey != null) {
             mkey = enc.mkey.clone();

@@ -15,6 +15,7 @@
 package com.lowagie.examples.general;
 
 
+import com.lowagie.examples.fonts.TrueType;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -23,6 +24,8 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of margins.
@@ -30,6 +33,8 @@ import java.io.IOException;
  * @author blowagie
  */
 public class Margins {
+
+    private static final Logger logger = Logger.getLogger(Margins.class.getName());
 
     /**
      * Creates a PDF document with different pages that have different margins.
@@ -69,7 +74,7 @@ public class Margins {
             document.add(new Paragraph("Starting on the next page, the margins will be mirrored."));
             document.add(paragraph);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

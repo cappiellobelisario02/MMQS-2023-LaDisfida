@@ -21,11 +21,15 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Embedding True Type fonts.
  */
 public class TrueType {
+
+    private static final Logger logger = Logger.getLogger(TrueType.class.getName());
 
     /**
      * Embedding True Type Fonts.
@@ -60,7 +64,7 @@ public class TrueType {
             document.add(new Paragraph(text2, font));
             document.add(new Paragraph(text3, font));
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

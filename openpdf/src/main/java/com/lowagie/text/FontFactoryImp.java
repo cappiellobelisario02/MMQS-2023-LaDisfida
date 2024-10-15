@@ -551,7 +551,6 @@ public class FontFactoryImp implements FontProvider {
 
     public void register(String path, String alias) throws Exception {
         String lowerCasePath = path.toLowerCase();
-        String stringToLog;
 
         if (isTtfOrOtf(lowerCasePath)) {
             registerTrueTypeFont(path, alias);
@@ -560,9 +559,9 @@ public class FontFactoryImp implements FontProvider {
         } else if (isAfmOrPfm(lowerCasePath)) {
             registerAFMOrPFMFont(path);
         } else {
-            stringToLog = "Unsupported file type: " + path;
-            // Handle unsupported file types
-            logger.warning(stringToLog);
+            // Log a generic error message without exposing sensitive information
+            logger.warning("Attempted to register unsupported file type.");
+            throw new IllegalArgumentException("The specified file type is unsupported.");
         }
     }
 

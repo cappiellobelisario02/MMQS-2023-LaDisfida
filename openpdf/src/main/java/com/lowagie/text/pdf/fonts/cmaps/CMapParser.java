@@ -23,7 +23,6 @@
 package com.lowagie.text.pdf.fonts.cmaps;
 
 import com.lowagie.text.error_messages.MessageLocalization;
-import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -107,8 +106,7 @@ public class CMapParser {
 
     // Helper method to validate the file path
     private static File validatePath(String path) {
-        String pathtoFile = FilenameUtils.normalize(path);
-        File file = new File(pathtoFile);
+        File file = new File(path);
 
         // Perform security checks: prevent directory traversal attacks
         try {

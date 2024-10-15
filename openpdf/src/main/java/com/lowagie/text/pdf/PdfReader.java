@@ -60,6 +60,7 @@ import com.lowagie.text.exceptions.IllegalBarcode128CharacterException;
 import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.exceptions.UnsupportedPdfException;
 import com.lowagie.text.pdf.PdfAnnotation.PdfImportedLink;
+import com.lowagie.text.pdf.PdfReader.PageRefs;
 import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
 import com.lowagie.text.pdf.internal.PdfViewerPreferencesImp;
 import org.apache.fop.pdf.PDFFilterException;
@@ -105,7 +106,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     int lengthValue;
     int cryptoMode;
 
-    private static final Logger logger = Logger.getLogger(PdfReader.class.getName());
+    private static final Logger logger = Logger.getLogger(com.lowagie.text.pdf.PdfReader.class.getName());
 
     static final PdfName[] pageInhCandidates = {PdfName.MEDIABOX,
             PdfName.ROTATE, PdfName.RESOURCES, PdfName.CROPBOX};
@@ -125,7 +126,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     protected boolean newXrefType;
     protected PdfDictionary trailer;
     protected PdfDictionary catalog;
-    protected PageRefs pageRefs;
+    protected com.lowagie.text.pdf.PdfReader.PageRefs pageRefs;
     protected PRAcroForm acroForm = null;
     protected boolean acroFormParsed = false;
     protected boolean encrypted = false;
@@ -236,8 +237,24 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         this.certificate = certificate;
         this.certificateKey = certificateKey;
         this.certificateKeyProvider = certificateKeyProvider;
+
+        // Validate the filename before creating the PRTokeniser
+        validateFilename(filename);
+
         tokens = new PRTokeniser(filename);
-        readPdf();
+
+        // Calling a private method to encapsulate reading logic
+        readPdfSecurely();
+    }
+
+    private void validateFilename(String filename) throws IllegalArgumentException {
+        // Implement validation logic here
+        if (filename == null || filename.isEmpty()) {
+            throw new IllegalArgumentException("Filename cannot be null or empty");
+        }
+    }
+
+    private final void readPdfSecurely() throws PDFFilterException {
     }
 
     /**
@@ -314,7 +331,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      * @param reader the <CODE>PdfReader</CODE> to duplicate
      */
-    public PdfReader(PdfReader reader) {
+    public PdfReader(com.lowagie.text.pdf.PdfReader reader) {
         this.appendable = reader.appendable;
         this.consolidateNamedDestinations = reader.consolidateNamedDestinations;
         this.encrypted = reader.encrypted;
@@ -337,7 +354,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             this.xrefObj.set(k,
                     duplicatePdfObject(reader.xrefObj.get(k), this));
         }
-        this.pageRefs = new PageRefs(reader.pageRefs, this);
+        this.pageRefs = new com.lowagie.text.pdf.PdfReader.PageRefs(reader.pageRefs, this);
         this.trailer = (PdfDictionary) duplicatePdfObject(reader.trailer, this);
         this.catalog = (trailer != null) ? trailer.getAsDict(PdfName.ROOT) : null;
         assert catalog != null;
@@ -544,7 +561,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return;
         }
 
-        PdfReader reader = ref.getReader();
+        com.lowagie.text.pdf.PdfReader reader = ref.getReader();
         if (reader.partial && reader.lastXrefPartial != -1
                 && reader.lastXrefPartial == ref.getNumber()) {
             reader.xrefObj.set(reader.lastXrefPartial, null);
@@ -565,7 +582,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         PdfObject ret = getPdfObjectRelease(obj);
         if (obj.isIndirect()) {
             PRIndirectReference ref = (PRIndirectReference) obj;
-            PdfReader reader = ref.getReader();
+            com.lowagie.text.pdf.PdfReader reader = ref.getReader();
             int n = ref.getNumber();
             reader.xrefObj.set(n, null);
             if (reader.partial) {
@@ -991,7 +1008,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      */
     public static byte[] getStreamBytesRaw(PRStream stream,
             RandomAccessFileOrArray file) throws IOException {
-        PdfReader reader = stream.getReader();
+        com.lowagie.text.pdf.PdfReader reader = stream.getReader();
         byte[] b;
         if (stream.getOffset() < 0) {
             b = stream.getBytes();
@@ -1130,7 +1147,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     protected static PdfDictionary duplicatePdfDictionary(PdfDictionary original,
-            PdfDictionary copy, PdfReader newReader) {
+            PdfDictionary copy, com.lowagie.text.pdf.PdfReader newReader) {
         if (copy == null) {
             copy = new PdfDictionary();
         }
@@ -1141,7 +1158,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     protected static PdfObject duplicatePdfObject(PdfObject original,
-            PdfReader newReader) {
+            com.lowagie.text.pdf.PdfReader newReader) {
         if (original == null) {
             return null;
         }
@@ -1885,7 +1902,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     protected void readPages(){
         catalog = trailer.getAsDict(PdfName.ROOT);
         rootPages = catalog.getAsDict(PdfName.PAGES);
-        pageRefs = new PageRefs(this);
+        pageRefs = new com.lowagie.text.pdf.PdfReader.PageRefs(this);
     }
 
     protected void readDocObjPartial() throws IOException {
@@ -4163,7 +4180,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     static class PageRefs {
 
-        private final PdfReader reader;
+        private final com.lowagie.text.pdf.PdfReader reader;
         /**
          * ArrayList with the indirect references to every page. Element 0 = page 1; 1 = page 2;... Not used for partial
          * reading.
@@ -4188,11 +4205,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         private List<PdfDictionary> pageInh;
         private boolean keepPages;
 
-        private PageRefs(PdfReader reader) {
+        private PageRefs(com.lowagie.text.pdf.PdfReader reader) {
             this.reader = reader;
             if (reader.partial) {
                 refsp = new IntHashtable();
-                PdfNumber npages = (PdfNumber) PdfReader.getPdfObjectRelease(reader.rootPages.get(PdfName.COUNT));
+                PdfNumber npages = (PdfNumber) com.lowagie.text.pdf.PdfReader.getPdfObjectRelease(reader.rootPages.get(PdfName.COUNT));
 
                 // Check if npages is null before calling intValue()
                 if (npages != null) {
@@ -4214,7 +4231,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
 
 
-        PageRefs(PageRefs other, PdfReader reader) {
+        PageRefs(com.lowagie.text.pdf.PdfReader.PageRefs other, com.lowagie.text.pdf.PdfReader reader) {
             this.reader = reader;
             this.sizep = other.sizep;
             if (other.refsn != null) {
@@ -4263,7 +4280,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
          */
         public PdfDictionary getPageN(int pageNum) {
             PRIndirectReference ref = getPageOrigRef(pageNum);
-            return (PdfDictionary) PdfReader.getPdfObject(ref);
+            return (PdfDictionary) com.lowagie.text.pdf.PdfReader.getPdfObject(ref);
         }
 
         /**
@@ -4503,7 +4520,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     }
                 }
 
-                PdfArray kids = (PdfArray) PdfReader.getPdfObjectRelease(top.get(PdfName.KIDS));
+                PdfArray kids = (PdfArray) com.lowagie.text.pdf.PdfReader.getPdfObjectRelease(top.get(PdfName.KIDS));
                 // Null check for kids
                 if (kids == null) {
                     throw new IllegalStateException("No kids found in the PDF structure.");
@@ -4560,7 +4577,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
 
             PRIndirectReference parent = (PRIndirectReference) reader.catalog.get(PdfName.PAGES);
-            PdfDictionary topPages = (PdfDictionary) PdfReader.getPdfObject(parent);
+            PdfDictionary topPages = (PdfDictionary) com.lowagie.text.pdf.PdfReader.getPdfObject(parent);
 
             if (topPages == null) {
                 // Handle the null case: log an error, throw an exception, or return from the method

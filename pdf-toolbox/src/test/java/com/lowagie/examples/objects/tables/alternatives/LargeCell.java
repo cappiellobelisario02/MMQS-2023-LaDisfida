@@ -21,11 +21,15 @@ import com.lowagie.text.exceptions.AddCellException;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Using CellsFitPage for a Cell that doesn't fit the page.
  */
 public class LargeCell {
+
+    private static final Logger logger = Logger.getLogger(LargeCell.class.getName());
 
     /**
      * Demonstrates the features of the old Table class.
@@ -64,7 +68,7 @@ public class LargeCell {
             table.addCell("text");
             document.add(table);
         } catch (DocumentException | IOException | AddCellException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
         // step 5: we close the document
         document.close();

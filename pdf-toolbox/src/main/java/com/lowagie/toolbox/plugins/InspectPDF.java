@@ -44,6 +44,7 @@ import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -55,7 +56,7 @@ import javax.swing.JOptionPane;
  */
 public class InspectPDF extends AbstractTool {
 
-    private static final Logger logger = Logger.getLogger(InspectPDF.class.getName());
+    private static final Logger logger = Logger.getLogger(com.lowagie.toolbox.plugins.InspectPDF.class.getName());
     public static final String SRCFILE = "srcfile";
     public static final String OWNERPASSWORD = "ownerpassword";
 
@@ -82,7 +83,7 @@ public class InspectPDF extends AbstractTool {
             System.exit(1); // Exit the program to avoid unintended behavior
         }
 
-        InspectPDF tool = new InspectPDF();
+        com.lowagie.toolbox.plugins.InspectPDF tool = new com.lowagie.toolbox.plugins.InspectPDF();
         tool.setMainArguments(args);
         tool.execute();
     }
@@ -150,7 +151,7 @@ public class InspectPDF extends AbstractTool {
                     e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            logger.severe(e.getMessage());
+            logger.log(Level.SEVERE, "An unexpected error occurred during execution.", e);
         } finally {
             if (reader != null){
                 try {

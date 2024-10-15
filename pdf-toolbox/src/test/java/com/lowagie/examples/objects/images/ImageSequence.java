@@ -20,12 +20,16 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Generates 2 documents: one that respects the order of Images added, another that has the default behaviour: only show
  * the images if they fit on the page, if they don't fit, wait until the next page.
  */
 public class ImageSequence {
+
+    private static final Logger logger = Logger.getLogger(ImageSequence.class.getName());
 
     /**
      * Generates 2 documents: one that respects the order of Images added, another that has the default behaviour: only
@@ -69,7 +73,7 @@ public class ImageSequence {
             document.add(new Paragraph("7th image"));
             document.add(jpg);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

@@ -124,7 +124,7 @@ public class Hyphenator {
         try {
             stream = new FileInputStream(hyphenFile);
         } catch (Exception e) {
-            logger.info("ERROR FileInputStream >> " + e);
+            logger.warning("Failed to open file: " + hyphenFile.getName());
         }
         return stream;
     }

@@ -53,6 +53,7 @@ import com.lowagie.toolbox.arguments.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -161,7 +162,7 @@ public class PhotoAlbum extends AbstractTool {
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
-            logger.severe(e.getMessage());
+            logger.log(Level.SEVERE, "An unexpected error occurred during execution.", e);
         }
     }
 

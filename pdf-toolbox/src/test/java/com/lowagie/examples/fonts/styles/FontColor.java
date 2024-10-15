@@ -26,6 +26,8 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * How to change the color of a font.
@@ -34,6 +36,8 @@ import java.io.IOException;
  */
 
 public class FontColor {
+
+    private static final Logger logger = Logger.getLogger(FontColor.class.getName());
 
     /**
      * Changing Font colors
@@ -74,7 +78,7 @@ public class FontColor {
             cb.showTextAligned(PdfContentByte.ALIGN_CENTER, "Grass is green", 250, 700, 0);
             cb.endText();
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

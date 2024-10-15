@@ -22,12 +22,16 @@ import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Changes the default coordinate system so that the origin is in the upper left corner instead of the lower left
  * corner.
  */
 public class UpsideDown {
+
+    private static final Logger logger = Logger.getLogger(UpsideDown.class.getName());
 
     /**
      * Changes the default coordinate system so that the origin is in the upper left corner instead of the lower left
@@ -89,7 +93,7 @@ public class UpsideDown {
 
             cb.sanityCheck();
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

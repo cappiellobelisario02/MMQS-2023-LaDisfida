@@ -13,6 +13,7 @@
  */
 package com.lowagie.examples.objects.images;
 
+import com.lowagie.examples.general.faq.OpenPdfVersion;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -26,11 +27,15 @@ import java.awt.Color;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Wrapping Images in a Chunk.
  */
 public class ImageChunks {
+
+    private static final Logger logger = Logger.getLogger(ImageChunks.class.getName());
 
     /**
      * Images wrapped in a Chunk.
@@ -80,7 +85,7 @@ public class ImageChunks {
             document.add(p1);
             document.add(table);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
         // step 5: we close the document
         document.close();

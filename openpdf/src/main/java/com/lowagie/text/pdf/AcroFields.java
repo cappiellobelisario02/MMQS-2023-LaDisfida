@@ -73,6 +73,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.fop.pdf.PDFFilterException;
 import org.w3c.dom.Node;
@@ -295,7 +296,7 @@ public class AcroFields {
             try {
                 tk.close();
             } catch (IOException e) {
-                logger.info("Error in PRTokeniser closing: " + e.getMessage());
+                logger.log(Level.SEVERE, "An error occurred while closing PRTokeniser.", e);
             }
         }
     }

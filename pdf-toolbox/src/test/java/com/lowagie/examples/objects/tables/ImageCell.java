@@ -21,11 +21,15 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A cell with an Image.
  */
 public class ImageCell {
+
+    private static final Logger logger = Logger.getLogger(ImageCell.class.getName());
 
     /**
      * A cell with an image.
@@ -56,7 +60,7 @@ public class ImageCell {
             table.addCell(new PdfPCell(image, false));
             document.add(table);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

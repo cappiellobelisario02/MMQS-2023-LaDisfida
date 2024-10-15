@@ -15,6 +15,7 @@
 package com.lowagie.examples.forms.create;
 
 
+import com.lowagie.examples.html.ImagesURL;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -32,6 +33,8 @@ import com.lowagie.text.pdf.TextField;
 import java.awt.Color;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Generates a StudentCard as a form
@@ -53,6 +56,8 @@ public class StudentCardForm implements PdfPCellEvent {
     public StudentCardForm(PdfFormField field) {
         this.field = field;
     }
+
+    private static final Logger logger = Logger.getLogger(StudentCardForm.class.getName());
 
     /**
      * Generates a StudentCard as a form
@@ -147,7 +152,7 @@ public class StudentCardForm implements PdfPCellEvent {
             writer.addAnnotation(picture);
             writer.addAnnotation(barcode);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

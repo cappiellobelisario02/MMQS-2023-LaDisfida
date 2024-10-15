@@ -14,6 +14,7 @@
 
 package com.lowagie.examples.general.webapp;
 
+import com.lowagie.examples.directcontent.graphics.Shapes;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
@@ -23,12 +24,15 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Hello World example as a Servlet.
  */
 public class OutSimplePdf extends HttpServlet {
 
+    private static final Logger logger = Logger.getLogger(OutSimplePdf.class.getName());
     private static final long serialVersionUID = 2788260006560387781L;
 
     @Override
@@ -81,7 +85,8 @@ public class OutSimplePdf extends HttpServlet {
             out.flush();
 
         } catch (Exception e2) {
-            System.out.println("Error in " + getClass().getName() + "\n" + e2);
+            String errorString = getClass().getName() + "\n" + e2.getMessage();
+            logger.log(Level.SEVERE, "Error in \"{0}\"", errorString);
         }
     }
 }

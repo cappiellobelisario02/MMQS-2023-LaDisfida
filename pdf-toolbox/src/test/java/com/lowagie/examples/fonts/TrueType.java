@@ -13,6 +13,7 @@
  */
 package com.lowagie.examples.fonts;
 
+import com.lowagie.examples.objects.tables.pdfptable.Tables;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
@@ -21,11 +22,15 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Using a True Type Font.
  */
 public class TrueType {
+
+    private static final Logger logger = Logger.getLogger(TrueType.class.getName());
 
     /**
      * Using a True Type Font.
@@ -55,7 +60,7 @@ public class TrueType {
             String text1 = "This is the quite popular True Type font 'Comic'.";
             document.add(new Paragraph(text1, font));
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

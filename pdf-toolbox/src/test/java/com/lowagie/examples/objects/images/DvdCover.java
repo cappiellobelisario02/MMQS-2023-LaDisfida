@@ -24,6 +24,8 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This is a tool that allows you to make a DVD Cover.
@@ -31,6 +33,8 @@ import java.io.IOException;
  * @author blowagie
  */
 public class DvdCover {
+
+    private static final Logger logger = Logger.getLogger(DvdCover.class.getName());
 
     /**
      * the name of the file that has to be generated.
@@ -224,7 +228,7 @@ public class DvdCover {
                 document.add(side);
             }
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

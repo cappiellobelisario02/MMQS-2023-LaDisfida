@@ -550,7 +550,7 @@ public final class Pfm2afm {
             try {
                 return new RandomAccessFileOrArray(fileName);
             } catch (Exception e) {
-                logger.info("ERROR RandomAccessFileOrArray >> " + e);
+                logger.warning("Failed to create RandomAccessFileOrArray for file: " + fileName);
                 return null;
             }
         }

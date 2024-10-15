@@ -655,12 +655,13 @@ public class PdfCopy extends PdfWriter {
         }
 
         public void alterContents() {
-            try(ByteBuffer out = new ByteBuffer()) {
+            try (ByteBuffer out = new ByteBuffer()) {
                 if (over == null && under == null) {
                     return;
                 }
                 PdfArray ar;
                 PdfObject content = PdfReader.getPdfObject(pageN.get(PdfName.CONTENTS), pageN);
+
                 if (content.isArray()) {
                     ar = (PdfArray) content;
                 } else if (content.isStream()) {
@@ -671,20 +672,24 @@ public class PdfCopy extends PdfWriter {
                     ar = new PdfArray();
                     pageN.put(PdfName.CONTENTS, ar);
                 }
+
                 if (under != null) {
                     out.append(PdfContents.SAVESTATE);
                     applyRotation(pageN, out);
                     out.append(under.getInternalBuffer());
                     out.append(PdfContents.RESTORESTATE);
                 }
+
                 if (over != null) {
                     out.append(PdfContents.SAVESTATE);
                 }
+
                 PdfStream stream = new PdfStream(out.toByteArray());
                 stream.flateCompress(cstp.getCompressionLevel());
                 PdfIndirectReference ref1 = cstp.addToBody(stream).getIndirectReference();
                 ar.addFirst(ref1);
                 out.reset();
+
                 if (over != null) {
                     out.append(' ');
                     out.append(PdfContents.RESTORESTATE);
@@ -696,9 +701,11 @@ public class PdfCopy extends PdfWriter {
                     stream.flateCompress(cstp.getCompressionLevel());
                     ar.add(cstp.addToBody(stream).getIndirectReference());
                 }
+
                 pageN.put(PdfName.RESOURCES, pageResources.getResources());
-            }catch (Exception e) {
-                logger.info("ByteBuffer error: " + e.getMessage());
+            } catch (Exception e) {
+                // Log a generic error message without revealing sensitive information
+                logger.warning("Error altering PDF contents: " + e.getClass().getSimpleName());
             }
         }
 

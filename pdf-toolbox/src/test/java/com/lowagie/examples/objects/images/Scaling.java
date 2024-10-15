@@ -13,6 +13,7 @@
  */
 package com.lowagie.examples.objects.images;
 
+import com.lowagie.examples.html.HelloWorldMeta;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
@@ -20,11 +21,15 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Scaling of images.
  */
 public class Scaling {
+
+    private static final Logger logger = Logger.getLogger(Scaling.class.getName());
 
     /**
      * Scaling an image.
@@ -67,7 +72,7 @@ public class Scaling {
             document.add(new Paragraph("scalePercent(100, 50)"));
             document.add(jpg4);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

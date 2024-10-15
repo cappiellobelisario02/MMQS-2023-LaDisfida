@@ -23,6 +23,8 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Using True Type Collections.
@@ -34,6 +36,8 @@ public class TrueTypeCollections {
      *
      * @param args no arguments needed
      */
+    private static final Logger logger = Logger.getLogger(TrueTypeCollections.class.getName());
+
     public static void main(String[] args) {
         System.out.println("True Type Collections");
 
@@ -61,8 +65,8 @@ public class TrueTypeCollections {
             document.add(new Paragraph(text1, font));
             document.add(new Paragraph(text2, font));
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            // Log l'errore invece di stamparlo direttamente
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
     }
-
 }

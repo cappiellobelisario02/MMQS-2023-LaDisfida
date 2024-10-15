@@ -15,6 +15,7 @@
 package com.lowagie.examples.forms;
 
 
+import com.lowagie.examples.fonts.getting.UsingFontFactory;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
@@ -25,6 +26,8 @@ import com.lowagie.text.pdf.TextField;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Generates an Acroform with a List
@@ -32,6 +35,8 @@ import java.util.ArrayList;
  * @author blowagie
  */
 public class FormList {
+
+    private static final Logger logger = Logger.getLogger(FormList.class.getName());
 
     /**
      * Generates an Acroform with a list
@@ -72,7 +77,7 @@ public class FormList {
 
 
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

@@ -13,6 +13,7 @@
  */
 package com.lowagie.examples.fonts.getting;
 
+import com.lowagie.examples.fonts.styles.ComplexText;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
@@ -21,11 +22,15 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Changing the style of a FontFactory Font.
  */
 public class FontFactoryStyles {
+
+    private static final Logger logger = Logger.getLogger(FontFactoryStyles.class.getName());
 
     /**
      * Changing the style of a FontFactory Font.
@@ -57,7 +62,7 @@ public class FontFactoryStyles {
             myPhrase.add(new Phrase("bolditalic", FontFactory.getFont("Arial", 8, Font.BOLDITALIC)));
             document.add(myPhrase);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

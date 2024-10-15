@@ -24,11 +24,15 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Writes text in a column that can be added at an absolute position.
  */
 public class ColumnSimple {
+
+    private static final Logger logger = Logger.getLogger(ColumnSimple.class.getName());
 
     /**
      * a string array we want to output.
@@ -206,7 +210,7 @@ public class ColumnSimple {
             ct.go();
 
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document

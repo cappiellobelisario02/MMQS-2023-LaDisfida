@@ -14,6 +14,7 @@
 
 package com.lowagie.examples.objects;
 
+import com.lowagie.examples.fonts.styles.FontStylePropagation;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.GreekList;
@@ -24,6 +25,8 @@ import com.lowagie.text.ZapfDingbatsNumberList;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates some List functionality.
@@ -32,6 +35,8 @@ import java.io.IOException;
  */
 
 public class FancyLists {
+
+    private static final Logger logger = Logger.getLogger(FancyLists.class.getName());
 
     public static final String BLAH_BLAH = "second item blah blah blah blah blah blah blah blah blah blah blah blah "
             + "blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah "
@@ -138,7 +143,7 @@ public class FancyLists {
             document.add(z3);
 
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while processing the document.", de);
         }
 
         // step 5: we close the document
