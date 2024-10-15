@@ -49,9 +49,11 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.ExceptionConverter;
 import java.awt.Font;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 
 /**
@@ -71,13 +73,14 @@ public class DefaultFontMapper implements FontMapper {
      */
     private HashMap<String, BaseFontParameters> mapper = new HashMap<>();
 
+    private static final Logger logger = Logger.getLogger(DefaultFontMapper.class.getName());
+
     /**
      * Returns a BaseFont which can be used to represent the given AWT Font
      *
      * @param font the font to be converted
      * @return a BaseFont which has similar properties to the provided Font
      */
-
     public BaseFont awtToPdf(Font font) {
         try {
             BaseFontParameters p = getBaseFontParameters(font.getFontName());
@@ -89,7 +92,7 @@ public class DefaultFontMapper implements FontMapper {
             String fontKey = getFontKey(logicalName, font.isItalic(), font.isBold());
 
             return BaseFont.createFont(fontKey, BaseFont.CP1252, false);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -275,8 +278,9 @@ public class DefaultFontMapper implements FontMapper {
                     }
                     ++count;
                 }
-            } catch (Exception e) {
-                // Implementa qui la logica per il logging degli errori
+            } catch (IOException e) {
+                String stringToLog = "Exception raised in DefaultFontMapper in method 'InsertDirectory'";
+                logger.severe(stringToLog);
             }
         }
         return count;

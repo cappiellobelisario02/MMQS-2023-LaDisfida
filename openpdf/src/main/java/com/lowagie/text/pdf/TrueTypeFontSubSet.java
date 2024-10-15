@@ -53,6 +53,7 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -158,7 +159,7 @@ class TrueTypeFontSubSet {
         } finally {
             try {
                 rf.close();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 // empty on purpose
             }
         }
@@ -267,7 +268,7 @@ class TrueTypeFontSubSet {
         int numTables = rf.readUnsignedShort();
         rf.skipBytes(6);
         for (int k = 0; k < numTables; ++k) {
-            String tag = readStandardString(4);
+            String tag = readStandardString();
             int[] tableLocation = new int[3];
             tableLocation[TABLE_CHECKSUM] = rf.readInt();
             tableLocation[TABLE_OFFSET] = rf.readInt();
@@ -422,16 +423,15 @@ class TrueTypeFontSubSet {
     /**
      * Reads a <CODE>String</CODE> from the font file as bytes using the Cp1252 encoding.
      *
-     * @param length the length of bytes to read
      * @return the <CODE>String</CODE> read
      * @throws IOException the font file could not be read
      */
-    protected String readStandardString(int length) throws IOException {
-        byte[] buf = new byte[length];
+    protected String readStandardString() throws IOException {
+        byte[] buf = new byte[4];
         rf.readFully(buf);
         try {
             return new String(buf, BaseFont.WINANSI);
-        } catch (Exception e) {
+        } catch (UnsupportedEncodingException e) {
             throw new ExceptionConverter(e);
         }
     }

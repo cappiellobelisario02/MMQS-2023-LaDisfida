@@ -70,6 +70,7 @@ import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 import com.lowagie.text.exceptions.InvalidTokenException;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -116,10 +118,12 @@ import org.bouncycastle.asn1.tsp.MessageImprint;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.jcajce.provider.asymmetric.x509.CertificateFactory;
 import org.bouncycastle.jce.provider.X509CRLParser;
 import org.bouncycastle.operator.DigestCalculatorProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.tsp.TimeStampToken;
 import org.bouncycastle.tsp.TimeStampTokenInfo;
@@ -143,6 +147,8 @@ public class PdfPKCS7 {
     private static final Map<String, String> digestNames = new HashMap<>();
     private static final Map<String, String> algorithmNames = new HashMap<>();
     private static final Map<String, String> allowedDigests = new HashMap<>();
+    private static final Logger logger = Logger.getLogger(PdfPKCS7.class.getName());
+
 
     public static final String KEY11354925 = "1.2.840.113549.2.5";
 
@@ -467,24 +473,26 @@ public class PdfPKCS7 {
             // Initialize message digest
             if (rsaData != null || digestAttr != null) {
                 if (provider != null) {
-                    System.out.println("Provider is set to: " + provider);
+                    String msg = "Provider is set to: " + provider;
+                    logger.info(msg);
                     if (provider.startsWith("SunPKCS11")) {
                         messageDigest = MessageDigest.getInstance(getStandardJavaName(getHashAlgorithm()));
                     } else {
                         messageDigest = MessageDigest.getInstance(getStandardJavaName(getHashAlgorithm()), provider);
                     }
                 } else {
-                    System.out.println("Provider is null, using default");
+                    logger.info("Provider is null, using default");
                     messageDigest = MessageDigest.getInstance(getStandardJavaName(getHashAlgorithm()));
                 }
             }
 
             // Initialize signature
             if (provider == null) {
-                System.out.println("Provider is null, using default signature provider");
+                logger.info("Provider is null, using default signature provider");
                 sig = Signature.getInstance(getDigestAlgorithm());
             } else {
-                System.out.println("Using provider for signature: " + provider);
+                String msg = "Using provider for signature: " + provider;
+                logger.info(msg);
                 sig = Signature.getInstance(getDigestAlgorithm(), provider);
             }
             sig.initVerify(signCert.getPublicKey());
@@ -1138,8 +1146,10 @@ public class PdfPKCS7 {
                     cc.add(oc.get(k));
                     oc.remove(k);
                     break;
-                } catch (Exception ignored) {
-//da vedere come effettuare il log
+                } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException |
+                         NoSuchProviderException | SignatureException ignored) {
+                    String msg = "Exception raised in PdfPKCS7 in method signcertificateChain";
+                    logger.severe(msg);
                 }
             }
         }
@@ -1232,9 +1242,9 @@ public class PdfPKCS7 {
                     new JcaX509CertificateHolder(isscer), sigcer.getSerialNumber());
 
             return id.equals(cid);
-            // ******************************************************************************
-        } catch (Exception ignored) {
-//da vedere come effettuare il log
+        } catch (CertificateEncodingException | OperatorCreationException | OCSPException ignored) {
+            String stringToLog = "Exception raised in PdfPKCS7 in method isRevocationValid";
+            logger.severe(stringToLog);
         }
         return false;
     }
@@ -1268,7 +1278,7 @@ public class PdfPKCS7 {
      *
      * @param digest                    the digest. This is the actual signature
      * @param rsaDataByte                   the extra data that goes into the data tag in PKCS#7
-     * @param digestEncryptionAlgorithm the encryption algorithm. It may must be <CODE>null</CODE> if the
+     * @param digestEncryptionAlgorithm the encryption algorithm. It must be <CODE>null</CODE> if the
      *                                  <CODE>digest</CODE> is also <CODE>null</CODE>. If the
      *                                  <CODE>digest</CODE> is not <CODE>null</CODE> then it may be "RSA"
      *                                  or "DSA"
@@ -1487,7 +1497,7 @@ public class PdfPKCS7 {
     /**
      * Added by Aiken Sam, 2006-11-15, modifed by Martin Brunecky 07/12/2007 to start with the timeStampToken
      * (signedData 1.2.840.113549.1.7.2). Token is the TSA response without response status, which is usually handled by
-     * the (vendor supplied) TSA request/response interface).
+     * the (vendor supplied) TSA (request/response interface).
      *
      * @param timeStampToken byte[] - time stamp token, DER encoded signedData
      * @return ASN1EncodableVector

@@ -203,13 +203,7 @@ class CJKFont extends BaseFont {
     }
 
     private char[] readCMapOrThrow(String s) throws DocumentException {
-        char[] c = readCMap(s);
-        if (c == null) {
-            throw new DocumentException(
-                    MessageLocalization.getComposedMessage(
-                            "the.cmap.1.does.not.exist.as.a.resource", s));
-        }
-        return c;
+        return readCMap(s);
     }
 
     private void loadFontMetrics(String fontName) throws DocumentException {
@@ -279,9 +273,9 @@ class CJKFont extends BaseFont {
             }
 
             return c;  // Return the character array after reading
-        } catch (Exception e) {
+        } catch (IOException e) {
             // Log the exception if needed (optional)
-            // logger.severe("Error reading CMap: " + e.getMessage());
+            logger.severe("Error reading CMap");
         }
 
         return new char[0];  // Return an empty array on failure
@@ -561,9 +555,9 @@ class CJKFont extends BaseFont {
             }
             map.put("W", metricTable);
             map.put("W2", metricTable2);
-        } catch (Exception e) {
+        } catch (IOException e) {
             // Log the exception if necessary, or handle it accordingly
-            logger.severe("Error reading font properties: " + e.getMessage());
+            logger.severe("Error reading font properties");
         }
 
         return map;
@@ -759,7 +753,6 @@ class CJKFont extends BaseFont {
             case BBOXLLY -> fontSize * getBBox(1) / 1000;
             case BBOXURX -> fontSize * getBBox(2) / 1000;
             case BBOXURY -> fontSize * getBBox(3) / 1000;
-            case AWT_LEADING -> 0;
             case AWT_MAXADVANCE -> fontSize * (getBBox(2) - getBBox(0)) / 1000;
             default -> 0;
         };

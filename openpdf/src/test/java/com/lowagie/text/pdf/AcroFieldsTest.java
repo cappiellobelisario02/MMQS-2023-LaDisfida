@@ -6,10 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import com.lowagie.text.Document;
 import com.lowagie.text.PageSize;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.Security;
 import java.util.List;
 import com.lowagie.text.exceptions.InvalidPdfException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,7 +26,7 @@ class AcroFieldsTest {
     void testGetSignaturesPass(){
         Assertions.assertThrows(InvalidPdfException.class, this::testGetSignatures);
     }
-    void testGetSignatures() throws Exception {
+    void testGetSignatures() throws IOException, PDFFilterException {
         // for algorithm SHA256 (without dash)
         Security.addProvider(new BouncyCastleProvider());
 
@@ -53,7 +55,7 @@ class AcroFieldsTest {
     void infiniteLoopTestPass(){
         Assertions.assertThrows(InvalidPdfException.class, this::infiniteLoopTest);
     }
-    void infiniteLoopTest() throws Exception {
+    void infiniteLoopTest() throws IOException, PDFFilterException {
         try (InputStream is = AcroFieldsTest.class.getResourceAsStream("/pades_infinite_loop.pdf");
                 PdfReader reader = new PdfReader(is)) {
             assertTimeoutPreemptively(ofMillis(500), () -> {

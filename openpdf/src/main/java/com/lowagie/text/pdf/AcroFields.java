@@ -863,8 +863,9 @@ public class AcroFields {
                 try {
                     bf = BaseFont.createFont(fn[0], fn.length > 1 ? fn[1] : "winansi", false);
                     tx.setFont(bf);
-                } catch (Exception ignored) {
-                    // Empty on purpose
+                } catch (IOException ignored) {
+                    String stringToLog = "Exception raised in AcroFields in method setLocalOrStandardFont";
+                    logger.severe(stringToLog);
                 }
             }
         } else {

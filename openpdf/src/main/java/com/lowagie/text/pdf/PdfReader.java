@@ -60,7 +60,6 @@ import com.lowagie.text.exceptions.IllegalBarcode128CharacterException;
 import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.exceptions.UnsupportedPdfException;
 import com.lowagie.text.pdf.PdfAnnotation.PdfImportedLink;
-import com.lowagie.text.pdf.PdfReader.PageRefs;
 import com.lowagie.text.pdf.interfaces.PdfViewerPreferences;
 import com.lowagie.text.pdf.internal.PdfViewerPreferencesImp;
 import org.apache.fop.pdf.PDFFilterException;
@@ -255,7 +254,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
     }
 
-    private final void readPdfSecurely() throws PDFFilterException {
+    private void readPdfSecurely() {
     }
 
     /**
@@ -1465,7 +1464,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         } catch (IOException e) {
             try {
                 tokens.close();
-            } catch (Exception exc) {
+            } catch (IOException exc) {
                 logger.info("Error closing tokens: " + exc.getMessage());
             }
             throw e;
@@ -1596,7 +1595,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     private byte[] getDocumentIDMethod() {
         PdfArray documentIDs = trailer.getAsArray(PdfName.ID);
         byte[] documentID = null;
-        return controlIfDocumentIDsAreNull(documentIDs, documentID);
+        return controlIfDocumentIDsAreNull(documentIDs, null);
     }
 
     private Object[] processFilter(PdfDictionary enc, PdfObject filter) throws InvalidPdfException {
@@ -1734,7 +1733,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
 
             if (!ownerPasswordUsed) {
-                hashAlg2B = decrypt.hashAlg2B(password, Arrays.copyOfRange(uValue, 32, 40), null);
+                hashAlg2B = decrypt.hashAlg2B(password, Arrays.copyOfRange(Objects.requireNonNull(uValue), 32, 40), null);
                 if (!equalsArray(hashAlg2B, uValue, 32)) {
                     throw new BadPasswordException();
                 }
@@ -2203,8 +2202,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 newXrefType = true;
                 return;
             }
-        } catch (Exception ignored) {
-            //da vedere come effettuare il log
+        } catch (IOException ignored) {
+            String stringToLog = "Exception raised in PdfReader in method readXref";
+            logger.severe(stringToLog);
         }
         xref = null;
         tokens.seek(startxref);
@@ -2900,7 +2900,10 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
         switch (obj.type()) {
             case PdfObject.INDIRECT: {
-                int xr = ((PRIndirectReference) obj).getNumber();
+                int xr = 0;
+                if (obj instanceof PRIndirectReference prIndirectReference) {
+                    xr = prIndirectReference.getNumber();
+                }
                 obj = xrefObj.get(xr);
                 xrefObj.set(xr, null);
                 freeXref = xr;
@@ -2908,14 +2911,20 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 break;
             }
             case PdfObject.ARRAY: {
-                PdfArray t = (PdfArray) obj;
-                for (int i = 0; i < t.size(); ++i) {
+                PdfArray t = null;
+                if (obj instanceof PdfArray objPdfArray) {
+                    t = objPdfArray;
+                }
+                for (int i = 0; i < Objects.requireNonNull(t).size(); ++i) {
                     killXref(t.getPdfObject(i));
                 }
                 break;
             }
             case PdfObject.STREAM, PdfObject.DICTIONARY: {
-                PdfDictionary dic = (PdfDictionary) obj;
+                PdfDictionary dic = null;
+                if (obj instanceof PdfDictionary objPdfDictionary) {
+                    dic = objPdfDictionary;
+                }
                 for (PdfName o : dic.getKeys()) {
                     killXref(dic.get(o));
                 }

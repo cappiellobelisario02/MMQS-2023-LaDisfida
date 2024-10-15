@@ -52,6 +52,7 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.exceptions.GlyphListNotFoundException;
 import com.lowagie.text.pdf.fonts.FontsResourceAnchor;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.StringTokenizer;
@@ -109,13 +110,13 @@ public class GlyphList {
                 unicode2names.put(num, name);
                 names2unicode.put(name, new int[]{num});
             }
-        } catch (Exception e) {
-            logger.info("glyphlist.txt loading error: " + e.getMessage());
+        } catch (IOException e) {
+            logger.info("glyphlist.txt loading error");
         } finally {
             if (is != null) {
                 try {
                     is.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                     // empty on purpose
                 }
             }
