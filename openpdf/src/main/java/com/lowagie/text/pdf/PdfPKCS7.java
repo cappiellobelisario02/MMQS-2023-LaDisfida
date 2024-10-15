@@ -60,6 +60,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -774,7 +775,7 @@ public class PdfPKCS7 {
                 if (certificate1 != null)
                     return certificate1;
             }
-        } catch (Exception ignored) {
+        } catch (KeyStoreException ignored) {
             return new Object[0];
         }
         return new Object[0];

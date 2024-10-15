@@ -128,7 +128,7 @@ public class PRAcroForm extends PdfDictionary {
     }
 
     /**
-     * After reading, we index all of the fields. Recursive.
+     * After reading, we index all the fields. Recursive.
      *
      * @param fieldlist An array of fields
      * @param fieldDict the last field dictionary we encountered (recursively)
@@ -167,7 +167,7 @@ public class PRAcroForm extends PdfDictionary {
         } else if (title == null) {
             return tField.toString();
         } else {
-            return title + '.' + tField.toString();
+            return title + '.' + tField;
         }
     }
 

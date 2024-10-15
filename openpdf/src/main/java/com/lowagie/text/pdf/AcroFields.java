@@ -49,20 +49,17 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.ExceptionConverter;
-import com.lowagie.text.Font;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.AnnotationException;
 import com.lowagie.text.exceptions.ColorParseException;
-import com.lowagie.text.exceptions.FontProcessingException;
 import com.lowagie.text.exceptions.InvalidColorValueException;
-import com.lowagie.text.exceptions.NoReaderException;
-import com.lowagie.text.exceptions.ReadOnlyAcroFieldsException;
 import com.lowagie.text.exceptions.ReadOnlyException;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -77,6 +74,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.fop.pdf.PDFFilterException;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+import javax.xml.parsers.ParserConfigurationException;
 
 
 /**
@@ -188,7 +187,7 @@ public class AcroFields {
         this.writer = writer;
         try {
             xfa = new XfaForm(reader);
-        } catch (Exception e) {
+        } catch (IOException | ParserConfigurationException | SAXException | PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
         if (writer instanceof PdfStamperImp stamperImp) {
@@ -198,8 +197,7 @@ public class AcroFields {
     }
 
     public static Object[] splitDAelements(String da) {
-        try {
-            PRTokeniser tk = createPRTokeniser(PdfEncodings.convertToBytes(da, null));
+        try (PRTokeniser tk = createPRTokeniser(PdfEncodings.convertToBytes(da, null))){
             List<String> stack = new ArrayList<>();
             Object[] ret = new Object[3];
 
@@ -282,7 +280,7 @@ public class AcroFields {
         PRTokeniser tk = null;
         try {
             tk = new PRTokeniser(PdfEncodings.convertToBytes(Arrays.toString(da), null));
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             logger.info("PRTokeniser error: " + e.getMessage());
         } finally {
             closePRTokeniser(tk);
@@ -581,7 +579,7 @@ public class AcroFields {
                 } else {
                     ret[k] = obj.toString();
                 }
-            } catch (Exception e) {
+            } catch (NullPointerException e) {
                 ret[k] = "";
             }
         }
@@ -594,7 +592,7 @@ public class AcroFields {
      * <CODE>null</CODE>.
      *
      * @param fieldName the field name
-     * @return the list of export option values from fields of type list or combo
+     * @return the array of export option values from fields of type list or combo
      */
     public String[] getListOptionExport(String fieldName) {
         return getListOption(fieldName, 0);
@@ -606,7 +604,7 @@ public class AcroFields {
      * <CODE>null</CODE>.
      *
      * @param fieldName the field name
-     * @return the list of export option values from fields of type list or combo
+     * @return the array of export option values from fields of type list or combo
      */
     public String[] getListOptionDisplay(String fieldName) {
         return getListOption(fieldName, 1);
@@ -1121,20 +1119,16 @@ public class AcroFields {
         if (ar == null) {
             return null;
         }
-        switch (ar.size()) {
-            case 1:
-                return new GrayColor(ar.getAsNumber(0).floatValue());
-            case 3:
-                return new Color(ExtendedColor.normalize(ar.getAsNumber(0).floatValue()),
-                        ExtendedColor.normalize(ar.getAsNumber(1).floatValue()),
-                        ExtendedColor.normalize(ar.getAsNumber(2).floatValue()));
-            case 4:
-                return new CMYKColor(ar.getAsNumber(0).floatValue(), ar.getAsNumber(1).floatValue(),
-                        ar.getAsNumber(2).floatValue(),
-                        ar.getAsNumber(3).floatValue());
-            default:
-                return null;
-        }
+        return switch (ar.size()) {
+            case 1 -> new GrayColor(ar.getAsNumber(0).floatValue());
+            case 3 -> new Color(ExtendedColor.normalize(ar.getAsNumber(0).floatValue()),
+                    ExtendedColor.normalize(ar.getAsNumber(1).floatValue()),
+                    ExtendedColor.normalize(ar.getAsNumber(2).floatValue()));
+            case 4 -> new CMYKColor(ar.getAsNumber(0).floatValue(), ar.getAsNumber(1).floatValue(),
+                    ar.getAsNumber(2).floatValue(),
+                    ar.getAsNumber(3).floatValue());
+            default -> null;
+        };
     }
 
     /**
@@ -1298,16 +1292,15 @@ public class AcroFields {
      * @param value the property value
      * @param inst  an array of <CODE>int</CODE> indexing into <CODE>AcroField.Item.merged</CODE> elements to process.
      *              Set to <CODE>null</CODE> to process all
-     * @return <CODE>true</CODE> if the property exists, <CODE>false</CODE> otherwise
      */
-    public boolean setFieldProperty(String field, String name, Object value, int[] inst) {
+    public void setFieldProperty(String field, String name, Object value, int[] inst) {
         if (writer == null) {
             throw new ReadOnlyException(MessageLocalization.getComposedMessage(THIS_ACROFIELDS_INSTANCE_IS_READ_ONLY));
         }
         try {
             Item item = fields.get(field);
             if (item == null) {
-                return false;
+                return;
             }
             InstHit hit = new InstHit(inst);
 
@@ -1325,10 +1318,8 @@ public class AcroFields {
                     handleColorProperty(item, value, hit, name);
                     break;
                 default:
-                    return false;
             }
-            return true;
-        } catch (Exception e) {
+        } catch (AnnotationException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1555,14 +1546,12 @@ public class AcroFields {
      * regenerateField("f") after changing the property.
      *
      * @param name the fully qualified field name or the partial name in the case of XFA forms
-     * @return <CODE>true</CODE> if the field was found and changed,
-     * <CODE>false</CODE> otherwise
      * @throws IOException       on error
      * @throws DocumentException on error
      */
-    public boolean regenerateField(String name) throws IOException, DocumentException {
+    public void regenerateField(String name) throws IOException, DocumentException {
         String value = getField(name);
-        return setField(name, value, value);
+        setField(name, value, value);
     }
 
     /**
@@ -1570,13 +1559,11 @@ public class AcroFields {
      *
      * @param name  the fully qualified field name or the partial name in the case of XFA forms
      * @param value the field value
-     * @return <CODE>true</CODE> if the field was found and changed,
-     * <CODE>false</CODE> otherwise
      * @throws IOException       on error
      * @throws DocumentException on error
      */
-    public boolean setField(String name, String value) throws IOException, DocumentException {
-        return setField(name, value, null);
+    public void setField(String name, String value) throws IOException, DocumentException {
+        setField(name, value, null);
     }
 
     /**
@@ -1587,24 +1574,22 @@ public class AcroFields {
      * @param value   the field value
      * @param display the string that is used for the appearance. If <CODE>null</CODE> the <CODE>value</CODE> parameter
      *                will be used
-     * @return <CODE>true</CODE> if the field was found and changed,
-     * <CODE>false</CODE> otherwise
      * @throws IOException       on error
      * @throws DocumentException on error
      */
-    public boolean setField(String name, String value, String display) throws IOException, DocumentException {
+    public void setField(String name, String value, String display) throws IOException, DocumentException {
         checkWriter();
 
         if (xfa.isXfaPresent()) {
             name = handleXfa(name, value);
             if (name == null) {
-                return false;
+                return;
             }
         }
 
         Item item = fields.get(name);
         if (item == null) {
-            return false;
+            return;
         }
 
         PdfDictionary merged = item.getMerged(0);
@@ -1617,12 +1602,11 @@ public class AcroFields {
         }
 
         if (PdfName.TX.equals(type) || PdfName.CH.equals(type)) {
-            return handleTextField(item, value, display, name, type);
+            handleTextField(item, value, display, name, type);
         } else if (PdfName.BTN.equals(type)) {
-            return handleButtonField(item, value, name);
+            handleButtonField(item, value, name);
         }
 
-        return false;
     }
 
     private void checkWriter() throws DocumentException {
@@ -1657,13 +1641,12 @@ public class AcroFields {
         return value;
     }
 
-    private boolean handleTextField(Item item, String value, String display, String name, PdfName type)
+    private void handleTextField(Item item, String value, String display, String name, PdfName type)
             throws IOException {
         PdfString v = new PdfString(value, PdfObject.TEXT_UNICODE);
         for (int idx = 0; idx < item.size(); ++idx) {
             updateField(item, idx, v, display, name, type);
         }
-        return true;
     }
 
     private void updateField(Item item, int idx, PdfString value, String display, String name, PdfName type)
@@ -1705,31 +1688,31 @@ public class AcroFields {
         }
     }
 
-    private boolean handleButtonField(Item item, String value, String name) throws IOException {
+    private void handleButtonField(Item item, String value, String name) throws IOException {
         PdfNumber ff = item.getMerged(0).getAsNumber(PdfName.FF);
         int flags = ff != null ? ff.intValue() : 0;
 
         if ((flags & PdfFormField.FF_PUSHBUTTON) != 0) {
-            return handlePushbuttonField(value, name);
+            handlePushbuttonField(value, name);
+            return;
         }
 
-        return handleChoiceField(item, value);
+        handleChoiceField(item, value);
     }
 
-    private boolean handlePushbuttonField(String value, String name) throws IOException {
+    private void handlePushbuttonField(String value, String name) throws IOException {
         Image img;
         try {
             img = Image.getInstance(Base64.getDecoder().decode(value));
-        } catch (Exception e) {
-            return false;
+        } catch (InstantiationError e) {
+            return;
         }
         PushbuttonField pb = getNewPushbuttonFromField(name);
         pb.setImage(img);
         replacePushbuttonField(name, pb.getField());
-        return true;
     }
 
-    private boolean handleChoiceField(Item item, String value) {
+    private void handleChoiceField(Item item, String value) {
         List<String> lopt = new ArrayList<>();
         PdfArray opts = item.getValue(0).getAsArray(PdfName.OPT);
         if (opts != null) {
@@ -1743,7 +1726,6 @@ public class AcroFields {
         for (int idx = 0; idx < item.size(); ++idx) {
             updateChoiceField(item, idx, vt);
         }
-        return true;
     }
 
     private PdfName getChoiceFieldValue(String value, List<String> lopt) {
@@ -1777,20 +1759,19 @@ public class AcroFields {
      *
      * @param name  the name of the field
      * @param value an array with values that need to be selected
-     * @return true only if the field value was changed
      * @throws IOException       on error
      * @throws DocumentException on error
      * @since 2.1.4
      */
-    public boolean setListSelection(String name, String[] value) throws IOException, DocumentException {
+    public void setListSelection(String name, String[] value) throws IOException, DocumentException {
         Item item = getFieldItem(name);
         if (item == null) {
-            return false;
+            return;
         }
         PdfDictionary merged = item.getMerged(0);
         PdfName type = merged.getAsName(PdfName.FT);
         if (!PdfName.CH.equals(type)) {
-            return false;
+            return;
         }
         String[] options = getListOptionExport(name);
         PdfArray array = new PdfArray();
@@ -1819,7 +1800,6 @@ public class AcroFields {
         writer.releaseTemplate(app);
 
         item.markUsed(this, Item.WRITE_VALUE | Item.WRITE_WIDGET);
-        return true;
     }
 
     boolean isInAP(PdfDictionary dic, PdfName check) {
@@ -1932,8 +1912,9 @@ public class AcroFields {
                 ret[ptr++] = r.getBottom();
                 ret[ptr++] = r.getRight();
                 ret[ptr++] = r.getTop();
-            } catch (Exception e) {
-                // empty on purpose
+            } catch (NullPointerException e) {
+                String stringToLog = "Exception raised in AcroFields";
+                logger.severe(stringToLog);
             }
         }
         if (ptr < ret.length) {
@@ -1967,11 +1948,10 @@ public class AcroFields {
      * Removes all the fields from <CODE>page</CODE>.
      *
      * @param page the page to remove the fields from
-     * @return <CODE>true</CODE> if any field was removed, <CODE>false otherwise</CODE>
      */
-    public boolean removeFieldsFromPage(int page) {
+    public void removeFieldsFromPage(int page) {
         if (page < 1) {
-            return false;
+            return;
         }
         String[] names = new String[fields.size()];
         fields.keySet().toArray(names);
@@ -1980,7 +1960,6 @@ public class AcroFields {
             boolean fr = removeField(name, page);
             found = (found || fr);
         }
-        return found;
     }
 
     /**
@@ -2303,7 +2282,7 @@ public class AcroFields {
         try {
             PdfName sub = v.getAsName(PdfName.SUBFILTER);
             PdfString contents = v.getAsString(PdfName.CONTENTS);
-            PdfPKCS7 pk = null;
+            PdfPKCS7 pk;
             if (sub.equals(PdfName.ADBE_X509_RSA_SHA1)) {
                 PdfString cert = v.getAsString(PdfName.CERT);
                 pk = new PdfPKCS7(contents.getOriginalBytes(), cert.getBytes(), provider);
@@ -2332,15 +2311,14 @@ public class AcroFields {
                 pk.setLocation(str.toUnicodeString());
             }
             return pk;
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             throw new ExceptionConverter(e);
         }
     }
 
     private void updateByteRange(PdfPKCS7 pkcs7, PdfDictionary v) {
         PdfArray b = v.getAsArray(PdfName.BYTERANGE);
-        RandomAccessFileOrArray rf = reader.getSafeFile();
-        try {
+        try (RandomAccessFileOrArray rf = reader.getSafeFile()) {
             rf.reOpen();
             byte[] buf = new byte[8192];
             int k = 0;
@@ -2358,14 +2336,8 @@ public class AcroFields {
                 }
                 ++k;
             }
-        } catch (Exception e) {
+        } catch (IOException | SignatureException e) {
             throw new ExceptionConverter(e);
-        } finally {
-            try {
-                rf.close();
-            } catch(IOException ignored) {
-                //da vedere come effettuare il log
-            }
         }
     }
 
@@ -2538,7 +2510,7 @@ public class AcroFields {
             acroform.remove(PdfName.XFA);
             try {
                 this.xfa = new XfaForm(this.reader);
-            } catch (Exception e) {
+            } catch (IOException | ParserConfigurationException | SAXException | PDFFilterException e) {
                 throw new ExceptionConverter(e);
             }
         }
@@ -2588,7 +2560,7 @@ public class AcroFields {
 
             configurePushbuttonField(newButton, dic);
             return newButton;
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -2801,7 +2773,7 @@ public class AcroFields {
          */
         public void writeToAll(PdfName key, PdfObject value, int writeFlags) {
             int i;
-            PdfDictionary curDict = null;
+            PdfDictionary curDict;
             if ((writeFlags & WRITE_MERGED) != 0) {
                 for (i = 0; i < merged.size(); ++i) {
                     curDict = getMerged(i);

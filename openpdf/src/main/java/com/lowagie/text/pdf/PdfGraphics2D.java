@@ -100,10 +100,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
@@ -111,6 +108,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -125,6 +123,7 @@ public class PdfGraphics2D extends Graphics2D {
     private static final int STROKE = 2;
     private static final int CLIP = 3;
     private static final AffineTransform IDENTITY = new AffineTransform();
+    private static final Logger logger = Logger.getLogger(PdfGraphics2D.class.getName());
 
     private static final Set<String> LOGICAL_FONT_NAMES = Set.of("Dialog", "DialogInput", "Monospaced", "Serif",
             "SansSerif");
@@ -534,7 +533,7 @@ public class PdfGraphics2D extends Graphics2D {
     }
 
     private double drawString(String s, BaseFont baseFont, double x, double y) {
-        boolean restoreTextRenderingMode = false;
+        boolean restoreTextRenderingMode;
         AffineTransform at = getTransform();
         try {
             setupTransformation(x, y);
@@ -1763,7 +1762,7 @@ public class PdfGraphics2D extends Graphics2D {
             cb.setGState(gs);
         }
 
-        com.lowagie.text.Image image = null;
+        com.lowagie.text.Image image;
         if (!convertImagesToJPEG) {
             image = com.lowagie.text.Image.getInstance(img, bgColor);
         } else {
@@ -1818,18 +1817,18 @@ public class PdfGraphics2D extends Graphics2D {
     private void setFillPaint() {
         if (checkNewPaint(paintFill)) {
             paintFill = paint;
-            setPaint(false, 0, 0, true);
+            setPaint(true);
         }
     }
 
     private void setStrokePaint() {
         if (checkNewPaint(paintStroke)) {
             paintStroke = paint;
-            setPaint(false, 0, 0, false);
+            setPaint(false);
         }
     }
 
-    private void setPaint(boolean invert, double xoffset, double yoffset, boolean fill) {
+    private void setPaint(boolean fill) {
         try {
             if (paint instanceof Color color) {
                 handleColorPaint(color, fill);
@@ -1838,7 +1837,7 @@ public class PdfGraphics2D extends Graphics2D {
             } else if (paint instanceof TexturePaint tp) {
                 handleTexturePaint(tp, fill);
             } else {
-                handleDefaultPaint(invert, xoffset, yoffset, fill);
+                handleDefaultPaint(fill);
             }
         } catch (IOException | NoninvertibleTransformException e) {
             // Handle IOException (e.g., log the error)
@@ -1915,7 +1914,7 @@ public class PdfGraphics2D extends Graphics2D {
         }
     }
 
-    private void handleDefaultPaint(boolean invert, double xoffset, double yoffset, boolean fill)
+    private void handleDefaultPaint(boolean fill)
             throws IOException, NoninvertibleTransformException, InterruptedException {
         BufferedImage img = createBufferedImage();
         Graphics2D g = (Graphics2D) img.getGraphics();
@@ -1925,12 +1924,6 @@ public class PdfGraphics2D extends Graphics2D {
         fillRect = inv.createTransformedShape(fillRect);
         g.setPaint(paint);
         g.fill(fillRect);
-        if (invert) {
-            AffineTransform tx = new AffineTransform();
-            tx.scale(1, -1);
-            tx.translate(-xoffset, -yoffset);
-            g.drawImage(img, tx, null);
-        }
         g.dispose();
         com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
         PdfPatternPainter pattern = cb.createPattern(width, height);
@@ -2073,7 +2066,7 @@ public class PdfGraphics2D extends Graphics2D {
             boolean macOS = osName.startsWith("Mac");
             if (!macOS) {
                 FONT_UTILITIES_CLASS = getClassForName(FONT_UTILITIES_CLASS_NAME);
-                updateModuleToOpenPackage(FONT_UTILITIES_CLASS, "sun.font");
+                updateModuleToOpenPackage();
                 GET_FONT2D_METHOD = getMethod(FONT_UTILITIES_CLASS, GET_FONT2D_METHOD_NAME, Font.class);
                 COMPOSITE_FONT_CLASS = getClassForName(COMPOSITE_FONT_CLASS_NAME);
                 GET_NUM_SLOTS_METHOD = getMethod(COMPOSITE_FONT_CLASS, GET_NUM_SLOTS_METHOD_NAME);
@@ -2122,8 +2115,8 @@ public class PdfGraphics2D extends Graphics2D {
          * releases the default mode will be "deny". It's also important to add <code>--add-opens</code> for the given
          * package if it's need.
          */
-        private static void updateModuleToOpenPackage(Class<?> classInModule, String packageName) {
-            if (classInModule == null || packageName == null) {
+        private static void updateModuleToOpenPackage() {
+            if (CompositeFontDrawer.FONT_UTILITIES_CLASS == null) {
                 return;
             }
             Method getModuleMethod = getMethod(Class.class, GET_MODULE_METHOD_NAME);
@@ -2131,7 +2124,7 @@ public class PdfGraphics2D extends Graphics2D {
                 return;
             }
             try {
-                Object targetModule = getModuleMethod.invoke(classInModule);
+                Object targetModule = getModuleMethod.invoke(CompositeFontDrawer.FONT_UTILITIES_CLASS);
                 if (targetModule == null) {
                     return;
                 }
@@ -2141,22 +2134,23 @@ public class PdfGraphics2D extends Graphics2D {
                 if (isOpenMethod == null) {
                     return;
                 }
-                Object isOpened = isOpenMethod.invoke(targetModule, packageName, callerModule);
+                Object isOpened = isOpenMethod.invoke(targetModule, "sun.font", callerModule);
                 if (isOpened instanceof Boolean isOpenedBool && isOpenedBool) {
                     Method addOpensMethod = getMethod(moduleClass, ADD_OPENS_METHOD_NAME, String.class, moduleClass);
                     if (callerModule != null) {
-                        addOpensMethod.invoke(targetModule, packageName, callerModule);
+                        addOpensMethod.invoke(targetModule, "sun.font", callerModule);
                     }
                 }
-            } catch (Exception e) {
-                //da vedere come effettuare il log
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                String stringToLog = "Exception raised in PdfGraphics2D";
+                logger.severe(stringToLog);
             }
         }
 
         private static Class<?> getClassForName(String className) {
             try {
                 return Class.forName(className);
-            } catch (Exception e) {
+            } catch (ClassNotFoundException e) {
                 return null;
             }
         }
@@ -2169,7 +2163,7 @@ public class PdfGraphics2D extends Graphics2D {
             try {
                 method = clazz.getDeclaredMethod(methodName, parameterTypes);
                 // Removed the accessibility update
-            } catch (Exception e) {
+            } catch (NoSuchMethodException e) {
                 method = null; // You might want to log or handle the exception more specifically
             }
             return method;
@@ -2201,7 +2195,7 @@ public class PdfGraphics2D extends Graphics2D {
                     fontFamilyComposite.put(fontFamily, composite);
                 }
                 return composite;
-            } catch (Exception e) {
+            } catch (InvocationTargetException | IllegalAccessException e) {
                 return false;
             }
         }
@@ -2245,7 +2239,7 @@ public class PdfGraphics2D extends Graphics2D {
                     width += defaultDrawingFunction.drawString(strPart, baseFont, x + width, y);
                 }
                 return width;
-            } catch (Exception e) {
+            } catch (InvocationTargetException | IllegalAccessException e) {
                 BaseFont baseFont = fontConverter.apply(compositeFont);
                 return defaultDrawingFunction.drawString(s, baseFont, x, y);
             }

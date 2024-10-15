@@ -71,8 +71,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.ArrayDeque;
@@ -99,7 +101,6 @@ import java.util.zip.InflaterInputStream;
  */
 public class PdfReader implements PdfViewerPreferences, Closeable {
     private static final String FALSE_CONST = "false";
-    private static final String BAD_USER_PASSWORD_CONST = "bad.user.password";
     private static final String ENDSTREAM_CONST = "endstream";
     private static final String ILLEGAL_LENGTH_VALUE_CONST = "illegal.length.value";
 
@@ -488,7 +489,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 }
                 return obj;
             }
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -599,11 +600,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @return the decoded data
      */
     public static byte[] flateDecode(byte[] in) {
-        byte[] b = flateDecode(in, true);
-        if (b == null) {
-            return flateDecode(in, false);
-        }
-        return b;
+        return flateDecode(in, true);
     }
 
     /**
@@ -764,7 +761,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             zip.close();
             out.close();
             return out.toByteArray();
-        } catch (Exception e) {
+        } catch (IOException e) {
             if (strict) {
                 return new byte[]{};
             }
@@ -1229,12 +1226,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             acroFormParsed = true;
             PdfObject form = catalog.get(PdfName.ACROFORM);
             if (form != null) {
-                try {
-                    acroForm = new PRAcroForm(this);
-                    acroForm.readAcroForm((PdfDictionary) getPdfObject(form));
-                } catch (Exception e) {
-                    acroForm = null;
-                }
+                acroForm = new PRAcroForm(this);
+                acroForm.readAcroForm((PdfDictionary) getPdfObject(form));
             }
         }
         return acroForm;
@@ -1421,12 +1414,12 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             pdfVersion = tokens.checkPdfHeader();
             try {
                 readXref();
-            } catch (Exception e) {
+            } catch (PDFFilterException e) {
                 try {
                     rebuilt = true;
                     rebuildXref();
                     lastXref = -1;
-                } catch (Exception ne) {
+                } catch (IOException ne) {
                     throw new InvalidPdfException(MessageLocalization.getComposedMessage(
                             "rebuild.failed.1.original.message.2", ne.getMessage(),
                             e.getMessage()));
@@ -1434,7 +1427,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
             try {
                 readDocObj();
-            } catch (Exception e) {
+            } catch (IOException | PDFFilterException e) {
                 if (e instanceof BadPasswordException) {
                     throw new BadPasswordException();
                 }
@@ -1455,8 +1448,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         } finally {
             try {
                 tokens.close();
-            } catch (Exception e) {
-                // empty on purpose
+            } catch (IOException e) {
+                String stringToLog = "Exception raised in PdfReader in readPdf";
+                logger.severe(stringToLog);
             }
         }
     }
@@ -1481,7 +1475,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     void readAndRebuildXRef() throws InvalidPdfException {
         try {
             readXref();
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             tryRebuildXref(e);
         }
     }
@@ -1702,7 +1696,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 md.update(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255});
             }
             return md.digest();
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1750,9 +1744,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 }
             }
             pValue = decrypt.permissions;
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (IOException | GeneralSecurityException e) {
             throw new IOException(e);
         }
     }
@@ -1861,7 +1853,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 lastXrefPartial = idx;
             }
             return obj;
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1959,10 +1951,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             if (obj.isStream()) {
                 checkPRStreamLength((PRStream) obj);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             obj = null;
         }
         if (xref[k2 + 1] > 0) {
+            assert obj != null;
             obj = readOneObjStm((PRStream) obj, xref[k2]);
         }
         xrefObj.set(k, obj);
@@ -2055,7 +2048,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 if (obj.isStream()) {
                     streams.add(obj);
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 obj = null;
             }
             xrefObj.set(k / 2, obj);
@@ -2562,18 +2555,18 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         if (!PdfEncodings.convertToString(line, null).startsWith("trailer")) {
             return;
         }
-        tokens.seek(pos);
-        tokens.nextToken();
-        pos = tokens.getFilePointer();
 
         try {
+            tokens.seek(pos);
+            tokens.nextToken();
+            pos = tokens.getFilePointer();
             PdfDictionary dic = (PdfDictionary) readPRObject();
             if (dic.get(PdfName.ROOT) != null) {
                 trailer = dic;
             } else {
                 tokens.seek(pos);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             tokens.seek(pos);
         }
     }
@@ -2584,9 +2577,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     private int handleObjectStart(int[][] xr, byte[] line, int pos, int top) {
         int[] obj = PRTokeniser.checkObjectStart(line);
-        if (obj == null) {
-            return top;
-        }
 
         int num = obj[0];
         int gen = obj[1];
@@ -3068,7 +3058,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         } finally {
             try {
                 rf.close();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 // empty on purpose
             }
         }
@@ -3721,16 +3711,12 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected void removeUnusedNode(PdfObject obj, boolean[] hits) {
         Deque<Object> state = new ArrayDeque<>();
         state.push(obj);
 
         while (!state.isEmpty()) {
             Object current = state.pop();
-            if (current == null) {
-                continue;
-            }
 
             if (current instanceof PdfObject pdfObject) {
                 handlePdfObject(state, hits, pdfObject);
@@ -3819,10 +3805,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     /**
      * Removes all the unreachable objects.
-     *
-     * @return the number of indirect objects removed
      */
-    public int removeUnusedObjects() {
+    public void removeUnusedObjects() {
         boolean[] hits = new boolean[xrefObj.size()];
         removeUnusedNode(trailer, hits);
         int total = 0;
@@ -3843,7 +3827,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 }
             }
         }
-        return total;
     }
 
     /**
@@ -3911,19 +3894,13 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @throws IOException on error
      */
     public String getJavaScript() throws IOException {
-        RandomAccessFileOrArray rf = getSafeFile();
-        try {
+        try (RandomAccessFileOrArray rf = getSafeFile()) {
             rf.reOpen();
             return getJavaScript(rf);
         } catch (PDFFilterException e) {
             throw new IOException(e.getMessage());
-        } finally {
-            try {
-                rf.close();
-            } catch (Exception ignored) {
-                //da vedere come effettuare il log
-            }
         }
+        //da vedere come effettuare il log
     }
 
     /**
@@ -4346,7 +4323,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                         return new PRIndirectReference(reader, n);
                     }
                 }
-            } catch (Exception e) {
+            } catch (NullPointerException e) {
                 throw new ExceptionConverter(e);
             }
         }

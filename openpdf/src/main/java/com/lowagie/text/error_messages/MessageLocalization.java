@@ -208,16 +208,14 @@ public final class MessageLocalization {
      *
      * @param language the language
      * @param country  the country
-     * @return true if the language was found, false otherwise
      * @throws IOException on error
      */
-    public static boolean setLanguage(String language, String country) throws IOException {
+    public static void setLanguage(String language, String country) throws IOException {
         Map<String, String> lang = getLanguageMessages(language, country);
         if (lang == null) {
-            return false;
+            return;
         }
         currentLanguage = lang;
-        return true;
     }
 
     /**

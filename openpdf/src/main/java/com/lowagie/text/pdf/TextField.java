@@ -182,7 +182,7 @@ public class TextField extends BaseField {
         try {
             Class.forName("com.ibm.icu.text.Bidi");
             return textRunDirectionByContent(ptext);
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
             return textRunDirectionDefault(ptext);
         }
     }
@@ -244,7 +244,7 @@ public class TextField extends BaseField {
     }
 
     private Phrase composePhrase(String text, BaseFont ufont, Color color, float fontSize) {
-        Phrase phrase = null;
+        Phrase phrase;
         if (extensionFont == null && (substitutionFonts == null || substitutionFonts.isEmpty())) {
             phrase = new Phrase(new Chunk(text, new Font(ufont, fontSize, 0, color)));
         } else {
@@ -304,7 +304,7 @@ public class TextField extends BaseField {
 
     private PdfAppearance initializeAppearance() throws DocumentException {
         BoxSettings boxSettings = new BoxSettings(super.box, super.rotation);
-        AppearanceSettings appearanceSettings = new AppearanceSettings(super.backgroundColor,
+        AppearanceSettings appearanceSettings = new AppearanceSettings(backgroundColor,
                 super.borderStyle, super.borderWidth, super.borderColor, super.options, super.maxCharacterLength);
         return getBorderAppearance(super.writer, boxSettings, appearanceSettings);
     }
@@ -520,7 +520,7 @@ public class TextField extends BaseField {
      */
     PdfAppearance getListAppearance() throws IOException, DocumentException {
         BoxSettings boxSettings = new BoxSettings(super.box, super.rotation);
-        AppearanceSettings appearanceSettings = new AppearanceSettings(super.backgroundColor,
+        AppearanceSettings appearanceSettings = new AppearanceSettings(backgroundColor,
                 super.borderStyle, super.borderWidth, super.borderColor, super.options, super.maxCharacterLength);
         PdfAppearance app = getBorderAppearance(super.writer, boxSettings, appearanceSettings);
         if (choices == null || choices.length == 0) {
@@ -548,8 +548,8 @@ public class TextField extends BaseField {
         float leading =
                 ufont.getFontDescriptor(BaseFont.BBOXURY, usize) - ufont.getFontDescriptor(BaseFont.BBOXLLY, usize);
         int maxFit = (int) (h / leading) + 1;
-        int first = 0;
-        int last = 0;
+        int first;
+        int last;
         first = topChoice;
         last = first + maxFit;
         if (last > choices.length) {
