@@ -33,6 +33,8 @@
 package com.lowagie.toolbox.swing;
 
 import javax.swing.SwingUtilities;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @since 2.1.1 (imported from itexttoolbox project)
@@ -54,16 +56,19 @@ public abstract class EventDispatchingThread {
     protected EventDispatchingThread() {
         final Runnable doFinished = this::finished;
 
-        Runnable doConstruct = () -> {
+        ExecutorService executorService = Executors.newSingleThreadExecutor(); // Create a thread pool
+
+        // Submit the task to the executor service
+        executorService.submit(() -> {
             try {
                 value = construct();
             } finally {
                 thread.clear();
+                executorService.shutdown(); // Properly shut down the executor
             }
+            // Ensure that doFinished is invoked on the Event Dispatch Thread (EDT)
             SwingUtilities.invokeLater(doFinished);
-        };
-        Thread t = new Thread(doConstruct);
-        thread = new ThreadWrapper(t);
+        });
     }
 
     /**

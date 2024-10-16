@@ -177,10 +177,31 @@ public class ExceptionConverter extends RuntimeException {
     @Override
     public void printStackTrace(java.io.PrintStream printStream) {
         synchronized (lock) {
-            printStream.print(prefix);
+            // Optionally mask or redact sensitive information in prefix
+            String safePrefix = redactSensitiveInfo(prefix);
+
+            // Print the safe prefix
+            printStream.print(safePrefix);
             ex.printStackTrace(printStream);
         }
     }
+
+    /**
+     * Redacts sensitive information from the given string.
+     * This is a simple example; adjust the logic as needed.
+     *
+     * @param original The original string.
+     * @return The redacted string.
+     */
+    private String redactSensitiveInfo(String original) {
+        // Example logic to mask sensitive data, such as replacing parts of the string
+        // This can be tailored to your specific needs
+        if (original != null) {
+            return original.replaceAll("(?<=\\w{3})\\w+", "****"); // Mask everything after the first 3 characters
+        }
+        return original; // Return as-is if null
+    }
+
 
     /**
      * Again, we prefix the stack trace with "ExceptionConverter:"
