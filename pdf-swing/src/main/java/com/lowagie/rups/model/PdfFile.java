@@ -73,6 +73,10 @@ public class PdfFile {
         RandomAccessFileOrArray pdf = new RandomAccessFileOrArray(file.getAbsolutePath());
         directory = file.getParentFile();
         filename = file.getName();
+        callReadFile(pdf);
+    }
+
+    private void callReadFile(RandomAccessFileOrArray pdf) throws IOException {
         readFile(pdf);
     }
 
@@ -85,7 +89,7 @@ public class PdfFile {
      */
     public PdfFile(byte[] file) throws IOException, DocumentException {
         RandomAccessFileOrArray pdf = new RandomAccessFileOrArray(file);
-        readFile(pdf);
+        callReadFile(pdf);
     }
 
     /**

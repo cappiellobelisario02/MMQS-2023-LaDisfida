@@ -49,6 +49,8 @@
 
 package com.lowagie.text.xml.xmp;
 
+import java.io.Serial;
+
 /**
  * An implementation of an XmpSchema.
  */
@@ -70,10 +72,15 @@ public class PdfA1Schema extends XmpSchema {
      * Conformance, A or B.
      */
     public static final String CONFORMANCE = "pdfaid:conformance";
+    @Serial
     private static final long serialVersionUID = 5300646133692948168L;
 
     public PdfA1Schema() {
         super("xmlns:" + DEFAULT_XPATH_ID + "=\"" + DEFAULT_XPATH_URI + "\"");
+        callAddPart1();
+    }
+
+    private void callAddPart1() {
         addPart("1");
     }
 

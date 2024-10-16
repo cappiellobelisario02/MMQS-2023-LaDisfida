@@ -50,6 +50,7 @@
 package com.lowagie.text;
 
 import com.lowagie.text.pdf.PdfWriter;
+import java.io.Serial;
 import java.util.ArrayList;
 
 /**
@@ -76,6 +77,7 @@ import java.util.ArrayList;
 public class Paragraph extends Phrase {
 
     // constants
+    @Serial
     private static final long serialVersionUID = 7852314969733375514L;
 
     // membervariables
@@ -268,8 +270,7 @@ public class Paragraph extends Phrase {
      */
     @Override
     public boolean add(Element o) {
-        if (o instanceof List) {
-            List list = (List) o;
+        if (o instanceof List list) {
             list.setIndentationLeft(list.getIndentationLeft() + indentationLeft);
             list.setIndentationRight(indentationRight);
             return super.add(list);

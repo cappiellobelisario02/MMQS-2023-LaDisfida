@@ -156,9 +156,17 @@ public class PdfPCell extends Rectangle {
      */
     public PdfPCell(Phrase phrase) {
         super(0, 0, 0, 0);
+        initializeCell();
+        this.phrase = phrase;
+        setupColumnWithPhrase();
+    }
+
+    private void initializeCell() {
         borderWidth = 0.5f;
         border = BOX;
-        this.phrase = phrase;
+    }
+
+    private void setupColumnWithPhrase() {
         column.addText(this.phrase);
         column.setLeading(0, 1);
     }
@@ -181,16 +189,14 @@ public class PdfPCell extends Rectangle {
      */
     public PdfPCell(Image image, boolean fit) {
         super(0, 0, 0, 0);
-        borderWidth = 0.5f;
-        border = BOX;
+        initializeCell();
         if (fit) {
             this.image = image;
             column.setLeading(0, 1);
             setPadding(borderWidth / 2);
         } else {
             this.phrase = new Phrase(new Chunk(image, 0, 0));
-            column.addText(this.phrase);
-            column.setLeading(0, 1);
+            setupColumnWithPhrase();
             setPadding(0);
         }
     }
@@ -214,13 +220,25 @@ public class PdfPCell extends Rectangle {
      */
     public PdfPCell(PdfPTable table, PdfPCell style) {
         super(0, 0, 0, 0);
+        initializeCell2();
+        setupTable(table);
+        applyStyle(style);
+    }
+
+    private void initializeCell2() {
         borderWidth = 0.5f;
         border = BOX;
         column.setLeading(0, 1);
+    }
+
+    private void setupTable(PdfPTable table) {
         this.table = table;
         table.setWidthPercentage(100);
         table.setExtendLastRow(true);
         column.addElement(table);
+    }
+
+    private void applyStyle(PdfPCell style) {
         if (style != null) {
             cloneNonPositionParameters(style);
             verticalAlignment = style.verticalAlignment;
@@ -239,6 +257,7 @@ public class PdfPCell extends Rectangle {
         }
     }
 
+
     /**
      * Constructs a deep copy of a <CODE>PdfPCell</CODE>.
      *
@@ -246,6 +265,10 @@ public class PdfPCell extends Rectangle {
      */
     public PdfPCell(PdfPCell cell) {
         super(cell.llx, cell.lly, cell.urx, cell.ury);
+        initializeFromCell(cell);
+    }
+
+    private void initializeFromCell(PdfPCell cell) {
         cloneNonPositionParameters(cell);
         verticalAlignment = cell.verticalAlignment;
         paddingLeft = cell.paddingLeft;
@@ -258,16 +281,22 @@ public class PdfPCell extends Rectangle {
         noWrap = cell.noWrap;
         colspan = cell.colspan;
         rowspan = cell.rowspan;
+
         if (cell.table != null) {
             table = new PdfPTable(cell.table);
         }
-        image = Image.getInstance(cell.image);
+
+        if (cell.image != null) {
+            image = Image.getInstance(cell.image);
+        }
+
         cellEvent = cell.cellEvent;
         useDescender = cell.useDescender;
         column = ColumnText.duplicate(cell.column);
         useBorderPadding = cell.useBorderPadding;
         rotationPdfPCell = cell.rotationPdfPCell;
     }
+
 
     /**
      * Adds an iText element to the cell.

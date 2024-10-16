@@ -134,9 +134,7 @@ public class PdfArray extends PdfObject {
      */
     public PdfArray(List<? extends PdfObject> pdfObjectList) {
         this();
-        if (pdfObjectList != null) {
-            arrayList.addAll(pdfObjectList);
-        }
+        initializeArrayList(pdfObjectList);
     }
 
     /**
@@ -146,7 +144,14 @@ public class PdfArray extends PdfObject {
      * @param array a <CODE>PdfArray</CODE> to be added to the array
      */
     public PdfArray(PdfArray array) {
-        this(array.getElements());
+        this();
+        initializeArrayList(array.getElements());
+    }
+
+    private void initializeArrayList(List<? extends PdfObject> pdfObjectList) {
+        if (pdfObjectList != null) {
+            arrayList.addAll(pdfObjectList);
+        }
     }
 
     // METHODS OVERRIDING SOME PDFOBJECT METHODS

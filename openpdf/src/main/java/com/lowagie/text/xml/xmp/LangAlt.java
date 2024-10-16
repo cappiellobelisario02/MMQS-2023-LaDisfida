@@ -49,6 +49,7 @@
 
 package com.lowagie.text.xml.xmp;
 
+import java.io.Serial;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -61,6 +62,7 @@ public class LangAlt extends Properties {
     /**
      * A serial version id.
      */
+    @Serial
     private static final long serialVersionUID = 4396971487200843099L;
 
     /**
@@ -70,6 +72,10 @@ public class LangAlt extends Properties {
      */
     public LangAlt(String defaultValue) {
         super();
+        callAddLanguage(defaultValue);
+    }
+
+    private void callAddLanguage(String defaultValue) {
         addLanguage(DEFAULT, defaultValue);
     }
 

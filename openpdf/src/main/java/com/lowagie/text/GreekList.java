@@ -63,6 +63,10 @@ public class GreekList extends List {
      */
     public GreekList() {
         super(true);
+        callSetGreekFont();
+    }
+
+    private void callSetGreekFont() {
         setGreekFont();
     }
 
@@ -73,7 +77,7 @@ public class GreekList extends List {
      */
     public GreekList(int symbolIndent) {
         super(true, symbolIndent);
-        setGreekFont();
+        callSetGreekFont();
     }
 
     /**
@@ -85,7 +89,7 @@ public class GreekList extends List {
     public GreekList(boolean greeklower, int symbolIndent) {
         super(true, symbolIndent);
         lowercase = greeklower;
-        setGreekFont();
+        callSetGreekFont();
     }
 
     // helper method
@@ -108,8 +112,7 @@ public class GreekList extends List {
      */
     @Override
     public boolean add(Element o) {
-        if (o instanceof ListItem) {
-            ListItem item = (ListItem) o;
+        if (o instanceof ListItem item) {
             Chunk chunk = new Chunk(preSymbol, symbol.getFont());
             chunk.append(GreekAlphabetFactory.getString(first + listOfListItems.size(), lowercase));
             chunk.append(postSymbol);
@@ -117,8 +120,7 @@ public class GreekList extends List {
             item.setIndentationLeft(symbolIndent, autoindent);
             item.setIndentationRight(0);
             listOfListItems.add(item);
-        } else if (o instanceof List) {
-            List nested = (List) o;
+        } else if (o instanceof List nested) {
             nested.setIndentationLeft(nested.getIndentationLeft() + symbolIndent);
             first--;
             return listOfListItems.add(nested);

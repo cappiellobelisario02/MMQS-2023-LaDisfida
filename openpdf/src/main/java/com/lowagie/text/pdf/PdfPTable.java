@@ -232,6 +232,10 @@ public class PdfPTable implements LargeElement {
      */
     public PdfPTable(PdfPTable table) {
         copyFormat(table);
+        initializeTableRows(table);
+    }
+
+    private void initializeTableRows(PdfPTable table) {
         for (int k = 0; k < currentRow.length; ++k) {
             if (table.currentRow[k] == null) {
                 break;
@@ -246,6 +250,7 @@ public class PdfPTable implements LargeElement {
             rows.add(row);
         }
     }
+
 
     /**
      * Makes a shallow copy of a table (format without content).
@@ -1433,8 +1438,8 @@ public class PdfPTable implements LargeElement {
             this.tableEvent = null;
         } else if (this.tableEvent == null) {
             this.tableEvent = event;
-        } else if (this.tableEvent instanceof PdfPTableEventForwarder) {
-            ((PdfPTableEventForwarder) this.tableEvent).addTableEvent(event);
+        } else if (this.tableEvent instanceof PdfPTableEventForwarder pdfPTableEventForwarder) {
+            pdfPTableEventForwarder.addTableEvent(event);
         } else {
             PdfPTableEventForwarder forward = new PdfPTableEventForwarder();
             forward.addTableEvent(this.tableEvent);
@@ -1577,16 +1582,12 @@ public class PdfPTable implements LargeElement {
      *                     PdfWriter.RUN_DIRECTION_NO_BIDI, PdfWriter.RUN_DIRECTION_LTR or PdfWriter.RUN_DIRECTION_RTL.
      */
     public void setRunDirection(int runDirection) {
-        switch (runDirection) {
-            case PdfWriter.RUN_DIRECTION_DEFAULT,
-                 PdfWriter.RUN_DIRECTION_NO_BIDI,
-                 PdfWriter.RUN_DIRECTION_LTR,
-                 PdfWriter.RUN_DIRECTION_RTL:
-                    this.runDirection = runDirection;
-                    break;
-            default:
-                throw new InvalidRunDirectionException(
-                        MessageLocalization.getComposedMessage("invalid.run.direction.1", runDirection));
+        if (runDirection == PdfWriter.RUN_DIRECTION_DEFAULT || runDirection == PdfWriter.RUN_DIRECTION_NO_BIDI
+                || runDirection == PdfWriter.RUN_DIRECTION_LTR || runDirection == PdfWriter.RUN_DIRECTION_RTL) {
+            this.runDirection = runDirection;
+        } else {
+            throw new InvalidRunDirectionException(
+                    MessageLocalization.getComposedMessage("invalid.run.direction.1", runDirection));
         }
     }
 

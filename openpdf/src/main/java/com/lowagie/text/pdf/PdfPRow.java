@@ -222,7 +222,7 @@ public class PdfPRow {
     public float calculateHeights() {
         maxHeight = 0;
         for (PdfPCell cell : cells) {
-            float height = 0;
+            float height;
             if (cell != null) {
                 height = cell.getMaxHeight();
                 if ((height > maxHeight) && (cell.getRowspan() == 1)) {
@@ -639,19 +639,18 @@ public class PdfPRow {
 
         for (int k = 0; k < cells.length; ++k) {
             PdfPCell cell = cells[k];
-            float newHeightLoop = newHeight;
 
             if (cell == null) {
-                allEmpty = handleNullCell(table, rowIndex, newCells, newHeightLoop, k, allEmpty);
+                allEmpty = handleNullCell(table, rowIndex, newCells, newHeight, k, allEmpty);
                 continue;
             }
 
             fixHs[k] = cell.getFixedHeight();
             minHs[k] = cell.getMinimumHeight();
-            newCells[k] = createNewCell(cell, newHeightLoop);
-            allEmpty = handleCellContent(cell, newCells[k], newHeightLoop) && allEmpty;
+            newCells[k] = createNewCell(cell, newHeight);
+            allEmpty = handleCellContent(cell, newCells[k], newHeight) && allEmpty;
 
-            cell.setFixedHeight(newHeightLoop);
+            cell.setFixedHeight(newHeight);
         }
 
         if (allEmpty) {
@@ -665,10 +664,9 @@ public class PdfPRow {
     private boolean handleNullCell(PdfPTable table, int rowIndex, PdfPCell[] newCells, float newHeightLoop, int k, boolean allEmpty) {
         int index = rowIndex;
         if (table.rowSpanAbove(index, k)) {
-            newHeightLoop += table.getRowHeight(index);
-            while (table.rowSpanAbove(--index, k)) {
+            do {
                 newHeightLoop += table.getRowHeight(index);
-            }
+            } while (table.rowSpanAbove(--index, k));
             PdfPRow row = table.getRow(index);
             if (row != null && row.getCells()[k] != null) {
                 newCells[k] = createSpannedCell(row.getCells()[k], newHeightLoop, rowIndex - index);
