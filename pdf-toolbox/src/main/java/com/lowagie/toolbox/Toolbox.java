@@ -163,14 +163,14 @@ public class Toolbox extends JFrame implements ActionListener {
     /**
      * Starts the Toolbox utility.
      * <p>
-     * use as first argument the name of the plugin, then the arguments of the
+     * use as first argument the getName of the plugin, then the arguments of the
      * plugin used.
      * <p>
      * e.g.
      * <p>
      * java -jar itext.jar Burst inputfile.pdf
      * <p>
-     * That way you can call plugins by name directly.
+     * That way you can call plugins by getName directly.
      *
      * @param args no arguments needed
      */
@@ -330,7 +330,7 @@ public class Toolbox extends JFrame implements ActionListener {
     /**
      * Creates an Internal Frame.
      *
-     * @param name the name of the application
+     * @param name the getName of the application
      * @return AbstractTool
      * @throws InstantiationException on error
      * @throws IllegalAccessException on error with the access rights

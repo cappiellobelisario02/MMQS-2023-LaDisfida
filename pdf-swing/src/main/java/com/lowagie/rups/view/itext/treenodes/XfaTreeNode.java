@@ -101,7 +101,7 @@ public class XfaTreeNode extends FormTreeNode implements OutputStreamResource {
      * Adds a child node to the XFA root. The child node either corresponds with the complete XDP stream (if the XFA
      * root only has one child) or with individual packet.
      *
-     * @param key   the name of the packet
+     * @param key   the getName of the packet
      * @param value the corresponding stream node in the PdfTree
      */
     public void addPacket(String key, PdfObjectTreeNode value) {

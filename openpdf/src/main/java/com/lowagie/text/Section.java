@@ -262,11 +262,11 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
     }
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
-    public int type() {
+    public int getTypeImpl() {
         return Element.SECTION;
     }
 
@@ -277,7 +277,7 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
      * <CODE>false</CODE> if it is a <CODE>Section</CODE>.
      */
     public boolean isChapter() {
-        return type() == Element.CHAPTER;
+        return getTypeImpl() == Element.CHAPTER;
     }
 
     /**
@@ -287,7 +287,7 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
      * <CODE>false</CODE> if it is a <CODE>Chapter</CODE>.
      */
     public boolean isSection() {
-        return type() == Element.SECTION;
+        return getTypeImpl() == Element.SECTION;
     }
 
     /**
@@ -345,7 +345,7 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
      * Adds a <CODE>Paragraph</CODE>, <CODE>List</CODE> or <CODE>Table</CODE> to this <CODE>Section</CODE>.
      *
      * @param index index at which the specified element is to be inserted
-     * @param o     an object of type <CODE>Paragraph</CODE>, <CODE>List</CODE> or <CODE>Table</CODE>=
+     * @param o     an object of getTypeImpl <CODE>Paragraph</CODE>, <CODE>List</CODE> or <CODE>Table</CODE>=
      * @throws ClassCastException if the object is not a <CODE>Paragraph</CODE>, <CODE>List</CODE> or
      *                            <CODE>Table</CODE>
      */
@@ -373,7 +373,7 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
      * Adds a <CODE>Paragraph</CODE>, <CODE>List</CODE>, <CODE>Table</CODE> or another <CODE>Section</CODE> to this
      * <CODE>Section</CODE>.
      *
-     * @param o an object of type <CODE>Paragraph</CODE>, <CODE>List</CODE>, <CODE>Table</CODE> or another
+     * @param o an object of getTypeImpl <CODE>Paragraph</CODE>, <CODE>List</CODE>, <CODE>Table</CODE> or another
      *          <CODE>Section</CODE>
      * @return a boolean
      * @throws ClassCastException if the object is not a <CODE>Paragraph</CODE>, <CODE>List</CODE>, <CODE>Table</CODE>
@@ -387,11 +387,11 @@ public class Section extends ArrayList<Element> implements TextElementArray, Lar
         }
         try {
             Element element = o;
-            if (element.type() == Element.SECTION) {
+            if (element.getTypeImpl() == Element.SECTION) {
                 Section section = (Section) o;
                 section.setNumbers(++subsections, numbers);
                 return super.add(section);
-            } else if (o instanceof MarkedSection section && (section.element.type() == Element.SECTION)) {
+            } else if (o instanceof MarkedSection section && (section.element.getTypeImpl() == Element.SECTION)) {
                 Section newSection = (Section) section.element;
                 newSection.setNumbers(++subsections, numbers);
                 return super.add(section);

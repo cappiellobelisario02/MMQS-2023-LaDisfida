@@ -37,7 +37,7 @@ public class DvdCover {
     private static final Logger logger = Logger.getLogger(DvdCover.class.getName());
 
     /**
-     * the name of the file that has to be generated.
+     * the getName of the file that has to be generated.
      */
     protected String filename;
     /**

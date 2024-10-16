@@ -9,7 +9,7 @@ import com.lowagie.text.pdf.PdfString;
 public class PdfTargetDictionary extends PdfDictionary {
 
     /**
-     * Creates dictionary referring to a target document that is the parent of the current document.
+     * Creates dictionary referring to a target document that is the getParent of the current document.
      *
      * @param nested null if this is the actual target, another target if this is only an intermediate target.
      */
@@ -28,7 +28,7 @@ public class PdfTargetDictionary extends PdfDictionary {
     /**
      * Creates a dictionary referring to a target document.
      *
-     * @param child if false, this refers to the parent document; if true, this refers to a child document, and you'll
+     * @param child if false, this refers to the getParent document; if true, this refers to a child document, and you'll
      *              have to specify where to find the child using the other methods of this class
      */
     public PdfTargetDictionary(boolean child) {
@@ -41,17 +41,17 @@ public class PdfTargetDictionary extends PdfDictionary {
     }
 
     /**
-     * If this dictionary refers to a child that is a document level attachment, you need to specify the name that was
+     * If this dictionary refers to a child that is a document level attachment, you need to specify the getName that was
      * used to attach the document.
      *
-     * @param target the name in the EmbeddedFiles name tree
+     * @param target the getName in the EmbeddedFiles getName tree
      */
     public void setEmbeddedFileName(String target) {
         put(PdfName.N, new PdfString(target, null));
     }
 
     /**
-     * If this dictionary refers to a child that is a file attachment added to a page, you need to specify the name of
+     * If this dictionary refers to a child that is a file attachment added to a page, you need to specify the getName of
      * the page (or use setFileAttachmentPage to specify the page number). Once you have specified the page, you still
      * need to specify the attachment using another method.
      *
@@ -74,10 +74,10 @@ public class PdfTargetDictionary extends PdfDictionary {
 
     /**
      * If this dictionary refers to a child that is a file attachment added to a page, you need to specify the page with
-     * setFileAttachmentPage or setFileAttachmentPageName, and then specify the name of the attachment added to this
+     * setFileAttachmentPage or setFileAttachmentPageName, and then specify the getName of the attachment added to this
      * page (or use setFileAttachmentIndex).
      *
-     * @param name the name of the attachment
+     * @param name the getName of the attachment
      */
     public void setFileAttachmentName(String name) {
         put(PdfName.A, new PdfString(name, PdfObject.TEXT_UNICODE));

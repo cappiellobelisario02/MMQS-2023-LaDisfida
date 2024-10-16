@@ -75,47 +75,47 @@ public abstract class PdfObject {
     // CONSTANTS
 
     /**
-     * A possible type of <CODE>PdfObject</CODE>
+     * A possible getTypeImpl of <CODE>PdfObject</CODE>
      */
     public static final int BOOLEAN = 1;
 
     /**
-     * A possible type of <CODE>PdfObject</CODE>
+     * A possible getTypeImpl of <CODE>PdfObject</CODE>
      */
     public static final int NUMBER = 2;
 
     /**
-     * A possible type of <CODE>PdfObject</CODE>
+     * A possible getTypeImpl of <CODE>PdfObject</CODE>
      */
     public static final int STRING = 3;
 
     /**
-     * A possible type of <CODE>PdfObject</CODE>
+     * A possible getTypeImpl of <CODE>PdfObject</CODE>
      */
     public static final int NAME = 4;
 
     /**
-     * A possible type of <CODE>PdfObject</CODE>
+     * A possible getTypeImpl of <CODE>PdfObject</CODE>
      */
     public static final int ARRAY = 5;
 
     /**
-     * A possible type of <CODE>PdfObject</CODE>
+     * A possible getTypeImpl of <CODE>PdfObject</CODE>
      */
     public static final int DICTIONARY = 6;
 
     /**
-     * A possible type of <CODE>PdfObject</CODE>
+     * A possible getTypeImpl of <CODE>PdfObject</CODE>
      */
     public static final int STREAM = 7;
 
     /**
-     * A possible type of <CODE>PdfObject</CODE>
+     * A possible getTypeImpl of <CODE>PdfObject</CODE>
      */
     public static final int NULL = 8;
 
     /**
-     * A possible type of <CODE>PdfObject</CODE>
+     * A possible getTypeImpl of <CODE>PdfObject</CODE>
      */
     public static final int INDIRECT = 10;
 
@@ -143,7 +143,7 @@ public abstract class PdfObject {
     protected byte[] bytes;
 
     /**
-     * The type of this <CODE>PdfObject</CODE>
+     * The getTypeImpl of this <CODE>PdfObject</CODE>
      */
     protected int type;
 
@@ -155,18 +155,18 @@ public abstract class PdfObject {
     // CONSTRUCTORS
 
     /**
-     * Constructs a <CODE>PdfObject</CODE> of a certain <VAR>type</VAR> without any <VAR>content</VAR>.
+     * Constructs a <CODE>PdfObject</CODE> of a certain <VAR>getTypeImpl</VAR> without any <VAR>content</VAR>.
      *
-     * @param type type of the new <CODE>PdfObject</CODE>
+     * @param type getTypeImpl of the new <CODE>PdfObject</CODE>
      */
     protected PdfObject(int type) {
         this.type = type;
     }
 
     /**
-     * Constructs a <CODE>PdfObject</CODE> of a certain <VAR>type</VAR> with a certain <VAR>content</VAR>.
+     * Constructs a <CODE>PdfObject</CODE> of a certain <VAR>getTypeImpl</VAR> with a certain <VAR>content</VAR>.
      *
-     * @param type    type of the new <CODE>PdfObject</CODE>
+     * @param type    getTypeImpl of the new <CODE>PdfObject</CODE>
      * @param content content of the new <CODE>PdfObject</CODE> as a
      *                <CODE>String</CODE>.
      */
@@ -176,9 +176,9 @@ public abstract class PdfObject {
     }
 
     /**
-     * Constructs a <CODE>PdfObject</CODE> of a certain <VAR>type</VAR> with a certain <VAR>content</VAR>.
+     * Constructs a <CODE>PdfObject</CODE> of a certain <VAR>getTypeImpl</VAR> with a certain <VAR>content</VAR>.
      *
-     * @param type  type of the new <CODE>PdfObject</CODE>
+     * @param type  getTypeImpl of the new <CODE>PdfObject</CODE>
      * @param bytes content of the new <CODE>PdfObject</CODE> as an array of
      *              <CODE>byte</CODE>.
      */
@@ -227,7 +227,7 @@ public abstract class PdfObject {
     /**
      * Whether this object can be contained in an object stream.
      * <p>
-     * PdfObjects of type STREAM OR INDIRECT can not be contained in an object stream.
+     * PdfObjects of getTypeImpl STREAM OR INDIRECT can not be contained in an object stream.
      *
      * @return <CODE>true</CODE> if this object can be in an object stream.
      * Otherwise <CODE>false</CODE>
@@ -274,25 +274,25 @@ public abstract class PdfObject {
         bytes = PdfEncodings.convertToBytes(content, null);
     }
 
-    // methods dealing with the type of this object
+    // methods dealing with the getTypeImpl of this object
 
     /**
-     * Returns the type of this <CODE>PdfObject</CODE>.
+     * Returns the getTypeImpl of this <CODE>PdfObject</CODE>.
      * <p>
-     * May be either of: - <VAR>NULL</VAR>: A <CODE>PdfNull</CODE> - <VAR>BOOLEAN</VAR>: A <CODE>PdfBoolean</CODE> -
+     * Maybe either of: - <VAR>NULL</VAR>: A <CODE>PdfNull</CODE> - <VAR>BOOLEAN</VAR>: A <CODE>PdfBoolean</CODE> -
      * <VAR>NUMBER</VAR>: A <CODE>PdfNumber</CODE> - <VAR>STRING</VAR>: A <CODE>PdfString</CODE> - <VAR>NAME</VAR>: A
      * <CODE>PdfName</CODE> - <VAR>ARRAY</VAR>: A <CODE>PdfArray</CODE> - <VAR>DICTIONARY</VAR>: A
      * <CODE>PdfDictionary</CODE> - <VAR>STREAM</VAR>: A <CODE>PdfStream</CODE> - <VAR>INDIRECT</VAR>: {@literal >}
      * <CODE>PdfIndirectObject</CODE>
      *
-     * @return The type
+     * @return The getTypeImpl
      */
-    public int type() {
+    public int getTypeImpl() {
         return type;
     }
 
     /**
-     * Checks if this <CODE>PdfObject</CODE> is of the type
+     * Checks if this <CODE>PdfObject</CODE> is of the getTypeImpl
      * <CODE>PdfNull</CODE>.
      *
      * @return <CODE>true</CODE> or <CODE>false</CODE>
@@ -302,7 +302,7 @@ public abstract class PdfObject {
     }
 
     /**
-     * Checks if this <CODE>PdfObject</CODE> is of the type
+     * Checks if this <CODE>PdfObject</CODE> is of the getTypeImpl
      * <CODE>PdfBoolean</CODE>.
      *
      * @return <CODE>true</CODE> or <CODE>false</CODE>
@@ -312,7 +312,7 @@ public abstract class PdfObject {
     }
 
     /**
-     * Checks if this <CODE>PdfObject</CODE> is of the type
+     * Checks if this <CODE>PdfObject</CODE> is of the getTypeImpl
      * <CODE>PdfNumber</CODE>.
      *
      * @return <CODE>true</CODE> or <CODE>false</CODE>
@@ -322,7 +322,7 @@ public abstract class PdfObject {
     }
 
     /**
-     * Checks if this <CODE>PdfObject</CODE> is of the type
+     * Checks if this <CODE>PdfObject</CODE> is of the getTypeImpl
      * <CODE>PdfString</CODE>.
      *
      * @return <CODE>true</CODE> or <CODE>false</CODE>
@@ -332,7 +332,7 @@ public abstract class PdfObject {
     }
 
     /**
-     * Checks if this <CODE>PdfObject</CODE> is of the type
+     * Checks if this <CODE>PdfObject</CODE> is of the getTypeImpl
      * <CODE>PdfName</CODE>.
      *
      * @return <CODE>true</CODE> or <CODE>false</CODE>
@@ -342,7 +342,7 @@ public abstract class PdfObject {
     }
 
     /**
-     * Checks if this <CODE>PdfObject</CODE> is of the type
+     * Checks if this <CODE>PdfObject</CODE> is of the getTypeImpl
      * <CODE>PdfArray</CODE>.
      *
      * @return <CODE>true</CODE> or <CODE>false</CODE>
@@ -352,7 +352,7 @@ public abstract class PdfObject {
     }
 
     /**
-     * Checks if this <CODE>PdfObject</CODE> is of the type
+     * Checks if this <CODE>PdfObject</CODE> is of the getTypeImpl
      * <CODE>PdfDictionary</CODE>.
      *
      * @return <CODE>true</CODE> or <CODE>false</CODE>
@@ -362,7 +362,7 @@ public abstract class PdfObject {
     }
 
     /**
-     * Checks if this <CODE>PdfObject</CODE> is of the type
+     * Checks if this <CODE>PdfObject</CODE> is of the getTypeImpl
      * <CODE>PdfStream</CODE>.
      *
      * @return <CODE>true</CODE> or <CODE>false</CODE>
@@ -372,7 +372,7 @@ public abstract class PdfObject {
     }
 
     /**
-     * Checks if this <CODE>PdfObject</CODE> is of the type
+     * Checks if this <CODE>PdfObject</CODE> is of the getTypeImpl
      * <CODE>PdfIndirectObject</CODE>.
      *
      * @return <CODE>true</CODE> if this is an indirect object,

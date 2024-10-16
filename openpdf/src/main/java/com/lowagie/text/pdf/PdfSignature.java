@@ -103,7 +103,7 @@ public class PdfSignature extends PdfDictionary {
     }
 
     /**
-     * Return the build properties dictionary (PDF Dictionary name: Prop_Build)
+     * Return the build properties dictionary (PDF Dictionary getName: Prop_Build)
      *
      * @return the build properties dictionary
      */

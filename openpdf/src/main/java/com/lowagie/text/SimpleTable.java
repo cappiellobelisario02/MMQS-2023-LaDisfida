@@ -85,7 +85,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
      */
     private float cellpadding;
     /**
-     * the alignment of the table.
+     * the getAlignment of the table.
      */
     private int alignment;
 
@@ -101,7 +101,7 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
     /**
      * Adds content to this object.
      *
-     * @param element an object of type {@link SimpleCell} that will be added in the table
+     * @param element an object of getTypeImpl {@link SimpleCell} that will be added in the table
      * @throws BadElementException on error
      */
     public void addElement(SimpleCell element) throws BadElementException {
@@ -324,42 +324,42 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
     }
 
     /**
-     * @return Returns the cellpadding.
+     * @return Returns the getCellPadding.
      */
     public float getCellpadding() {
         return cellpadding;
     }
 
     /**
-     * @param cellpadding The cellpadding to set.
+     * @param cellpadding The getCellPadding to set.
      */
     public void setCellpadding(float cellpadding) {
         this.cellpadding = cellpadding;
     }
 
     /**
-     * @return Returns the cellspacing.
+     * @return Returns the getCellSpacing.
      */
     public float getCellspacing() {
         return cellspacing;
     }
 
     /**
-     * @param cellspacing The cellspacing to set.
+     * @param cellspacing The getCellSpacing to set.
      */
     public void setCellspacing(float cellspacing) {
         this.cellspacing = cellspacing;
     }
 
     /**
-     * @return Returns the alignment.
+     * @return Returns the getAlignment.
      */
     public int getAlignment() {
         return alignment;
     }
 
     /**
-     * @param alignment The alignment to set.
+     * @param alignment The getAlignment to set.
      */
     public void setAlignment(int alignment) {
         this.alignment = alignment;
@@ -395,10 +395,10 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
     }
 
     /**
-     * @see com.lowagie.text.Element#type()
+     * @see com.lowagie.text.Element#getTypeImpl()
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.TABLE;
     }
 

@@ -302,12 +302,12 @@ public class HtmlTags {
     /**
      * attribute of the table tag
      */
-    public static final String CELLPADDING = "cellpadding";
+    public static final String CELLPADDING = "getCellPadding";
 
     /**
      * attribute of the table tag
      */
-    public static final String CELLSPACING = "cellspacing";
+    public static final String CELLSPACING = "getCellSpacing";
 
     /**
      * attribute of the cell tag
@@ -317,7 +317,7 @@ public class HtmlTags {
     /**
      * attribute of the cell tag
      */
-    public static final String ROWSPAN = "rowspan";
+    public static final String ROWSPAN = "getRowSpan";
 
     /**
      * attribute of the cell tag
@@ -413,50 +413,50 @@ public class HtmlTags {
      */
     public static final String NEWLINE = "br";
 
-    // alignment attribute values
+    // getAlignment attribute values
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_LEFT = "Left";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_CENTER = "Center";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_RIGHT = "Right";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_JUSTIFIED = "Justify";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_TOP = "Top";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_MIDDLE = "Middle";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_BOTTOM = "Bottom";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_BASELINE = "Baseline";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String DEFAULT = "Default";
 

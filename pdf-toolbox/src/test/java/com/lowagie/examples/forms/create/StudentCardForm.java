@@ -97,7 +97,7 @@ public class StudentCardForm implements PdfPCellEvent {
             innertable.setWidths(inner);
             PdfPCell cell;
             TextField text;
-            innertable.addCell(new Paragraph("name:", f));
+            innertable.addCell(new Paragraph("getName:", f));
             cell = new PdfPCell();
             text = new TextField(writer, new Rectangle(0, 0), "name");
             text.setOptions(TextField.MULTILINE);

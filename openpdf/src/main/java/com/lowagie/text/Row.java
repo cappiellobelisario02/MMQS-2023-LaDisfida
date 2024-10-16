@@ -109,7 +109,7 @@ public class Row implements Element, WithHorizontalAlignment {
     protected TableRectangle[] cells;
 
     /**
-     * This is the vertical alignment.
+     * This is the vertical getAlignment.
      */
     protected int horizontalAlignment;
 
@@ -145,11 +145,11 @@ public class Row implements Element, WithHorizontalAlignment {
     }
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
-    public int type() {
+    public int getTypeImpl() {
         return Element.ROW;
     }
 
@@ -348,10 +348,10 @@ public class Row implements Element, WithHorizontalAlignment {
     }
 
     /**
-     * Returns the type-id of the element in a Row.
+     * Returns the getTypeImpl-id of the element in a Row.
      *
-     * @param column the column of which you'd like to know the type
-     * @return the type-id of the element in the row
+     * @param column the column of which you'd like to know the getTypeImpl
+     * @return the getTypeImpl-id of the element in the row
      */
     int getElementID(int column) {
         if (cells[column] == null) {
@@ -366,10 +366,10 @@ public class Row implements Element, WithHorizontalAlignment {
     }
 
     /**
-     * Returns the type-id of an Object.
+     * Returns the getTypeImpl-id of an Object.
      *
-     * @param element the object of which you'd like to know the type-id, -1 if invalid
-     * @return the type-id of an object
+     * @param element the object of which you'd like to know the getTypeImpl-id, -1 if invalid
+     * @return the getTypeImpl-id of an object
      */
     int getObjectID(Object element) {
         if (element == null) {
@@ -422,7 +422,7 @@ public class Row implements Element, WithHorizontalAlignment {
     }
 
     /**
-     * Gets the horizontal alignment.
+     * Gets the horizontal getAlignment.
      *
      * @return a value
      */

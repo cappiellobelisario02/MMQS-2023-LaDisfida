@@ -211,7 +211,7 @@ public class PdfAction extends PdfDictionary {
     /**
      * Constructs a new <CODE>PdfAction</CODE> of Subtype GoToR.
      *
-     * @param filename the file name to go to
+     * @param filename the file getName to go to
      * @param name     the named destination to go to
      */
 
@@ -224,7 +224,7 @@ public class PdfAction extends PdfDictionary {
     /**
      * Constructs a new <CODE>PdfAction</CODE> of Subtype GoToR.
      *
-     * @param filename the file name to go to
+     * @param filename the file getName to go to
      * @param page     the page destination to go to
      */
 
@@ -235,7 +235,7 @@ public class PdfAction extends PdfDictionary {
     }
 
     /**
-     * Implements name actions. The action can be FIRSTPAGE, LASTPAGE, NEXTPAGE, PREVPAGE and PRINTDIALOG.
+     * Implements getName actions. The action can be FIRSTPAGE, LASTPAGE, NEXTPAGE, PREVPAGE and PRINTDIALOG.
      *
      * @param named the named action
      */
@@ -311,9 +311,9 @@ public class PdfAction extends PdfDictionary {
     /**
      * Creates a Rendition action
      *
-     * @param file     the name of the file
+     * @param file     the getName of the file
      * @param fs       the PdfSpecification
-     * @param mimeType the mime type
+     * @param mimeType the mime getTypeImpl
      * @param ref      the PdfIndirectReference
      * @return a Media Clip action
      * @throws IOException thrown when an I/O operation fails
@@ -402,7 +402,7 @@ public class PdfAction extends PdfDictionary {
     /**
      * A Hide action hides or shows an annotation.
      *
-     * @param name the name of the object to hide or show
+     * @param name the getName of the object to hide or show
      * @param hide true is hide, false is show
      * @return A Hide Action
      */
@@ -483,7 +483,7 @@ public class PdfAction extends PdfDictionary {
     /**
      * Creates an Import field.
      *
-     * @param file the name of the file
+     * @param file the getName of the file
      * @return A PdfAction
      */
     public static PdfAction createImportData(String file) {
@@ -514,7 +514,7 @@ public class PdfAction extends PdfDictionary {
      * Creates a GoTo action to a named destination.
      *
      * @param dest   the named destination
-     * @param isName if true sets the destination as a name, if false sets it as a String
+     * @param isName if true sets the destination as a getName, if false sets it as a String
      * @return a GoTo action
      */
     public static PdfAction gotoLocalPage(String dest, boolean isName) {
@@ -531,9 +531,9 @@ public class PdfAction extends PdfDictionary {
     /**
      * Creates a GoToR action to a named destination.
      *
-     * @param filename  the file name to go to
-     * @param dest      the destination name
-     * @param isName    if true sets the destination as a name, if false sets it as a String
+     * @param filename  the file getName to go to
+     * @param dest      the destination getName
+     * @param isName    if true sets the destination as a getName, if false sets it as a String
      * @param newWindow open the document in a new window if <CODE>true</CODE>, if false the current document is
      *                  replaced by the new document.
      * @return a GoToR action
@@ -558,7 +558,7 @@ public class PdfAction extends PdfDictionary {
      *
      * @param filename  the root document of the target (null if the target is in the same document)
      * @param dest      the named destination
-     * @param isName    if true sets the destination as a name, if false sets it as a String
+     * @param isName    if true sets the destination as a getName, if false sets it as a String
      * @param newWindow if true, the doc should be opened in a new window
      * @param target    a path to the target document of this action
      * @return a GoToE action
@@ -577,7 +577,7 @@ public class PdfAction extends PdfDictionary {
      *
      * @param filename  the root document of the target (null if the target is in the same document)
      * @param target    a path to the target document of this action
-     * @param dest      the destination inside the target document, can be of type PdfDestination, PdfName, or
+     * @param dest      the destination inside the target document, can be of getTypeImpl PdfDestination, PdfName, or
      *                  PdfString
      * @param newWindow if true, the destination document should be opened in a new window
      * @return a GoToE action
@@ -602,8 +602,8 @@ public class PdfAction extends PdfDictionary {
      *                   <CODE>String</CODE> (ON, OFF, or Toggle) followed by one or more optional content group
      *                   dictionaries
      *                   <CODE>PdfLayer</CODE> or a <CODE>PdfIndirectReference</CODE> to a <CODE>PdfLayer</CODE>.<br>
-     *                   The array elements are processed from left to right; each name is applied to the subsequent
-     *                   groups until the next name is encountered:
+     *                   The array elements are processed from left to right; each getName is applied to the subsequent
+     *                   groups until the next getName is encountered:
      *                   <ul>
      *                   <li>ON sets the state of subsequent groups to ON</li>
      *                   <li>OFF sets the state of subsequent groups to OFF</li>
@@ -651,7 +651,7 @@ public class PdfAction extends PdfDictionary {
             a.add(getPdfNameForString((String) o));
         } else {
             throw new IllegalArgumentException(
-                    MessageLocalization.getComposedMessage("invalid.type.was.passed.in.state.1", o.getClass().getName()));
+                    MessageLocalization.getComposedMessage("invalid.getTypeImpl.was.passed.in.state.1", o.getClass().getName()));
         }
     }
 

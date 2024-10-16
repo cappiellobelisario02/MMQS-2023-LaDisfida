@@ -107,7 +107,7 @@ public class WatermarkerTool extends AbstractTool {
      * output.pdf #FF000000
      *
      * <p>
-     * "input.pdf" is the input file name to be processed
+     * "input.pdf" is the input file getName to be processed
      * <p>
      * "Draft" is the text written as transparent "watermark" on top of each page
      * <p>
@@ -115,7 +115,7 @@ public class WatermarkerTool extends AbstractTool {
      * <p>
      * "0.2" is the opacity (1.0 completely opaque, 0.0 completely transparent)
      * <p>
-     * "output.pdf" is the output file name
+     * "output.pdf" is the output file getName
      * <p>
      * (Optional) "#FF0000" is the color (in hex format like #nnnnnn or 0xnnnnnn), #000000 (black) by default
      *

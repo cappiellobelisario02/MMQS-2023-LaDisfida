@@ -189,7 +189,7 @@ public class PdfGraphics2D extends Graphics2D {
     /**
      * Copy constructor for child PdfGraphics2D objects.
      *
-     * @param parent the parent PdfGraphics2D
+     * @param parent the getParent PdfGraphics2D
      * @see #create()
      */
     protected PdfGraphics2D(com.lowagie.text.pdf.PdfGraphics2D parent) {
@@ -499,7 +499,7 @@ public class PdfGraphics2D extends Graphics2D {
                 mWidth = compositeFontDrawer.drawString(s, font, x, y, this::getCachedBaseFont, this::drawString);
             } else {
                 // Splitting string to the parts depending on they visibility preserves
-                // the position of the visible parts of string and prevents alignment of the text in mWidth
+                // the position of the visible parts of string and prevents getAlignment of the text in mWidth
                 // (increasing value of the character spacing parameter of the PdfContentByte)
                 List<String> substrings = splitIntoSubstringsByVisibility(s);
                 for (String str : substrings) {
@@ -613,7 +613,7 @@ public class PdfGraphics2D extends Graphics2D {
             return TextAttribute.WIDTH_REGULAR; // Default value, cast if necessary
         }
 
-        // If widthValue is of type Float, return it; if Integer, cast to Float
+        // If widthValue is of getTypeImpl Float, return it; if Integer, cast to Float
         if (widthValue instanceof Float floatValue) {
             return floatValue;
         } else if (widthValue instanceof Integer integerValue) {
@@ -1654,7 +1654,7 @@ public class PdfGraphics2D extends Graphics2D {
                 cb.curveTo(coords[0], coords[1], coords[2], coords[3]);
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported segment type: " + segtype);
+                throw new IllegalArgumentException("Unsupported segment getTypeImpl: " + segtype);
         }
     }
 
@@ -2057,7 +2057,7 @@ public class PdfGraphics2D extends Graphics2D {
         private static final boolean SUPPORTED;
 
         static {
-            String osName = System.getProperty("os.name", "unknownOS");
+            String osName = System.getProperty("os.getName", "unknownOS");
             boolean macOS = osName.startsWith("Mac");
             if (!macOS) {
                 FONT_UTILITIES_CLASS = getClassForName(FONT_UTILITIES_CLASS_NAME);

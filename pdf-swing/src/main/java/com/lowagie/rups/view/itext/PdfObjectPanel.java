@@ -107,7 +107,7 @@ public class PdfObjectPanel extends JPanel implements Observer {
             bottom_info_text.repaint();
             return;
         }
-        switch (object.type()) {
+        switch (object.getTypeImpl()) {
             case PdfObject.DICTIONARY:
             case PdfObject.STREAM:
                 entriesTable.setModel(new DictionaryTableModel((PdfDictionary) object));

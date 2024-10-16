@@ -249,7 +249,7 @@ public class PdfImage extends PdfStream {
     private void processEncodedImageData(Image image, InputStream is) throws IOException, BadPdfFormatException {
         String errorID = image.getRawData() == null ? image.getUrl().toString() : "Byte array";
 
-        switch (image.type()) {
+        switch (image.getTypeImpl()) {
             case Element.JPEG:
                 put(PdfName.FILTER, PdfName.DCTDECODE);
                 processJPEGData(image);
@@ -320,10 +320,10 @@ public class PdfImage extends PdfStream {
     /**
      * Returns the <CODE>PdfName</CODE> of the image.
      *
-     * @return the name
+     * @return the getName
      */
 
-    public PdfName name() {
+    public PdfName getName() {
         return name;
     }
 

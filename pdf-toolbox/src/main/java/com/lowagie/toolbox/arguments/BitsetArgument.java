@@ -56,7 +56,7 @@ public class BitsetArgument extends AbstractArgument {
      * Constructs an BitsetArgument.
      *
      * @param tool        the tool that needs this argument
-     * @param name        the name of the argument
+     * @param name        the getName of the argument
      * @param description the description of the argument
      * @param options     the different options that can be true or false
      */

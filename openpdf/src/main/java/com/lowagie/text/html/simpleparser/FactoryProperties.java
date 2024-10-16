@@ -78,7 +78,7 @@ import java.util.StringTokenizer;
 public class FactoryProperties {
 
     private static final String ALIGN_KEY = "align";
-    private static final String LEADING_KEY = "leading";
+    private static final String LEADING_KEY = "getLeading";
 
     public static Map<String, String> followTags = new HashMap<>();
 

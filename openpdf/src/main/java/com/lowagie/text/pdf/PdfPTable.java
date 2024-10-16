@@ -462,7 +462,7 @@ public class PdfPTable implements LargeElement {
      *
      * @param firsttime if true, the heights of the rows will be recalculated. This takes time; normally the heights of
      *                  the rows are already calcultated, so in most cases, it's safe to use false as parameter.
-     * @since 2.1.5    added a parameter and a return type to an existing method, and made it public
+     * @since 2.1.5    added a parameter and a return getTypeImpl to an existing method, and made it public
      */
     public void calculateHeights(boolean firsttime) {
         if (totalWidth <= 0) {
@@ -568,7 +568,7 @@ public class PdfPTable implements LargeElement {
 
 
     /**
-     * When updating the row index, cells with rowspan should be taken into account. This is what happens in this
+     * When updating the row index, cells with getRowSpan should be taken into account. This is what happens in this
      * method.
      *
      * @since 2.1.6
@@ -596,11 +596,11 @@ public class PdfPTable implements LargeElement {
     }
 
     /**
-     * Checks if there are rows above belonging to a rowspan.
+     * Checks if there are rows above belonging to a getRowSpan.
      *
      * @param currRow the current row to check
      * @param currCol the current column to check
-     * @return true if there's a cell above that belongs to a rowspan
+     * @return true if there's a cell above that belongs to a getRowSpan
      * @since 2.1.6
      */
     boolean rowSpanAbove(int currRow, int currCol) {
@@ -1036,11 +1036,11 @@ public class PdfPTable implements LargeElement {
 
     /**
      * Gets the maximum height of a cell in a particular row (will only be different from getRowHeight is one of the
-     * cells in the row has a rowspan {@literal >} 1).
+     * cells in the row has a getRowSpan {@literal >} 1).
      *
      * @param rowIndex  the row index
      * @param cellIndex the cell index
-     * @return the height of a particular row including rowspan
+     * @return the height of a particular row including getRowSpan
      * @since 2.1.6
      */
     public float getRowspanHeight(int rowIndex, int cellIndex) {
@@ -1213,11 +1213,11 @@ public class PdfPTable implements LargeElement {
     }
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
-    public int type() {
+    public int getTypeImpl() {
         return Element.PTABLE;
     }
 
@@ -1271,19 +1271,19 @@ public class PdfPTable implements LargeElement {
     }
 
     /**
-     * Gets the horizontal alignment of the table relative to the page.
+     * Gets the horizontal getAlignment of the table relative to the page.
      *
-     * @return the horizontal alignment of the table relative to the page
+     * @return the horizontal getAlignment of the table relative to the page
      */
     public int getHorizontalAlignment() {
         return horizontalAlignment;
     }
 
     /**
-     * Sets the horizontal alignment of the table relative to the page. It only has meaning if the width percentage is
+     * Sets the horizontal getAlignment of the table relative to the page. It only has meaning if the width percentage is
      * less than 100%.
      *
-     * @param horizontalAlignment the horizontal alignment of the table relative to the page
+     * @param horizontalAlignment the horizontal getAlignment of the table relative to the page
      */
     public void setHorizontalAlignment(int horizontalAlignment) {
         this.horizontalAlignment = horizontalAlignment;
@@ -1618,7 +1618,7 @@ public class PdfPTable implements LargeElement {
      * @return true to split; false otherwise
      */
     public boolean isSplitRows() {
-        return this.splitRows;
+        return splitRows;
     }
 
     /**
@@ -1654,7 +1654,7 @@ public class PdfPTable implements LargeElement {
      *
      * @return the spacing
      */
-    public float spacingBefore() {
+    public float getSpacingBefore() {
         return spacingBefore;
     }
 
@@ -1663,7 +1663,7 @@ public class PdfPTable implements LargeElement {
      *
      * @return the spacing
      */
-    public float spacingAfter() {
+    public float getSpacingAfter() {
         return spacingAfter;
     }
 

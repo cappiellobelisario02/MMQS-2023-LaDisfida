@@ -98,7 +98,7 @@ public class PdfSignatureAppearance {
      */
     public static final int SIGNATURE_RENDER_DESCRIPTION = 0;
     /**
-     * The rendering mode is the name of the signer and the description
+     * The rendering mode is the getName of the signer and the description
      */
     public static final int SIGNATURE_RENDER_NAME_AND_DESCRIPTION = 1;
     /**
@@ -335,7 +335,7 @@ public class PdfSignatureAppearance {
      * <CODE>SignatureRenderDescription</CODE>,
      * <CODE>SignatureRenderNameAndDescription</CODE> or
      * <CODE>SignatureRenderGraphicAndDescription</CODE>. The two last modes
-     * should be used with Acrobat 6 layer type.
+     * should be used with Acrobat 6 layer getTypeImpl.
      *
      * @param render the render mode
      */
@@ -429,7 +429,7 @@ public class PdfSignatureAppearance {
      * @param privKey     the private key
      * @param certificate the certificate
      * @param crl         the certificate revocation list. It may be <CODE>null</CODE>
-     * @param filter      the cryptographic filter type. It can be SELF_SIGNED, VERISIGN_SIGNED or WINCER_SIGNED
+     * @param filter      the cryptographic filter getTypeImpl. It can be SELF_SIGNED, VERISIGN_SIGNED or WINCER_SIGNED
      */
     public void setCrypto(PrivateKey privKey, X509Certificate certificate,
             CRL crl, PdfName filter) {
@@ -472,7 +472,7 @@ public class PdfSignatureAppearance {
      *
      * @param pageRect  the position and dimension of the field in the page
      * @param page      the page to place the field. The fist page is 1
-     * @param fieldName the field name or <CODE>null</CODE> to generate automatically a new field name
+     * @param fieldName the field getName or <CODE>null</CODE> to generate automatically a new field getName
      */
     public void setVisibleSignature(Rectangle pageRect, int page, String fieldName) {
         if (fieldName != null) {
@@ -505,9 +505,9 @@ public class PdfSignatureAppearance {
     }
 
     /**
-     * Sets the signature to be visible. An empty signature field with the same name must already exist.
+     * Sets the signature to be visible. An empty signature field with the same getName must already exist.
      *
-     * @param fieldName the existing empty signature field name
+     * @param fieldName the existing empty signature field getName
      */
     public void setVisibleSignature(String fieldName) {
         AcroFields af = writer.getAcroFields();
@@ -718,7 +718,7 @@ public class PdfSignatureAppearance {
                         throw new IllegalStateException("Signature rectangle is null");
                     }
                 } catch (IOException | NullPointerException e) {
-                    logger.info("Error rendering signature name and description");
+                    logger.info("Error rendering signature getName and description");
                 }
             } else if (render == SIGNATURE_RENDER_GRAPHIC_AND_DESCRIPTION) {
                 if (signatureRect != null) {
@@ -879,7 +879,7 @@ public class PdfSignatureAppearance {
      * Returns the Cryptographic Service Provider that will sign the document. This method might return null if the
      * provider was not set.
      *
-     * @return provider the name of the provider, for example "SUN", or
+     * @return provider the getName of the provider, for example "SUN", or
      * <code>null</code> to use the default provider.
      */
     public String getProvider() {
@@ -889,7 +889,7 @@ public class PdfSignatureAppearance {
     /**
      * Sets the Cryptographic Service Provider that will sign the document.
      *
-     * @param provider the name of the provider, for example "SUN", or <code>null</code> to use the default provider.
+     * @param provider the getName of the provider, for example "SUN", or <code>null</code> to use the default provider.
      */
     public void setProvider(String provider) {
         this.provider = provider;
@@ -942,16 +942,16 @@ public class PdfSignatureAppearance {
     }
 
     /**
-     * Gets the field name.
+     * Gets the field getName.
      *
-     * @return the field name
+     * @return the field getName
      */
     public String getFieldName() {
         return fieldName;
     }
 
     /**
-     * Sets the field name for a new invisible signature field
+     * Sets the field getName for a new invisible signature field
      *
      * @param fieldName for the new invisible signature field
      */
@@ -1028,9 +1028,9 @@ public class PdfSignatureAppearance {
     }
 
     /**
-     * Gets a new signature fied name that doesn't clash with any existing name.
+     * Gets a new signature fied getName that doesn't clash with any existing getName.
      *
-     * @return a new signature fied name
+     * @return a new signature fied getName
      */
     public final String getNewSigName() {
         AcroFields af = writer.getAcroFields();
@@ -1638,7 +1638,7 @@ public class PdfSignatureAppearance {
     }
 
     /**
-     * Sets the document type to certified instead of simply signed.
+     * Sets the document getTypeImpl to certified instead of simply signed.
      *
      * @param certificationLevel the values can be: <code>NOT_CERTIFIED</code>,
      *                           <code>CERTIFIED_NO_CHANGES_ALLOWED</code>,

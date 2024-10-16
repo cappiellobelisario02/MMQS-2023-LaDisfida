@@ -104,7 +104,7 @@ public class ListFields {
                                 fName = new StringBuilder(fName.substring(0, fName.length() - 1));
                             }
 
-                            stream.println("page " + page + ", name - " + fName);
+                            stream.println("page " + page + ", getName - " + fName);
                             list.listAnyObject(rect);
                             if (field != null) {
                                 stream.println("Merged attributes of " + field.getName());

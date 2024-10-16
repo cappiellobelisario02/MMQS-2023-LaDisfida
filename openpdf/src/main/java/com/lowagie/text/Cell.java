@@ -77,7 +77,7 @@ import java.util.logging.Logger;
  * <STRONG>cell.setHeader(true);</STRONG>
  * <STRONG>cell.setColspan(3);</STRONG>
  * table.addCell(cell);
- * <STRONG>cell = new Cell("example cell with colspan 1 and rowspan 2");</STRONG>
+ * <STRONG>cell = new Cell("example cell with colspan 1 and getRowSpan 2");</STRONG>
  * <STRONG>cell.setRowspan(2);</STRONG>
  * <STRONG>cell.setBorderColor(new Color(255, 0, 0));</STRONG>
  * table.addCell(cell); table.addCell("1.1"); table.addCell("2.1"); table.addCell("1.2"); table.addCell("2.2");
@@ -104,12 +104,12 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     protected java.util.List<Element> arrayList = null;
 
     /**
-     * The horizontal alignment of the cell content.
+     * The horizontal getAlignment of the cell content.
      */
     protected int horizontalAlignment = Element.ALIGN_UNDEFINED;
 
     /**
-     * The vertical alignment of the cell content.
+     * The vertical getAlignment of the cell content.
      */
     protected int verticalAlignment = Element.ALIGN_UNDEFINED;
 
@@ -125,7 +125,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     protected int colspan = 1;
 
     /**
-     * The rowspan of the cell.
+     * The getRowSpan of the cell.
      */
     protected int rowspan = 1;
     /**
@@ -139,7 +139,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     protected int maxLines = Integer.MAX_VALUE;
     /**
      * Indicates that the largest ascender height should be used to determine the height of the first line.  Note that
-     * this only has an effect when rendered to PDF.  Setting this to true can help with vertical alignment problems.
+     * this only has an effect when rendered to PDF.  Setting this to true can help with vertical getAlignment problems.
      */
     protected boolean useAscender = false;
     /**
@@ -157,7 +157,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     protected boolean groupChange = true;
     /**
-     * The leading of the content inside the cell.
+     * The getLeading of the content inside the cell.
      */
     float leading = Float.NaN;
     /**
@@ -222,15 +222,15 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
             setLeading(phrase.getLeading());
         }
 
-        // Validate the element type before adding
+        // Validate the element getTypeImpl before adding
         if (isValidElement(element)) {
             addElement(element);
         } else {
-            throw new BadElementException("Invalid element type: " + element.getClass().getName());
+            throw new BadElementException("Invalid element getTypeImpl: " + element.getClass().getName());
         }
     }
 
-    // Method to validate the type of the element
+    // Method to validate the getTypeImpl of the element
     private boolean isValidElement(Element element) {
         // Check if the element is one of the allowed types
         return element instanceof Phrase;
@@ -269,12 +269,12 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     }
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.CELL;
     }
 
@@ -315,7 +315,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     }
 
     /**
-     * Gets the horizontal alignment.
+     * Gets the horizontal getAlignment.
      *
      * @return a value
      */
@@ -333,7 +333,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     }
 
     /**
-     * Gets the vertical alignment.
+     * Gets the vertical getAlignment.
      *
      * @return a value
      */
@@ -415,7 +415,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     }
 
     /**
-     * Gets the rowspan.
+     * Gets the getRowSpan.
      *
      * @return a value
      */
@@ -424,7 +424,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     }
 
     /**
-     * Sets the rowspan.
+     * Sets the getRowSpan.
      *
      * @param value the new value
      */
@@ -433,7 +433,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     }
 
     /**
-     * Gets the leading.
+     * Gets the getLeading.
      *
      * @return a value
      */
@@ -445,7 +445,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     }
 
     /**
-     * Sets the leading.
+     * Sets the getLeading.
      *
      * @param value the new value
      */
@@ -616,11 +616,11 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
             case 0 -> true;
             case 1 -> {
                 Element element = arrayList.get(0);
-                yield switch (element.type()) {
+                yield switch (element.getTypeImpl()) {
                     case Element.CHUNK -> ((Chunk) element).isEmpty();
                     case Element.ANCHOR, Element.PHRASE, Element.PARAGRAPH -> ((Phrase) element).isEmpty();
                     case Element.LIST -> ((List) element).isEmpty();
-                    default -> throw new IllegalStateException("Unexpected value: " + element.type());
+                    default -> throw new IllegalStateException("Unexpected value: " + element.getTypeImpl());
                 };
             }
             default -> false;
@@ -647,7 +647,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
     public boolean isTable() {
         return (size() == 1)
-                && (arrayList.get(0).type() == Element.TABLE);
+                && (arrayList.get(0).getTypeImpl() == Element.TABLE);
     }
 
     /**
@@ -665,7 +665,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
             handleTableElement(element);
             return;
         }
-        switch (element.type()) {
+        switch (element.getTypeImpl()) {
             case Element.LISTITEM, Element.ROW, Element.CELL:
                 throw new BadElementException(MessageLocalization.getComposedMessage("you.can.t.add.listitems.rows.or.cells.to.a.cell"));
             case Element.LIST:
@@ -805,7 +805,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     public PdfPCell createPdfPCell() throws BadElementException {
         if (rowspan > 1) {
             throw new BadElementException(
-                    MessageLocalization.getComposedMessage("pdfpcells.can.t.have.a.rowspan.gt.1"));
+                    MessageLocalization.getComposedMessage("pdfpcells.can.t.have.a.getRowSpan.gt.1"));
         }
         if (isTable()) {
             try {
@@ -825,7 +825,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
         cell.setNoWrap(getMaxLines() == 1);
         for (Iterator<Element> i = getElements(); i.hasNext(); ) {
             Element e = i.next();
-            if (e.type() == Element.PHRASE || e.type() == Element.PARAGRAPH) {
+            if (e.getTypeImpl() == Element.PHRASE || e.getTypeImpl() == Element.PARAGRAPH) {
                 Paragraph p = new Paragraph((Phrase) e);
                 p.setAlignment(horizontalAlignment);
                 e = p;

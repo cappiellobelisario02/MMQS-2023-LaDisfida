@@ -9,9 +9,9 @@ package com.lowagie.text.alignment;
 public interface WithVerticalAlignment {
 
     /**
-     * Sets vertical alignment mode.
+     * Sets vertical getAlignment mode.
      *
-     * @param alignment New alignment mode. If null, current alignment must be left unchanged
+     * @param alignment New getAlignment mode. If null, current getAlignment must be left unchanged
      */
     void setVerticalAlignment(final VerticalAlignment alignment);
 }

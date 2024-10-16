@@ -115,9 +115,9 @@ public class SAXmyHtmlHandler extends SAXiTextHandler<HtmlPeer> {
      * This method gets called when a start tag is encountered.
      *
      * @param uri       the Uniform Resource Identifier
-     * @param localName the local name (without prefix), or the empty string if Namespace processing is not being
+     * @param localName the local getName (without prefix), or the empty string if Namespace processing is not being
      *                  performed.
-     * @param name      the name of the tag that is encountered
+     * @param name      the getName of the tag that is encountered
      * @param attrs     the list of attributes
      */
     @Override
@@ -220,9 +220,9 @@ public class SAXmyHtmlHandler extends SAXiTextHandler<HtmlPeer> {
      * This method gets called when an end tag is encountered.
      *
      * @param uri       the Uniform Resource Identifier
-     * @param localName the local name (without prefix), or the empty string if Namespace processing is not being
+     * @param localName the local getName (without prefix), or the empty string if Namespace processing is not being
      *                  performed.
-     * @param name      the name of the tag that ends
+     * @param name      the getName of the tag that ends
      */
     @Override
     public void endElement(String uri, String localName, String name) {

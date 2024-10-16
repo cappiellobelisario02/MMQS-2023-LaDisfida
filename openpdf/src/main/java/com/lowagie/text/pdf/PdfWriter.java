@@ -527,7 +527,7 @@ public class PdfWriter extends DocWriter implements
 
     // page layout (section 13.1.1 of "iText in Action")
     /**
-     * Mask to separate the encryption type from the encryption mode.
+     * Mask to separate the encryption getTypeImpl from the encryption mode.
      */
     static final int ENCRYPTION_MASK = 7;
     /**
@@ -620,7 +620,7 @@ public class PdfWriter extends DocWriter implements
      */
     protected LinkedHashMap<PdfIndirectReference, Object[]> formXObjects = new LinkedHashMap<>();
     /**
-     * The name counter for the form XObjects name.
+     * The getName counter for the form XObjects getName.
      */
     protected int formXObjectsCounter = 1;
     protected HashMap<PdfReader, PdfReaderInstance> importedPages = new HashMap<>();
@@ -1049,16 +1049,16 @@ public class PdfWriter extends DocWriter implements
     }
 
     /**
-     * Sets the initial leading for the PDF document. This has to be done before the document is opened.
+     * Sets the initial getLeading for the PDF document. This has to be done before the document is opened.
      *
-     * @param leading the initial leading
-     * @throws DocumentException if you try setting the leading after the document was opened.
+     * @param leading the initial getLeading
+     * @throws DocumentException if you try setting the getLeading after the document was opened.
      * @since 2.1.6
      */
     public void setInitialLeading(float leading) throws DocumentException {
         if (open) {
             throw new DocumentException(MessageLocalization.getComposedMessage(
-                    "you.can.t.set.the.initial.leading.if.the.document.is.already.open"));
+                    "you.can.t.set.the.initial.getLeading.if.the.document.is.already.open"));
         }
         pdf.setLeading(leading);
     }
@@ -1801,7 +1801,7 @@ public class PdfWriter extends DocWriter implements
     /**
      * Adds one named destination.
      *
-     * @param name the name for the destination
+     * @param name the getName for the destination
      * @param page the page number where you want to jump to
      * @param dest an explicit destination
      * @since iText 5.0
@@ -1849,7 +1849,7 @@ public class PdfWriter extends DocWriter implements
      * Use this method to add a JavaScript action at the document level. When the document opens, all this JavaScript
      * runs.
      *
-     * @param name The name of the JS Action in the name tree
+     * @param name The getName of the JS Action in the getName tree
      * @param js   The JavaScript action
      */
     public void addJavaScript(String name, PdfAction js) {
@@ -1860,7 +1860,7 @@ public class PdfWriter extends DocWriter implements
      * Use this method to add a JavaScript action at the document level. When the document opens, all this JavaScript
      * runs.
      *
-     * @param name    The name of the JS Action in the name tree
+     * @param name    The getName of the JS Action in the getName tree
      * @param code    the JavaScript code
      * @param unicode select JavaScript unicode. Note that the internal Acrobat JavaScript engine does not support
      *                unicode, so this may or may not work for you
@@ -1873,7 +1873,7 @@ public class PdfWriter extends DocWriter implements
      * Use this method to adds a JavaScript action at the document level. When the document opens, all this JavaScript
      * runs.
      *
-     * @param name The name of the JS Action in the name tree
+     * @param name The getName of the JS Action in the getName tree
      * @param code the JavaScript code
      */
     public void addJavaScript(String name, String code) {
@@ -1887,7 +1887,7 @@ public class PdfWriter extends DocWriter implements
      * @param fileStore   an array with the file. If it's <CODE>null</CODE> the file will be read from the disk
      * @param file        the path to the file. It will only be used if
      *                    <CODE>fileStore</CODE> is not <CODE>null</CODE>
-     * @param fileDisplay the actual file name stored in the pdf
+     * @param fileDisplay the actual file getName stored in the pdf
      * @throws IOException on error
      */
     public void addFileAttachment(String description, byte[] fileStore, String file, String fileDisplay)
@@ -1943,7 +1943,7 @@ public class PdfWriter extends DocWriter implements
                 actionType.equals(WILL_PRINT) ||
                 actionType.equals(DID_PRINT))) {
             throw new DocumentException(
-                    MessageLocalization.getComposedMessage("invalid.additional.action.type.1", actionType.toString()));
+                    MessageLocalization.getComposedMessage("invalid.additional.action.getTypeImpl.1", actionType.toString()));
         }
         pdf.addAdditionalAction(actionType, action);
     }
@@ -1951,7 +1951,7 @@ public class PdfWriter extends DocWriter implements
     /**
      * Use this method to add the Collection dictionary.
      *
-     * @param collection a dictionary of type PdfCollection
+     * @param collection a dictionary of getTypeImpl PdfCollection
      */
     public void setCollection(PdfCollection collection) {
         setAtLeastPdfVersion(VERSION_1_7);
@@ -2298,7 +2298,7 @@ public class PdfWriter extends DocWriter implements
      * Adds a template to the document but not to the page resources.
      *
      * @param template   the template to add
-     * @param forcedName the template name, rather than a generated one. Can be null
+     * @param forcedName the template getName, rather than a generated one. Can be null
      * @return the <CODE>PdfName</CODE> for this template
      */
 
@@ -2749,7 +2749,7 @@ public class PdfWriter extends DocWriter implements
     public void setPageAction(PdfName actionType, PdfAction action) throws DocumentException {
         if (!actionType.equals(PAGE_OPEN) && !actionType.equals(PAGE_CLOSE)) {
             throw new DocumentException(
-                    MessageLocalization.getComposedMessage("invalid.page.additional.action.type.1",
+                    MessageLocalization.getComposedMessage("invalid.page.additional.action.getTypeImpl.1",
                             actionType.toString()));
         }
         pdf.setPageAction(actionType, action);
@@ -2889,13 +2889,13 @@ public class PdfWriter extends DocWriter implements
 
     /**
      * Use this method to sets the default colorspace that will be applied to all the document. The colorspace is only
-     * applied if another colorspace with the same name is not present in the content.
+     * applied if another colorspace with the same getName is not present in the content.
      * <p>
      * The colorspace is applied immediately when creating templates and at the page end for the main document content.
      *
-     * @param key the name of the colorspace. It can be <CODE>PdfName.DEFAULTGRAY</CODE>,
+     * @param key the getName of the colorspace. It can be <CODE>PdfName.DEFAULTGRAY</CODE>,
      *            <CODE>PdfName.DEFAULTRGB</CODE> or <CODE>PdfName.DEFAULTCMYK</CODE>
-     * @param cs  the colorspace. A <CODE>null</CODE> or <CODE>PdfNull</CODE> removes any colorspace with the same name
+     * @param cs  the colorspace. A <CODE>null</CODE> or <CODE>PdfNull</CODE> removes any colorspace with the same getName
      */
     public void setDefaultColorspace(PdfName key, PdfObject cs) {
         if (cs == null || cs.isNull()) {
@@ -2952,7 +2952,7 @@ public class PdfWriter extends DocWriter implements
                     return patternDetails;
                 }
                 default:
-                    throw new InvalidColorTypeException(MessageLocalization.getComposedMessage("invalid.color.type"));
+                    throw new InvalidColorTypeException(MessageLocalization.getComposedMessage("invalid.color.getTypeImpl"));
             }
         } catch (Exception e) {
             throw new DocumentException(e.getMessage());
@@ -2991,7 +2991,7 @@ public class PdfWriter extends DocWriter implements
      * <CODE>Document.add(Image)</CODE>. Use this method only if you know what you're doing!
      *
      * @param image the <CODE>Image</CODE> to add
-     * @return the name of the image added
+     * @return the getName of the image added
      * @throws PdfException      on error
      * @throws DocumentException on error
      */
@@ -3006,7 +3006,7 @@ public class PdfWriter extends DocWriter implements
      * @param image    the <CODE>Image</CODE> to add
      * @param fixedRef the reference to used. It may be <CODE>null</CODE>, a <CODE>PdfIndirectReference</CODE> or a
      *                 <CODE>PRIndirectReference</CODE>.
-     * @return the name of the image added
+     * @return the getName of the image added
      * @throws PdfException      on error
      * @throws DocumentException on error
      */
@@ -3069,7 +3069,7 @@ public class PdfWriter extends DocWriter implements
 
         PdfImage pdfImage = createPdfImage(image, maskRef);
         add(pdfImage, fixedRef);
-        return pdfImage.name();
+        return pdfImage.getName();
     }
 
     private PdfImage createPdfImage(Image image, PdfIndirectReference maskRef) throws DocumentException {
@@ -3122,7 +3122,7 @@ public class PdfWriter extends DocWriter implements
      */
 
     PdfIndirectReference add(PdfImage pdfImage, PdfIndirectReference fixedRef) throws PdfException {
-        if (!imageDictionary.contains(pdfImage.name())) {
+        if (!imageDictionary.contains(pdfImage.getName())) {
             PdfXConformanceImp.checkPDFXConformance(this, PdfXConformanceImp.PDFXKEY_IMAGE, pdfImage);
             if (fixedRef instanceof PRIndirectReference r2) {
                 fixedRef = new PdfIndirectReference(0,
@@ -3137,16 +3137,16 @@ public class PdfWriter extends DocWriter implements
             } catch (IOException ioe) {
                 throw new ExceptionConverter(ioe);
             }
-            imageDictionary.put(pdfImage.name(), fixedRef);
+            imageDictionary.put(pdfImage.getName(), fixedRef);
             return fixedRef;
         }
-        return (PdfIndirectReference) imageDictionary.get(pdfImage.name());
+        return (PdfIndirectReference) imageDictionary.get(pdfImage.getName());
     }
 
     /**
-     * return the <CODE>PdfIndirectReference</CODE> to the image with a given name.
+     * return the <CODE>PdfIndirectReference</CODE> to the image with a given getName.
      *
-     * @param name the name of the image
+     * @param name the getName of the image
      * @return a <CODE>PdfIndirectReference</CODE>
      */
 
@@ -3676,7 +3676,7 @@ public class PdfWriter extends DocWriter implements
              * Checks if two entries are equal if their PDF object numbers are equal.
              *
              * @param obj Another cross-reference entry
-             * @return If null, not of type {@link PdfCrossReference} or object numbers are not equal, returns false;
+             * @return If null, not of getTypeImpl {@link PdfCrossReference} or object numbers are not equal, returns false;
              * true otherwise
              */
             @Override

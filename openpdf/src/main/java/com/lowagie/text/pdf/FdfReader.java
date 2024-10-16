@@ -67,7 +67,7 @@ public class FdfReader extends PdfReader {
     /**
      * Reads an FDF form.
      *
-     * @param filename the file name of the form
+     * @param filename the file getName of the form
      * @throws IOException on error
      */
     public FdfReader(String filename) throws IOException, PDFFilterException {
@@ -167,7 +167,7 @@ public class FdfReader extends PdfReader {
     }
 
     /**
-     * Gets all the fields. The map is keyed by the fully qualified field name and the value is a merged
+     * Gets all the fields. The map is keyed by the fully qualified field getName and the value is a merged
      * <CODE>PdfDictionary</CODE> with the field content.
      *
      * @return all the fields
@@ -179,7 +179,7 @@ public class FdfReader extends PdfReader {
     /**
      * Gets the field dictionary.
      *
-     * @param name the fully qualified field name
+     * @param name the fully qualified field getName
      * @return the field dictionary
      */
     public PdfDictionary getField(String name) {
@@ -189,7 +189,7 @@ public class FdfReader extends PdfReader {
     /**
      * Gets the field value or <CODE>null</CODE> if the field does not exist or has no value defined.
      *
-     * @param name the fully qualified field name
+     * @param name the fully qualified field getName
      * @return the field value or <CODE>null</CODE>
      */
     public String getFieldValue(String name) {

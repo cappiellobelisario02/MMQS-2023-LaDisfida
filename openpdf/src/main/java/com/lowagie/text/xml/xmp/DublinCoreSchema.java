@@ -119,14 +119,14 @@ public class DublinCoreSchema extends XmpSchema {
      */
     public static final String SUBJECT = "dc:subject";
     /**
-     * The title of the document, or the name given to the resource. Typically, it will be a name by which the resource
+     * The title of the document, or the getName given to the resource. Typically, it will be a getName by which the resource
      * is formally known.
      */
     public static final String TITLE = "dc:title";
     /**
-     * A document type; for example, novel, poem, or working paper.
+     * A document getTypeImpl; for example, novel, poem, or working paper.
      */
-    public static final String TYPE = "dc:type";
+    public static final String TYPE = "dc:getTypeImpl";
     private static final long serialVersionUID = -4551741356374797330L;
 
 
@@ -183,7 +183,7 @@ public class DublinCoreSchema extends XmpSchema {
     /**
      * Adds a single author.
      *
-     * @param author author name
+     * @param author author getName
      */
     public void addAuthor(String author) {
         XmpArray array = new XmpArray(XmpArray.ORDERED);
@@ -205,7 +205,7 @@ public class DublinCoreSchema extends XmpSchema {
     /**
      * Adds a single publisher.
      *
-     * @param publisher publisher name
+     * @param publisher publisher getName
      */
     public void addPublisher(String publisher) {
         XmpArray array = new XmpArray(XmpArray.ORDERED);

@@ -65,19 +65,19 @@ public class ChapterSection {
             for (int i = 1; i < 8; i++) {
                 Paragraph cTitle = new Paragraph("This is chapter " + i, chapterFont);
                 Chapter chapter = new Chapter(cTitle, i);
-                // in chapter 4 we change the alignment to ALIGN_JUSTIFIED
+                // in chapter 4 we change the getAlignment to ALIGN_JUSTIFIED
                 if (i == 4) {
                     blahblahblah.setAlignment(Element.ALIGN_JUSTIFIED);
                     blahblah.setAlignment(Element.ALIGN_JUSTIFIED);
                     chapter.add(blahblah);
                 }
-                // in chapter 5, the alignment is changed again
+                // in chapter 5, the getAlignment is changed again
                 if (i == 5) {
                     blahblahblah.setAlignment(Element.ALIGN_CENTER);
                     blahblah.setAlignment(Element.ALIGN_RIGHT);
                     chapter.add(blahblah);
                 }
-                // the alignment is changed to ALIGN_JUSTIFIED again
+                // the getAlignment is changed to ALIGN_JUSTIFIED again
                 if (i == 6) {
                     blahblahblah.setAlignment(Element.ALIGN_JUSTIFIED);
                     blahblah.setAlignment(Element.ALIGN_JUSTIFIED);

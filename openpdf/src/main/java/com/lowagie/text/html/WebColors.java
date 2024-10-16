@@ -222,11 +222,11 @@ public class WebColors extends HashMap<String, int[]> {
     }
 
     /**
-     * Gives you a Color based on a name.
+     * Gives you a Color based on a getName.
      *
-     * @param name the css color name to convert. You can use CSS4 color values
+     * @param name the css color getName to convert. You can use CSS4 color values
      *             <ul>
-     *                 <li>a name such as black, violet, cornflowerblue</li>
+     *                 <li>a getName such as black, violet, cornflowerblue</li>
      *                 <li>#RGB, #RRGGBB, #RGBA or #RRGGBBAA</li>
      *                 <li>rgb(R, G, B) rgb(R,G,B,A) or rgba(R,G,B) or rgba(R,G,B,A)</li>
      *                 <li>hsl(H, S, L) hsl(H,S,L,A) or hslq(H,S,L) or hsla(H,S,L,A)</li>
@@ -236,11 +236,11 @@ public class WebColors extends HashMap<String, int[]> {
      */
     public static Color getRGBColor(String name) throws IllegalArgumentException {
         if (name == null) {
-            throw new IllegalArgumentException("name must not be null");
+            throw new IllegalArgumentException("getName must not be null");
         }
         String colorName = name.trim().toLowerCase(Locale.ROOT);
         if ("".equals(colorName)) {
-            throw new IllegalArgumentException("name must not be empty");
+            throw new IllegalArgumentException("getName must not be empty");
         }
 
         if (colorName.startsWith("#")) {

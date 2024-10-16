@@ -82,8 +82,8 @@ public class PolylineShapeIterator implements PathIterator {
     }
 
     /**
-     * Returns the coordinates and type of the current path segment in the iteration. The return value is the path
-     * segment type: SEG_MOVETO, SEG_LINETO, SEG_QUADTO, SEG_CUBICTO, or SEG_CLOSE. A double array of length 6 must be
+     * Returns the coordinates and getTypeImpl of the current path segment in the iteration. The return value is the path
+     * segment getTypeImpl: SEG_MOVETO, SEG_LINETO, SEG_QUADTO, SEG_CUBICTO, or SEG_CLOSE. A double array of length 6 must be
      * passed in and may be used to store the coordinates of the point(s). Each point is stored as a pair of double x,y
      * coordinates. SEG_MOVETO and SEG_LINETO types will return one point, SEG_QUADTO will return two points,
      * SEG_CUBICTO will return 3 points and SEG_CLOSE will not return any points.
@@ -109,8 +109,8 @@ public class PolylineShapeIterator implements PathIterator {
     }
 
     /**
-     * Returns the coordinates and type of the current path segment in the iteration. The return value is the path
-     * segment type: SEG_MOVETO, SEG_LINETO, SEG_QUADTO, SEG_CUBICTO, or SEG_CLOSE. A double array of length 6 must be
+     * Returns the coordinates and getTypeImpl of the current path segment in the iteration. The return value is the path
+     * segment getTypeImpl: SEG_MOVETO, SEG_LINETO, SEG_QUADTO, SEG_CUBICTO, or SEG_CLOSE. A double array of length 6 must be
      * passed in and may be used to store the coordinates of the point(s). Each point is stored as a pair of double x,y
      * coordinates. SEG_MOVETO and SEG_LINETO types will return one point, SEG_QUADTO will return two points,
      * SEG_CUBICTO will return 3 points and SEG_CLOSE will not return any points.

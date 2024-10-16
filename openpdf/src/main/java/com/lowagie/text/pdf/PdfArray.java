@@ -182,7 +182,7 @@ public class PdfArray extends PdfObject {
             if (object == null) {
                 object = PdfNull.PDFNULL;
             }
-            type = object.type();
+            type = object.getTypeImpl();
             if (type != PdfObject.ARRAY && type != PdfObject.DICTIONARY
                     && type != PdfObject.NAME && type != PdfObject.STRING) {
                 os.write(' ');

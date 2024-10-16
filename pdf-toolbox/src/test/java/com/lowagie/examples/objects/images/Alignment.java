@@ -21,12 +21,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Demonstrates the alignment method and parameters.
+ * Demonstrates the getAlignment method and parameters.
  */
 public class Alignment {
 
     /**
-     * Demonstrates the alignment method.
+     * Demonstrates the getAlignment method.
      *
      * @param args no arguments needed
      */
@@ -36,7 +36,7 @@ public class Alignment {
         Document document = new Document();
         try {
             // step 2: creation of a writer
-            PdfWriter.getInstance(document, new FileOutputStream("alignment.pdf"));
+            PdfWriter.getInstance(document, new FileOutputStream("getAlignment.pdf"));
 
             // step 3: we open the document
             document.open();

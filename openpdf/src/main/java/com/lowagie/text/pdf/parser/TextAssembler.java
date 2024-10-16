@@ -78,7 +78,7 @@ public interface TextAssembler {
     void renderText(ParsedTextImpl parsed);
 
     /**
-     * @param containingElementName This is an element name to surround the extracted text
+     * @param containingElementName This is an element getName to surround the extracted text
      * @return the final text for the set of fragments and fully parsed items we were passed during processing.
      */
     FinalText endParsingContext(String containingElementName);

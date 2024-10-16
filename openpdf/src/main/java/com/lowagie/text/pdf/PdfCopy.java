@@ -282,7 +282,7 @@ public class PdfCopy extends PdfWriter {
                     }
                     return new PdfLiteral(lit);
                 }
-                stringToLog = "CANNOT COPY type " + in.type;
+                stringToLog = "CANNOT COPY getTypeImpl " + in.type;
                 logger.info(stringToLog);
                 return null;
         }
@@ -316,7 +316,7 @@ public class PdfCopy extends PdfWriter {
             PdfDictionary catalog = reader.getCatalog();
             PRIndirectReference ref;
             PdfObject o = catalog.get(PdfName.ACROFORM);
-            if (o == null || o.type() != PdfObject.INDIRECT) {
+            if (o == null || o.getTypeImpl() != PdfObject.INDIRECT) {
                 return;
             }
             ref = (PRIndirectReference) o;
@@ -388,7 +388,7 @@ public class PdfCopy extends PdfWriter {
         PdfDictionary catalog = reader.getCatalog();
         PRIndirectReference hisRef = null;
         PdfObject o = catalog.get(PdfName.ACROFORM);
-        if (o != null && o.type() == PdfObject.INDIRECT) {
+        if (o != null && o.getTypeImpl() == PdfObject.INDIRECT) {
             hisRef = (PRIndirectReference) o;
         }
         if (hisRef == null) {

@@ -60,7 +60,7 @@ public class Footnote extends Phrase {
 
     // membervariables
     /**
-     * This is a possible footnote type.
+     * This is a possible footnote getTypeImpl.
      */
     public static final int TEXT = 0;
 
@@ -90,7 +90,7 @@ public class Footnote extends Phrase {
     public static final String NAMED = "named";
 
     /**
-     * This is the type of footnote.
+     * This is the getTypeImpl of footnote.
      */
     protected int footnoteType;
 
@@ -119,23 +119,23 @@ public class Footnote extends Phrase {
     // implementation of the Element-methods
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      * <p>
      *
-     * @return a type
+     * @return a getTypeImpl
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.FOOTNOTE;
     }
 
     /**
-     * Returns the type of this <CODE>Annotation</CODE>.
+     * Returns the getTypeImpl of this <CODE>Annotation</CODE>.
      * <p>
      *
-     * @return a type
+     * @return a getTypeImpl
      */
-    public int footnoteType() {
+    public int getFootnoteType() {
         return footnoteType;
     }
 

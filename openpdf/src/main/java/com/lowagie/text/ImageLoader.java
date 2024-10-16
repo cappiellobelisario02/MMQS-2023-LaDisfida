@@ -74,7 +74,7 @@ public class ImageLoader {
      * Creates an Image from a PNG image file in an URL.
      *
      * @param url url of the image
-     * @return an object of type <code>Image</code>
+     * @return an object of getTypeImpl <code>Image</code>
      */
     public static Image getPngImage(URL url) {
         try (InputStream is = url.openStream()) {
@@ -135,7 +135,7 @@ public class ImageLoader {
      * Creates an Image from a JPEG image file in an URL.
      *
      * @param url url of the image
-     * @return an object of type <code>Image</code>
+     * @return an object of getTypeImpl <code>Image</code>
      */
     public static Image getJpegImage(URL url) {
         try (InputStream is = url.openStream()) {
@@ -201,7 +201,7 @@ public class ImageLoader {
      * Creates an Image from an array of tiff image bytes.
      *
      * @param imageData bytes of the tiff image
-     * @return an objet of type <code>Image</code>
+     * @return an objet of getTypeImpl <code>Image</code>
      */
     public static Image getTiffImage(byte[] imageData) {
         try (InputStream is = new ByteArrayInputStream(imageData)) {
@@ -221,7 +221,7 @@ public class ImageLoader {
      * Creates an Image from a JPEG image file in a byte array.
      *
      * @param imageData bytes of the image
-     * @return an object of type <code>Image</code>
+     * @return an object of getTypeImpl <code>Image</code>
      */
     public static Image getJpegImage(byte[] imageData) {
         try {

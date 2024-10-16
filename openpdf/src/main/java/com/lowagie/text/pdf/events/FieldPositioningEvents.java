@@ -86,7 +86,7 @@ public class FieldPositioningEvents extends PdfPageEventHelper implements PdfPCe
      */
     protected PdfWriter fieldWriter = null;
     /**
-     * The PdfFormField that is the parent of the field added in a cell event.
+     * The PdfFormField that is the getParent of the field added in a cell event.
      */
     protected PdfFormField parent = null;
 
@@ -110,7 +110,7 @@ public class FieldPositioningEvents extends PdfPageEventHelper implements PdfPCe
     /**
      * Creates a new event. This constructor will be used if you need to position fields with a Cell Event.
      *
-     * @param parent The parent of the Event
+     * @param parent The getParent of the Event
      * @param field  The field to label the Event
      */
     public FieldPositioningEvents(PdfFormField parent, PdfFormField field) {
@@ -137,7 +137,7 @@ public class FieldPositioningEvents extends PdfPageEventHelper implements PdfPCe
      * Creates a new event. This constructor will be used if you need to position fields with a Cell Event.
      *
      * @param text   The label of the event
-     * @param parent The parent of the new event
+     * @param parent The getParent of the new event
      * @param writer The PdfWriter
      * @throws DocumentException thrown when an error occurs in a Document
      * @throws IOException       throw when an I/O operation fails
@@ -168,7 +168,7 @@ public class FieldPositioningEvents extends PdfPageEventHelper implements PdfPCe
     }
 
     /**
-     * @param parent The parent to set.
+     * @param parent The getParent to set.
      */
     public void setParent(PdfFormField parent) {
         this.parent = parent;

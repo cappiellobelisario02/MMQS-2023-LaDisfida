@@ -73,7 +73,7 @@ public class ImgCCITT extends Image {
      * @param width       the exact width of the image
      * @param height      the exact height of the image
      * @param reverseBits reverses the bits in <code>data</code>. Bit 0 is swapped with bit 7 and so on.
-     * @param typeCCITT   the type of compression in <code>data</code>. It can be CCITTG4, CCITTG31D, CCITTG32D
+     * @param typeCCITT   the getTypeImpl of compression in <code>data</code>. It can be CCITTG4, CCITTG31D, CCITTG32D
      * @param parameters  parameters associated with this stream. Possible values are CCITT_BLACKIS1,
      *                    CCITT_ENCODEDBYTEALIGN, CCITT_ENDOFLINE and CCITT_ENDOFBLOCK or a combination of them
      * @param data        the image data
@@ -85,7 +85,7 @@ public class ImgCCITT extends Image {
         super((URL) null);
         if (typeCCITT != CCITTG4 && typeCCITT != CCITTG3_1D && typeCCITT != CCITTG3_2D) {
             throw new BadElementException(MessageLocalization.getComposedMessage(
-                    "the.ccitt.compression.type.must.be.ccittg4.ccittg3.1d.or.ccittg3.2d"));
+                    "the.ccitt.compression.getTypeImpl.must.be.ccittg4.ccittg3.1d.or.ccittg3.2d"));
         }
         if (reverseBits) {
             throw new BadElementException("Reversing bits is not supported");

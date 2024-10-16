@@ -491,7 +491,7 @@ public class PdfStamper
      * @param userPassword   the user password. Can be null or empty
      * @param ownerPassword  the owner password. Can be null or empty
      * @param permissions    the user permissions
-     * @param encryptionType the type of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
+     * @param encryptionType the getTypeImpl of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
      *                       ENCRYPTION_AES128. Optionally DO_NOT_ENCRYPT_METADATA can be ored to output the metadata in
      *                       cleartext
      * @throws DocumentException if the document is already open
@@ -532,7 +532,7 @@ public class PdfStamper
      * be AllowPrinting, AllowModifyContents, AllowCopy, AllowModifyAnnotations, AllowFillIn, AllowScreenReaders,
      * AllowAssembly and AllowDegradedPrinting. The permissions can be combined by ORing them.
      *
-     * @param encryptionType the type of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
+     * @param encryptionType the getTypeImpl of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
      *                       ENCRYPTION_AES128. Optionally DO_NOT_ENCRYPT_METADATA can be ored to output the metadata in
      *                       cleartext
      * @param userPassword   the user password. Can be null or empty
@@ -555,7 +555,7 @@ public class PdfStamper
      *
      * @param certs          the public certificates to be used for the encryption
      * @param permissions    the user permissions for each of the certificates
-     * @param encryptionType the type of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
+     * @param encryptionType the getTypeImpl of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
      *                       ENCRYPTION_AES128.
      * @throws DocumentException if the encryption was set too late
      */
@@ -646,7 +646,7 @@ public class PdfStamper
     /**
      * Adds an empty signature.
      *
-     * @param name the name of the signature
+     * @param name the getName of the signature
      * @param page the page number
      * @param llx  lower left x coordinate of the signature's position
      * @param lly  lower left y coordinate of the signature's position
@@ -697,12 +697,12 @@ public class PdfStamper
     }
 
     /**
-     * Adds <CODE>name</CODE> to the list of fields that will be flattened on close, all the other fields will remain.
+     * Adds <CODE>getName</CODE> to the list of fields that will be flattened on close, all the other fields will remain.
      * If this method is never called or is called with invalid field names, all the fields will be flattened.
      * <p>
      * Calling <CODE>setFormFlattening(true)</CODE> is needed to have any kind of flattening.
      *
-     * @param name the field name
+     * @param name the field getName
      * @return <CODE>true</CODE> if the field exists, <CODE>false</CODE> otherwise
      */
     public boolean partialFormFlattening(String name) {
@@ -726,7 +726,7 @@ public class PdfStamper
      * @param fileStore   an array with the file. If it's <CODE>null</CODE> the file will be read from the disk
      * @param file        the path to the file. It will only be used if
      *                    <CODE>fileStore</CODE> is not <CODE>null</CODE>
-     * @param fileDisplay the actual file name stored in the pdf
+     * @param fileDisplay the actual file getName stored in the pdf
      * @throws IOException on error
      */
     public void addFileAttachment(String description, byte[] fileStore, String file, String fileDisplay)
@@ -752,7 +752,7 @@ public class PdfStamper
      * <li>PdfName.T (tiled view)
      * <li>PdfName.H (hidden)
      * </ul>
-     * Pass this name as a parameter and your PDF will be
+     * Pass this getName as a parameter and your PDF will be
      * a portable collection with all the embedded and
      * attached files as entries.
      *
@@ -828,11 +828,11 @@ public class PdfStamper
     /**
      * Sets the open and close page additional action.
      *
-     * @param actionType the action type. It can be <CODE>PdfWriter.PAGE_OPEN</CODE> or
+     * @param actionType the action getTypeImpl. It can be <CODE>PdfWriter.PAGE_OPEN</CODE> or
      *                   <CODE>PdfWriter.PAGE_CLOSE</CODE>
      * @param action     the action to perform
      * @param page       the page where the action will be applied. The first page is 1
-     * @throws PdfException if the action type is invalid
+     * @throws PdfException if the action getTypeImpl is invalid
      */
     public void setPageAction(PdfName actionType, PdfAction action, int page) throws PdfException {
         stamper.setPageAction(actionType, action, page);
@@ -870,7 +870,7 @@ public class PdfStamper
     /**
      * Gets the PdfLayer objects in an existing document as a Map with the names/titles of the layers as keys.
      *
-     * @return a Map with all the PdfLayers in the document (and the name/title of the layer as key)
+     * @return a Map with all the PdfLayers in the document (and the getName/title of the layer as key)
      * @since 2.1.2
      */
     public Map<String, PdfLayer> getPdfLayers() {

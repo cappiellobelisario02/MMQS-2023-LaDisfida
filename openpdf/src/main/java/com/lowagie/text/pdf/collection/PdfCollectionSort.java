@@ -51,7 +51,7 @@ public class PdfCollectionSort extends PdfDictionary {
     /**
      * Defines the sort order of the field (ascending or descending).
      *
-     * @param ascending an array with every element corresponding with a name of a field.
+     * @param ascending an array with every element corresponding with a getName of a field.
      */
     public void setSortOrder(boolean[] ascending) {
         PdfObject o = get(PdfName.S);

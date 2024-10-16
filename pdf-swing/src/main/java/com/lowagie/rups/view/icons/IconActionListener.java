@@ -31,7 +31,7 @@ public interface IconActionListener extends ActionListener {
     /**
      * Returns an Icon.
      *
-     * @return an object of type {@link Icon}
+     * @return an object of getTypeImpl {@link Icon}
      */
     Icon getIcon();
 }

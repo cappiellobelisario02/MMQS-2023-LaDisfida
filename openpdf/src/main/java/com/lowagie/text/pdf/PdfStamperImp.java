@@ -205,7 +205,7 @@ public class PdfStamperImp extends PdfWriter {
         if (obj == null) {
             return;
         }
-        switch (obj.type()) {
+        switch (obj.getTypeImpl()) {
             case PdfObject.INDIRECT:
                 PRIndirectReference iref = (PRIndirectReference) obj;
                 if (reader != iref.getReader()) {
@@ -788,9 +788,9 @@ public class PdfStamperImp extends PdfWriter {
     }
 
     private void addIndirectReferenceIfNecessary(PdfDictionary annot, PdfObject obj, Map<String, PdfObject> irt) {
-        if (obj.type() == PdfObject.INDIRECT) {
+        if (obj.getTypeImpl() == PdfObject.INDIRECT) {
             PdfObject nm = PdfReader.getPdfObject(annot.get(PdfName.NM));
-            if (nm != null && nm.type() == PdfObject.STRING) {
+            if (nm != null && nm.getTypeImpl() == PdfObject.STRING) {
                 irt.put(nm.toString(), obj);
             }
         }
@@ -800,9 +800,9 @@ public class PdfStamperImp extends PdfWriter {
         int[] arhits = hits.getKeys();
         for (int n : arhits) {
             PdfObject obj = fdf.getPdfObject(n);
-            if (obj.type() == PdfObject.DICTIONARY) {
+            if (obj.getTypeImpl() == PdfObject.DICTIONARY) {
                 PdfObject str = PdfReader.getPdfObject(((PdfDictionary) obj).get(PdfName.IRT));
-                if (str != null && str.type() == PdfObject.STRING) {
+                if (str != null && str.getTypeImpl() == PdfObject.STRING) {
                     PdfObject i = irt.get(str.toString());
                     if (i != null) {
                         PdfDictionary updatedDict = new PdfDictionary();
@@ -1639,7 +1639,7 @@ public class PdfStamperImp extends PdfWriter {
 
 
     /**
-     * Allows to add e.g. a Radiogroup without specifying a page for the data field parent. The parent (data) form field
+     * Allows to add e.g. a Radiogroup without specifying a page for the data field getParent. The getParent (data) form field
      * isn't located on a page thus it doesn't make sense to specify one.
      *
      * @param annot annotation to be added
@@ -1914,15 +1914,15 @@ public class PdfStamperImp extends PdfWriter {
     /**
      * Sets the open and close page additional action.
      *
-     * @param actionType the action type. It can be <CODE>PdfWriter.PAGE_OPEN</CODE> or
+     * @param actionType the action getTypeImpl. It can be <CODE>PdfWriter.PAGE_OPEN</CODE> or
      *                   <CODE>PdfWriter.PAGE_CLOSE</CODE>
      * @param action     the action to perform
      * @param page       the page where the action will be applied. The first page is 1
-     * @throws PdfException if the action type is invalid
+     * @throws PdfException if the action getTypeImpl is invalid
      */
     void setPageAction(PdfName actionType, PdfAction action, int page) throws PdfException {
         if (!actionType.equals(PAGE_OPEN) && !actionType.equals(PAGE_CLOSE)) {
-            throw new PdfException(MessageLocalization.getComposedMessage("invalid.page.additional.action.type.1",
+            throw new PdfException(MessageLocalization.getComposedMessage("invalid.page.additional.action.getTypeImpl.1",
                     actionType.toString()));
         }
         PdfDictionary pg = reader.getPageN(page);
@@ -1993,7 +1993,7 @@ public class PdfStamperImp extends PdfWriter {
     protected void markUsed(PdfObject obj) {
         if (append && obj != null) {
             PRIndirectReference ref;
-            if (obj.type() == PdfObject.INDIRECT) {
+            if (obj.getTypeImpl() == PdfObject.INDIRECT) {
                 ref = (PRIndirectReference) obj;
             } else {
                 ref = obj.getIndRef();
@@ -2025,9 +2025,9 @@ public class PdfStamperImp extends PdfWriter {
      * <CODE>WILL_SAVE</CODE>, <CODE>DID_SAVE</CODE>, <CODE>WILL_PRINT</CODE>
      * and <CODE>DID_PRINT</CODE>.
      *
-     * @param actionType the action type
+     * @param actionType the action getTypeImpl
      * @param action     the action to execute in response to the trigger
-     * @throws PdfException on invalid action type
+     * @throws PdfException on invalid action getTypeImpl
      */
     @Override
     public void setAdditionalAction(PdfName actionType, PdfAction action) throws PdfException {
@@ -2037,7 +2037,7 @@ public class PdfStamperImp extends PdfWriter {
                 actionType.equals(WILL_PRINT) ||
                 actionType.equals(DID_PRINT))) {
             throw new PdfException(
-                    MessageLocalization.getComposedMessage("invalid.additional.action.type.1", actionType.toString()));
+                    MessageLocalization.getComposedMessage("invalid.additional.action.getTypeImpl.1", actionType.toString()));
         }
         PdfDictionary aa = reader.getCatalog().getAsDict(PdfName.AA);
         if (aa == null) {
@@ -2069,7 +2069,7 @@ public class PdfStamperImp extends PdfWriter {
     @Override
     public void setOpenAction(String name) {
         throw new UnsupportedOperationException(
-                MessageLocalization.getComposedMessage("open.actions.by.name.are.not.supported"));
+                MessageLocalization.getComposedMessage("open.actions.by.getName.are.not.supported"));
     }
 
     /**
@@ -2151,8 +2151,8 @@ public class PdfStamperImp extends PdfWriter {
     /**
      * Recursive method to reconstruct the documentOCGorder variable in the writer.
      *
-     * @param parent a parent PdfLayer (can be null)
-     * @param arr    an array possibly containing children for the parent PdfLayer
+     * @param parent a getParent PdfLayer (can be null)
+     * @param arr    an array possibly containing children for the getParent PdfLayer
      * @param ocgmap a HashMap with indirect reference Strings as keys and PdfLayer objects as values.
      * @since 2.1.2
      */
@@ -2225,7 +2225,7 @@ public class PdfStamperImp extends PdfWriter {
     /**
      * Gets the PdfLayer objects in an existing document as a Map with the names/titles of the layers as keys.
      *
-     * @return a Map with all the PdfLayers in the document (and the name/title of the layer as key)
+     * @return a Map with all the PdfLayers in the document (and the getName/title of the layer as key)
      * @since 2.1.2
      */
     public Map<String, PdfLayer> getPdfLayers() {

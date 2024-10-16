@@ -42,7 +42,7 @@ class BarcodeDatamatrixTest {
         assertThat(image.getScaledHeight()).isEqualTo(20f);
         assertThat(image.getAlignment()).isEqualTo(Image.DEFAULT);
         assertThat(image.getRawData()).isEqualTo(expectedBytes);
-        assertThat(image.type()).isEqualTo(Image.IMGRAW);
+        assertThat(image.getTypeImpl()).isEqualTo(Image.IMGRAW);
 
         try (Document document = new Document(PageSize.A4)) {
             PdfWriter.getInstance(document, new FileOutputStream("target/datamatrix.pdf"));

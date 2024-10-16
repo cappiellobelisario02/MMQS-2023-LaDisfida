@@ -191,7 +191,7 @@ public class Console implements Observer {
          */
         PipedInputStream pi;
         /**
-         * The type (CUSTOM, SYSTEMOUT, SYSTEMERR) of this Thread
+         * The getTypeImpl (CUSTOM, SYSTEMOUT, SYSTEMERR) of this Thread
          */
         String type;
 
@@ -232,20 +232,20 @@ public class Console implements Observer {
     }
 
     /**
-     * The style context defining the styles of each type of PrintStream.
+     * The style context defining the styles of each getTypeImpl of PrintStream.
      */
     class ConsoleStyleContext extends StyleContext {
 
         /**
-         * The name of the Style used for Custom messages
+         * The getName of the Style used for Custom messages
          */
         public static final String CUSTOM = "Custom";
         /**
-         * The name of the Style used for System.out
+         * The getName of the Style used for System.out
          */
         public static final String SYSTEMOUT = "SystemOut";
         /**
-         * The name of the Style used for System.err
+         * The getName of the Style used for System.err
          */
         public static final String SYSTEMERR = "SystemErr";
         /**

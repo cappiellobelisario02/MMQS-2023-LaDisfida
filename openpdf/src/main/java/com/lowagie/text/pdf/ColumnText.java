@@ -134,12 +134,12 @@ public class ColumnText {
     public static final int DIGITS_EN2AN_INIT_AL = ArabicLigaturizer.DIGITS_EN2AN_INIT_AL;
 
     /**
-     * Digit type option: Use Arabic-Indic digits (U+0660...U+0669).
+     * Digit getTypeImpl option: Use Arabic-Indic digits (U+0660...U+0669).
      */
     public static final int DIGIT_TYPE_AN = ArabicLigaturizer.DIGIT_TYPE_AN;
 
     /**
-     * Digit type option: Use Eastern (Extended) Arabic-Indic digits (U+06f0...U+06f9).
+     * Digit getTypeImpl option: Use Eastern (Extended) Arabic-Indic digits (U+06f0...U+06f9).
      */
     public static final int DIGIT_TYPE_AN_EXTENDED = ArabicLigaturizer.DIGIT_TYPE_AN_EXTENDED;
     /**
@@ -189,7 +189,7 @@ public class ColumnText {
     protected float rightX;
 
     /**
-     * The column alignment. Default is left alignment.
+     * The column getAlignment. Default is left getAlignment.
      */
     protected int alignment = Element.ALIGN_LEFT;
 
@@ -210,22 +210,22 @@ public class ColumnText {
     protected BidiLine bidiLine;
 
     /**
-     * The current y line location. Text will be written at this line minus the leading.
+     * The current y line location. Text will be written at this line minus the getLeading.
      */
     protected float yLine;
 
     /**
-     * The leading for the current line.
+     * The getLeading for the current line.
      */
     protected float currentLeading = 16;
 
     /**
-     * The fixed text leading.
+     * The fixed text getLeading.
      */
     protected float fixedLeading = 16;
 
     /**
-     * The text leading that is multiplied by the biggest font size in the line.
+     * The text getLeading that is multiplied by the biggest font size in the line.
      */
     protected float multipliedLeading = 0;
 
@@ -357,7 +357,7 @@ public class ColumnText {
      *
      * @param canvas        where the text is to be written to
      * @param phrase        the <CODE>Phrase</CODE> with the text
-     * @param settings      the text alignment settings
+     * @param settings      the text getAlignment settings
      */
     public static void showTextAligned(PdfContentByte canvas, Phrase phrase, TextAlignmentSettings settings) {
         int alignment = settings.getAlignment();
@@ -425,7 +425,7 @@ public class ColumnText {
      * Shows a line of text. Only the first line is written.
      *
      * @param canvas    where the text is to be written to
-     * @param alignment the alignment
+     * @param alignment the getAlignment
      * @param phrase    the <CODE>Phrase</CODE> with the text
      * @param x         the x reference position
      * @param y         the y reference position
@@ -590,9 +590,9 @@ public class ColumnText {
         if (element instanceof Image image) {
             element = getPdfPTableImage(image);
         }
-        if (element.type() == Element.CHUNK) {
+        if (element.getTypeImpl() == Element.CHUNK) {
             element = new Paragraph((Chunk) element);
-        } else if (element.type() == Element.PHRASE) {
+        } else if (element.getTypeImpl() == Element.PHRASE) {
             element = new Paragraph((Phrase) element);
         }
         if (element instanceof SimpleTable simpleTable) {
@@ -601,8 +601,8 @@ public class ColumnText {
             } catch (DocumentException e) {
                 throw new IllegalArgumentException(MessageLocalization.getComposedMessage("element.not.allowed"));
             }
-        } else if (element.type() != Element.PARAGRAPH && element.type() != Element.LIST
-                && element.type() != Element.PTABLE && element.type() != Element.YMARK) {
+        } else if (element.getTypeImpl() != Element.PARAGRAPH && element.getTypeImpl() != Element.LIST
+                && element.getTypeImpl() != Element.PTABLE && element.getTypeImpl() != Element.YMARK) {
             throw new IllegalArgumentException(MessageLocalization.getComposedMessage("element.not.allowed"));
         }
         if (!composite) {
@@ -732,7 +732,7 @@ public class ColumnText {
     }
 
     /**
-     * Finds the intersection between the <CODE>yLine</CODE>, the <CODE>yLine-leading</CODE>and the two column bounds.
+     * Finds the intersection between the <CODE>yLine</CODE>, the <CODE>yLine-getLeading</CODE>and the two column bounds.
      * It will set the <CODE>lineStatus</CODE> appropriately.
      *
      * @return a <CODE>float[4]</CODE>with the x coordinates of the intersection
@@ -797,8 +797,8 @@ public class ColumnText {
      * @param lly       the lower left y corner
      * @param urx       the upper right x corner
      * @param ury       the upper right y corner
-     * @param leading   the leading
-     * @param alignment the column alignment
+     * @param leading   the getLeading
+     * @param alignment the column getAlignment
      */
     public void setSimpleColumn(Phrase phrase, float llx, float lly, float urx, float ury, float leading,
             int alignment) {
@@ -813,8 +813,8 @@ public class ColumnText {
      * @param lly       the lower left y corner
      * @param urx       the upper right x corner
      * @param ury       the upper right y corner
-     * @param leading   the leading
-     * @param alignment the column alignment
+     * @param leading   the getLeading
+     * @param alignment the column getAlignment
      */
     public void setSimpleColumn(float llx, float lly, float urx, float ury, float leading, int alignment) {
         setLeading(leading);
@@ -844,11 +844,11 @@ public class ColumnText {
     }
 
     /**
-     * Sets the leading fixed and variable. The resultant leading will be fixedLeading+multipliedLeading*maxFontSize
+     * Sets the getLeading fixed and variable. The resultant getLeading will be fixedLeading+multipliedLeading*maxFontSize
      * where maxFontSize is the size of the biggest font in the line.
      *
-     * @param fixedLeading      the fixed leading
-     * @param multipliedLeading the variable leading
+     * @param fixedLeading      the fixed getLeading
+     * @param multipliedLeading the variable getLeading
      */
     public void setLeading(float fixedLeading, float multipliedLeading) {
         this.fixedLeading = fixedLeading;
@@ -856,18 +856,18 @@ public class ColumnText {
     }
 
     /**
-     * Gets the fixed leading.
+     * Gets the fixed getLeading.
      *
-     * @return the leading
+     * @return the getLeading
      */
     public float getLeading() {
         return fixedLeading;
     }
 
     /**
-     * Sets the leading to fixed.
+     * Sets the getLeading to fixed.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      */
     public void setLeading(float leading) {
         fixedLeading = leading;
@@ -875,9 +875,9 @@ public class ColumnText {
     }
 
     /**
-     * Gets the variable leading.
+     * Gets the variable getLeading.
      *
-     * @return the leading
+     * @return the getLeading
      */
     public float getMultipliedLeading() {
         return multipliedLeading;
@@ -893,7 +893,7 @@ public class ColumnText {
     }
 
     /**
-     * Sets the yLine. The line will be written to yLine-leading.
+     * Sets the yLine. The line will be written to yLine-getLeading.
      *
      * @param yLine the yLine
      */
@@ -902,18 +902,18 @@ public class ColumnText {
     }
 
     /**
-     * Gets the alignment.
+     * Gets the getAlignment.
      *
-     * @return the alignment
+     * @return the getAlignment
      */
     public int getAlignment() {
         return alignment;
     }
 
     /**
-     * Sets the alignment.
+     * Sets the getAlignment.
      *
-     * @param alignment the alignment
+     * @param alignment the getAlignment
      */
     public void setAlignment(int alignment) {
         this.alignment = alignment;
@@ -1310,7 +1310,7 @@ public class ColumnText {
             }
 
             Element element = compositeElements.getFirst();
-            switch (element.type()) {
+            switch (element.getTypeImpl()) {
                 case Element.PARAGRAPH:
                     return handleParagraph((Paragraph) element, firstPass, simulate);
 
@@ -1503,7 +1503,7 @@ public class ColumnText {
 
         float yTemp = yLine;
         if (!firstPass && listIdx == 0) {
-            yTemp -= table.spacingBefore();
+            yTemp -= table.getSpacingBefore();
         }
 
         if (yTemp < minY || yTemp > maxY) {
@@ -1535,7 +1535,7 @@ public class ColumnText {
         if ((status & NO_MORE_TEXT) != 0) {
             compositeColumn = null;
             compositeElements.removeFirst();
-            yLine -= table.spacingAfter();
+            yLine -= table.getSpacingAfter();
         }
 
         if ((status & NO_MORE_COLUMN) != 0) {
@@ -1728,7 +1728,7 @@ public class ColumnText {
      * @since 2.1.2
      */
     public boolean zeroHeightElement() {
-        return composite && !compositeElements.isEmpty() && compositeElements.getFirst().type() == Element.YMARK;
+        return composite && !compositeElements.isEmpty() && compositeElements.getFirst().getTypeImpl() == Element.YMARK;
     }
 
     /**

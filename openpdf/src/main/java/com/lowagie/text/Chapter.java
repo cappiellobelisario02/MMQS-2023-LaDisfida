@@ -118,12 +118,12 @@ public class Chapter extends Section {
     // implementation of the Element-methods
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.CHAPTER;
     }
 

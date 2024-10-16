@@ -281,7 +281,7 @@ public class PdfAcroForm extends PdfDictionary {
     /**
      * @param button          an object of {@link PdfFormField}
      * @param characteristics characteristics
-     * @param name            name of the field
+     * @param name            getName of the field
      * @param value           value of the field
      */
     public void setButtonParams(PdfFormField button, int characteristics, String name, String value) {
@@ -314,7 +314,7 @@ public class PdfAcroForm extends PdfDictionary {
 
 
     /**
-     * @param name  name of the field
+     * @param name  getName of the field
      * @param value value of the field
      * @return a PdfFormField
      */
@@ -359,7 +359,7 @@ public class PdfAcroForm extends PdfDictionary {
     }
 
     /**
-     * @param name          name of the field
+     * @param name          getName of the field
      * @param defaultValue  default value
      * @param noToggleToOff noToggleToOff
      * @return a PdfFormField
@@ -494,7 +494,7 @@ public class PdfAcroForm extends PdfDictionary {
 
     /**
      * @param field        field, an object of {@link PdfFormField}
-     * @param name         field name
+     * @param name         field getName
      * @param defaultValue default calue
      * @param llx          lower-left-x
      * @param lly          lower-left-y
@@ -515,7 +515,7 @@ public class PdfAcroForm extends PdfDictionary {
     }
 
     /**
-     * @param name field name
+     * @param name field getName
      * @param llx  lower-left-x
      * @param lly  lower-left-y
      * @param urx  upper-right-x
@@ -532,7 +532,7 @@ public class PdfAcroForm extends PdfDictionary {
     }
 
     /**
-     * @param name  field name
+     * @param name  field getName
      * @param field field, an object of {@link PdfFormField}
      * @param llx   lower-left-x
      * @param lly   lower-left-y

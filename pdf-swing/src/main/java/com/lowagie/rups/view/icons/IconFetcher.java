@@ -42,7 +42,7 @@ public class IconFetcher {
     protected static HashMap<String, Icon> cache = new HashMap<>();
 
     /**
-     * Gets an Icon with a specific name.
+     * Gets an Icon with a specific getName.
      *
      * @param filename the filename of the Icon.
      * @return an Icon

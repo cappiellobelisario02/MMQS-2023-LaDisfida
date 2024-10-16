@@ -58,7 +58,7 @@ public class ComplexText {
             // step 4: we grab the ContentByte and do some stuff with it
             PdfContentByte cb = writer.getDirectContent();
 
-            // first we draw some lines to be able to visualize the text alignment functions
+            // first we draw some lines to be able to visualize the text getAlignment functions
             cb.setLineWidth(0f);
             cb.moveTo(250, 500);
             cb.lineTo(250, 800);

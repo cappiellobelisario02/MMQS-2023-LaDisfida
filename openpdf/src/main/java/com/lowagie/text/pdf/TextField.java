@@ -109,7 +109,7 @@ public class TextField extends BaseField {
      *
      * @param writer    the document <CODE>PdfWriter</CODE>
      * @param box       the field location and dimensions
-     * @param fieldName the field name. If <CODE>null</CODE> only the widget keys will be included in the field allowing
+     * @param fieldName the field getName. If <CODE>null</CODE> only the widget keys will be included in the field allowing
      *                  it to be used as a kid field.
      */
     public TextField(PdfWriter writer, Rectangle box, String fieldName) {
@@ -264,7 +264,7 @@ public class TextField extends BaseField {
     }
 
     /**
-     * Flip text alignment for RTL texts Not sure why but this is needed
+     * Flip text getAlignment for RTL texts Not sure why but this is needed
      */
     private int getTextAlignment(int runDirection) {
         if (runDirection == PdfWriter.RUN_DIRECTION_RTL) {
@@ -606,7 +606,7 @@ public class TextField extends BaseField {
         // Create the form field
         PdfFormField field = createTextField();
 
-        // Set alignment
+        // Set getAlignment
         setAlignment(field);
 
         // Set rotation if needed
@@ -614,7 +614,7 @@ public class TextField extends BaseField {
             field.setMKRotation(rotation);
         }
 
-        // Set field name, value, and default value
+        // Set field getName, value, and default value
         setFieldAttributes(field);
 
         // Set border style

@@ -17,14 +17,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 /**
- * Tests for setting alignment through {@link WithHorizontalAlignment} and {@link WithVerticalAlignment} interfaces.
+ * Tests for setting getAlignment through {@link WithHorizontalAlignment} and {@link WithVerticalAlignment} interfaces.
  * Testing classes: {@link Table} and {@link Cell}. {@link Row} cannot be tested because of its package-private access.
  *
  * @author noavarice
  */
 public class TableElementsAlignmentTest {
 
-    private static final String TEST_TITLE = "Testing alignment=";
+    private static final String TEST_TITLE = "Testing getAlignment=";
 
     @TestFactory
     Iterable<DynamicTest> testSettingTableAlignment() {

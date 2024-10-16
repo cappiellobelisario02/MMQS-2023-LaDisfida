@@ -55,7 +55,7 @@ class TablePdfTest {
         // First page
 
         // add five rows
-        // the first cell has rowspan 10
+        // the first cell has getRowSpan 10
         // the second column gets just 5 cells
 
         PdfPCell cellWithRowspan = new PdfPCell();
@@ -78,10 +78,10 @@ class TablePdfTest {
 
         // Second page
 
-        // would like to have the remaining rowspan (5 rows) of first column to
+        // would like to have the remaining getRowSpan (5 rows) of first column to
         // continue on this page
         // BUT: adding the table to the document lost the information about
-        // cells with rowspan
+        // cells with getRowSpan
 
         // as a consequence adding the remaining 5 rows of cells for column 2
         // does not work as expected

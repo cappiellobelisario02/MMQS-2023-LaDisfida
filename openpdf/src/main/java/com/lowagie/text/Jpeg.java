@@ -70,12 +70,12 @@ public class Jpeg extends Image {
     // public static final membervariables
 
     /**
-     * This is a type of marker.
+     * This is a getTypeImpl of marker.
      */
     public static final int NOT_A_MARKER = -1;
 
     /**
-     * This is a type of marker.
+     * This is a getTypeImpl of marker.
      */
     public static final int VALID_MARKER = 0;
 
@@ -85,7 +85,7 @@ public class Jpeg extends Image {
     protected static final int[] VALID_MARKERS = {0xC0, 0xC1, 0xC2};
 
     /**
-     * This is a type of marker.
+     * This is a getTypeImpl of marker.
      */
     public static final int UNSUPPORTED_MARKER = 1;
 
@@ -95,7 +95,7 @@ public class Jpeg extends Image {
     protected static final int[] UNSUPPORTED_MARKERS = {0xC3, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF};
 
     /**
-     * This is a type of marker.
+     * This is a getTypeImpl of marker.
      */
     public static final int NOPARAM_MARKER = 2;
 
@@ -184,10 +184,10 @@ public class Jpeg extends Image {
     }
 
     /**
-     * Returns a type of marker.
+     * Returns a getTypeImpl of marker.
      *
      * @param marker an int
-     * @return a type: <code>VALID_MARKER</code>, <code>UNSUPPORTED_MARKER</code> or <code>NOPARAM_MARKER</code>
+     * @return a getTypeImpl: <code>VALID_MARKER</code>, <code>UNSUPPORTED_MARKER</code> or <code>NOPARAM_MARKER</code>
      */
     private static int marker(int marker) {
         for (int validMarker : VALID_MARKERS) {

@@ -272,7 +272,7 @@ public class PdfAnnotation extends PdfDictionary {
      * @param rect          dimensions {@link Rectangle}
      * @param clipTitle     clip title
      * @param fs            {@link PdfFileSpecification}
-     * @param mimeType      mime type of the file
+     * @param mimeType      mime getTypeImpl of the file
      * @param playOnDisplay play on display
      * @return a screen PdfAnnotation
      * @throws IOException on error
@@ -463,7 +463,7 @@ public class PdfAnnotation extends PdfDictionary {
             case MARKUP_UNDERLINE -> PdfName.UNDERLINE;
             case MARKUP_STRIKEOUT -> PdfName.STRIKEOUT;
             case MARKUP_SQUIGGLY -> PdfName.SQUIGGLY;
-            default -> throw new IllegalArgumentException("Unknown type: " + type);
+            default -> throw new IllegalArgumentException("Unknown getTypeImpl: " + type);
         };
         annot.put(PdfName.SUBTYPE, name);
         annot.put(PdfName.CONTENTS, new PdfString(contents, PdfObject.TEXT_UNICODE));
@@ -481,7 +481,7 @@ public class PdfAnnotation extends PdfDictionary {
      * @param writer   {@link PdfWriter}
      * @param rect     dimensions {@link Rectangle}
      * @param contents content for the file
-     * @param name     name of the annotation
+     * @param name     getName of the annotation
      * @return A PdfAnnotation
      */
     public static com.lowagie.text.pdf.PdfAnnotation createStamp(PdfWriter writer, Rectangle rect, String contents, String name) {
@@ -518,7 +518,7 @@ public class PdfAnnotation extends PdfDictionary {
      * @param fileStore   an array with the file. If it's <CODE>null</CODE> the file will be read from the disk
      * @param file        the path to the file. It will only be used if
      *                    <CODE>fileStore</CODE> is not <CODE>null</CODE>
-     * @param fileDisplay the actual file name stored in the pdf
+     * @param fileDisplay the actual file getName stored in the pdf
      * @return the annotation
      * @throws IOException on error
      */
@@ -917,10 +917,10 @@ public class PdfAnnotation extends PdfDictionary {
     }
 
     /**
-     * Sets the name of the annotation. With this name the annotation can be identified among all the annotations on a
+     * Sets the getName of the annotation. With this getName the annotation can be identified among all the annotations on a
      * page (it has to be unique).
      *
-     * @param name name to be set for annotation
+     * @param name getName to be set for annotation
      */
     public void setName(String name) {
         put(PdfName.NM, new PdfString(name));

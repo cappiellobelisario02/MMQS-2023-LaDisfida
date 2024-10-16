@@ -131,7 +131,7 @@ public class HandoutPdf {
             throw new IllegalArgumentException("Destination path is not allowed.");
         }
 
-        // Ensure the parent directory exists
+        // Ensure the getParent directory exists
         File parentDir = destFilePath.getParentFile();
         if (parentDir != null && !parentDir.exists()) {
             parentDir.mkdirs(); // Create the directory if it does not exist

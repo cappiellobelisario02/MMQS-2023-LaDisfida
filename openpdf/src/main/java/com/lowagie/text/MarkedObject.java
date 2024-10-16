@@ -81,7 +81,7 @@ public class MarkedObject implements Element {
     /**
      * Creates a MarkedObject.
      *
-     * @param element an object of type {@link Element}
+     * @param element an object of getTypeImpl {@link Element}
      */
     public MarkedObject(Element element) {
         this.element = element;
@@ -132,11 +132,11 @@ public class MarkedObject implements Element {
     }
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
-    public int type() {
+    public int getTypeImpl() {
         return MARKED;
     }
 

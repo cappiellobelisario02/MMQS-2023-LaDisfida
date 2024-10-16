@@ -145,7 +145,7 @@ class PdfCopyFieldsImp extends PdfWriter {
         StringBuilder name = new StringBuilder();
         while (ref != null) {
             PdfObject obj = PdfReader.getPdfObject(ref);
-            if (obj == null || obj.type() != PdfObject.DICTIONARY) {
+            if (obj == null || obj.getTypeImpl() != PdfObject.DICTIONARY) {
                 break;
             }
             PdfDictionary dic = (PdfDictionary) obj;
@@ -239,7 +239,7 @@ class PdfCopyFieldsImp extends PdfWriter {
             return;
         }
 
-        switch (obj.type()) {
+        switch (obj.getTypeImpl()) {
             case PdfObject.DICTIONARY, PdfObject.STREAM:
                 propagateDictionary((PdfDictionary) obj, restricted);
                 break;
@@ -295,7 +295,7 @@ class PdfCopyFieldsImp extends PdfWriter {
     }
 
     private void handleUnexpectedType(PdfObject obj) {
-        throw new IllegalArgumentException("Unexpected PdfObject type: " + obj.type());
+        throw new IllegalArgumentException("Unexpected PdfObject getTypeImpl: " + obj.getTypeImpl());
     }
 
 

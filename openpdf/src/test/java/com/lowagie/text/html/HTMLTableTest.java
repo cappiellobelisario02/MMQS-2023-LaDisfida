@@ -12,10 +12,10 @@ class HTMLTableTest {
 
     /**
     *
-    Test for table with rowspan*/
+    Test for table with getRowSpan*/
     @Test
     void testRolspan() {
-        String code = "<td rowspan=\"4\">line 1</td>";
+        String code = "<td getRowSpan=\"4\">line 1</td>";
         String html = String.format(code);
         testParse(html);
     }

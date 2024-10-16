@@ -88,7 +88,7 @@ class CJKFont extends BaseFont {
     private static Object initLock = new Object();
     HashMap<String, char[]> allCMaps = new HashMap<>();
     /**
-     * The font name
+     * The font getName
      */
     private String fontName;
     /**
@@ -96,7 +96,7 @@ class CJKFont extends BaseFont {
      */
     private String style = "";
     /**
-     * The CMap name associated with this font
+     * The CMap getName associated with this font
      */
     private String cMap;
 
@@ -111,7 +111,7 @@ class CJKFont extends BaseFont {
     /**
      * Creates a CJK font.
      *
-     * @param fontName the name of the font
+     * @param fontName the getName of the font
      * @param enc      the encoding of the font
      * @param emb      always <CODE>false</CODE>. CJK font and not embedded
      * @throws DocumentException on error
@@ -249,7 +249,7 @@ class CJKFont extends BaseFont {
     /**
      * Checks if its a valid CJK font.
      *
-     * @param fontName the font name
+     * @param fontName the font getName
      * @param enc      the encoding
      * @return <CODE>true</CODE> if it is CJK font
      */
@@ -764,10 +764,10 @@ class CJKFont extends BaseFont {
     }
 
     /**
-     * Sets the font name that will appear in the pdf font dictionary. Use with care as it can easily make a font
+     * Sets the font getName that will appear in the pdf font dictionary. Use with care as it can easily make a font
      * unreadable if not embedded.
      *
-     * @param name the new font name
+     * @param name the new font getName
      */
     @Override
     public void setPostscriptFontName(String name) {
@@ -775,12 +775,12 @@ class CJKFont extends BaseFont {
     }
 
     /**
-     * Gets the full name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the full getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @return the full name of the font
+     * @return the full getName of the font
      */
     @Override
     public String[][] getFullFontName() {
@@ -789,11 +789,11 @@ class CJKFont extends BaseFont {
 
     /**
      * Gets all the entries of the names-table. If it is a True Type font each array element will have {Name ID,
-     * Platform ID, Platform Encoding ID, Language ID, font name}. The interpretation of this values can be found in the
-     * Open Type specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element
-     * with {"4", "", "", "", font name}.
+     * Platform ID, Platform Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the
+     * Open Type specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element
+     * with {"4", "", "", "", font getName}.
      *
-     * @return the full name of the font
+     * @return the full getName of the font
      */
     @Override
     public String[][] getAllNameEntries() {
@@ -801,12 +801,12 @@ class CJKFont extends BaseFont {
     }
 
     /**
-     * Gets the family name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the family getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @return the family name of the font
+     * @return the family getName of the font
      */
     @Override
     public String[][] getFamilyFontName() {

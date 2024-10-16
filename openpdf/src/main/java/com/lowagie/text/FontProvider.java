@@ -59,7 +59,7 @@ public interface FontProvider {
     /**
      * Checks if a certain font is registered.
      *
-     * @param fontName the name of the font that has to be checked.
+     * @param fontName the getName of the font that has to be checked.
      * @return true if the font is found
      */
     boolean isRegistered(String fontName);
@@ -67,7 +67,7 @@ public interface FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontName the name of the font
+     * @param fontName the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @param size     the size of this font

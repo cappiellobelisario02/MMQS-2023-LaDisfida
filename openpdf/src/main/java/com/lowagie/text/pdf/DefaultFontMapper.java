@@ -173,9 +173,9 @@ public class DefaultFontMapper implements FontMapper {
     }
 
     /**
-     * Maps a name to a BaseFont parameter.
+     * Maps a getName to a BaseFont parameter.
      *
-     * @param awtName    the name
+     * @param awtName    the getName
      * @param parameters the BaseFont parameter
      */
     public void putName(String awtName, BaseFontParameters parameters) {
@@ -183,19 +183,19 @@ public class DefaultFontMapper implements FontMapper {
     }
 
     /**
-     * Maps an alias to a name.
+     * Maps an alias to a getName.
      *
      * @param alias   the alias
-     * @param awtName the name
+     * @param awtName the getName
      */
     public void putAlias(String alias, String awtName) {
         aliases.put(alias, awtName);
     }
 
     /**
-     * Looks for a BaseFont parameter associated with a name.
+     * Looks for a BaseFont parameter associated with a getName.
      *
-     * @param name the name
+     * @param name the getName
      * @return the BaseFont parameter or <CODE>null</CODE> if not found.
      */
     public BaseFontParameters getBaseFontParameters(String name) {
@@ -300,7 +300,7 @@ public class DefaultFontMapper implements FontMapper {
     public static class BaseFontParameters {
 
         /**
-         * The font name.
+         * The font getName.
          */
         public String fontName;
         /**
@@ -327,7 +327,7 @@ public class DefaultFontMapper implements FontMapper {
         /**
          * Constructs default BaseFont parameters.
          *
-         * @param fontName the font name or location
+         * @param fontName the font getName or location
          */
         public BaseFontParameters(String fontName) {
             this.fontName = fontName;

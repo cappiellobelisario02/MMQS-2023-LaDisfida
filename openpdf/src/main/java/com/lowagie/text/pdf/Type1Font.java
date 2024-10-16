@@ -86,15 +86,15 @@ class Type1Font extends BaseFont {
      */
     protected byte[] pfb;
     /**
-     * The Postscript font name.
+     * The Postscript font getName.
      */
     private String fontName;
     /**
-     * The full name of the font.
+     * The full getName of the font.
      */
     private String fullName;
     /**
-     * The family name of the font.
+     * The family getName of the font.
      */
     private String familyName;
     /**
@@ -135,7 +135,7 @@ class Type1Font extends BaseFont {
      */
     private int underlineThickness = 50;
     /**
-     * The font's encoding name. This encoding is 'StandardEncoding' or 'AdobeStandardEncoding' for a font that can be
+     * The font's encoding getName. This encoding is 'StandardEncoding' or 'AdobeStandardEncoding' for a font that can be
      * totally encoded according to the characters names. For all other names the font is treated as symbolic.
      */
     private String encodingScheme = "FontSpecific";
@@ -161,13 +161,13 @@ class Type1Font extends BaseFont {
 
     /**
      * Represents the section CharMetrics in the AFM file. Each value of this array contains a <CODE>Object[4]</CODE>
-     * with an Integer, Integer, String and int[]. This is the code, width, name and char bbox. The key is the name of
+     * with an Integer, Integer, String and int[]. This is the code, width, getName and char bbox. The key is the getName of
      * the char and also an Integer with the char number.
      */
     private Map<Object, Object[]> charMetrics = new HashMap<>();
     /**
-     * Represents the section KernPairs in the AFM file. The key is the name of the first character and the value is a
-     * <CODE>Object[]</CODE> with 2 elements for each kern pair. Position 0 is the name of the second character and
+     * Represents the section KernPairs in the AFM file. The key is the getName of the first character and the value is a
+     * <CODE>Object[]</CODE> with 2 elements for each kern pair. Position 0 is the getName of the second character and
      * position 1 is the kerning distance. This is repeated for all the pairs.
      */
     private Map<String, Object[]> kernPairs = new HashMap<>();
@@ -185,7 +185,7 @@ class Type1Font extends BaseFont {
      *
      * @param ttfAfm  the AFM file if the input is made with a <CODE>byte</CODE> array
      * @param pfb     the PFB file if the input is made with a <CODE>byte</CODE> array
-     * @param afmFile the name of one of the 14 built-in fonts or the location of an AFM file. The file must end in
+     * @param afmFile the getName of one of the 14 built-in fonts or the location of an AFM file. The file must end in
      *                '.afm'
      * @param enc     the encoding to be applied to this font
      * @param emb     true if the font is to be embedded in the PDF
@@ -291,11 +291,11 @@ class Type1Font extends BaseFont {
 
 
     /**
-     * Gets the width from the font according to the <CODE>name</CODE> or, if the <CODE>name</CODE> is null, meaning it
+     * Gets the width from the font according to the <CODE>getName</CODE> or, if the <CODE>getName</CODE> is null, meaning it
      * is a symbolic font, the char <CODE>c</CODE>.
      *
      * @param c    the char if the font is symbolic
-     * @param name the glyph name
+     * @param name the glyph getName
      * @return the width of the char
      */
     int getRawWidth(int c, String name) {
@@ -615,7 +615,7 @@ class Type1Font extends BaseFont {
     private void validateSegment(RandomAccessFileOrArray rf, int segmentIndex) throws IOException, DocumentException {
         if (rf.read() != 0x80 || rf.read() != PFB_TYPES[segmentIndex]) {
             throw new DocumentException(
-                    MessageLocalization.getComposedMessage("incorrect.segment.type.in.1", fileName));
+                    MessageLocalization.getComposedMessage("incorrect.segment.getTypeImpl.in.1", fileName));
         }
     }
 
@@ -788,7 +788,7 @@ class Type1Font extends BaseFont {
      *
      * @param writer the writer for this document
      * @param ref    the font indirect reference
-     * @param params several parameters that depend on the font type
+     * @param params several parameters that depend on the font getTypeImpl
      * @throws IOException       on error
      * @throws DocumentException error in generating the object
      */
@@ -868,31 +868,31 @@ class Type1Font extends BaseFont {
     }
 
     /**
-     * Gets the postscript font name.
+     * Gets the postscript font getName.
      *
-     * @return the postscript font name
+     * @return the postscript font getName
      */
     public String getPostscriptFontName() {
         return fontName;
     }
 
     /**
-     * Sets the font name that will appear in the pdf font dictionary. Use with care as it can easily make a font
+     * Sets the font getName that will appear in the pdf font dictionary. Use with care as it can easily make a font
      * unreadable if not embedded.
      *
-     * @param name the new font name
+     * @param name the new font getName
      */
     public void setPostscriptFontName(String name) {
         fontName = name;
     }
 
     /**
-     * Gets the full name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the full getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @return the full name of the font
+     * @return the full getName of the font
      */
     public String[][] getFullFontName() {
         return new String[][]{{"", "", "", fullName}};
@@ -900,23 +900,23 @@ class Type1Font extends BaseFont {
 
     /**
      * Gets all the entries of the names-table. If it is a True Type font each array element will have {Name ID,
-     * Platform ID, Platform Encoding ID, Language ID, font name}. The interpretation of this values can be found in the
-     * Open Type specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element
-     * with {"4", "", "", "", font name}.
+     * Platform ID, Platform Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the
+     * Open Type specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element
+     * with {"4", "", "", "", font getName}.
      *
-     * @return the full name of the font
+     * @return the full getName of the font
      */
     public String[][] getAllNameEntries() {
         return new String[][]{{"4", "", "", "", fullName}};
     }
 
     /**
-     * Gets the family name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the family getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @return the family name of the font
+     * @return the family getName of the font
      */
     public String[][] getFamilyFontName() {
         return new String[][]{{"", "", "", familyName}};

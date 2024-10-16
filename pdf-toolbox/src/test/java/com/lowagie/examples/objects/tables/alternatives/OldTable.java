@@ -24,7 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Uses the old Table class to have rowspan and spacing.
+ * Uses the old Table class to have getRowSpan and spacing.
  */
 public class OldTable {
 
@@ -52,7 +52,7 @@ public class OldTable {
             cell.setHeader(true);
             cell.setColspan(3);
             table.addCell(cell);
-            cell = new Cell("example cell with colspan 1 and rowspan 2");
+            cell = new Cell("example cell with colspan 1 and getRowSpan 2");
             cell.setRowspan(2);
             cell.setBorderColor(new Color(255, 0, 0));
             table.addCell(cell);

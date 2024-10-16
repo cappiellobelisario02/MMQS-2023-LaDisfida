@@ -324,11 +324,11 @@ public class XfaForm {
     }
 
     /**
-     * Finds the complete field name contained in the "classic" forms from a partial name.
+     * Finds the complete field getName contained in the "classic" forms from a partial getName.
      *
-     * @param name the complete or partial name
+     * @param name the complete or partial getName
      * @param af   the fields
-     * @return the complete name or <CODE>null</CODE> if not found
+     * @return the complete getName or <CODE>null</CODE> if not found
      */
     public String findFieldName(String name, AcroFields af) {
         Map<String, AcroFields.Item> items = af.getAllFields();
@@ -349,10 +349,10 @@ public class XfaForm {
     }
 
     /**
-     * Finds the complete SOM name contained in the datasets section from a possibly partial name.
+     * Finds the complete SOM getName contained in the datasets section from a possibly partial getName.
      *
-     * @param name the complete or partial name
-     * @return the complete name or <CODE>null</CODE> if not found
+     * @param name the complete or partial getName
+     * @return the complete getName or <CODE>null</CODE> if not found
      */
     public String findDatasetsName(String name) {
         if (datasetsSom.getNodesByName().containsKey(name)) {
@@ -362,9 +362,9 @@ public class XfaForm {
     }
 
     /**
-     * Finds the <CODE>Node</CODE> contained in the datasets section from a possibly partial name.
+     * Finds the <CODE>Node</CODE> contained in the datasets section from a possibly partial getName.
      *
-     * @param name the complete or partial name
+     * @param name the complete or partial getName
      * @return the <CODE>Node</CODE> or <CODE>null</CODE> if not found
      */
     public Node findDatasetsNode(String name) {
@@ -538,7 +538,7 @@ public class XfaForm {
     }
 
     /**
-     * A structure to store each part of a SOM name and link it to the next part beginning from the lower hierarchy.
+     * A structure to store each part of a SOM getName and link it to the next part beginning from the lower hierarchy.
      */
     public static class InverseStore {
 
@@ -546,9 +546,9 @@ public class XfaForm {
         protected List<Object> follow = new ArrayList<>();
 
         /**
-         * Gets the full name by traversing the hierarchy using only the index 0.
+         * Gets the full getName by traversing the hierarchy using only the index 0.
          *
-         * @return the full name
+         * @return the full getName
          */
         public String getDefaultName() {
             com.lowagie.text.pdf.XfaForm.InverseStore store = this;
@@ -562,11 +562,11 @@ public class XfaForm {
         }
 
         /**
-         * Search the current node for a similar name. A similar name starts with the same name but has a different
+         * Search the current node for a similar getName. A similar getName starts with the same getName but has a different
          * index. For example, "detail[3]" is similar to "detail[9]". The main use is to discard names that correspond
          * to out of bounds records.
          *
-         * @param name the name to search
+         * @param name the getName to search
          * @return <CODE>true</CODE> if a similitude was found
          */
         public boolean isSimilar(String name) {
@@ -710,10 +710,10 @@ public class XfaForm {
         }
 
         /**
-         * Gets the name with the <CODE>#subform</CODE> removed.
+         * Gets the getName with the <CODE>#subform</CODE> removed.
          *
-         * @param s the long name
-         * @return the short name
+         * @param s the long getName
+         * @return the short getName
          */
         public static String getShortName(String s) {
             int idx = s.indexOf(".#subform[");
@@ -736,11 +736,11 @@ public class XfaForm {
         }
 
         /**
-         * Adds a SOM name to the search node chain.
+         * Adds a SOM getName to the search node chain.
          *
          * @param inverseSearch the start point
          * @param stack         the stack with the separated SOM parts
-         * @param unstack       the full name
+         * @param unstack       the full getName
          */
         public static void addSomNameToSearchNodeChain(Map<String, com.lowagie.text.pdf.XfaForm.InverseStore> inverseSearch, com.lowagie.text.pdf.XfaForm.Stack2 stack,
                 String unstack) {
@@ -768,10 +768,10 @@ public class XfaForm {
         }
 
         /**
-         * Splits a SOM name in the individual parts.
+         * Splits a SOM getName in the individual parts.
          *
-         * @param name the full SOM name
-         * @return the split name
+         * @param name the full SOM getName
+         * @return the split getName
          */
         public static com.lowagie.text.pdf.XfaForm.Stack2 splitParts(String name) {
             name = trimLeadingDots(name);
@@ -834,9 +834,9 @@ public class XfaForm {
         }
 
         /**
-         * Adds a SOM name to the search node chain.
+         * Adds a SOM getName to the search node chain.
          *
-         * @param unstack the SOM name
+         * @param unstack the SOM getName
          */
         public void inverseSearchAdd(String unstack) {
             addSomNameToSearchNodeChain(inverseSearch, stack, unstack);
@@ -846,7 +846,7 @@ public class XfaForm {
          * Searches the SOM hierarchy from the bottom.
          *
          * @param parts the SOM parts
-         * @return the full name or <CODE>null</CODE> if not found
+         * @return the full getName or <CODE>null</CODE> if not found
          */
         public String inverseSearch(List<String> parts) {
             if (parts.isEmpty()) {
@@ -969,11 +969,11 @@ public class XfaForm {
         }
 
         /**
-         * Inserts a new <CODE>Node</CODE> that will match the short name.
+         * Inserts a new <CODE>Node</CODE> that will match the short getName.
          *
          * @param n         the datasets top <CODE>Node</CODE>
-         * @param shortName the short name
-         * @return the new <CODE>Node</CODE> of the inserted name
+         * @param shortName the short getName
+         * @return the new <CODE>Node</CODE> of the inserted getName
          */
         public Node insertNode(Node n, String shortName) {
             com.lowagie.text.pdf.XfaForm.Stack2 stack = splitParts(shortName);
@@ -1066,7 +1066,7 @@ public class XfaForm {
         }
 
         /**
-         * Gets the mapping from short names to long names. A long name may contain the #subform name part.
+         * Gets the mapping from short names to long names. A long getName may contain the #subform getName part.
          *
          * @return the mapping from short names to long names
          */
@@ -1075,7 +1075,7 @@ public class XfaForm {
         }
 
         /**
-         * Sets the mapping from short names to long names. A long name may contain the #subform name part.
+         * Sets the mapping from short names to long names. A long getName may contain the #subform getName part.
          *
          * @param acroShort2LongName the mapping from short names to long names
          */
@@ -1108,10 +1108,10 @@ public class XfaForm {
         }
 
         /**
-         * Gets the field type as described in the <CODE>template</CODE> section of the XFA.
+         * Gets the field getTypeImpl as described in the <CODE>template</CODE> section of the XFA.
          *
-         * @param s the exact template name
-         * @return the field type or <CODE>null</CODE> if not found
+         * @param s the exact template getName
+         * @return the field getTypeImpl or <CODE>null</CODE> if not found
          */
         private static final String EXCL_GROUP = "exclGroup";
         public String getFieldType(String s) {

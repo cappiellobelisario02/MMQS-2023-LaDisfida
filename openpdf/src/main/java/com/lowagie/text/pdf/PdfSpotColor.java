@@ -63,7 +63,7 @@ import java.awt.Color;
 public class PdfSpotColor {
 
     /**
-     * The color name
+     * The color getName
      */
     public PdfName name;
 

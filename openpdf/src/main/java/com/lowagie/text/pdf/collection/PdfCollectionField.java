@@ -15,50 +15,50 @@ import com.lowagie.text.pdf.PdfString;
 public class PdfCollectionField extends PdfDictionary {
 
     /**
-     * A possible type of collection field.
+     * A possible getTypeImpl of collection field.
      */
     public static final int TEXT = 0;
     /**
-     * A possible type of collection field.
+     * A possible getTypeImpl of collection field.
      */
     public static final int DATE = 1;
     /**
-     * A possible type of collection field.
+     * A possible getTypeImpl of collection field.
      */
     public static final int NUMBER = 2;
     /**
-     * A possible type of collection field.
+     * A possible getTypeImpl of collection field.
      */
     public static final int FILENAME = 3;
     /**
-     * A possible type of collection field.
+     * A possible getTypeImpl of collection field.
      */
     public static final int DESC = 4;
     /**
-     * A possible type of collection field.
+     * A possible getTypeImpl of collection field.
      */
     public static final int MODDATE = 5;
     /**
-     * A possible type of collection field.
+     * A possible getTypeImpl of collection field.
      */
     public static final int CREATIONDATE = 6;
     /**
-     * A possible type of collection field.
+     * A possible getTypeImpl of collection field.
      */
     public static final int SIZE_CONST = 7;
 
     /**
-     * The type of the PDF collection field.
+     * The getTypeImpl of the PDF collection field.
      *
-     * @since 2.1.2 (was called <code>type</code> previously)
+     * @since 2.1.2 (was called <code>getTypeImpl</code> previously)
      */
     protected int fieldType;
 
     /**
      * Creates a PdfCollectionField.
      *
-     * @param name the field name
-     * @param type the field type
+     * @param name the field getName
+     * @param type the field getTypeImpl
      */
     public PdfCollectionField(String name, int type) {
         super(PdfName.COLLECTIONFIELD);
@@ -93,7 +93,7 @@ public class PdfCollectionField extends PdfDictionary {
     }
 
     /**
-     * The relative order of the field name. Fields are sorted in ascending order.
+     * The relative order of the field getName. Fields are sorted in ascending order.
      *
      * @param i a number indicating the order of the field
      */
@@ -120,7 +120,7 @@ public class PdfCollectionField extends PdfDictionary {
     }
 
     /**
-     * Checks if the type of the field is suitable for a Collection Item.
+     * Checks if the getTypeImpl of the field is suitable for a Collection Item.
      *
      * @return true if it is a Collection item, false otherwise
      */

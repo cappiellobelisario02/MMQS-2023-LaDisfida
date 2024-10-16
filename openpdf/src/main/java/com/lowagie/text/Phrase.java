@@ -61,16 +61,16 @@ import java.util.logging.Logger;
  * <p>
  * A <CODE>Phrase</CODE> has a main <CODE>Font</CODE>, but some chunks within the phrase can have a <CODE>Font</CODE>
  * that differs from the main <CODE>Font</CODE>. All the <CODE>Chunk</CODE>s in a <CODE>Phrase</CODE> have the same
- * <CODE>leading</CODE>.
+ * <CODE>getLeading</CODE>.
  * <p>
  * Example:
  * <BLOCKQUOTE><PRE>
- * // When no parameters are passed, the default leading = 16
+ * // When no parameters are passed, the default getLeading = 16
  * <STRONG>Phrase phrase0 = new Phrase();</STRONG>
  * <STRONG>Phrase phrase1 = new Phrase("this is a phrase");</STRONG>
- * // In this example the leading is passed as a parameter
- * <STRONG>Phrase phrase2 = new Phrase(16, "this is a phrase with leading 16");</STRONG>
- * // When a Font is passed (explicitly or embedded in a chunk), the default leading = 1.5 * size of the font
+ * // In this example the getLeading is passed as a parameter
+ * <STRONG>Phrase phrase2 = new Phrase(16, "this is a phrase with getLeading 16");</STRONG>
+ * // When a Font is passed (explicitly or embedded in a chunk), the default getLeading = 1.5 * size of the font
  * <STRONG>Phrase phrase3 = new Phrase("this is a phrase with a red, normal font Courier, size 12",
  * FontFactory.getFont(FontFactory.COURIER, 12, Font.NORMAL, new Color(255, 0, 0)));</STRONG>
  * <STRONG>Phrase phrase4 = new Phrase(new Chunk("this is a phrase"));</STRONG>
@@ -95,7 +95,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     private static final Logger logger = Logger.getLogger(com.lowagie.text.Phrase.class.getName());
 
     /**
-     * This is the leading of this phrase.
+     * This is the getLeading of this phrase.
      */
     protected float leading = Float.NaN;
 
@@ -114,7 +114,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     // constructors
 
     /**
-     * Constructs a <CODE>Phrase</CODE> without specifying a leading.
+     * Constructs a <CODE>Phrase</CODE> without specifying a getLeading.
      */
     public Phrase() {
         this(16);
@@ -138,9 +138,9 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     }
 
     /**
-     * Constructs a <CODE>Phrase</CODE> with a certain leading.
+     * Constructs a <CODE>Phrase</CODE> with a certain getLeading.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      */
     public Phrase(float leading) {
         this.leading = leading;
@@ -163,9 +163,9 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     }
 
     /**
-     * Constructs a <CODE>Phrase</CODE> with a certain <CODE>Chunk</CODE> and a certain leading.
+     * Constructs a <CODE>Phrase</CODE> with a certain <CODE>Chunk</CODE> and a certain getLeading.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param chunk   a <CODE>Chunk</CODE>
      */
     public Phrase(float leading, Chunk chunk) {
@@ -199,9 +199,9 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     }
 
     /**
-     * Constructs a <CODE>Phrase</CODE> with a certain leading and a certain <CODE>String</CODE>.
+     * Constructs a <CODE>Phrase</CODE> with a certain getLeading and a certain <CODE>String</CODE>.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param string  a <CODE>String</CODE>
      */
     public Phrase(float leading, String string) {
@@ -209,10 +209,10 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     }
 
     /**
-     * Constructs a <CODE>Phrase</CODE> with a certain leading, a certain <CODE>String</CODE> and a certain
+     * Constructs a <CODE>Phrase</CODE> with a certain getLeading, a certain <CODE>String</CODE> and a certain
      * <CODE>Font</CODE>.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param string  a <CODE>String</CODE>
      * @param fontAttr    a <CODE>Font</CODE>
      */
@@ -240,7 +240,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     /**
      * Gets a special kind of Phrase that changes some characters into corresponding symbols.
      *
-     * @param leading leading spaces
+     * @param leading getLeading spaces
      * @param string  input
      * @return a newly constructed Phrase
      */
@@ -251,7 +251,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     /**
      * Gets a special kind of Phrase that changes some characters into corresponding symbols.
      *
-     * @param leading leading spaces
+     * @param leading getLeading spaces
      * @param string  input
      * @param fontAttr    font to be used
      * @return a newly constructed Phrase
@@ -305,12 +305,12 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     // overriding some of the ArrayList-methods
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.PHRASE;
     }
 
@@ -370,7 +370,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      * Adds a <CODE>Chunk</CODE>, an <CODE>Anchor</CODE> or another <CODE>Phrase</CODE> to this <CODE>Phrase</CODE>.
      *
      * @param index   index at which the specified element is to be inserted
-     * @param element an object of type <CODE>Chunk</CODE>, <CODE>Anchor</CODE> or <CODE>Phrase</CODE>
+     * @param element an object of getTypeImpl <CODE>Chunk</CODE>, <CODE>Anchor</CODE> or <CODE>Phrase</CODE>
      * @throws ClassCastException when you try to add something that isn't a <CODE>Chunk</CODE>, <CODE>Anchor</CODE> or
      *                            <CODE>Phrase</CODE>
      */
@@ -380,7 +380,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
             return;
         }
         try {
-            if (element.type() == Element.CHUNK) {
+            if (element.getTypeImpl() == Element.CHUNK) {
                 Chunk chunk = (Chunk) element;
                 if (!fontAttr.isStandardFont()) {
                     chunk.setFont(fontAttr.difference(chunk.getFont()));
@@ -389,15 +389,15 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
                     chunk.setHyphenation(hyphenation);
                 }
                 super.add(index, chunk);
-            } else if (element.type() == Element.PHRASE ||
-                    element.type() == Element.ANCHOR ||
-                    element.type() == Element.ANNOTATION ||
-                    element.type() == Element.TABLE || // line added by David Freels
-                    element.type() == Element.YMARK ||
-                    element.type() == Element.MARKED) {
+            } else if (element.getTypeImpl() == Element.PHRASE ||
+                    element.getTypeImpl() == Element.ANCHOR ||
+                    element.getTypeImpl() == Element.ANNOTATION ||
+                    element.getTypeImpl() == Element.TABLE || // line added by David Freels
+                    element.getTypeImpl() == Element.YMARK ||
+                    element.getTypeImpl() == Element.MARKED) {
                 super.add(index, element);
             } else {
-                throw new ClassCastException(String.valueOf(element.type()));
+                throw new ClassCastException(String.valueOf(element.getTypeImpl()));
             }
         } catch (ClassCastException cce) {
             throw new ClassCastException(
@@ -408,7 +408,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     /**
      * Adds a <CODE>Chunk</CODE>, <CODE>Anchor</CODE> or another <CODE>Phrase</CODE> to this <CODE>Phrase</CODE>.
      *
-     * @param o an object of type <CODE>Chunk</CODE>, <CODE>Anchor</CODE> or <CODE>Phrase</CODE>
+     * @param o an object of getTypeImpl <CODE>Chunk</CODE>, <CODE>Anchor</CODE> or <CODE>Phrase</CODE>
      * @return a boolean
      * @throws ClassCastException when you try to add something that isn't a <CODE>Chunk</CODE>, <CODE>Anchor</CODE> or
      *                            <CODE>Phrase</CODE>
@@ -431,7 +431,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
             return super.add(element);
         }
         try {
-            switch (element.type()) {
+            switch (element.getTypeImpl()) {
                 case Element.CHUNK:
                     return addChunk((Chunk) element);
                 case Element.PHRASE,
@@ -458,7 +458,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
                      Element.YMARK:
                     return super.add(element);
                 default:
-                    throw new ClassCastException(String.valueOf(element.type()));
+                    throw new ClassCastException(String.valueOf(element.getTypeImpl()));
             }
         } catch (ClassCastException cce) {
             throw new ClassCastException(
@@ -531,7 +531,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     }
 
     /**
-     * Gets the leading of this phrase.
+     * Gets the getLeading of this phrase.
      *
      * @return the linespacing
      */
@@ -543,9 +543,9 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     }
 
     /**
-     * Sets the leading of this phrase.
+     * Sets the getLeading of this phrase.
      *
-     * @param leading the new leading
+     * @param leading the new getLeading
      */
 
     public void setLeading(float leading) {
@@ -553,9 +553,9 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     }
 
     /**
-     * Checks you if the leading of this phrase is defined.
+     * Checks you if the getLeading of this phrase is defined.
      *
-     * @return true if the leading is defined
+     * @return true if the getLeading is defined
      */
     public boolean hasLeading() {
         return !Float.isNaN(leading);
@@ -611,7 +611,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
             case 0 -> true;
             case 1 -> {
                 Element element = get(0);
-                yield element.type() == Element.CHUNK && ((Chunk) element).isEmpty();
+                yield element.getTypeImpl() == Element.CHUNK && ((Chunk) element).isEmpty();
             }
             default -> false;
         };

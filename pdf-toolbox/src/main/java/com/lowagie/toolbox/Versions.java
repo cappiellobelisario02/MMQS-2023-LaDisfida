@@ -85,7 +85,7 @@ public class Versions
     JLabel libraryVersions = new JLabel();
 
     /**
-     * The table with all the plug-ins (name, version and date).
+     * The table with all the plug-ins (getName, version and date).
      */
     JTable pluginVersions = new JTable();
 
@@ -132,7 +132,7 @@ public class Versions
             sb.append("<p>java.freeMemory: ").append(runtime.freeMemory()).append(" bytes</p>");
             sb.append("<p>java.totalMemory: ").append(runtime.totalMemory()).append(" bytes</p>");
             appendVersionInfo(sb, "user.home", properties.getProperty("user.home"));
-            appendVersionInfo(sb, "os.name", properties.getProperty("os.name"));
+            appendVersionInfo(sb, "os.getName", properties.getProperty("os.getName"));
             appendVersionInfo(sb, "os.arch", properties.getProperty("os.arch"));
             appendVersionInfo(sb, "os.version", properties.getProperty("os.version"));
             sb.append("</html>");

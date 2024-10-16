@@ -173,7 +173,7 @@ public class PushbuttonField extends BaseField {
      *
      * @param writer    the document <CODE>PdfWriter</CODE>
      * @param box       the field location and dimensions
-     * @param fieldName the field name. If <CODE>null</CODE> only the widget keys will be included in the field allowing
+     * @param fieldName the field getName. If <CODE>null</CODE> only the widget keys will be included in the field allowing
      *                  it to be used as a kid field.
      */
     public PushbuttonField(PdfWriter writer, Rectangle box, String fieldName) {

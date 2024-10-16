@@ -80,7 +80,7 @@ public class PdfLine {
     protected float width;
 
     /**
-     * The alignment of the line.
+     * The getAlignment of the line.
      */
     protected int alignment;
 
@@ -118,7 +118,7 @@ public class PdfLine {
      *
      * @param left      the limit of the line at the left
      * @param right     the limit of the line at the right
-     * @param alignment the alignment of the line
+     * @param alignment the getAlignment of the line
      * @param height    the height of the line
      */
 
@@ -137,7 +137,7 @@ public class PdfLine {
      * @param left           the left offset
      * @param originalWidth  the original width of the line
      * @param remainingWidth bigger than 0 if the line isn't completely filled
-     * @param alignment      the alignment of the line
+     * @param alignment      the getAlignment of the line
      * @param newlineSplit   was the line splitted (or does the paragraph end with this line)
      * @param line           an array of PdfChunk objects
      * @param isRTL          do you have to read the line from Right to Left?
@@ -290,7 +290,7 @@ public class PdfLine {
     }
 
     /**
-     * Returns the left indentation of the line taking the alignment of the line into account.
+     * Returns the left indentation of the line taking the getAlignment of the line into account.
      *
      * @return a value
      */
@@ -321,7 +321,7 @@ public class PdfLine {
     /**
      * Checks if this line has to be justified.
      *
-     * @return <CODE>true</CODE> if the alignment equals <VAR>ALIGN_JUSTIFIED</VAR> and there is some width left.
+     * @return <CODE>true</CODE> if the getAlignment equals <VAR>ALIGN_JUSTIFIED</VAR> and there is some width left.
      */
 
     public boolean hasToBeJustified() {
@@ -329,9 +329,9 @@ public class PdfLine {
     }
 
     /**
-     * Resets the alignment of this line.
+     * Resets the getAlignment of this line.
      * <p>
-     * The alignment of the last line of for instance a <CODE>Paragraph</CODE> that has to be justified, has to be reset
+     * The getAlignment of the last line of for instance a <CODE>Paragraph</CODE> that has to be justified, has to be reset
      * to <VAR>ALIGN_LEFT</VAR>.
      */
 
@@ -489,10 +489,10 @@ public class PdfLine {
     }
 
     /**
-     * Gets the difference between the "normal" leading and the maximum size (for instance when there are images in the
+     * Gets the difference between the "normal" getLeading and the maximum size (for instance when there are images in the
      * chunk).
      *
-     * @return an extra leading for images
+     * @return an extra getLeading for images
      * @since 2.1.5
      */
     float[] getMaxSize() {

@@ -352,7 +352,7 @@ public class Chunk implements Element {
      * @param image         the image
      * @param offsetX       the image offset in the x direction
      * @param offsetY       the image offset in the y direction
-     * @param changeLeading true if the leading has to be adapted to the image
+     * @param changeLeading true if the getLeading has to be adapted to the image
      */
     public Chunk(Image image, float offsetX, float offsetY,
             boolean changeLeading) {
@@ -376,11 +376,11 @@ public class Chunk implements Element {
     }
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
-    public int type() {
+    public int getTypeImpl() {
         return Element.CHUNK;
     }
 
@@ -702,8 +702,8 @@ public class Chunk implements Element {
     /**
      * Sets a goto for a remote destination for this <CODE>Chunk</CODE>.
      *
-     * @param filename the file name of the destination document
-     * @param name     the name of the destination to go to
+     * @param filename the file getName of the destination document
+     * @param name     the getName of the destination to go to
      * @return this <CODE>Chunk</CODE>
      */
 
@@ -714,7 +714,7 @@ public class Chunk implements Element {
     /**
      * Sets a goto for a remote destination for this <CODE>Chunk</CODE>.
      *
-     * @param filename the file name of the destination document
+     * @param filename the file getName of the destination document
      * @param page     the page of the destination to go to. First page is 1
      * @return this <CODE>Chunk</CODE>
      */
@@ -727,9 +727,9 @@ public class Chunk implements Element {
     /**
      * Sets a local goto for this <CODE>Chunk</CODE>.
      * <p>
-     * There must be a local destination matching the name.
+     * There must be a local destination matching the getName.
      *
-     * @param name the name of the destination to go to
+     * @param name the getName of the destination to go to
      * @return this <CODE>Chunk</CODE>
      */
 
@@ -740,7 +740,7 @@ public class Chunk implements Element {
     /**
      * Sets a local destination for this <CODE>Chunk</CODE>.
      *
-     * @param name the name for this destination
+     * @param name the getName for this destination
      * @return this <CODE>Chunk</CODE>
      */
     public Chunk setLocalDestination(String name) {

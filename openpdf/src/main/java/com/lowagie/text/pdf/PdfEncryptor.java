@@ -187,7 +187,7 @@ public final class PdfEncryptor {
      *
      * @param reader        the read PDF
      * @param os            the output destination
-     * @param type          the type of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
+     * @param type          the getTypeImpl of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
      *                      ENCRYPTION_AES128. Optionally DO_NOT_ENCRYPT_METADATA can be ored to output the metadata in
      *                      cleartext
      * @param userPassword  the user password. Can be null or empty
@@ -218,7 +218,7 @@ public final class PdfEncryptor {
      *
      * @param reader        the read PDF
      * @param os            the output destination
-     * @param type          the type of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
+     * @param type          the getTypeImpl of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
      *                      ENCRYPTION_AES128. Optionally DO_NOT_ENCRYPT_METADATA can be ored to output the metadata in
      *                      cleartext
      * @param userPassword  the user password. Can be null or empty

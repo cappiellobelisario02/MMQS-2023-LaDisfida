@@ -62,42 +62,42 @@ public class PdfDestination extends PdfArray {
     // public static final member-variables
 
     /**
-     * This is a possible destination type
+     * This is a possible destination getTypeImpl
      */
     public static final int XYZ = 0;
 
     /**
-     * This is a possible destination type
+     * This is a possible destination getTypeImpl
      */
     public static final int FIT = 1;
 
     /**
-     * This is a possible destination type
+     * This is a possible destination getTypeImpl
      */
     public static final int FITH = 2;
 
     /**
-     * This is a possible destination type
+     * This is a possible destination getTypeImpl
      */
     public static final int FITV = 3;
 
     /**
-     * This is a possible destination type
+     * This is a possible destination getTypeImpl
      */
     public static final int FITR = 4;
 
     /**
-     * This is a possible destination type
+     * This is a possible destination getTypeImpl
      */
     public static final int FITB = 5;
 
     /**
-     * This is a possible destination type
+     * This is a possible destination getTypeImpl
      */
     public static final int FITBH = 6;
 
     /**
-     * This is a possible destination type
+     * This is a possible destination getTypeImpl
      */
     public static final int FITBV = 7;
 
@@ -113,11 +113,11 @@ public class PdfDestination extends PdfArray {
     /**
      * Constructs a new <CODE>PdfDestination</CODE>.
      * <p>
-     * If <VAR>type</VAR> equals <VAR>FITB</VAR>, the bounding box of a page will fit the window of the Reader.
-     * Otherwise the type will be set to
+     * If <VAR>getTypeImpl</VAR> equals <VAR>FITB</VAR>, the bounding box of a page will fit the window of the Reader.
+     * Otherwise the getTypeImpl will be set to
      * <VAR>FIT</VAR> so that the entire page will fit to the window.
      *
-     * @param type The destination type
+     * @param type The destination getTypeImpl
      */
 
     public PdfDestination(int type) {
@@ -132,14 +132,14 @@ public class PdfDestination extends PdfArray {
     /**
      * Constructs a new <CODE>PdfDestination</CODE>.
      * <p>
-     * If <VAR>type</VAR> equals <VAR>FITBH</VAR> / <VAR>FITBV</VAR>, the width / height of the bounding box of a page
+     * If <VAR>getTypeImpl</VAR> equals <VAR>FITBH</VAR> / <VAR>FITBV</VAR>, the width / height of the bounding box of a page
      * will fit the window of the Reader. The parameter will specify the y / x coordinate of the top / left edge of the
-     * window. If the <VAR>type</VAR> equals <VAR>FITH</VAR> or <VAR>FITV</VAR> the width / height of the entire page
+     * window. If the <VAR>getTypeImpl</VAR> equals <VAR>FITH</VAR> or <VAR>FITV</VAR> the width / height of the entire page
      * will fit the window and the parameter will specify the y / x coordinate of the top / left edge. In all other
-     * cases the type will be set to <VAR>FITH</VAR>.
+     * cases the getTypeImpl will be set to <VAR>FITH</VAR>.
      *
-     * @param type      the destination type
-     * @param parameter a parameter to combined with the destination type
+     * @param type      the destination getTypeImpl
+     * @param parameter a parameter to combined with the destination getTypeImpl
      */
 
     public PdfDestination(int type, float parameter) {

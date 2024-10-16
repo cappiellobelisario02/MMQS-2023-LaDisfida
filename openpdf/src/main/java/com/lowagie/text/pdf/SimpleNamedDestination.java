@@ -338,7 +338,7 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
             throw new TagException(MessageLocalization.getComposedMessage("invalid.end.tag.1", tag));
         }
         if (xmlLast == null || xmlNames == null) {
-            throw new TagException(MessageLocalization.getComposedMessage("name.end.tag.out.of.place"));
+            throw new TagException(MessageLocalization.getComposedMessage("getName.end.tag.out.of.place"));
         }
         if (!xmlLast.containsKey("Page")) {
             throw new TagException(MessageLocalization.getComposedMessage("page.attribute.missing"));

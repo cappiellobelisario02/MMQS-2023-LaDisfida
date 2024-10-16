@@ -70,7 +70,7 @@ public interface ContentOperator {
             throws ToUnicodeMapProcessingException, PDFFilterException;
 
     /**
-     * @return the name of the operator as it will be recognized in the pdf stream
+     * @return the getName of the operator as it will be recognized in the pdf stream
      */
     String getOperatorName();
 }

@@ -59,22 +59,22 @@ public class Phrases {
             document.open();
             // step 4:
             Phrase phrase1 = new Phrase("(1) this is a phrase\n");
-            // In this example the leading is passed as a parameter
+            // In this example the getLeading is passed as a parameter
             Phrase phrase2 = new Phrase(
                     24,
-                    "(2) this is a phrase with leading 24. You can only see the difference if the line is long"
+                    "(2) this is a phrase with getLeading 24. You can only see the difference if the line is long"
                             + " enough. Do you see it? There is more space between this line and the previous one.\n");
             // When a Font is passed (explicitely or embedded in a chunk),
-            // the default leading = 1.5 * size of the font
+            // the default getLeading = 1.5 * size of the font
             Phrase phrase3 = new Phrase(
-                    "(3) this is a phrase with a red, normal font Courier, size 20. As you can see the leading is automatically changed.\n",
+                    "(3) this is a phrase with a red, normal font Courier, size 20. As you can see the getLeading is automatically changed.\n",
                     FontFactory.getFont(FontFactory.COURIER, 20, Font.NORMAL,
                             new Color(255, 0, 0)));
             Phrase phrase4 = new Phrase(new Chunk("(4) this is a phrase\n"));
             Phrase phrase5 = new Phrase(
                     18,
                     new Chunk(
-                            "(5) this is a phrase in Helvetica, bold, red and size 16 with a given leading of 18 points.\n",
+                            "(5) this is a phrase in Helvetica, bold, red and size 16 with a given getLeading of 18 points.\n",
                             FontFactory.getFont(FontFactory.HELVETICA, 16,
                                     Font.BOLD, new Color(255, 0, 0))));
             // A Phrase can contains several chunks with different fonts

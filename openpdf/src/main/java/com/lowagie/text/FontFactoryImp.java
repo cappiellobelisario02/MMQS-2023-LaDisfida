@@ -158,7 +158,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontName the name of the font
+     * @param fontName the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @param size     the size of this font
@@ -174,7 +174,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @param size     the size of this font
@@ -324,7 +324,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @param size     the size of this font
@@ -339,7 +339,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @param size     the size of this font
@@ -353,7 +353,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @return the Font constructed based on the parameters
@@ -366,7 +366,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param size     the size of this font
      * @param style    the style of this font
@@ -381,7 +381,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param size     the size of this font
      * @param style    the style of this font
@@ -395,7 +395,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param size     the size of this font
      * @return the Font constructed based on the parameters
@@ -409,7 +409,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param size     the size of this font
      * @param color    the <CODE>Color</CODE> of this font.
      * @return the Font constructed based on the parameters
@@ -423,7 +423,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @return the Font constructed based on the parameters
      */
@@ -435,7 +435,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param size     the size of this font
      * @param style    the style of this font
      * @param color    the <CODE>Color</CODE> of this font.
@@ -449,7 +449,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param size     the size of this font
      * @param style    the style of this font
      * @return the Font constructed based on the parameters
@@ -462,7 +462,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param size     the size of this font
      * @return the Font constructed based on the parameters
      */
@@ -474,7 +474,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @return the Font constructed based on the parameters
      */
 
@@ -483,10 +483,10 @@ public class FontFactoryImp implements FontProvider {
     }
 
     /**
-     * Register a font by giving explicitly the font family and name.
+     * Register a font by giving explicitly the font family and getName.
      *
      * @param familyName the font family
-     * @param fullName   the font name
+     * @param fullName   the font getName
      * @param path       the font path
      */
     public void registerFamily(String familyName, String fullName, String path) {
@@ -560,8 +560,8 @@ public class FontFactoryImp implements FontProvider {
             registerAFMOrPFMFont(path);
         } else {
             // Log a generic error message without exposing sensitive information
-            logger.warning("Attempted to register unsupported file type.");
-            throw new IllegalArgumentException("The specified file type is unsupported.");
+            logger.warning("Attempted to register unsupported file getTypeImpl.");
+            throw new IllegalArgumentException("The specified file getTypeImpl is unsupported.");
         }
     }
 
@@ -579,7 +579,7 @@ public class FontFactoryImp implements FontProvider {
 
     private void registerTrueTypeFont(String path, String alias) throws IOException, DocumentException {
         Object[] allNames = BaseFont.getAllFontNames(path, BaseFont.WINANSI, null);
-        String[][] names = (String[][]) allNames[2]; // full name
+        String[][] names = (String[][]) allNames[2]; // full getName
 
         registerFontNames(path, alias, names, allNames);
         registerFamilyName(allNames, path);
@@ -597,7 +597,7 @@ public class FontFactoryImp implements FontProvider {
     }
 
     private void registerFamilyName(Object[] allNames, String path) {
-        String[][] names = (String[][]) allNames[1]; // family name
+        String[][] names = (String[][]) allNames[1]; // family getName
         String familyName = findFamilyName(names);
 
         if (familyName != null) {
@@ -620,7 +620,7 @@ public class FontFactoryImp implements FontProvider {
     }
 
     private void registerFontFamilies(Object[] allNames, String familyName, String path) {
-        String[][] names = (String[][]) allNames[2]; // full name
+        String[][] names = (String[][]) allNames[2]; // full getName
         String lastName = "";
 
         for (String[] name : names) {
@@ -770,7 +770,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Checks if a certain font is registered.
      *
-     * @param fontName the name of the font that has to be checked.
+     * @param fontName the getName of the font that has to be checked.
      * @return true if the font is found
      */
     public boolean isRegistered(String fontName) {
@@ -780,7 +780,7 @@ public class FontFactoryImp implements FontProvider {
     /**
      * Get a registered font path.
      *
-     * @param fontname the name of the font to get.
+     * @param fontname the getName of the font to get.
      * @return the font path if found or null
      */
     public Object getFontPath(String fontname) {

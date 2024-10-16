@@ -673,7 +673,7 @@ public final class SimpleXMLParser {
     }
 
     /**
-     * Initialized the tag name and attributes.
+     * Initialized the tag getName and attributes.
      */
     private void initTag() {
         tag = null;
@@ -681,7 +681,7 @@ public final class SimpleXMLParser {
     }
 
     /**
-     * Sets the name of the tag.
+     * Sets the getName of the tag.
      */
     private void doTag() {
         if (tag == null) {

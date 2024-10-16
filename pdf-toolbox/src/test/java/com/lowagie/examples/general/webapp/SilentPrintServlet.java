@@ -134,13 +134,13 @@ public class SilentPrintServlet extends HttpServlet {
         out.print("&sub=");
         out.print(ACT_REPORT_1);
         out.println("'>");
-        out.print("<input type='checkbox' name='preview' value='Y'");
+        out.print("<input getTypeImpl='checkbox' getName='preview' value='Y'");
         if (requ.getParameter("preview") != null) {
             out.print(" checked ");
         }
         out.println(">preview<br>");
 
-        out.println("<input type=submit value='Report 1'>");
+        out.println("<input getTypeImpl=submit value='Report 1'>");
         out.println("</form>");
         if (sub != ACT_INIT) {
             if (requ.getParameter("preview") != null) {
@@ -157,7 +157,7 @@ public class SilentPrintServlet extends HttpServlet {
                 out.print(requ.getRequestURI());
                 out.print("?action=");
                 out.print(sub);
-                out.println("' width='10' height='10' name='pdf_box'>");
+                out.println("' width='10' height='10' getName='pdf_box'>");
             }
         }
         out.println("</body>");

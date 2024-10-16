@@ -84,7 +84,7 @@ public class PdfIndirectReference extends PdfObject {
     /**
      * Constructs a <CODE>PdfIndirectReference</CODE>.
      *
-     * @param type       the type of the <CODE>PdfObject</CODE> that is referenced to
+     * @param type       the getTypeImpl of the <CODE>PdfObject</CODE> that is referenced to
      * @param number     the object number.
      * @param generation the generation number.
      */
@@ -98,7 +98,7 @@ public class PdfIndirectReference extends PdfObject {
     /**
      * Constructs a <CODE>PdfIndirectReference</CODE>.
      *
-     * @param type   the type of the <CODE>PdfObject</CODE> that is referenced to
+     * @param type   the getTypeImpl of the <CODE>PdfObject</CODE> that is referenced to
      * @param number the object number.
      */
 

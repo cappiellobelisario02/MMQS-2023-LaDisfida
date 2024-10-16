@@ -23,7 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Testing Image alignment.
+ * Testing Image getAlignment.
  */
 public class ImagesAlignment {
 
@@ -33,7 +33,7 @@ public class ImagesAlignment {
      * @param args no arguments needed
      */
     public static void main(java.lang.String[] args) {
-        System.out.println("Image alignment");
+        System.out.println("Image getAlignment");
         // step 1: creation of a document-object
         Document document = new Document();
         try {

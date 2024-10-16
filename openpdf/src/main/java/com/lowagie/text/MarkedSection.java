@@ -83,7 +83,7 @@ public class MarkedSection extends MarkedObject {
      * Adds a <CODE>Paragraph</CODE>, <CODE>List</CODE> or <CODE>Table</CODE> to this <CODE>Section</CODE>.
      *
      * @param index index at which the specified element is to be inserted
-     * @param o     an object of type <CODE>Paragraph</CODE>, <CODE>List</CODE> or <CODE>Table</CODE>=
+     * @param o     an object of getTypeImpl <CODE>Paragraph</CODE>, <CODE>List</CODE> or <CODE>Table</CODE>=
      * @throws ClassCastException if the object is not a <CODE>Paragraph</CODE>, <CODE>List</CODE> or
      *                            <CODE>Table</CODE>
      */
@@ -95,7 +95,7 @@ public class MarkedSection extends MarkedObject {
      * Adds a <CODE>Paragraph</CODE>, <CODE>List</CODE>, <CODE>Table</CODE> or another <CODE>Section</CODE> to this
      * <CODE>Section</CODE>.
      *
-     * @param o an object of type <CODE>Paragraph</CODE>, <CODE>List</CODE>, <CODE>Table</CODE> or another
+     * @param o an object of getTypeImpl <CODE>Paragraph</CODE>, <CODE>List</CODE>, <CODE>Table</CODE> or another
      *          <CODE>Section</CODE>
      * @return a boolean
      * @throws ClassCastException if the object is not a <CODE>Paragraph</CODE>, <CODE>List</CODE>, <CODE>Table</CODE>

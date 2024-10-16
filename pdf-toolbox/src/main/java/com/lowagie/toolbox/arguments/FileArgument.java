@@ -71,7 +71,7 @@ public class FileArgument extends AbstractArgument {
      * Constructs a FileArgument.
      *
      * @param tool        the tool that needs this argument
-     * @param name        the name of the argument
+     * @param name        the getName of the argument
      * @param description the description of the argument
      * @param newFile     makes the difference between an Open or Save dialog
      * @param filter      FileFilter
@@ -87,7 +87,7 @@ public class FileArgument extends AbstractArgument {
      * Constructs a FileArgument.
      *
      * @param tool        the tool that needs this argument
-     * @param name        the name of the argument
+     * @param name        the getName of the argument
      * @param description the description of the argument
      * @param newFile     makes the difference between an Open or Save dialog
      */

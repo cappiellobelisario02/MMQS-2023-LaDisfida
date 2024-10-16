@@ -76,7 +76,7 @@ public class Header extends Meta {
     /**
      * Constructs a <CODE>Meta</CODE>.
      *
-     * @param name    the name of the meta-information
+     * @param name    the getName of the meta-information
      * @param content the content
      */
 
@@ -88,7 +88,7 @@ public class Header extends Meta {
     // methods to retrieve information
 
     /**
-     * Returns the name of the meta information.
+     * Returns the getName of the meta information.
      *
      * @return a <CODE>String</CODE>
      */

@@ -64,7 +64,7 @@ import java.util.logging.Logger;
  * subsetted for both types. For CID fonts only the FDArray which are used are embedded. The Lsubroutines of the
  * FDArrays used are subsetted as well. The Subroutine subset supports both Type1 and Type2 formatting although only
  * tested on Type2 Format. For Non CID the Lsubroutines are subsetted. On both types the Gsubroutines is subsetted. A
- * font which was not of CID type is transformed into CID as a part of the subset process. The CID synthetic creation
+ * font which was not of CID getTypeImpl is transformed into CID as a part of the subset process. The CID synthetic creation
  * was written by Sivan Toledo (sivan@math.tau.ac.il)
  *
  * @author Oren Manor (manorore@post.tau.ac.il) and Ygal Blum (blumygal@post.tau.ac.il)
@@ -369,7 +369,7 @@ public class CFFFontSubset extends CFFFont {
     /**
      * The process function extracts one font out of the CFF file and returns a subset version of the original.
      *
-     * @param fontName - The name of the font to be taken out of the CFF
+     * @param fontName - The getName of the font to be taken out of the CFF
      * @return The new font stream
      * @throws IOException on error
      */
@@ -409,7 +409,7 @@ public class CFFFontSubset extends CFFFont {
     }
 
     /**
-     * Function calcs bias according to the CharString type and the count of the subrs
+     * Function calcs bias according to the CharString getTypeImpl and the count of the subrs
      *
      * @param offset The offset to the relevant subrs index
      * @param font   the font
@@ -418,7 +418,7 @@ public class CFFFontSubset extends CFFFont {
     protected int calcBias(int offset, int font) {
         seek(offset);
         int nSubrs = getCard16();
-        // If type==1 -> bias=0
+        // If getTypeImpl==1 -> bias=0
         if (fonts[font].charstringType == 1) {
             return 0;
         } else if (nSubrs < 1240) {
@@ -1086,7 +1086,7 @@ public class CFFFontSubset extends CFFFont {
         // copy the header of the font
         copyHeader();
 
-        // create a name index
+        // create a getName index
         buildIndexHeader(1, 1, 1);
         outputList.addLast(new UInt8Item((char) (1 + fonts[font].name.length())));
         outputList.addLast(new StringItem(fonts[font].name));
@@ -1453,7 +1453,7 @@ public class CFFFontSubset extends CFFFont {
         OffsetItem[] fdPrivate = new DictOffsetItem[fonts[font].fdarrayoffsets.length - 1];
         IndexBaseItem[] fdPrivateBase = new IndexBaseItem[fonts[font].fdprivateOffsets.length];
         OffsetItem[] fdSubrs = new DictOffsetItem[fonts[font].fdprivateOffsets.length];
-        // Reconstruct each type
+        // Reconstruct each getTypeImpl
         reconstructFDArray(font, fdPrivate);
         reconstructPrivateDict(font, fdPrivate, fdPrivateBase, fdSubrs);
         reconstructPrivateSubrs(font, fdPrivateBase, fdSubrs);

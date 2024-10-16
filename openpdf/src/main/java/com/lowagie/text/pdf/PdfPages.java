@@ -110,7 +110,7 @@ public class PdfPages {
         }
     }
 
-    // returns the top parent to include in the catalog
+    // returns the top getParent to include in the catalog
     PdfIndirectReference writePageTree() throws IOException {
         if (pages.isEmpty()) {
             throw new IOException(MessageLocalization.getComposedMessage("the.document.has.no.pages"));
@@ -183,7 +183,7 @@ public class PdfPages {
     void setLinearMode(PdfIndirectReference topParent) {
         if (parents.size() > 1) {
             throw new UnsupportedOperationException(
-                    MessageLocalization.getComposedMessage("linear.page.mode.can.only.be.called.with.a.single.parent"));
+                    MessageLocalization.getComposedMessage("linear.page.mode.can.only.be.called.with.a.single.getParent"));
         }
         if (topParent != null) {
             this.topParent = topParent;
@@ -199,7 +199,7 @@ public class PdfPages {
         }
         if (parents.size() > 1) {
             throw new DocumentException(MessageLocalization.getComposedMessage(
-                    "page.reordering.requires.a.single.parent.in.the.page.tree.call.pdfwriter.setlinearmode.after.open"));
+                    "page.reordering.requires.a.single.getParent.in.the.page.tree.call.pdfwriter.setlinearmode.after.open"));
         }
         if (order.length != pages.size()) {
             throw new DocumentException(MessageLocalization.getComposedMessage(

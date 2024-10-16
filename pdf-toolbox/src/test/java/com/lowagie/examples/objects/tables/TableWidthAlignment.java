@@ -24,18 +24,18 @@ import java.awt.Color;
 import java.io.FileOutputStream;
 
 /**
- * Changing the width and alignment of the complete table.
+ * Changing the width and getAlignment of the complete table.
  */
 public class TableWidthAlignment {
 
     /**
-     * Changing the width and alignment of the complete table.
+     * Changing the width and getAlignment of the complete table.
      *
      * @param args no arguments needed
      */
     public static void main(String[] args) {
 
-        System.out.println("table width and alignment");
+        System.out.println("table width and getAlignment");
         // step1
         Document document = new Document(PageSize.A4);
         try {

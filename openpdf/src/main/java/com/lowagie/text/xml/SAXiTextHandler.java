@@ -191,9 +191,9 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
      * This method gets called when a start tag is encountered.
      *
      * @param uri        the Uniform Resource Identifier
-     * @param localName  the local name (without prefix), or the empty string if Namespace processing is not being
+     * @param localName  the local getName (without prefix), or the empty string if Namespace processing is not being
      *                   performed.
-     * @param name       the name of the tag that is encountered
+     * @param name       the getName of the tag that is encountered
      * @param attributes the list of attributes
      */
 
@@ -212,7 +212,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
     /**
      * This method deals with the starting tags.
      *
-     * @param name       the name of the tag
+     * @param name       the getName of the tag
      * @param attributes the list of attributes
      */
 
@@ -585,9 +585,9 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
      * This method gets called when an end tag is encountered.
      *
      * @param uri   the Uniform Resource Identifier
-     * @param lname the local name (without prefix), or the empty string if Namespace processing is not being
+     * @param lname the local getName (without prefix), or the empty string if Namespace processing is not being
      *              performed.
-     * @param name  the name of the tag that ends
+     * @param name  the getName of the tag that ends
      */
 
     public void endElement(String uri, String lname, String name) {
@@ -597,7 +597,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
     /**
      * This method deals with the starting tags.
      *
-     * @param name the name of the tag
+     * @param name the getName of the tag
      */
 
     public void handleEndingTags(String name) {
@@ -695,7 +695,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
 
         while (true) {
             Element element = stack.pop();
-            if (element.type() == Element.CELL) {
+            if (element.getTypeImpl() == Element.CELL) {
                 cell = (Cell) element;
                 columns += cell.getColspan();
                 cells.add(cell);

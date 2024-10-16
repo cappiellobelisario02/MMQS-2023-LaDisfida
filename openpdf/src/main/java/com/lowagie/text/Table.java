@@ -92,7 +92,7 @@ import java.util.Optional;
  * Cell cell = new Cell("header"); cell.setHeader(true); cell.setColspan(3);
  * <STRONG>table.addCell(cell);</STRONG>
  * <STRONG>table.endHeaders();</STRONG>
- * cell = new Cell("example cell with colspan 1 and rowspan 2"); cell.setRowspan(2); cell.setBorderColor(new Color(255,
+ * cell = new Cell("example cell with colspan 1 and getRowSpan 2"); cell.setRowspan(2); cell.setBorderColor(new Color(255,
  * 0, 0));
  * <STRONG>table.addCell(cell);</STRONG>
  * <STRONG>table.addCell("1.1");</STRONG>
@@ -114,7 +114,7 @@ import java.util.Optional;
  * </TR>
  * <TR VALIGN="Left">
  * <TD ROWSPAN="2" VALIGN="Left">
- * example cell with colspan 1 and rowspan 2
+ * example cell with colspan 1 and getRowSpan 2
  * </TD>
  * <TD VALIGN="Left">
  * 1.1
@@ -212,15 +212,15 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      */
     private int lastHeaderRow = -1;
     /**
-     * This is the horizontal alignment.
+     * This is the horizontal getAlignment.
      */
     private int alignment = Element.ALIGN_CENTER;
     /**
-     * This is cellpadding.
+     * This is getCellPadding.
      */
     private float cellpadding;
     /**
-     * This is cellspacing.
+     * This is getCellSpacing.
      */
     private float cellspacing;
     /**
@@ -331,12 +331,12 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     }
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.TABLE;
     }
 
@@ -431,14 +431,14 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     /**
      * Gets the last number of the rows that contain headers.
      *
-     * @return a rownumber
+     * @return a getRowNumber
      */
     public int getLastHeaderRow() {
         return this.lastHeaderRow;
     }
 
     /**
-     * Sets the horizontal alignment.
+     * Sets the horizontal getAlignment.
      *
      * @param value the new value
      */
@@ -457,7 +457,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     }
 
     /**
-     * Gets the horizontal alignment.
+     * Gets the horizontal getAlignment.
      *
      * @return a value
      */
@@ -475,7 +475,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     }
 
     /**
-     * Gets the cellpadding.
+     * Gets the getCellPadding.
      *
      * @return a value
      */
@@ -484,7 +484,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     }
 
     /**
-     * Sets the cellpadding.
+     * Sets the getCellPadding.
      *
      * @param value the new value
      */
@@ -493,7 +493,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     }
 
     /**
-     * Gets the cellspacing.
+     * Gets the getCellSpacing.
      *
      * @return a value
      */
@@ -502,7 +502,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     }
 
     /**
-     * Sets the cellspacing.
+     * Sets the getCellSpacing.
      *
      * @param value the new value
      */
@@ -673,7 +673,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     /**
      * Sets the offset of this table.
      * <p>
-     * Normally a newline is added before you add a Table object. This newline uses the current leading. If you want to
+     * Normally a newline is added before you add a Table object. This newline uses the current getLeading. If you want to
      * control the space between the table and the previous element yourself, you have to set the offset of this table.
      *
      * @param offset the space between this table and the previous object.
@@ -742,7 +742,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
         }
         if (!isValidLocation(aCell, aLocation)) {
             throw new BadElementException(MessageLocalization.getComposedMessage(
-                    "adding.a.cell.at.the.location.1.2.with.a.colspan.of.3.and.a.rowspan.of.4.is.illegal.beyond.boundaries.overlapping",
+                    "adding.a.cell.at.the.location.1.2.with.a.colspan.of.3.and.a.getRowSpan.of.4.is.illegal.beyond.boundaries.overlapping",
                     String.valueOf(aLocation.x), String.valueOf(aLocation.y), String.valueOf(aCell.getColspan()),
                     String.valueOf(aCell.getRowspan())));
         }
@@ -1274,7 +1274,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     /**
      * check if <CODE>Cell</CODE> 'fits' the table.
      * <p>
-     * <UL><LI>rowspan/colspan not beyond borders
+     * <UL><LI>getRowSpan/colspan not beyond borders
      * <LI>spanned cell don't overlap existing cells</UL>
      *
      * @param aCell     the cell that has to be checked
@@ -1292,7 +1292,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
             return false;
         }
 
-        // Calculate the valid rowspan and colspan limits
+        // Calculate the valid getRowSpan and colspan limits
         int difx = Math.min(aCell.getRowspan(), rows.size() - aLocation.x);
         int dify = Math.min(aCell.getColspan(), columns - aLocation.y);
 
@@ -1411,9 +1411,9 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      * This method translates the widths expressed in percentages into the x-coordinate of the borders of the columns on
      * a real document.
      *
-     * @param left       this is the position of the first border at the left (cellpadding not included)
+     * @param left       this is the position of the first border at the left (getCellPadding not included)
      * @param totalWidth this is the space between the first border at the left and the last border at the right
-     *                   (cellpadding not included)
+     *                   (getCellPadding not included)
      * @return an array with border positions
      */
     public float[] getWidths(float left, float totalWidth) {

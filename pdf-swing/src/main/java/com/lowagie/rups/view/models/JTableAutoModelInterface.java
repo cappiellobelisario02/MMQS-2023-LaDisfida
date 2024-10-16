@@ -40,7 +40,7 @@ public interface JTableAutoModelInterface {
 
     /**
      * @param columnIndex a column number.
-     * @return the name of the column
+     * @return the getName of the column
      * @see javax.swing.table.AbstractTableModel#getColumnName(int)
      */
     String getColumnName(int columnIndex);

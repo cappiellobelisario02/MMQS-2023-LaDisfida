@@ -77,7 +77,7 @@ public class ProgressServlet extends HttpServlet {
             response.setHeader("Expires", "0");
             response.setHeader("Cache-Control", "must-revalidate, post-check=0, pre-check=0");
             response.setHeader("Pragma", "public");
-            //setting the content type
+            //setting the content getTypeImpl
             response.setContentType("application/pdf");
             // the contentlength is needed for MSIE!!!
             response.setContentLength(baos.size());
@@ -112,7 +112,7 @@ public class ProgressServlet extends HttpServlet {
     private void isFinished(ServletOutputStream stream) throws IOException {
         stream.print("<html>\n\t<head>\n\t\t<title>Finished!</title>\n\t</head>\n\t<body>");
         stream.print(
-                "The document is finished:<form method=\"POST\"><input type=\"Submit\" value=\"Get PDF\"></form>\n\t</body>\n</html>");
+                "The document is finished:<form method=\"POST\"><input getTypeImpl=\"Submit\" value=\"Get PDF\"></form>\n\t</body>\n</html>");
     }
 
     /**

@@ -117,9 +117,9 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     private final PdfViewerPreferencesImp viewerPreferences = new PdfViewerPreferencesImp();
     protected PRTokeniser tokens;
     // Each xref pair is a position
-    // type 0 -> -1, 0
-    // type 1 -> offset, 0
-    // type 2 -> index, obj num
+    // getTypeImpl 0 -> -1, 0
+    // getTypeImpl 1 -> offset, 0
+    // getTypeImpl 2 -> index, obj num
     protected int[] xref;
     protected Map<Integer, IntHashtable> objStmMark;
     protected IntHashtable objStmToOffset;
@@ -180,7 +180,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     /**
      * Reads and parses a PDF document.
      *
-     * @param filename the file name of the document
+     * @param filename the file getName of the document
      * @throws IOException on error
      */
     public PdfReader(String filename) throws IOException, PDFFilterException {
@@ -190,7 +190,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     /**
      * Reads and parses a PDF document.
      *
-     * @param filename      the file name of the document
+     * @param filename      the file getName of the document
      * @param ownerPassword the password to read the document
      * @throws IOException on error
      */
@@ -228,7 +228,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     /**
      * Reads and parses a PDF document.
      *
-     * @param filename               the file name of the document
+     * @param filename               the file getName of the document
      * @param certificate            the certificate to read the document
      * @param certificateKey         the private key of the certificate
      * @param certificateKeyProvider the security provider for certificateKey
@@ -478,7 +478,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 return null;
             } else {
                 if (appendable) {
-                    switch (obj.type()) {
+                    switch (obj.getTypeImpl()) {
                         case PdfObject.NULL:
                             obj = new PdfNull();
                             break;
@@ -505,7 +505,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * mode the object will be released to save memory.
      *
      * @param obj    the <CODE>PdfObject</CODE> to read
-     * @param parent parent object
+     * @param parent getParent object
      * @return a PdfObject
      */
     public static PdfObject getPdfObjectRelease(PdfObject obj, PdfObject parent) {
@@ -516,7 +516,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     /**
      * @param obj    the <CODE>PdfObject</CODE> to read
-     * @param parent parent object
+     * @param parent getParent object
      * @return a PdfObject
      */
     public static PdfObject getPdfObject(PdfObject obj, PdfObject parent) {
@@ -527,7 +527,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             PRIndirectReference ref;
             if (parent != null && (ref = parent.getIndRef()) != null
                     && ref.getReader().isAppendable()) {
-                switch (obj.type()) {
+                switch (obj.getTypeImpl()) {
                     case PdfObject.NULL:
                         obj = new PdfNull();
                         break;
@@ -1165,7 +1165,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         if (original == null) {
             return null;
         }
-        switch (original.type()) {
+        switch (original.getTypeImpl()) {
             case PdfObject.DICTIONARY: {
                 return duplicatePdfDictionary((PdfDictionary) original, null, newReader);
             }
@@ -1348,7 +1348,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * Gets the box size. Allowed names are: "crop", "trim", "art", "bleed" and "media".
      *
      * @param index   the page number. The first page is 1
-     * @param boxName the box name
+     * @param boxName the box getName
      * @return the box rectangle or null
      */
     public Rectangle getBoxSize(int index, String boxName) {
@@ -1397,7 +1397,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 continue;
             }
             String value = obj.toString();
-            switch (obj.type()) {
+            switch (obj.getTypeImpl()) {
                 case PdfObject.STRING: {
                     value = ((PdfString) obj).toUnicodeString();
                     break;
@@ -1651,7 +1651,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
             case 4 -> processDefaultCryptFilter(enc);
             default -> throw new UnsupportedPdfException(
-                    MessageLocalization.getComposedMessage("unknown.encryption.type.v.eq.1", vValue));
+                    MessageLocalization.getComposedMessage("unknown.encryption.getTypeImpl.v.eq.1", vValue));
         };
     }
 
@@ -1822,7 +1822,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     private void throwUnsupportedEncryptionType() throws UnsupportedPdfException {
-        throw new UnsupportedPdfException(MessageLocalization.getComposedMessage("unknown.encryption.type.r.eq.1", rValue));
+        throw new UnsupportedPdfException(MessageLocalization.getComposedMessage("unknown.encryption.getTypeImpl.r.eq.1", rValue));
     }
 
     /**
@@ -2080,7 +2080,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         boolean calc = false;
         int streamLength = 0;
         PdfObject obj = getPdfObjectRelease(stream.get(PdfName.PDF_NAME_LENGTH));
-        if (obj != null && obj.type() == PdfObject.NUMBER) {
+        if (obj != null && obj.getTypeImpl() == PdfObject.NUMBER) {
             streamLength = ((PdfNumber) obj).intValue();
             if (streamLength + start > fileTokensLength - 20) {
                 calc = true;
@@ -2629,11 +2629,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
             if (tokens.getTokenType() != PRTokeniser.TK_NAME) {
                 tokens.throwError(MessageLocalization
-                        .getComposedMessage("dictionary.key.is.not.a.name"));
+                        .getComposedMessage("dictionary.key.is.not.a.getName"));
             }
             PdfName name = new PdfName(tokens.getStringValue(), false);
             PdfObject obj = readPRObject();
-            int type = obj.type();
+            int type = obj.getTypeImpl();
             if (-type == PRTokeniser.TK_END_DIC) {
                 tokens.throwError(MessageLocalization
                         .getComposedMessage("unexpected.gt.gt"));
@@ -2651,7 +2651,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         PdfArray array = new PdfArray();
         while (true) {
             PdfObject obj = readPRObject();
-            int type = obj.type();
+            int type = obj.getTypeImpl();
             if (-type == PRTokeniser.TK_END_ARRAY) {
                 break;
             }
@@ -2904,7 +2904,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         if ((obj instanceof PdfIndirectReference) && !obj.isIndirect()) {
             return;
         }
-        switch (obj.type()) {
+        switch (obj.getTypeImpl()) {
             case PdfObject.INDIRECT: {
                 int xr = 0;
                 if (obj instanceof PRIndirectReference prIndirectReference) {
@@ -3262,7 +3262,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     /**
-     * Creates a unique subset prefix to be added to the font name when the font is embedded and subset.
+     * Creates a unique subset prefix to be added to the font getName when the font is embedded and subset.
      *
      * @return the subset prefix
      */
@@ -3329,7 +3329,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     /**
-     * Gets all the named destinations as an <CODE>HashMap</CODE>. The key is the name and the value is the destinations
+     * Gets all the named destinations as an <CODE>HashMap</CODE>. The key is the getName and the value is the destinations
      * array.
      *
      * @return gets all the named destinations
@@ -3339,7 +3339,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     /**
-     * Gets all the named destinations as an <CODE>HashMap</CODE>. The key is the name and the value is the destinations
+     * Gets all the named destinations as an <CODE>HashMap</CODE>. The key is the getName and the value is the destinations
      * array.
      *
      * @param keepNames true if you want the keys to be real PdfNames instead of Strings
@@ -3354,7 +3354,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     /**
      * Gets the named destinations from the /Dests key in the catalog as an
-     * <CODE>HashMap</CODE>. The key is the name and the value is the destinations
+     * <CODE>HashMap</CODE>. The key is the getName and the value is the destinations
      * array.
      *
      * @return gets the named destinations
@@ -3365,7 +3365,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     /**
      * Gets the named destinations from the /Dests key in the catalog as an
-     * <CODE>HashMap</CODE>. The key is the name and the value is the destinations
+     * <CODE>HashMap</CODE>. The key is the getName and the value is the destinations
      * array.
      *
      * @param keepNames true if you want the keys to be real PdfNames instead of Strings
@@ -3398,7 +3398,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     /**
      * Gets the named destinations from the /Names key in the catalog as an
-     * <CODE>HashMap</CODE>. The key is the name and the value is the destinations
+     * <CODE>HashMap</CODE>. The key is the getName and the value is the destinations
      * array.
      *
      * @return gets the named destinations
@@ -3539,7 +3539,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
 
     /**
-     * Replaces remote named links with local destinations that have the same name.
+     * Replaces remote named links with local destinations that have the same getName.
      *
      * @since 5.0
      */
@@ -3579,7 +3579,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     /**
-     * Converts a remote named destination GoToR with a local named destination if there's a corresponding name.
+     * Converts a remote named destination GoToR with a local named destination if there's a corresponding getName.
      *
      * @param obj   an annotation that needs to be screened for links to external named destinations.
      * @param names a map with names of local named destinations
@@ -3744,7 +3744,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
 
     private void handlePdfObject(Deque<Object> state, boolean[] hits, PdfObject obj) {
-        switch (obj.type()) {
+        switch (obj.getTypeImpl()) {
             case PdfObject.DICTIONARY, PdfObject.STREAM:
                 PdfDictionary dic = (PdfDictionary) obj;
                 PdfName[] keys = new PdfName[dic.size()];
@@ -4530,7 +4530,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     PdfObject count = getPdfObjectRelease(dic.get(PdfName.COUNT));
                     reader.lastXrefPartial = last;
                     int acn = 1;
-                    if (count != null && count.type() == PdfObject.NUMBER) {
+                    if (count != null && count.getTypeImpl() == PdfObject.NUMBER) {
                         acn = ((PdfNumber) count).intValue();
                     }
                     if (n < base + acn) {

@@ -9,7 +9,7 @@ public class TextDrawingConfig {
     private float lly;
     private float urx;
     private float ury;
-    private String name; // Field for the name of the text field
+    private String name; // Field for the getName of the text field
 
     // Constructor
     public TextDrawingConfig(PdfFormField field, String text, BaseFont font, float fontSize, float llx, float lly, float urx, float ury, String name) {

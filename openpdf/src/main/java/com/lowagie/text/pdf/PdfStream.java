@@ -252,7 +252,7 @@ public class PdfStream extends PdfDictionary {
                 }
             } else {
                 throw new IllegalArgumentException(MessageLocalization.getComposedMessage(
-                        "stream.could.not.be.compressed.filter.is.not.a.name.or.array"));
+                        "stream.could.not.be.compressed.filter.is.not.a.getName.or.array"));
             }
         }
         // Update filter to include FLATEDECODE if not present
@@ -426,6 +426,6 @@ public class PdfStream extends PdfDictionary {
         if (get(PdfName.TYPE_CONST) == null) {
             return "Stream";
         }
-        return "Stream of type: " + get(PdfName.TYPE_CONST);
+        return "Stream of getTypeImpl: " + get(PdfName.TYPE_CONST);
     }
 }

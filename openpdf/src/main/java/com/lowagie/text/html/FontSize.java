@@ -16,7 +16,7 @@ public enum FontSize {
     XX_LARGE("xx-large", 2.0f, false),
     XXX_LARGE("xxx-large", 2.5f, false),
 
-    // Relative-size keywords. The font will be larger or smaller relative to the parent element's font size,
+    // Relative-size keywords. The font will be larger or smaller relative to the getParent element's font size,
     // roughly by the ratio used to separate the absolute-size keywords above.
     SMALLER("smaller", 0.89f, true),
     LARGER("larger", 1.2f, true);

@@ -97,7 +97,7 @@ public class PdfShading {
         int type2 = ExtendedColor.getType(c2);
         if (type1 != type2) {
             throw new IllegalArgumentException(
-                    MessageLocalization.getComposedMessage("both.colors.must.be.of.the.same.type"));
+                    MessageLocalization.getComposedMessage("both.colors.must.be.of.the.same.getTypeImpl"));
         }
         if (type1 == ExtendedColor.TYPE_SEPARATION
                 && c1.getPdfSpotColor() != c2.getPdfSpotColor()) {
@@ -240,7 +240,7 @@ public class PdfShading {
                     colorDetails = writer.addSimple(spotColor.getPdfSpotColor());
                     colorSpace = colorDetails.getIndirectReference();
                 } else {
-                    throw new IllegalArgumentException("Color type is not a SpotColor for separation.");
+                    throw new IllegalArgumentException("Color getTypeImpl is not a SpotColor for separation.");
                 }
                 break;
 

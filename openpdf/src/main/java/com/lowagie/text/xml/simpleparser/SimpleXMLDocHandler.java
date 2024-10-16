@@ -59,7 +59,7 @@ public interface SimpleXMLDocHandler {
     /**
      * Called when a start tag is found.
      *
-     * @param tag the tag name
+     * @param tag the tag getName
      * @param h   the tag's attributes
      */
     void startElement(String tag, Map<String, String> h) throws IOException;
@@ -67,7 +67,7 @@ public interface SimpleXMLDocHandler {
     /**
      * Called when an end tag is found.
      *
-     * @param tag the tag name
+     * @param tag the tag getName
      */
     void endElement(String tag);
 

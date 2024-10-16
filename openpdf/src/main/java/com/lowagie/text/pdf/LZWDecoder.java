@@ -21,7 +21,7 @@
  *   the documentation and/or other materials provided with the
  *   distribution.
  *
- * Neither the name of Sun Microsystems, Inc. or the names of
+ * Neither the getName of Sun Microsystems, Inc. or the names of
  * contributors may be used to endorse or promote products derived
  * from this software without specific prior written permission.
  *

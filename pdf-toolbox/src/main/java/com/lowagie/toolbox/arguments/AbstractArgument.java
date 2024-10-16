@@ -21,7 +21,7 @@ public abstract class AbstractArgument implements ActionListener, PropertyChange
      */
     protected Object value = null;
     /**
-     * short name for the argument.
+     * short getName for the argument.
      */
     protected String name;
     /**
@@ -132,14 +132,14 @@ public abstract class AbstractArgument implements ActionListener, PropertyChange
     }
 
     /**
-     * @return Returns the name.
+     * @return Returns the getName.
      */
     public String getName() {
         return name;
     }
 
     /**
-     * @param name The name to set.
+     * @param name The getName to set.
      */
     public void setName(String name) {
         this.name = name;

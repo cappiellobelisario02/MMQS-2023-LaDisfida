@@ -89,15 +89,15 @@ import java.util.Map;
 public class PdfContentByte {
 
     /**
-     * The alignment is center
+     * The getAlignment is center
      */
     public static final int ALIGN_CENTER = Element.ALIGN_CENTER;
     /**
-     * The alignment is left
+     * The getAlignment is left
      */
     public static final int ALIGN_LEFT = Element.ALIGN_LEFT;
     /**
-     * The alignment is right
+     * The getAlignment is right
      */
     public static final int ALIGN_RIGHT = Element.ALIGN_RIGHT;
     /**
@@ -456,21 +456,21 @@ public class PdfContentByte {
     }
 
     /**
-     * Gets the current text leading.
+     * Gets the current text getLeading.
      *
-     * @return the current text leading
+     * @return the current text getLeading
      */
     public float getLeading() {
         return state.leading;
     }
 
     /**
-     * Sets the text leading parameter.
+     * Sets the text getLeading parameter.
      * <p>
-     * The leading parameter is measured in text space units. It specifies the vertical distance between the baselines
+     * The getLeading parameter is measured in text space units. It specifies the vertical distance between the baselines
      * of adjacent lines of text.</P>
      *
-     * @param leading the new leading
+     * @param leading the new getLeading
      */
     public void setLeading(float leading) {
         if (state != null) {
@@ -1911,7 +1911,7 @@ public class PdfContentByte {
     /**
      * Moves to the start of the next line, offset from the start of the current line.
      * <p>
-     * As a side effect, this sets the leading parameter in the text state.</P>
+     * As a side effect, this sets the getLeading parameter in the text state.</P>
      *
      * @param x offset of the new current point
      * @param y y-coordinate of the new current point
@@ -1951,7 +1951,7 @@ public class PdfContentByte {
      * Adds a named outline to the document.
      *
      * @param outline the outline
-     * @param name    the name for the local destination
+     * @param name    the getName for the local destination
      */
     public void addOutline(PdfOutline outline, String name) {
         checkWriter();
@@ -2011,7 +2011,7 @@ public class PdfContentByte {
     /**
      * Shows text right, left or center aligned with rotation.
      *
-     * @param alignment the alignment can be ALIGN_CENTER, ALIGN_RIGHT or ALIGN_LEFT
+     * @param alignment the getAlignment can be ALIGN_CENTER, ALIGN_RIGHT or ALIGN_LEFT
      * @param text      the text to show
      * @param x         the x pivot position
      * @param y         the y pivot position
@@ -2035,9 +2035,9 @@ public class PdfContentByte {
                     x -= getEffectiveStringWidth(text, kerned);
                     break;
                 default:
-                    // Handle any other unexpected alignment values
+                    // Handle any other unexpected getAlignment values
                     // You can leave it empty or assign a default behavior
-                    // For example, assume left alignment (no adjustment):
+                    // For example, assume left getAlignment (no adjustment):
                     break;
             }
             setTextMatrix(x, y);
@@ -2063,7 +2063,7 @@ public class PdfContentByte {
                     y -= len * sin;
                     break;
                 default:
-                    // Handle the default case, could be logging, setting default alignment, etc.
+                    // Handle the default case, could be logging, setting default getAlignment, etc.
                     break;
             }
             setTextMatrix(cos, sin, -sin, cos, x, y);
@@ -2079,7 +2079,7 @@ public class PdfContentByte {
     /**
      * Shows text kerned right, left or center aligned with rotation.
      *
-     * @param alignment the alignment can be ALIGN_CENTER, ALIGN_RIGHT or ALIGN_LEFT
+     * @param alignment the getAlignment can be ALIGN_CENTER, ALIGN_RIGHT or ALIGN_LEFT
      * @param text      the text to show
      * @param x         the x pivot position
      * @param y         the y pivot position
@@ -2647,7 +2647,7 @@ public class PdfContentByte {
                 content.append(tint);
                 break;
             default:
-                throw new InvalidColorTypeException(MessageLocalization.getComposedMessage("invalid.color.type"));
+                throw new InvalidColorTypeException(MessageLocalization.getComposedMessage("invalid.color.getTypeImpl"));
         }
     }
 
@@ -2908,10 +2908,10 @@ public class PdfContentByte {
     }
 
     /**
-     * Implements a link to other part of the document. The jump will be made to a local destination with the same name,
+     * Implements a link to other part of the document. The jump will be made to a local destination with the same getName,
      * that must exist.
      *
-     * @param name the name for this link
+     * @param name the getName for this link
      * @param llx  the lower left x corner of the activation area
      * @param lly  the lower left y corner of the activation area
      * @param urx  the upper right x corner of the activation area
@@ -2922,12 +2922,12 @@ public class PdfContentByte {
     }
 
     /**
-     * The local destination to where a local goto with the same name will jump.
+     * The local destination to where a local goto with the same getName will jump.
      *
-     * @param name        the name of this local destination
+     * @param name        the getName of this local destination
      * @param destination the <CODE>PdfDestination</CODE> with the jump coordinates
      * @return <CODE>true</CODE> if the local destination was added,
-     * <CODE>false</CODE> if a local destination with the same name
+     * <CODE>false</CODE> if a local destination with the same getName
      * already exists
      */
     public boolean localDestination(String name, PdfDestination destination) {
@@ -2948,7 +2948,7 @@ public class PdfContentByte {
      * Implements a link to another document.
      *
      * @param filename the filename for the remote document
-     * @param name     the name to jump to
+     * @param name     the getName to jump to
      * @param llx      the lower left x corner of the activation area
      * @param lly      the lower left y corner of the activation area
      * @param urx      the upper right x corner of the activation area
@@ -3444,7 +3444,7 @@ public class PdfContentByte {
                     beginLayer2(la);
                     ++n;
                 }
-                la = la.getParent();  // Navigate to the parent layer if it exists
+                la = la.getParent();  // Navigate to the getParent layer if it exists
             }
         }
 
@@ -3495,10 +3495,10 @@ public class PdfContentByte {
     /**
      * Sets the default colorspace.
      *
-     * @param name the name of the colorspace. It can be <CODE>PdfName.DEFAULTGRAY</CODE>,
+     * @param name the getName of the colorspace. It can be <CODE>PdfName.DEFAULTGRAY</CODE>,
      *             <CODE>PdfName.DEFAULTRGB</CODE> or <CODE>PdfName.DEFAULTCMYK</CODE>
      * @param obj  the colorspace. A <CODE>null</CODE> or <CODE>PdfNull</CODE> removes any colorspace with the same
-     *             name
+     *             getName
      */
     public void setDefaultColorspace(PdfName name, PdfObject obj) {
         PageResources prs = getPageResources();
@@ -3570,7 +3570,7 @@ public class PdfContentByte {
     }
 
     /**
-     * Begins a marked content sequence. If property is <CODE>null</CODE> the mark will be of the type
+     * Begins a marked content sequence. If property is <CODE>null</CODE> the mark will be of the getTypeImpl
      * <CODE>BMC</CODE> otherwise it will be <CODE>BDC</CODE>.
      *
      * @param tag      the tag
@@ -3657,7 +3657,7 @@ public class PdfContentByte {
          */
         protected float yTLM = 0;
         /**
-         * The current text leading.
+         * The current text getLeading.
          */
         protected float leading = 0;
         /**

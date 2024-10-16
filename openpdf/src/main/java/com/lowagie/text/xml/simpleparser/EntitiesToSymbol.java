@@ -376,7 +376,7 @@ public class EntitiesToSymbol {
     /**
      * Looks for the corresponding symbol in the font Symbol.
      *
-     * @param name the name of the entity
+     * @param name the getName of the entity
      * @return the corresponding character in font Symbol
      */
     public static char getCorrespondingSymbol(String name) {

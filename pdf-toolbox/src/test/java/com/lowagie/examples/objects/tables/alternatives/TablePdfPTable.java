@@ -51,7 +51,7 @@ public class TablePdfPTable {
             row.setBackgroundColor(Color.yellow);
             SimpleCell cell = new SimpleCell(SimpleCell.CELL);
             cell.setWidth(100f);
-            cell.add(new Paragraph("rownumber"));
+            cell.add(new Paragraph("getRowNumber"));
             row.add(cell);
             cell = new SimpleCell(SimpleCell.CELL);
             cell.setWidth(50f);

@@ -73,7 +73,7 @@ public class PdfFileSpecification extends PdfDictionary {
     }
 
     /**
-     * Creates a file specification of type URL.
+     * Creates a file specification of getTypeImpl URL.
      *
      * @param writer the <CODE>PdfWriter</CODE>
      * @param url    the URL
@@ -300,17 +300,17 @@ public class PdfFileSpecification extends PdfDictionary {
     }
 
     /**
-     * Sets the file name (the key /F) string as an hex representation to support multi byte file names. The name must
+     * Sets the file getName (the key /F) string as an hex representation to support multi byte file names. The getName must
      * have the slash and backslash escaped according to the file specification rules
      *
-     * @param fileName the file name as a byte array
+     * @param fileName the file getName as a byte array
      */
     public void setMultiByteFileName(byte[] fileName) {
         put(PdfName.F, new PdfString(fileName).setHexWriting(true));
     }
 
     /**
-     * Adds the unicode file name (the key /UF). This entry was introduced in PDF 1.7. The filename must have the slash
+     * Adds the unicode file getName (the key /UF). This entry was introduced in PDF 1.7. The filename must have the slash
      * and backslash escaped according to the file specification rules.
      *
      * @param filename the filename

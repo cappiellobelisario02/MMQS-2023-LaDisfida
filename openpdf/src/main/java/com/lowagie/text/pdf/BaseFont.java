@@ -76,72 +76,72 @@ public abstract class BaseFont {
     private static final String TTC_KEY = ".ttc,";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String COURIER = "Courier";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String COURIER_BOLD = "Courier-Bold";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String COURIER_OBLIQUE = "Courier-Oblique";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String COURIER_BOLDOBLIQUE = "Courier-BoldOblique";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String HELVETICA = "Helvetica";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String HELVETICA_BOLD = "Helvetica-Bold";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String HELVETICA_OBLIQUE = "Helvetica-Oblique";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String HELVETICA_BOLDOBLIQUE = "Helvetica-BoldOblique";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String SYMBOL = "Symbol";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String TIMES_ROMAN = "Times-Roman";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String TIMES_BOLD = "Times-Bold";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String TIMES_ITALIC = "Times-Italic";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String TIMES_BOLDITALIC = "Times-BoldItalic";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String ZAPFDINGBATS = "ZapfDingbats";
 
@@ -384,7 +384,7 @@ public abstract class BaseFont {
     /**
      * true if the font must use its built in encoding. In that case the
      * <CODE>encoding</CODE> is only used to map a char to the position inside
-     * the font, not to the expected char name.
+     * the font, not to the expected char getName.
      */
     protected boolean fontSpecific = true;
     /**
@@ -410,7 +410,7 @@ public abstract class BaseFont {
     protected IntHashtable specialMap;
 
     /**
-     * Used to build a randomized prefix for a subset name
+     * Used to build a randomized prefix for a subset getName
      */
     protected SecureRandom secureRandom;
 
@@ -419,7 +419,7 @@ public abstract class BaseFont {
      */
     protected boolean includeCidSet = true;
     /**
-     * The font type.
+     * The font getTypeImpl.
      */
     int fontType;
 
@@ -446,21 +446,21 @@ public abstract class BaseFont {
     /**
      * Creates a new font. This font can be one of the 14 built in types, a Type1 font referred to by an AFM or PFM
      * file, a TrueType font (simple or collection) or a CJK font from the Adobe Asian Font Pack. TrueType fonts and CJK
-     * fonts can have an optional style modifier appended to the name. These modifiers are: Bold, Italic and BoldItalic.
+     * fonts can have an optional style modifier appended to the getName. These modifiers are: Bold, Italic and BoldItalic.
      * An example would be "STSong-Light,Bold". Note that this modifiers do not work if the font is embedded. Fonts in
      * TrueType collections are addressed by index such as "msgothic.ttc,1". This would get the second font (indexes
      * start at 0), in this case "MS PGothic".
      * <p>
      * The fonts are cached and if they already exist they are extracted from the cache, not parsed again.
      * <p>
-     * Besides the common encodings described by name, custom encodings can also be made. These encodings will only work
+     * Besides the common encodings described by getName, custom encodings can also be made. These encodings will only work
      * for the single byte fonts Type1 and TrueType. The encoding string starts with a '#' followed by "simple" or
      * "full". If "simple" there is a decimal for the first character position and then a list of hex values
      * representing the Unicode codes that compose that encoding.<br> The "simple" encoding is recommended for TrueType
      * fonts as the "full" encoding risks not matching the character with the right glyph if not done with care.<br> The
      * "full" encoding is specially aimed at Type1 fonts where the glyphs have to be described by non standard names
      * like the Tex math fonts. Each group of three elements compose a code position: the one byte code order in decimal
-     * or as 'x' (x cannot be the space), the name and the Unicode character used to access the glyph. The space must be
+     * or as 'x' (x cannot be the space), the getName and the Unicode character used to access the glyph. The space must be
      * assigned to character position 32 otherwise text justification will not work.
      * <p>
      * Example for a "simple" encoding that includes the Unicode character space, A, B and ecyrillic:
@@ -478,10 +478,10 @@ public abstract class BaseFont {
      * This method calls:<br>
      *
      * <PRE>
-     * createFont(name, encoding, embedded, true, null, null);
+     * createFont(getName, encoding, embedded, true, null, null);
      * </PRE>
      *
-     * @param name     the name of the font or its location on file
+     * @param name     the getName of the font or its location on file
      * @param encoding the encoding to be applied to this font
      * @param embedded true if the font is to be embedded in the PDF
      * @return returns a new font. This font may come from the cache
@@ -496,21 +496,21 @@ public abstract class BaseFont {
     /**
      * Creates a new font. This font can be one of the 14 built in types, a Type1 font referred to by an AFM or PFM
      * file, a TrueType font (simple or collection) or a CJK font from the Adobe Asian Font Pack. TrueType fonts and CJK
-     * fonts can have an optional style modifier appended to the name. These modifiers are: Bold, Italic and BoldItalic.
+     * fonts can have an optional style modifier appended to the getName. These modifiers are: Bold, Italic and BoldItalic.
      * An example would be "STSong-Light,Bold". Note that this modifiers do not work if the font is embedded. Fonts in
      * TrueType collections are addressed by index such as "msgothic.ttc,1". This would get the second font (indexes
      * start at 0), in this case "MS PGothic".
      * <p>
      * The fonts are cached and if they already exist they are extracted from the cache, not parsed again.
      * <p>
-     * Besides the common encodings described by name, custom encodings can also be made. These encodings will only work
+     * Besides the common encodings described by getName, custom encodings can also be made. These encodings will only work
      * for the single byte fonts Type1 and TrueType. The encoding string starts with a '#' followed by "simple" or
      * "full". If "simple" there is a decimal for the first character position and then a list of hex values
      * representing the Unicode codes that compose that encoding.<br> The "simple" encoding is recommended for TrueType
      * fonts as the "full" encoding risks not matching the character with the right glyph if not done with care.<br> The
      * "full" encoding is specially aimed at Type1 fonts where the glyphs have to be described by non standard names
      * like the Tex math fonts. Each group of three elements compose a code position: the one byte code order in decimal
-     * or as 'x' (x cannot be the space), the name and the Unicode character used to access the glyph. The space must be
+     * or as 'x' (x cannot be the space), the getName and the Unicode character used to access the glyph. The space must be
      * assigned to character position 32 otherwise text justification will not work.
      * <p>
      * Example for a "simple" encoding that includes the Unicode character space, A, B and ecyrillic:
@@ -528,10 +528,10 @@ public abstract class BaseFont {
      * This method calls:<br>
      *
      * <PRE>
-     * createFont(name, encoding, embedded, true, null, null);
+     * createFont(getName, encoding, embedded, true, null, null);
      * </PRE>
      *
-     * @param name      the name of the font or its location on file
+     * @param name      the getName of the font or its location on file
      * @param encoding  the encoding to be applied to this font
      * @param embedded  true if the font is to be embedded in the PDF
      * @param forceRead in some cases (TrueTypeFont, Type1Font), the full font file will be read and kept in memory if
@@ -550,23 +550,23 @@ public abstract class BaseFont {
     /**
      * Creates a new font. This font can be one of the 14 built in types, a Type1 font referred to by an AFM or PFM
      * file, a TrueType font (simple or collection) or a CJK font from the Adobe Asian Font Pack. TrueType fonts and CJK
-     * fonts can have an optional style modifier appended to the name. These modifiers are: Bold, Italic and BoldItalic.
+     * fonts can have an optional style modifier appended to the getName. These modifiers are: Bold, Italic and BoldItalic.
      * An example would be "STSong-Light,Bold". Note that this modifiers do not work if the font is embedded. Fonts in
      * TrueType collections are addressed by index such as "msgothic.ttc,1". This would get the second font (indexes
      * start at 0), in this case "MS PGothic".
      * <p>
      * The fonts may or may not be cached depending on the flag
      * <CODE>cached</CODE>. If the <CODE>byte</CODE> arrays are present the font
-     * will be read from them instead of the name. A name is still required to identify the font type.
+     * will be read from them instead of the getName. A getName is still required to identify the font getTypeImpl.
      * <p>
-     * Besides the common encodings described by name, custom encodings can also be made. These encodings will only work
+     * Besides the common encodings described by getName, custom encodings can also be made. These encodings will only work
      * for the single byte fonts Type1 and TrueType. The encoding string starts with a '#' followed by "simple" or
      * "full". If "simple" there is a decimal for the first character position and then a list of hex values
      * representing the Unicode codes that compose that encoding.<br> The "simple" encoding is recommended for TrueType
      * fonts as the "full" encoding risks not matching the character with the right glyph if not done with care.<br> The
      * "full" encoding is specially aimed at Type1 fonts where the glyphs have to be described by non standard names
      * like the Tex math fonts. Each group of three elements compose a code position: the one byte code order in decimal
-     * or as 'x' (x cannot be the space), the name and the Unicode character used to access the glyph. The space must be
+     * or as 'x' (x cannot be the space), the getName and the Unicode character used to access the glyph. The space must be
      * assigned to character position 32 otherwise text justification will not work.
      * <p>
      * Example for a "simple" encoding that includes the Unicode character space, A, B and ecyrillic:
@@ -581,12 +581,12 @@ public abstract class BaseFont {
      * &quot;# full 'A' nottriangeqlleft 0041 'B' dividemultiply 0042 32 space 0020&quot;
      * </PRE>
      *
-     * @param name     the name of the font or its location on file
+     * @param name     the getName of the font or its location on file
      * @param encoding the encoding to be applied to this font
      * @param embedded true if the font is to be embedded in the PDF
      * @param cached   true if the font comes from the cache or is added to the cache if new, false if the font is
      *                 always created new
-     * @param ttfAfm   the true type font or the afm in a byte array
+     * @param ttfAfm   the true getTypeImpl font or the afm in a byte array
      * @param pfb      the pfb in a byte array
      * @return returns a new font. This font may come from the cache but only if cached is true, otherwise it will
      * always be created new
@@ -603,23 +603,23 @@ public abstract class BaseFont {
     /**
      * Creates a new font. This font can be one of the 14 built in types, a Type1 font referred to by an AFM or PFM
      * file, a TrueType font (simple or collection) or a CJK font from the Adobe Asian Font Pack. TrueType fonts and CJK
-     * fonts can have an optional style modifier appended to the name. These modifiers are: Bold, Italic and BoldItalic.
+     * fonts can have an optional style modifier appended to the getName. These modifiers are: Bold, Italic and BoldItalic.
      * An example would be "STSong-Light,Bold". Note that this modifiers do not work if the font is embedded. Fonts in
      * TrueType collections are addressed by index such as "msgothic.ttc,1". This would get the second font (indexes
      * start at 0), in this case "MS PGothic".
      * <p>
      * The fonts may or may not be cached depending on the flag
      * <CODE>cached</CODE>. If the <CODE>byte</CODE> arrays are present the font
-     * will be read from them instead of the name. A name is still required to identify the font type.
+     * will be read from them instead of the getName. A getName is still required to identify the font getTypeImpl.
      * <p>
-     * Besides the common encodings described by name, custom encodings can also be made. These encodings will only work
+     * Besides the common encodings described by getName, custom encodings can also be made. These encodings will only work
      * for the single byte fonts Type1 and TrueType. The encoding string starts with a '#' followed by "simple" or
      * "full". If "simple" there is a decimal for the first character position and then a list of hex values
      * representing the Unicode codes that compose that encoding.<br> The "simple" encoding is recommended for TrueType
      * fonts as the "full" encoding risks not matching the character with the right glyph if not done with care.<br> The
      * "full" encoding is specially aimed at Type1 fonts where the glyphs have to be described by non standard names
      * like the Tex math fonts. Each group of three elements compose a code position: the one byte code order in decimal
-     * or as 'x' (x cannot be the space), the name and the Unicode character used to access the glyph. The space must be
+     * or as 'x' (x cannot be the space), the getName and the Unicode character used to access the glyph. The space must be
      * assigned to character position 32 otherwise text justification will not work.
      * <p>
      * Example for a "simple" encoding that includes the Unicode character space, A, B and ecyrillic:
@@ -634,12 +634,12 @@ public abstract class BaseFont {
      * &quot;# full 'A' nottriangeqlleft 0041 'B' dividemultiply 0042 32 space 0020&quot;
      * </PRE>
      *
-     * @param name     the name of the font or its location on file
+     * @param name     the getName of the font or its location on file
      * @param encoding the encoding to be applied to this font
      * @param embedded true if the font is to be embedded in the PDF
      * @param cached   true if the font comes from the cache or is added to the cache if new, false if the font is
      *                 always created new
-     * @param ttfAfm   the true type font or the afm in a byte array
+     * @param ttfAfm   the true getTypeImpl font or the afm in a byte array
      * @param pfb      the pfb in a byte array
      * @param noThrow  if true will not throw an exception if the font is not recognized and will return null, if false
      *                 will throw an exception if the font is not recognized. Note that even if true an exception may be
@@ -661,23 +661,23 @@ public abstract class BaseFont {
     /**
      * Creates a new font. This font can be one of the 14 built in types, a Type1 font referred to by an AFM or PFM
      * file, a TrueType font (simple or collection) or a CJK font from the Adobe Asian Font Pack. TrueType fonts and CJK
-     * fonts can have an optional style modifier appended to the name. These modifiers are: Bold, Italic and BoldItalic.
+     * fonts can have an optional style modifier appended to the getName. These modifiers are: Bold, Italic and BoldItalic.
      * An example would be "STSong-Light,Bold". Note that this modifiers do not work if the font is embedded. Fonts in
      * TrueType collections are addressed by index such as "msgothic.ttc,1". This would get the second font (indexes
      * start at 0), in this case "MS PGothic".
      * <p>
      * The fonts may or may not be cached depending on the flag
      * <CODE>cached</CODE>. If the <CODE>byte</CODE> arrays are present the font
-     * will be read from them instead of the name. A name is still required to identify the font type.
+     * will be read from them instead of the getName. A getName is still required to identify the font getTypeImpl.
      * <p>
-     * Besides the common encodings described by name, custom encodings can also be made. These encodings will only work
+     * Besides the common encodings described by getName, custom encodings can also be made. These encodings will only work
      * for the single byte fonts Type1 and TrueType. The encoding string starts with a '#' followed by "simple" or
      * "full". If "simple" there is a decimal for the first character position and then a list of hex values
      * representing the Unicode codes that compose that encoding.<br> The "simple" encoding is recommended for TrueType
      * fonts as the "full" encoding risks not matching the character with the right glyph if not done with care.<br> The
      * "full" encoding is specially aimed at Type1 fonts where the glyphs have to be described by non standard names
      * like the Tex math fonts. Each group of three elements compose a code position: the one byte code order in decimal
-     * or as 'x' (x cannot be the space), the name and the Unicode character used to access the glyph. The space must be
+     * or as 'x' (x cannot be the space), the getName and the Unicode character used to access the glyph. The space must be
      * assigned to character position 32 otherwise text justification will not work.
      * <p>
      * Example for a "simple" encoding that includes the Unicode character space, A, B and ecyrillic:
@@ -801,15 +801,15 @@ public abstract class BaseFont {
     }
 
     /**
-     * Gets the full name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the full getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @param name     the name of the font
+     * @param name     the getName of the font
      * @param encoding the encoding of the font
-     * @param ttfAfm   the true type font or the afm in a byte array
-     * @return the full name of the font
+     * @param ttfAfm   the true getTypeImpl font or the afm in a byte array
+     * @return the full getName of the font
      * @throws DocumentException on error
      * @throws IOException       on error
      */
@@ -832,9 +832,9 @@ public abstract class BaseFont {
     /**
      * Gets all the names from the font. Only the required tables are read.
      *
-     * @param name     the name of the font
+     * @param name     the getName of the font
      * @param encoding the encoding of the font
-     * @param ttfAfm   the true type font or the afm in a byte array
+     * @param ttfAfm   the true getTypeImpl font or the afm in a byte array
      * @return an array of Object[] built with {getPostscriptFontName(), getFamilyFontName(), getFullFontName()}
      * @throws DocumentException on error
      * @throws IOException       on error
@@ -858,9 +858,9 @@ public abstract class BaseFont {
     /**
      * Gets all the entries of the namestable from the font. Only the required tables are read.
      *
-     * @param name     the name of the font
+     * @param name     the getName of the font
      * @param encoding the encoding of the font
-     * @param ttfAfm   the true type font or the afm in a byte array
+     * @param ttfAfm   the true getTypeImpl font or the afm in a byte array
      * @return an array of Object[] built with {getPostscriptFontName(), getFamilyFontName(), getFullFontName()}
      * @throws DocumentException on error
      * @throws IOException       on error
@@ -884,7 +884,7 @@ public abstract class BaseFont {
     /**
      * Enumerates the postscript font names present inside a True Type Collection.
      *
-     * @param ttcFile the file name of the font
+     * @param ttcFile the file getName of the font
      * @return the postscript font names
      * @throws DocumentException on error
      * @throws IOException       on error
@@ -910,7 +910,7 @@ public abstract class BaseFont {
     /**
      * Gets the font resources.
      *
-     * @param key the full name of the resource
+     * @param key the full getName of the resource
      * @return the <CODE>InputStream</CODE> to get the resource or
      * <CODE>null</CODE> if not found
      */
@@ -921,7 +921,7 @@ public abstract class BaseFont {
     /**
      * Gets the font resources.
      *
-     * @param key    the full name of the resource
+     * @param key    the full getName of the resource
      * @param loader the ClassLoader to load the resource or null to try the ones available
      * @return the <CODE>InputStream</CODE> to get the resource or
      * <CODE>null</CODE> if not found
@@ -1009,7 +1009,7 @@ public abstract class BaseFont {
     /**
      * Gets a list of all document fonts. Each element of the
      * <CODE>ArrayList</CODE> contains a
-     * <CODE>Object[]{String,PRIndirectReference}</CODE> with the font name and
+     * <CODE>Object[]{String,PRIndirectReference}</CODE> with the font getName and
      * the indirect reference to it.
      *
      * @param reader the document where the fonts are to be listed from
@@ -1027,7 +1027,7 @@ public abstract class BaseFont {
 
     /**
      * Gets a list of the document fonts in a particular page. Each element of the <CODE>ArrayList</CODE> contains a
-     * <CODE>Object[]{String,PRIndirectReference}</CODE> with the font name and
+     * <CODE>Object[]{String,PRIndirectReference}</CODE> with the font getName and
      * the indirect reference to it.
      *
      * @param reader the document where the fonts are to be listed from
@@ -1144,11 +1144,11 @@ public abstract class BaseFont {
 
 
     /**
-     * Gets the width from the font according to the Unicode char <CODE>c</CODE> or the <CODE>name</CODE>. If the
-     * <CODE>name</CODE> is null it's a symbolic font.
+     * Gets the width from the font according to the Unicode char <CODE>c</CODE> or the <CODE>getName</CODE>. If the
+     * <CODE>getName</CODE> is null it's a symbolic font.
      *
      * @param c    the unicode char
-     * @param name the glyph name
+     * @param name the glyph getName
      * @return the width of the char
      */
     abstract int getRawWidth(int c, String name);
@@ -1385,7 +1385,7 @@ public abstract class BaseFont {
      *
      * @param writer the writer for this document
      * @param ref    the font indirect reference
-     * @param params several parameters that depend on the font type
+     * @param params several parameters that depend on the font getTypeImpl
      * @throws IOException       on error
      * @throws DocumentException error in generating the object
      */
@@ -1408,7 +1408,7 @@ public abstract class BaseFont {
      * Gets the encoding used to convert <CODE>String</CODE> into
      * <CODE>byte[]</CODE>.
      *
-     * @return the encoding name
+     * @return the encoding getName
      */
     public String getEncoding() {
         return encoding;
@@ -1428,9 +1428,9 @@ public abstract class BaseFont {
     public abstract float getFontDescriptor(int key, float fontSize);
 
     /**
-     * Gets the font type. The font types can be: FONT_TYPE_T1, FONT_TYPE_TT, FONT_TYPE_CJK and FONT_TYPE_TTUNI.
+     * Gets the font getTypeImpl. The font types can be: FONT_TYPE_T1, FONT_TYPE_TT, FONT_TYPE_CJK and FONT_TYPE_TTUNI.
      *
-     * @return the font type
+     * @return the font getTypeImpl
      */
     public int getFontType() {
         return fontType;
@@ -1455,7 +1455,7 @@ public abstract class BaseFont {
     }
 
     /**
-     * Creates a unique subset prefix to be added to the font name when the font is embedded and subset.
+     * Creates a unique subset prefix to be added to the font getName when the font is embedded and subset.
      *
      * @return the subset prefix
      */
@@ -1500,48 +1500,48 @@ public abstract class BaseFont {
     }
 
     /**
-     * Gets the postscript font name.
+     * Gets the postscript font getName.
      *
-     * @return the postscript font name
+     * @return the postscript font getName
      */
     public abstract String getPostscriptFontName();
 
     /**
-     * Sets the font name that will appear in the pdf font dictionary. Use with care as it can easily make a font
+     * Sets the font getName that will appear in the pdf font dictionary. Use with care as it can easily make a font
      * unreadable if not embedded.
      *
-     * @param name the new font name
+     * @param name the new font getName
      */
     public abstract void setPostscriptFontName(String name);
 
     /**
-     * Gets the full name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the full getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @return the full name of the font
+     * @return the full getName of the font
      */
     public abstract String[][] getFullFontName();
 
     /**
      * Gets all the entries of the names-table. If it is a True Type font each array element will have {Name ID,
-     * Platform ID, Platform Encoding ID, Language ID, font name}. The interpretation of this values can be found in the
-     * Open Type specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element
-     * with {"4", "", "", "", font name}.
+     * Platform ID, Platform Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the
+     * Open Type specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element
+     * with {"4", "", "", "", font getName}.
      *
-     * @return the full name of the font
+     * @return the full getName of the font
      * @since 2.0.8
      */
     public abstract String[][] getAllNameEntries();
 
     /**
-     * Gets the family name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the family getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @return the family name of the font
+     * @return the family getName of the font
      */
     public abstract String[][] getFamilyFontName();
 

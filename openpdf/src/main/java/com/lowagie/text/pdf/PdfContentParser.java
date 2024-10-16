@@ -62,7 +62,7 @@ import java.util.List;
 public class PdfContentParser {
 
     /**
-     * Commands have this type.
+     * Commands have this getTypeImpl.
      */
     public static final int COMMAND_TYPE = 200;
     /**
@@ -97,7 +97,7 @@ public class PdfContentParser {
         PdfObject ob;
         while ((ob = readPRObject()) != null) {
             ls.add(ob);
-            if (ob.type() == COMMAND_TYPE) {
+            if (ob.getTypeImpl() == COMMAND_TYPE) {
                 break;
             }
         }
@@ -138,11 +138,11 @@ public class PdfContentParser {
                 break;
             }
             if (tokeniser.getTokenType() != PRTokeniser.TK_NAME) {
-                throw new IOException(MessageLocalization.getComposedMessage("dictionary.key.is.not.a.name"));
+                throw new IOException(MessageLocalization.getComposedMessage("dictionary.key.is.not.a.getName"));
             }
             PdfName name = new PdfName(tokeniser.getStringValue(), false);
             PdfObject obj = readPRObject();
-            int type = obj.type();
+            int type = obj.getTypeImpl();
             if (-type == PRTokeniser.TK_END_DIC) {
                 throw new IOException(MessageLocalization.getComposedMessage("unexpected.gt.gt"));
             }
@@ -164,7 +164,7 @@ public class PdfContentParser {
         PdfArray array = new PdfArray();
         while (true) {
             PdfObject obj = readPRObject();
-            int type = obj.type();
+            int type = obj.getTypeImpl();
             if (-type == PRTokeniser.TK_END_ARRAY) {
                 break;
             }

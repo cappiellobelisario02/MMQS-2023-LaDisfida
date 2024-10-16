@@ -22,7 +22,7 @@ class TableRowSpanEvenSplitTest {
         PdfPTable table = new PdfPTable(2);
         PdfPCell cell = new PdfPCell();
         cell.setRowspan(3);
-        cell.addElement(new Chunk("rowspan\nrowspan\nrowspan"));
+        cell.addElement(new Chunk("getRowSpan\ngetRowSpan\ngetRowSpan"));
         table.addCell(cell);
 
         table.addCell("row1");
@@ -49,7 +49,7 @@ class TableRowSpanEvenSplitTest {
         PdfPTable table = new PdfPTable(2);
         PdfPCell cell = new PdfPCell();
         cell.setRowspan(3);
-        cell.addElement(new Chunk("rowspan\nrowspan\nrowspan"));
+        cell.addElement(new Chunk("getRowSpan\ngetRowSpan\ngetRowSpan"));
         table.addCell(cell);
 
         table.addCell("row1\nrow1");
@@ -77,7 +77,7 @@ class TableRowSpanEvenSplitTest {
             PdfPTable table = new PdfPTable(2);
             PdfPCell cell = new PdfPCell();
             cell.setRowspan(3);
-            cell.addElement(new Chunk("rowspan\nrowspan\nrowspan"));
+            cell.addElement(new Chunk("getRowSpan\ngetRowSpan\ngetRowSpan"));
             table.addCell(cell);
 
             table.addCell("row1\nrow1");
@@ -136,7 +136,7 @@ class TableRowSpanEvenSplitTest {
         PdfPTable table = new PdfPTable(2);
         PdfPCell cell = new PdfPCell();
         cell.setRowspan(3);
-        cell.addElement(new Chunk("rowspan\nrowspan\nrowspan\nrowspan\nrowspan\nrowspan\nrowspan"));
+        cell.addElement(new Chunk("getRowSpan\ngetRowSpan\ngetRowSpan\ngetRowSpan\ngetRowSpan\ngetRowSpan\ngetRowSpan"));
         table.addCell(cell);
 
         table.addCell("row1");
@@ -164,7 +164,7 @@ class TableRowSpanEvenSplitTest {
         PdfPTable table = new PdfPTable(2);
         PdfPCell cell = new PdfPCell();
         cell.setRowspan(3);
-        cell.addElement(new Chunk("rowspan\nrowspan\nrowspan\nrowspan\nrowspan\nrowspan\nrowspan"));
+        cell.addElement(new Chunk("getRowSpan\ngetRowSpan\ngetRowSpan\ngetRowSpan\ngetRowSpan\ngetRowSpan\ngetRowSpan"));
         table.addCell(cell);
 
         table.addCell("row1\nrow1\nrow1\nrow1\nrow1\nrow1");

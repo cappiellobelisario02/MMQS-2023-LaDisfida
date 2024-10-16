@@ -639,7 +639,7 @@ public class ByteBuffer extends OutputStream {
      * Converts the buffer's contents into a string, translating bytes into characters according to the specified
      * character encoding.
      *
-     * @param enc a character-encoding name.
+     * @param enc a character-encoding getName.
      * @return String translated from the buffer's contents.
      * @throws UnsupportedEncodingException If the named encoding is not supported.
      */

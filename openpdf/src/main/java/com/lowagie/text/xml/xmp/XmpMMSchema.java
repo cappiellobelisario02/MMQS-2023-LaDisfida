@@ -86,7 +86,7 @@ public class XmpMMSchema extends XmpSchema {
      */
     public static final String MANAGEDFROM = "xmpMM:ManagedFrom";
     /**
-     * The name of the asset management system that manages this resource.
+     * The getName of the asset management system that manages this resource.
      */
     public static final String MANAGER = "xmpMM:Manager";
     /**
@@ -106,7 +106,7 @@ public class XmpMMSchema extends XmpSchema {
      */
     public static final String MANAGERVARIANT = "xmpMM:ManagerVariant";
     /**
-     * The rendition class name for this resource.
+     * The rendition class getName for this resource.
      */
     public static final String RENDITIONCLASS = "xmpMM:RenditionClass";
     /**

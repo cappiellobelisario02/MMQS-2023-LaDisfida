@@ -70,14 +70,14 @@ public class XmpArray extends ArrayList<String> {
     public static final String ALTERNATIVE = "rdf:Alt";
     private static final long serialVersionUID = 5722854116328732742L;
     /**
-     * the type of array.
+     * the getTypeImpl of array.
      */
     protected String type;
 
     /**
      * Creates an XmpArray.
      *
-     * @param type the type of array: UNORDERED, ORDERED or ALTERNATIVE.
+     * @param type the getTypeImpl of array: UNORDERED, ORDERED or ALTERNATIVE.
      */
     public XmpArray(String type) {
         this.type = type;

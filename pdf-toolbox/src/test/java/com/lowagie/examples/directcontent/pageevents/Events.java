@@ -270,8 +270,8 @@ public class Events {
          * We only alter the handling of some endtags.
          *
          * @param uri   the uri of the namespace
-         * @param lname the local name of the tag
-         * @param name  the name of the tag
+         * @param lname the local getName of the tag
+         * @param name  the getName of the tag
          */
         @Override
         public void endElement(String uri, String lname, String name) {
@@ -335,7 +335,7 @@ public class Events {
 
     static class Speaker implements Comparable {
 
-        // name of the speaker
+        // getName of the speaker
         private String name;
 
         // number of occurrences
@@ -349,9 +349,9 @@ public class Events {
         }
 
         /**
-         * Gets the name of the speaker.
+         * Gets the getName of the speaker.
          *
-         * @return a name
+         * @return a getName
          */
         public String getName() {
             return name;

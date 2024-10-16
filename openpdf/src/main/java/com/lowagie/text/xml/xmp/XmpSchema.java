@@ -67,7 +67,7 @@ public abstract class XmpSchema extends Properties {
     /**
      * Constructs an XMP schema.
      *
-     * @param xmlns xml namespace name
+     * @param xmlns xml namespace getName
      */
     protected XmpSchema(String xmlns) {
         super();

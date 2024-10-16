@@ -54,7 +54,7 @@ class ExtractCertificatesTest {
 
     private void extract(String pdf, boolean isExpectedValidTimeStamp) throws Exception {
 
-        System.out.println("pdf name: " + pdf);
+        System.out.println("pdf getName: " + pdf);
 
         KeyStore kall = PdfPKCS7.loadCacertsKeyStore();
 

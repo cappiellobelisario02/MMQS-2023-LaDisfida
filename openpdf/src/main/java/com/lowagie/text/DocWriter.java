@@ -401,7 +401,7 @@ public abstract class DocWriter implements DocListener {
     /**
      * Writes a key-value pair to the outputstream.
      *
-     * @param key   the name of an attribute
+     * @param key   the getName of an attribute
      * @param value the value of an attribute
      * @throws IOException if there is any error
      */
@@ -419,7 +419,7 @@ public abstract class DocWriter implements DocListener {
     /**
      * Writes a starttag to the outputstream.
      *
-     * @param tag the name of the tag
+     * @param tag the getName of the tag
      * @throws IOException if there is any error
      */
 
@@ -432,7 +432,7 @@ public abstract class DocWriter implements DocListener {
     /**
      * Writes an endtag to the outputstream.
      *
-     * @param tag the name of the tag
+     * @param tag the getName of the tag
      * @throws IOException if there is any error
      */
 

@@ -56,14 +56,14 @@ package com.lowagie.text;
 public class ZapfDingbatsNumberList extends List {
 
     /**
-     * which type
+     * which getTypeImpl
      */
     protected int type;
 
     /**
      * Creates a ZapdDingbatsNumberList
      *
-     * @param type the type of list
+     * @param type the getTypeImpl of list
      */
     public ZapfDingbatsNumberList(int type) {
         super(true);
@@ -76,7 +76,7 @@ public class ZapfDingbatsNumberList extends List {
     /**
      * Creates a ZapdDingbatsNumberList
      *
-     * @param type         the type of list
+     * @param type         the getTypeImpl of list
      * @param symbolIndent indent
      */
     public ZapfDingbatsNumberList(int type, int symbolIndent) {
@@ -88,16 +88,16 @@ public class ZapfDingbatsNumberList extends List {
     }
 
     /**
-     * get the type
+     * get the getTypeImpl
      *
      * @return char-number
      */
-    public int getType() {
+    public int getTypeImpl() {
         return type;
     }
 
     /**
-     * set the type
+     * set the getTypeImpl
      *
      * @param type {@link ZapfDingbatsNumberList#type}
      */

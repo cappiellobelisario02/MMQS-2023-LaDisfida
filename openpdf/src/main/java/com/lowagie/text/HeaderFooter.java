@@ -92,7 +92,7 @@ public class HeaderFooter extends Rectangle {
     private Phrase after = null;
 
     /**
-     * This is alignment of the header/footer.
+     * This is getAlignment of the header/footer.
      */
     private int alignment;
 
@@ -203,9 +203,9 @@ public class HeaderFooter extends Rectangle {
     }
 
     /**
-     * Sets the alignment.
+     * Sets the getAlignment.
      *
-     * @param alignment the new alignment
+     * @param alignment the new getAlignment
      */
     public void setAlignment(int alignment) {
         this.alignment = alignment;
@@ -316,11 +316,11 @@ public class HeaderFooter extends Rectangle {
     }
 
     /**
-     * Gets the alignment of this HeaderFooter.
+     * Gets the getAlignment of this HeaderFooter.
      *
-     * @return alignment
+     * @return getAlignment
      */
-    public int alignment() {
+    public int getAlignment() {
         return alignment;
     }
 }

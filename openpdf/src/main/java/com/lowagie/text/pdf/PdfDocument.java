@@ -137,11 +137,11 @@ public class PdfDocument extends Document {
 
 //    [L0] ElementListener interface
     /**
-     * This represents the leading of the lines.
+     * This represents the getLeading of the lines.
      */
     protected float leading = 0;
     /**
-     * This represents the current alignment of the PDF Elements.
+     * This represents the current getAlignment of the PDF Elements.
      */
     protected int alignment = Element.ALIGN_LEFT;
     /**
@@ -155,7 +155,7 @@ public class PdfDocument extends Document {
      */
     protected boolean isSectionTitle = false;
     /**
-     * Signals that the current leading has to be subtracted from a YMark object when positive.
+     * Signals that the current getLeading has to be subtracted from a YMark object when positive.
      *
      * @since 2.1.2
      */
@@ -205,7 +205,7 @@ public class PdfDocument extends Document {
 
     // [C9] Metadata for the page
     /**
-     * Holds the type of the last element, that has been added to the document.
+     * Holds the getTypeImpl of the last element, that has been added to the document.
      */
     protected int lastElementType = -1;
     protected Indentation indentation = new Indentation();
@@ -231,7 +231,7 @@ public class PdfDocument extends Document {
     protected PdfViewerPreferencesImp viewerPreferences = new PdfViewerPreferencesImp();
     protected PdfPageLabels pageLabels;
     /**
-     * Stores the destinations keyed by name. Value is
+     * Stores the destinations keyed by getName. Value is
      * <CODE>Object[]{PdfAction,PdfIndirectReference,PdfDestintion}</CODE>.
      */
     protected TreeMap<String, Object[]> localDestinations = new TreeMap<>();
@@ -399,9 +399,9 @@ public class PdfDocument extends Document {
     }
 
     /**
-     * Getter for the current leading.
+     * Getter for the current getLeading.
      *
-     * @return the current leading
+     * @return the current getLeading
      * @since 2.1.2
      */
     public float getLeading() {
@@ -409,9 +409,9 @@ public class PdfDocument extends Document {
     }
 
     /**
-     * Setter for the current leading.
+     * Setter for the current getLeading.
      *
-     * @param leading the current leading
+     * @param leading the current getLeading
      * @since 2.1.6
      */
     void setLeading(float leading) {
@@ -431,7 +431,7 @@ public class PdfDocument extends Document {
             return false;
         }
         try {
-            boolean result = switch (element.type()) {
+            boolean result = switch (element.getTypeImpl()) {
                 case Element.HEADER, Element.TITLE, Element.SUBJECT, Element.KEYWORDS, Element.AUTHOR, Element.CREATOR,
                      Element.PRODUCER, Element.CREATIONDATE, Element.MODIFICATIONDATE -> handleMetaElement(element);
                 case Element.CHUNK -> handleChunkElement((Chunk) element);
@@ -452,7 +452,7 @@ public class PdfDocument extends Document {
                 case Element.MARKED -> handleMarkedElement((MarkedObject) element);
                 default -> false;
             };
-            lastElementType = element.type();
+            lastElementType = element.getTypeImpl();
             return result;
         } catch (Exception e) {
             throw new DocumentException(e);
@@ -461,7 +461,7 @@ public class PdfDocument extends Document {
 
     private boolean handleMetaElement(Element element) {
         Meta meta = (Meta) element;
-        switch (element.type()) {
+        switch (element.getTypeImpl()) {
             case Element.HEADER:
                 info.addkey(meta.getName(), meta.getContent());
                 break;
@@ -1225,8 +1225,8 @@ public class PdfDocument extends Document {
                     + indentation.sectionIndentLeft;
             text.moveText(moveTextX, -l.height());
             // is the line preceded by a symbol?
-            if (l.listSymbol() != null) {
-                ColumnText.showTextAligned(graphics, Element.ALIGN_LEFT, new Phrase(l.listSymbol()),
+            if (l.listSymbol != null) {
+                ColumnText.showTextAligned(graphics, Element.ALIGN_LEFT, new Phrase(l.listSymbol),
                         text.getXTLM() - l.listIndent(), text.getYTLM(), 0);
             }
 
@@ -1452,8 +1452,6 @@ public class PdfDocument extends Document {
 
         if (separatorCount > 0) {
             adjustGlueWidth(line, params, separatorCount);
-        } else if (params.getJustified()) {
-            lastBaseFactor = handleJustifiedLine(line, lastBaseFactor, ratio, params, lineLen);
         }
 
         return lastBaseFactor;
@@ -1497,7 +1495,7 @@ public class PdfDocument extends Document {
         if (last != null) {
             String s = last.toString();
             char c = s.charAt(s.length() - 1);
-            if (!s.isEmpty() && HANGING_PUNCTUATION.indexOf(c) >= 0) {
+            if (HANGING_PUNCTUATION.indexOf(c) >= 0) {
                 float oldWidth = width;
                 width += last.font().width(c) * 0.4f;
                 params.setHangingCorrection(width - oldWidth);
@@ -1826,7 +1824,7 @@ public class PdfDocument extends Document {
      * Adds extra space. This method should probably be rewritten.
      *
      * @param extraspace extra space
-     * @param oldleading old leading
+     * @param oldleading old getLeading
      * @param f          font
      */
     protected void addSpacing(float extraspace, float oldleading, Font f) {
@@ -1926,14 +1924,14 @@ public class PdfDocument extends Document {
      * Adds a named outline to the document .
      *
      * @param outline the outline to be added
-     * @param name    the name of this local destination
+     * @param name    the getName of this local destination
      */
     void addOutline(PdfOutline outline, String name) {
         localDestination(name, outline.getPdfDestination());
     }
 
     /**
-     * Gets the root outline. All the outlines must be created with a parent. The first level is created with this
+     * Gets the root outline. All the outlines must be created with a getParent. The first level is created with this
      * outline.
      *
      * @return the root outline
@@ -1957,7 +1955,7 @@ public class PdfDocument extends Document {
      */
     void traverseOutlineCount(PdfOutline outline) {
         java.util.List<PdfOutline> kids = outline.getKids();
-        PdfOutline parent = outline.parent();
+        PdfOutline parent = outline.getParent();
         if (kids.isEmpty()) {
             if (parent != null) {
                 parent.setCount(parent.getCount() + 1);
@@ -1995,8 +1993,8 @@ public class PdfDocument extends Document {
      */
     void outlineTree(PdfOutline outline) throws IOException {
         outline.setIndirectReference(writer.getPdfIndirectReference());
-        if (outline.parent() != null) {
-            outline.put(PdfName.PARENT, outline.parent().indirectReference());
+        if (outline.getParent() != null) {
+            outline.put(PdfName.PARENT, outline.getParent().indirectReference());
         }
         java.util.List<PdfOutline> kids = outline.getKids();
         int size = kids.size();
@@ -2045,10 +2043,10 @@ public class PdfDocument extends Document {
     }
 
     /**
-     * Implements a link to other part of the document. The jump will be made to a local destination with the same name,
+     * Implements a link to other part of the document. The jump will be made to a local destination with the same getName,
      * that must exist.
      *
-     * @param name the name for this link
+     * @param name the getName for this link
      * @param llx  the lower left x corner of the activation area
      * @param lly  the lower left y corner of the activation area
      * @param urx  the upper right x corner of the activation area
@@ -2067,7 +2065,7 @@ public class PdfDocument extends Document {
      * Implements a link to another document.
      *
      * @param filename the filename for the remote document
-     * @param name     the name to jump to
+     * @param name     the getName to jump to
      * @param llx      the lower left x corner of the activation area
      * @param lly      the lower left y corner of the activation area
      * @param urx      the upper right x corner of the activation area
@@ -2126,12 +2124,12 @@ public class PdfDocument extends Document {
     }
 
     /**
-     * The local destination to where a local goto with the same name will jump to.
+     * The local destination to where a local goto with the same getName will jump to.
      *
-     * @param name        the name of this local destination
+     * @param name        the getName of this local destination
      * @param destination the <CODE>PdfDestination</CODE> with the jump coordinates
      * @return <CODE>true</CODE> if the local destination was added,
-     * <CODE>false</CODE> if a local destination with the same name
+     * <CODE>false</CODE> if a local destination with the same getName
      * already existed
      */
     boolean localDestination(String name, PdfDestination destination) {
@@ -2234,7 +2232,7 @@ public class PdfDocument extends Document {
     /**
      * Sets the collection dictionary.
      *
-     * @param collection a dictionary of type PdfCollection
+     * @param collection a dictionary of getTypeImpl PdfCollection
      */
     public void setCollection(PdfCollection collection) {
         this.collection = collection;
@@ -2544,7 +2542,7 @@ public class PdfDocument extends Document {
         }
 
         for (Element element : footer.getSpecialContent()) {
-            switch (element.type()) {
+            switch (element.getTypeImpl()) {
                 case Element.JPEG,
                 Element.JPEG2000,
                 Element.JBIG2,
@@ -2556,7 +2554,7 @@ public class PdfDocument extends Document {
                     processTable((PdfPTable) element);
                     break;
                 default:
-                    throw new IllegalArgumentException("Unexpected type: " + element.type());
+                    throw new IllegalArgumentException("Unexpected getTypeImpl: " + element.getTypeImpl());
             }
         }
 
@@ -2626,7 +2624,7 @@ public class PdfDocument extends Document {
         }
 
         image.setRelativeTop(currentHeight); // set the offset relative to the top
-        image.setAlignment(image.getAlignment() | footer.alignment());
+        image.setAlignment(image.getAlignment() | footer.getAlignment());
         footer.addSpecialContent(image);
 
         // add indentation for text
@@ -2684,7 +2682,7 @@ public class PdfDocument extends Document {
             newPage();
         }
         // add dummy paragraph if we aren't at the top of a page, so that
-        // spacingBefore will be taken into account by ColumnText
+        // getSpacingBefore will be taken into account by ColumnText
         if (currentHeight > 0 || ptable.isSkipFirstHeader()) {
             Paragraph p = new Paragraph();
             p.setLeading(0);
@@ -2733,7 +2731,7 @@ public class PdfDocument extends Document {
         setTableWidth(table);
         // ensuring that a new line has been started.
         ensureNewLine();
-        return table.getTotalHeight() + ((currentHeight > 0) ? table.spacingBefore() : 0f)
+        return table.getTotalHeight() + ((currentHeight > 0) ? table.getSpacingBefore() : 0f)
                 <= indentTop() - currentHeight - indentBottom() - 0.0;
     }
 
@@ -2877,7 +2875,7 @@ public class PdfDocument extends Document {
         /**
          * Constructs a <CODE>PdfInfo</CODE>-object.
          *
-         * @param author  name of the author of the document
+         * @param author  getName of the author of the document
          * @param title   title of the document
          * @param subject subject of the document
          */
@@ -2926,9 +2924,9 @@ public class PdfDocument extends Document {
         }
 
         /**
-         * Adds the name of the author to the document.
+         * Adds the getName of the author to the document.
          *
-         * @param author the name of the author
+         * @param author the getName of the author
          */
 
         void addAuthor(String author) {
@@ -2936,9 +2934,9 @@ public class PdfDocument extends Document {
         }
 
         /**
-         * Adds the name of the creator to the document.
+         * Adds the getName of the creator to the document.
          *
-         * @param creator the name of the creator
+         * @param creator the getName of the creator
          */
 
         void addCreator(String creator) {
@@ -2946,16 +2944,16 @@ public class PdfDocument extends Document {
         }
 
         /**
-         * Adds the name of the producer to the document.
+         * Adds the getName of the producer to the document.
          */
         void addProducer() {
             addProducer(getVersion());
         }
 
         /**
-         * Adds the name of the producer to the document.
+         * Adds the getName of the producer to the document.
          *
-         * @param producer name of the producer
+         * @param producer getName of the producer
          */
         void addProducer(final String producer) {
             put(PdfName.PRODUCER, new PdfString(producer));
@@ -3176,19 +3174,19 @@ public class PdfDocument extends Document {
         Map<Integer, Set<PdfCell>> pageCellSetMap = new HashMap<>();
 
         /**
-         * Consumes the rowspan
+         * Consumes the getRowSpan
          *
          * @param c pdf cell
-         * @return a rowspan.
+         * @return a getRowSpan.
          */
         public int consumeRowspan(PdfCell c) {
-            if (c.rowspan() == 1) {
+            if (c.getRowSpan() == 1) {
                 return 1;
             }
 
             Integer i = rowspanMap.get(c);
             if (i == null) {
-                i = c.rowspan();
+                i = c.getRowSpan();
             }
 
             i = i - 1;
@@ -3201,14 +3199,14 @@ public class PdfDocument extends Document {
         }
 
         /**
-         * Looks at the current rowspan.
+         * Looks at the current getRowSpan.
          *
          * @param c cell
-         * @return the current rowspan
+         * @return the current getRowSpan
          */
         public int currentRowspan(PdfCell c) {
             Integer i = rowspanMap.get(c);
-            return Objects.requireNonNullElseGet(i, c::rowspan);
+            return Objects.requireNonNullElseGet(i, c::getRowSpan);
         }
 
         public int cellRendered(PdfCell cell, int pageNumber) {

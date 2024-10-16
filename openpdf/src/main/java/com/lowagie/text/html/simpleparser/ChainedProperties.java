@@ -77,9 +77,9 @@ public class ChainedProperties {
     }
 
     /**
-     * Try find property by its name
+     * Try find property by its getName
      *
-     * @param key property name
+     * @param key property getName
      * @return {@link Optional} containing the value or {@link Optional#empty()} if there is no value or it equals
      * {@code null}
      */
@@ -96,9 +96,9 @@ public class ChainedProperties {
     }
 
     /**
-     * Get property by its name or return default value when property is not present or is <CODE>null</CODE>
+     * Get property by its getName or return default value when property is not present or is <CODE>null</CODE>
      *
-     * @param key          property name
+     * @param key          property getName
      * @param defaultValue default property value
      * @return property or default value if it's null
      */

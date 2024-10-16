@@ -137,7 +137,7 @@ public class FdfWriter {
     /**
      * Removes the field value.
      *
-     * @param field the field name
+     * @param field the field getName
      * @return <CODE>true</CODE> if the field was found and removed,
      * <CODE>false</CODE> otherwise
      */
@@ -194,7 +194,7 @@ public class FdfWriter {
     }
 
     /**
-     * Gets all the fields. The map is keyed by the fully qualified field name and the values are
+     * Gets all the fields. The map is keyed by the fully qualified field getName and the values are
      * <CODE>PdfObject</CODE>.
      *
      * @return a map with all the fields
@@ -257,7 +257,7 @@ public class FdfWriter {
     /**
      * Gets the field value.
      *
-     * @param field the field name
+     * @param field the field getName
      * @return the field value or <CODE>null</CODE> if not found
      */
     public String getField(String field) {
@@ -308,12 +308,12 @@ public class FdfWriter {
     }
 
     /**
-     * Sets the field value as a name.
+     * Sets the field value as a getName.
      *
-     * @param field the fully qualified field name
+     * @param field the fully qualified field getName
      * @param value the value
      * @return <CODE>true</CODE> if the value was inserted,
-     * <CODE>false</CODE> if the name is incompatible with
+     * <CODE>false</CODE> if the getName is incompatible with
      * an existing field
      */
     public boolean setFieldAsName(String field, String value) {
@@ -323,10 +323,10 @@ public class FdfWriter {
     /**
      * Sets the field value as a string.
      *
-     * @param field the fully qualified field name
+     * @param field the fully qualified field getName
      * @param value the value
      * @return <CODE>true</CODE> if the value was inserted,
-     * <CODE>false</CODE> if the name is incompatible with
+     * <CODE>false</CODE> if the getName is incompatible with
      * an existing field
      */
     public boolean setFieldAsString(String field, String value) {
@@ -338,10 +338,10 @@ public class FdfWriter {
      * action using {@link PdfAction#createSubmitForm(String, Object[], int)}. This method creates an <CODE>A</CODE>
      * entry for the specified field in the underlying FDF file. Method contributed by Philippe Laflamme (plaflamme)
      *
-     * @param field  the fully qualified field name
+     * @param field  the fully qualified field getName
      * @param action the field's action
      * @return <CODE>true</CODE> if the value was inserted,
-     * <CODE>false</CODE> if the name is incompatible with
+     * <CODE>false</CODE> if the getName is incompatible with
      * an existing field
      * @since 2.1.5
      */
@@ -350,18 +350,18 @@ public class FdfWriter {
     }
 
     /**
-     * Gets the PDF file name associated with the FDF.
+     * Gets the PDF file getName associated with the FDF.
      *
-     * @return the PDF file name associated with the FDF
+     * @return the PDF file getName associated with the FDF
      */
     public String getFile() {
         return this.file;
     }
 
     /**
-     * Sets the PDF file name associated with the FDF.
+     * Sets the PDF file getName associated with the FDF.
      *
-     * @param file the PDF file name associated with the FDF
+     * @param file the PDF file getName associated with the FDF
      */
     public void setFile(String file) {
         this.file = file;
