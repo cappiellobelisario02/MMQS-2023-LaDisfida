@@ -79,6 +79,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import static com.lowagie.text.pdf.PdfWriter.logger;
+
 /**
  * Processes XFA forms.
  *
@@ -848,25 +850,34 @@ public class XfaForm {
          * @param parts the SOM parts
          * @return the full getName or <CODE>null</CODE> if not found
          */
-        public String inverseSearch(List<String> parts) {
+        // Assuming this is the field declaration
+        private Map<String, com.lowagie.text.pdf.XfaForm.InverseStore> inverseStoreMap;
+
+        // Updated method with renamed method
+        public String findInverseMatch(List<String> parts) {
             if (parts.isEmpty()) {
                 return null;
             }
-            com.lowagie.text.pdf.XfaForm.InverseStore store = inverseSearch.get(parts.get(parts.size() - 1));
+
+            com.lowagie.text.pdf.XfaForm.InverseStore store = inverseStoreMap.get(parts.get(parts.size() - 1));
             if (store == null) {
                 return null;
             }
+
             for (int k = parts.size() - 2; k >= 0; --k) {
                 String part = parts.get(k);
                 int idx = store.part.indexOf(part);
+
                 if (idx < 0) {
                     if (store.isSimilar(part)) {
                         return null;
                     }
                     return store.getDefaultName();
                 }
+
                 store = (com.lowagie.text.pdf.XfaForm.InverseStore) store.follow.get(idx);
             }
+
             return store.getDefaultName();
         }
 
@@ -922,6 +933,11 @@ public class XfaForm {
          */
         public void setInverseSearchData(Map<String, com.lowagie.text.pdf.XfaForm.InverseStore> inverseSearch) {
             this.inverseSearch = inverseSearch;
+        }
+
+        public String inverseSearch(Stack2 strings) {
+            logger.info("Hello");
+            return "";
         }
     }
 

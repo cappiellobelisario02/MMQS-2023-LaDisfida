@@ -1307,11 +1307,14 @@ public class PdfSignatureAppearance {
     private ByteBuffer createByteBuffer() {
         try {
             return new ByteBuffer();
-        } catch (NullPointerException e) {
-            logger.info("ByteBuffer error: " + e.getMessage());
-            return null;
+        } catch (Exception e) {
+            // Log a general error without revealing specific details
+            logger.warning("Failed to create ByteBuffer due to an unexpected error.");
+            // You may choose to log the exception at a different level if needed, but avoid exposing details
+            return null; // Return null or handle as appropriate
         }
     }
+
 
     /**
      * This is the last method to be called when using external signatures. The general sequence is: preClose(),

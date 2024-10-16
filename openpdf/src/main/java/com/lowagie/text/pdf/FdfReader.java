@@ -112,14 +112,20 @@ public class FdfReader extends PdfReader {
             rebuildXref();
             readDocObj();
         } finally {
+            // Attempt to close tokens and handle specific exceptions
             try {
                 tokens.close();
+            } catch (IOException e) {
+                // Handle IOException specifically
+                logger.info("IOException while closing tokens: " + e.getMessage());
             } catch (Exception e) {
-                // empty on purpose
+                // Handle any other unexpected exceptions
+                logger.info("Unexpected exception while closing tokens: " + e.getMessage());
             }
         }
         readFields();
     }
+
 
     protected void kidNode(PdfDictionary merged, String name) {
         PdfArray kids = merged.getAsArray(PdfName.KIDS);

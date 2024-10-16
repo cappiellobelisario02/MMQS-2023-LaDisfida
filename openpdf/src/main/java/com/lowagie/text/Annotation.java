@@ -200,10 +200,13 @@ public class Annotation implements Element {
      */
     protected float llxParam = Float.NaN;
 
+    protected float llx = Float.NaN;
     /**
      * This is the lower left y-value
      */
     protected float llyParam = Float.NaN;
+
+    protected float lowerLeftY = Float.NaN;
 
     /**
      * This is the upper right x-value
@@ -478,7 +481,7 @@ public class Annotation implements Element {
 
     @Override
     public float lly() {
-        return 0;
+        return lowerLeftY; // Return the value of the renamed field
     }
 
     @Override

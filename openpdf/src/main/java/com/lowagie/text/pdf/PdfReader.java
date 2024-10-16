@@ -106,7 +106,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     int lengthValue;
     int cryptoMode;
 
-    private static final Logger logger = Logger.getLogger(com.lowagie.text.pdf.PdfReader.class.getName());
+    public static final Logger logger = Logger.getLogger(com.lowagie.text.pdf.PdfReader.class.getName());
 
     static final PdfName[] pageInhCandidates = {PdfName.MEDIABOX,
             PdfName.ROTATE, PdfName.RESOURCES, PdfName.CROPBOX};
@@ -1472,11 +1472,13 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 tokens.close();
             } catch (IOException exc) {
-                logger.info("Error closing tokens: " + exc.getMessage());
+                // Log a generic error message instead of the specific exception message
+                logger.warning("Failed to close tokens after readPdfPartial error."); // Use warning or error based on severity
             }
-            throw e;
+            throw e; // Re-throw the original exception without additional logging
         }
     }
+
 
     void readAndRebuildXRef() throws InvalidPdfException {
         try {
@@ -3996,11 +3998,16 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param appendable New value of property appendable.
      */
     public void setAppendable(boolean appendable) {
-        this.appendable = appendable;
-        if (appendable) {
-            getPdfObject(trailer.get(PdfName.ROOT));
+        // Check if the new value is different from the old value
+        if (this.appendable != appendable) {
+            this.appendable = appendable;
+            // Execute this block only if the new value is true
+            if (appendable) {
+                getPdfObject(trailer.get(PdfName.ROOT));
+            }
         }
     }
+
 
     /**
      * Getter for property newXrefType.

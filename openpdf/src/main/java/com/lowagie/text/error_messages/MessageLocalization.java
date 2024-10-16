@@ -77,18 +77,17 @@ public final class MessageLocalization {
 
     static {
         try {
+            // Get the language messages, handle potential IOException
             defaultLanguage = getLanguageMessages("en", null);
-        } catch (IOException ex) {
-            logger.info("Error reading language messages: ");
-        } catch (NullPointerException ex) {
-            logger.info("Null pointer exception occurred: ");
-        } finally {
-            if (defaultLanguage == null) {
+            if (defaultLanguage == null || defaultLanguage.isEmpty()) {
+                logger.warning("Default language messages are empty or null after loading.");
                 defaultLanguage = new HashMap<>();
             }
+        } catch (IOException ex) {
+            logger.severe("Error reading language messages: " + ex.getMessage());
+            defaultLanguage = new HashMap<>();
         }
     }
-
 
     private MessageLocalization() {
     }

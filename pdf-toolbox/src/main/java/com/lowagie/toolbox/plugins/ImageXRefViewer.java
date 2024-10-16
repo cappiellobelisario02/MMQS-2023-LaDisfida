@@ -111,13 +111,38 @@ public class ImageXRefViewer extends AbstractTool {
      * @param args String[]
      */
     public static void main(String[] args) {
+        // Check if running in a development environment
+        if (isDevelopmentEnvironment()) {
+            System.out.println("Running in development mode.");
+        } else {
+            System.out.println("Running in production mode.");
+        }
+
         ImageXRefViewer tool = new ImageXRefViewer();
         if (args.length < 1) {
-            logger.severe(tool.getUsage());
+            // Instead of logging an error, we can handle the missing argument gracefully.
+            System.err.println("Usage: " + tool.getUsage());
+            System.exit(1);  // Exit with an error code
         }
-        tool.setMainArguments(args);
-        tool.execute();
+
+        try {
+            tool.setMainArguments(args);
+            tool.execute();
+        } catch (Exception e) {
+            // Handle exceptions that may arise during execution
+            System.err.println("An error occurred: " + e.getMessage());
+            e.printStackTrace();  // Print stack trace for debugging, if needed
+            System.exit(1);  // Exit with an error code
+        }
     }
+
+    // Helper method to determine if the application is running in a development environment
+    private static boolean isDevelopmentEnvironment() {
+        // You could use a system property, environment variable, or configuration setting
+        String env = System.getenv("APP_ENV");  // Example: check environment variable
+        return "development".equalsIgnoreCase(env);
+    }
+
 
     /**
      * @return File

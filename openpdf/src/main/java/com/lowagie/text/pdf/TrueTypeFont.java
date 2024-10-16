@@ -64,6 +64,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.ibm.icu.util.ULocale.getBaseName;
+import static com.lowagie.text.pdf.PdfWriter.logger;
 
 
 /**
@@ -1478,11 +1479,16 @@ class TrueTypeFont extends BaseFont {
             rf2.reOpen();
             rf2.seek(cffOffset);
             rf2.readFully(b);
+        } catch (IOException e) {
+            // Log the IOException and rethrow to ensure it is not ignored
+            logger.info("IOException occurred while reading CFF font: " + e.getMessage());
+            throw e; // Rethrow the exception to allow upstream handling
         } finally {
             try {
                 rf2.close();
-            } catch (Exception e) {
-                // empty on purpose
+            } catch (IOException e) {
+                // Log the exception for the closing action
+                logger.info("Failed to close RandomAccessFileOrArray: " + e.getMessage());
             }
         }
         return b;

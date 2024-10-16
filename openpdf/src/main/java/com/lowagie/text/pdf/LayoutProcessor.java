@@ -402,13 +402,10 @@ public class LayoutProcessor {
      * @return layout position correction to correct the start of the next line
      */
     public static Point2D showText(PdfContentByte cb, BaseFont baseFont, float fontSize, String text) {
-
-        if (com.lowagie.text.pdf.LayoutProcessor.version == com.lowagie.text.pdf.LayoutProcessor.Version.ONE) {
-            return showText1(cb, baseFont, fontSize, text);
-        } else {
-            return showText2(cb, baseFont, fontSize, text);
-        }
+        // Directly use showText2() assuming it handles all necessary functionality
+        return showText2(cb, baseFont, fontSize, text);
     }
+
 
 
     private static void completeCmap(PdfContentByte cb, BaseFont baseFont, String text, GlyphVector glyphVector) {

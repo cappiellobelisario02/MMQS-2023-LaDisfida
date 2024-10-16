@@ -60,6 +60,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import static com.lowagie.text.pdf.PdfStamperImp.logger;
+
 
 /**
  * A generic Document class.
@@ -114,7 +116,7 @@ public class Document implements DocListener {
      * When true the file access is not done through a memory mapped file. Use it if the file is too big to be mapped in
      * your address space.
      */
-    public static boolean plainRandomAccess = false;
+    public static final boolean plainRandomAccess = false;
     /**
      * Scales the WMF font size. The default value is 0.86.
      */
@@ -252,11 +254,13 @@ public class Document implements DocListener {
                 prop.load(input);
                 releaseVersion = prop.getProperty("bundleVersion", releaseVersion);
             }
-        } catch (IOException ignored) {
-            // ignore this and leave the default
+        } catch (IOException e) {
+            logger.info("Failed to load version properties: " + e.getMessage());
+            // Optionally, try to get the version from another source or set a default
         }
         return releaseVersion;
     }
+
 
     // listener methods
 

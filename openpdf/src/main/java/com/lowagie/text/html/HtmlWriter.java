@@ -80,6 +80,7 @@ import com.lowagie.text.exceptions.AddCellException;
 import com.lowagie.text.pdf.BaseFont;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Date;
 import java.util.Deque;
@@ -501,35 +502,31 @@ public class HtmlWriter extends DocWriter {
         addTabs(2);
         writeStart(HtmlTags.SCRIPT);
         write(HtmlTags.LANGUAGE, HtmlTags.JAVASCRIPT);
+
         if (!markup.isEmpty()) {
-            /* JavaScript reference example:
-             *
-             * <script language="JavaScript" src="/myPath/MyFunctions.js"/>
-             */
+            // JavaScript reference example:
+            // <script language="JavaScript" src="/myPath/MyFunctions.js"/>
             writeMarkupAttributes(markup);
             os.write(GT);
             writeEnd(HtmlTags.SCRIPT);
         } else {
-            /* JavaScript coding convention:
-             *
-             * <script language="JavaScript" getTypeImpl="text/javascript">
-             * <!--
-             * // ... JavaScript methods ...
-             * //-->
-             * </script>
-             */
+            // JavaScript coding convention:
+            // <script language="JavaScript" type="text/javascript">
+            // <!--
+            // // ... JavaScript methods ...
+            // //-->
+            // </script>
             write(HtmlTags.TYPE, Markup.HTML_VALUE_JAVASCRIPT);
             os.write(GT);
             addTabs(2);
-            write(new String(BEGINCOMMENT) + "\n");
+            write(new String(BEGINCOMMENT, StandardCharsets.UTF_8) + "\n"); // Specify UTF-8 encoding
             write(header.getContent());
             addTabs(2);
-            write("//" + new String(ENDCOMMENT));
+            write("//" + new String(ENDCOMMENT, StandardCharsets.UTF_8)); // Specify UTF-8 encoding
             addTabs(2);
             writeEnd(HtmlTags.SCRIPT);
         }
     }
-
     /**
      * Writes some comment.
      * <p>

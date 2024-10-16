@@ -60,6 +60,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.lowagie.text.pdf.PdfWriter.logger;
+
 /**
  * Supports text, combo and list fields generating the correct appearances. All the option in the Acrobat GUI are
  * supported in an easy to use API.
@@ -364,7 +366,6 @@ public class TextField extends BaseField {
     }
 
     private void handleMultilineText(PdfAppearance app, BaseFont ufont, int rtl, Phrase phrase) throws DocumentException {
-        //float width = box.getWidth() - 4 * offsetX - extraMarginLeft
         float factor = ufont.getFontDescriptor(BaseFont.BBOXURY, 1) - ufont.getFontDescriptor(BaseFont.BBOXLLY, 1);
         ColumnText ct = new ColumnText(null);
         float usize = calculateOptimalFontSizeForMultiline(factor, ct, phrase, rtl);
@@ -376,12 +377,18 @@ public class TextField extends BaseField {
         ct.setAlignment(getTextAlignment(rtl));
         ct.setRunDirection(rtl);
         ct.setText(phrase);
+
         try {
             ct.go();
         } catch (IOException e) {
-            //may need some logging or some other operation
+            // Log the exception and provide context for debugging
+            logger.info("IOException occurred while handling multiline text: " + e.getMessage());
+
+            // Optional: Re-throw or handle the exception based on your application's needs
+            throw new DocumentException();
         }
     }
+
 
     private float calculateOptimalFontSizeForMultiline(float factor, ColumnText ct, Phrase phrase, int rtl) throws DocumentException {
         float usize = fontSize;

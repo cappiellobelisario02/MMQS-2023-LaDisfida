@@ -128,7 +128,7 @@ public class MappedRandomAccessFile implements AutoCloseable {
     }
 
     private static boolean cleanJava11(final ByteBuffer buffer) {
-        Boolean success = Boolean.FALSE;
+        boolean success = false;  // Changed to a primitive boolean
         try {
             MethodHandles.Lookup lookup = MethodHandles.lookup();
             Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
@@ -137,12 +137,15 @@ public class MappedRandomAccessFile implements AutoCloseable {
             MethodHandle invokeCleanerMethod = lookup.findVirtual(unsafeClass, "invokeCleaner",
                     MethodType.methodType(void.class, ByteBuffer.class));
             invokeCleanerMethod.invoke(theUnsafe, buffer);
-            success = Boolean.TRUE;
-        } catch (Throwable ignore) {
-            // Ignore
+            success = true;  // Set success to true if cleaning was successful
+        } catch (Throwable e) {
+            // Log the exception for debugging purposes
+            System.err.println("Failed to clean ByteBuffer: " + e.getMessage());
+            e.printStackTrace();  // Print stack trace for further investigation
         }
-        return success;
+        return success;  // Return success status
     }
+
 
     /**
      * initializes the channel and mapped bytebuffer

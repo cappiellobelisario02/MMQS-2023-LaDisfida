@@ -53,8 +53,11 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.ActionException;
 import com.lowagie.text.pdf.collection.PdfTargetDictionary;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.List;
+
+import static com.lowagie.text.pdf.PdfWriter.logger;
 
 /**
  * A <CODE>PdfAction</CODE> defines an action that can be triggered from a PDF file.
@@ -341,6 +344,7 @@ public class PdfAction extends PdfDictionary {
     public static PdfAction javaScript(String code, PdfWriter writer, boolean unicode) {
         PdfAction js = new PdfAction();
         js.put(PdfName.S, PdfName.JAVASCRIPT);
+
         if (unicode && code.length() < 50) {
             js.put(PdfName.JS, new PdfString(code, PdfObject.TEXT_UNICODE));
         } else if (!unicode && code.length() < 100) {
@@ -352,12 +356,24 @@ public class PdfAction extends PdfDictionary {
                 PdfStream stream = new PdfStream(b);
                 stream.flateCompress(writer.getCompressionLevel());
                 js.put(PdfName.JS, writer.addToBody(stream).getIndirectReference());
-            } catch (Exception e) {
+            } catch (UnsupportedEncodingException e) {
+                // Handle specific exception for unsupported encoding
                 js.put(PdfName.JS, new PdfString(code));
+                logger.info("Unsupported encoding for JavaScript code: " + e.getMessage());
+            } catch (IOException e) {
+                // Handle IO exceptions specifically
+                js.put(PdfName.JS, new PdfString(code));
+                logger.info("IO error while processing JavaScript code: " + e.getMessage());
+            } catch (Exception e) {
+                // Catch all other exceptions, if necessary
+                js.put(PdfName.JS, new PdfString(code));
+                logger.info("An unexpected error occurred while creating JavaScript: " + e.getMessage());
             }
         }
+
         return js;
     }
+
 
     /**
      * Creates a JavaScript action. If the JavaScript is smaller than 50 characters it will be place as a string,

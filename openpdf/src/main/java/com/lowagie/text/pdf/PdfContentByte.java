@@ -1623,11 +1623,17 @@ public class PdfContentByte {
      */
     public void reset(boolean validateContent) {
         content.reset();
+
+        // Debugging statement to log the value of validateContent
+        logger.info("Resetting content with validateContent set to: " + validateContent);
+
         if (validateContent) {
             sanityCheck();
         }
+
         state = new GraphicState();
     }
+
 
     /**
      * Starts the writing of text.

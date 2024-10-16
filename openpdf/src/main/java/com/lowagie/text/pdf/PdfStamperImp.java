@@ -738,8 +738,11 @@ public class PdfStamperImp extends PdfWriter {
         readers2file.remove(reader);
         try {
             raf.close();
-        } catch (Exception ignored) {
-//da vedere come effettuare il log
+        } catch (IOException e) {
+            logger.info("Error closing RandomAccessFileOrArray for reader: {}");
+        } catch (Exception e) {
+            // Handle any unexpected exceptions that should not occur
+            logger.info("Unexpected exception occurred while closing reader: {}");
         }
     }
 

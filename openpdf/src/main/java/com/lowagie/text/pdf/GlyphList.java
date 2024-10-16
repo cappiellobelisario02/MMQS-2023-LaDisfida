@@ -74,20 +74,14 @@ public class GlyphList {
             is = BaseFont.getResourceStream(BaseFont.RESOURCE_PATH + "glyphlist.txt",
                     FontsResourceAnchor.class.getClassLoader());
             if (is == null) {
-                String msg = "glyphlist.txt not found as resource. (It must exist as resource in the package com.lowagie.text.pdf.fonts)";
-                throw new GlyphListNotFoundException(msg);
+                throw new GlyphListNotFoundException("glyphlist.txt not found as resource.");
             }
             byte[] buf = new byte[1024];
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            while (true) {
-                int size = is.read(buf);
-                if (size < 0) {
-                    break;
-                }
+            int size;
+            while ((size = is.read(buf)) != -1) {
                 out.write(buf, 0, size);
             }
-            is.close();
-            is = null;
             String s = PdfEncodings.convertToString(out.toByteArray(), null);
             StringTokenizer tk = new StringTokenizer(s, "\r\n");
             while (tk.hasMoreTokens()) {
@@ -96,22 +90,21 @@ public class GlyphList {
                     continue;
                 }
                 StringTokenizer t2 = new StringTokenizer(line, " ;\r\n\t\f");
-                String name;
-                String hex;
                 if (!t2.hasMoreTokens()) {
                     continue;
                 }
-                name = t2.nextToken();
+                String name = t2.nextToken();
                 if (!t2.hasMoreTokens()) {
                     continue;
                 }
-                hex = t2.nextToken();
+                String hex = t2.nextToken();
                 Integer num = Integer.valueOf(hex, 16);
                 unicode2names.put(num, name);
                 names2unicode.put(name, new int[]{num});
             }
         } catch (IOException e) {
-            logger.info("glyphlist.txt loading error");
+            // Log a generic message without exposing sensitive information
+            logger.warning("An error occurred while loading the glyph list.");
         } finally {
             if (is != null) {
                 try {
@@ -122,6 +115,7 @@ public class GlyphList {
             }
         }
     }
+
 
     public static int[] nameToUnicode(String name) {
         return names2unicode.get(name);

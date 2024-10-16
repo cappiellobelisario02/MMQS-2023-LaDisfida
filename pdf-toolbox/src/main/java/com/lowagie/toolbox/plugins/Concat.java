@@ -90,12 +90,25 @@ public class Concat extends AbstractTool {
      */
     public static void main(String[] args) {
         com.lowagie.toolbox.plugins.Concat tool = new com.lowagie.toolbox.plugins.Concat();
+
+        // Check for the correct number of arguments and provide usage instructions if not met
         if (args.length < 2) {
-            logger.severe(tool.getUsage());
+            // Using a standard exit code for indicating improper usage
+            System.err.println("Error: Insufficient arguments provided.");
+            System.err.println(tool.getUsage());
+            System.exit(1); // Exit with an error code
         }
-        tool.setMainArguments(args);
-        tool.execute();
+
+        try {
+            tool.setMainArguments(args);
+            tool.execute();
+        } catch (Exception e) {
+            // Handle any exceptions that occur during execution
+            System.err.println("An error occurred while executing the tool: " + e.getMessage());
+            System.exit(1); // Exit with an error code
+        }
     }
+
 
     /**
      * @see com.lowagie.toolbox.AbstractTool#createFrame()

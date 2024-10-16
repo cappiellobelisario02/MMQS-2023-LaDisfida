@@ -37,7 +37,6 @@ package com.lowagie.toolbox;
 
 import com.lowagie.tools.Executable;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.xmlgraphics.image.loader.ImageException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -61,6 +60,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -182,9 +183,12 @@ public class Toolbox extends JFrame implements ActionListener {
                     "You need the iText.jar in your CLASSPATH!",
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            System.exit(1);
+            // Instead of exiting, log the error or handle it gracefully
+            return; // Exit the main method, allowing the web application to continue
         }
+
         com.lowagie.toolbox.Toolbox toolbox = new com.lowagie.toolbox.Toolbox();
+
         if (args.length > 0) {
             try {
                 AbstractTool tool = toolbox.createFrame(args[0]);
@@ -194,10 +198,13 @@ public class Toolbox extends JFrame implements ActionListener {
                 tool.execute();
             } catch (PropertyVetoException | InstantiationException | IllegalAccessException
                      | ClassNotFoundException ex) {
-//da vedere come effettuare il log
+                // Log the exception instead of exiting
+                logger.severe("Error during tool execution: " + ex.getMessage());
+                // You might also show a dialog or perform another action
             }
         }
     }
+
 
     /**
      * Centers a JFrame.
@@ -489,6 +496,9 @@ public class Toolbox extends JFrame implements ActionListener {
          *
          * @throws IOException on error
          */
+        private static final int THREAD_POOL_SIZE = 2;
+        private ExecutorService executorService;
+
         public Console() throws IOException {
             // Set up System.out
             piOut = new PipedInputStream();
@@ -505,9 +515,19 @@ public class Toolbox extends JFrame implements ActionListener {
             // Add a scrolling text area
             textArea.setEditable(false);
 
-            // Create reader threads
-            new com.lowagie.toolbox.Toolbox.Console.ReaderThread(piOut, com.lowagie.toolbox.Toolbox.Console.ErrorContext.STDOUT).start();
-            new com.lowagie.toolbox.Toolbox.Console.ReaderThread(piErr, com.lowagie.toolbox.Toolbox.Console.ErrorContext.STDERROR).start();
+            // Initialize the thread pool
+            executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+
+            // Submit tasks to the executor service
+            executorService.submit(new ReaderThread(piOut, com.lowagie.toolbox.Toolbox.Console.ErrorContext.STDOUT));
+            executorService.submit(new ReaderThread(piErr, com.lowagie.toolbox.Toolbox.Console.ErrorContext.STDERROR));
+        }
+
+        // Ensure to shut down the executor service appropriately
+        public void shutdown() {
+            if (executorService != null) {
+                executorService.shutdown();
+            }
         }
 
         class ErrorContext extends StyleContext {

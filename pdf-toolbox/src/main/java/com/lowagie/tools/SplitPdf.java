@@ -82,29 +82,29 @@ public class SplitPdf{
      */
     public static void main(String[] args) {
         if (args.length != 4) {
-            logger.severe("arguments: srcfile destfile1 destfile2 pagenumber");
-            return;
+            System.err.println("Usage: srcfile destfile1 destfile2 pagenumber");
+            System.exit(1); // Exit with an error code
         }
 
         String srcFile = args[0];
         String destFile1 = args[1];
         String destFile2 = args[2];
-        int pageNumber;
+        int pageNumber = 0;
 
         try {
             pageNumber = Integer.parseInt(args[3]);
         } catch (NumberFormatException e) {
-            logger.severe("Invalid page number: " + args[3]);
-            return;
+            System.err.println("Invalid page number: " + args[3]);
+            System.exit(1); // Exit with an error code
         }
 
-        // Validazione e normalizzazione dei percorsi dei file
+        // Validate and normalize file paths
         try {
             Path srcFilePath = validateAndNormalizePath(srcFile);
             Path destFilePath1 = validateAndNormalizePath(destFile1);
             Path destFilePath2 = validateAndNormalizePath(destFile2);
 
-            // Usa i percorsi normalizzati
+            // Use normalized paths
             try (PdfReader reader = new PdfReader(srcFilePath.toString())) {
                 validatePageNumber(reader, pageNumber);
                 logTotalPages(reader);
@@ -123,11 +123,14 @@ public class SplitPdf{
                 }
             }
         } catch (InvalidPathException | SecurityException e) {
-            logger.severe("Invalid file path: " + e.getMessage());
+            System.err.println("Invalid file path: " + e.getMessage());
+            System.exit(1); // Exit with an error code
         } catch (Exception e) {
-            logger.severe("Error occurred: " + e.getMessage());
+            System.err.println("An error occurred while processing the PDF: " + e.getMessage());
+            System.exit(1); // Exit with an error code
         }
     }
+
 
     // Metodo per validare e normalizzare i percorsi dei file
     private static Path validateAndNormalizePath(String filePath) throws InvalidPathException, SecurityException {
