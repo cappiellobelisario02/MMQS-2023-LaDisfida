@@ -165,7 +165,7 @@ public interface Element {
      */
     int ANCHOR = 17;
 
-    // static membervariables (tables)
+    // static member variables (tables)
 
     /**
      * This is a possible getTypeImpl of <CODE>Element</CODE>.
@@ -187,14 +187,14 @@ public interface Element {
      */
     int PTABLE = 23;
 
-    // static membervariables (annotations)
+    // static member variables (annotations)
 
     /**
      * This is a possible getTypeImpl of <CODE>Element</CODE>.
      */
     int ANNOTATION = 29;
 
-    // static membervariables (geometric figures)
+    // static member variables (geometric figures)
 
     /**
      * This is a possible getTypeImpl of <CODE>Element</CODE>.
@@ -250,7 +250,7 @@ public interface Element {
      */
     int FOOTNOTE = 56;
 
-    // static membervariables (getAlignment)
+    // static member variables (getAlignment)
 
     /**
      * A possible value for paragraph getAlignment. This specifies that the text is aligned to the left indent and extra
@@ -394,13 +394,6 @@ public interface Element {
      */
 
     ArrayList<Element> getChunks();
-
-    /**
-     * Gets the content of the text element.
-     *
-     * @return a getTypeImpl
-     */
-    int getTypeImpl();
 
     @Override
     String toString();
