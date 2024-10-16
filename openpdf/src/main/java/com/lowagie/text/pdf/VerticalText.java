@@ -57,7 +57,7 @@ import java.util.Iterator;
 
 /**
  * Writes text vertically. Note that the naming is done according to horizontal text although it refers to vertical
- * text. A line with the alignment Element.LEFT_ALIGN will actually be top aligned.
+ * text. A line with the getAlignment Element.LEFT_ALIGN will actually be top aligned.
  */
 public class VerticalText {
 
@@ -82,7 +82,7 @@ public class VerticalText {
     protected PdfContentByte text;
 
     /**
-     * The column alignment. Default is left alignment.
+     * The column getAlignment. Default is left getAlignment.
      */
     protected int alignment = Element.ALIGN_LEFT;
 
@@ -102,7 +102,7 @@ public class VerticalText {
     protected String splittedChunkText;
 
     /**
-     * The leading
+     * The getLeading
      */
     protected float leading;
 
@@ -402,18 +402,18 @@ public class VerticalText {
     }
 
     /**
-     * Gets the alignment.
+     * Gets the getAlignment.
      *
-     * @return the alignment
+     * @return the getAlignment
      */
     public int getAlignment() {
         return alignment;
     }
 
     /**
-     * Sets the alignment.
+     * Sets the getAlignment.
      *
-     * @param alignment the alignment
+     * @param alignment the getAlignment
      */
     public void setAlignment(int alignment) {
         this.alignment = alignment;

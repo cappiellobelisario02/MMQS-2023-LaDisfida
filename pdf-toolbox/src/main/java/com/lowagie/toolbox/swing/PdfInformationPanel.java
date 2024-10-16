@@ -62,7 +62,7 @@ public class PdfInformationPanel extends JPanel implements PropertyChangeListene
     private static final long serialVersionUID = -4171577284617028707L;
 
     /**
-     * The file name of the PDF we're going to label.
+     * The file getName of the PDF we're going to label.
      */
     String filename = "";
 

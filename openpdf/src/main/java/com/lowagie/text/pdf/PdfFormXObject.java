@@ -50,7 +50,7 @@
 package com.lowagie.text.pdf;
 
 /**
- * <CODE>PdfFormObject</CODE> is a type of XObject containing a template-object.
+ * <CODE>PdfFormObject</CODE> is a getTypeImpl of XObject containing a template-object.
  */
 
 public class PdfFormXObject extends PdfStream {

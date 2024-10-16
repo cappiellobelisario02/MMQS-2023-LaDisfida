@@ -153,7 +153,7 @@ public class PdfVersionImp implements PdfVersion {
     }
 
     /**
-     * Returns the PDF version as a name.
+     * Returns the PDF version as a getName.
      *
      * @param version the version character.
      * @return a PdfName that contains the version

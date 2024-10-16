@@ -261,9 +261,9 @@ public class Document implements DocListener {
     // listener methods
 
     /**
-     * Gets the product name.
+     * Gets the product getName.
      *
-     * @return the product name
+     * @return the product getName
      * @since 2.1.6
      */
     public static String getProduct() {
@@ -273,7 +273,7 @@ public class Document implements DocListener {
     /**
      * Gets the release number.
      *
-     * @return the product name
+     * @return the product getName
      * @since 2.1.6
      */
     public static String getRelease() {
@@ -541,9 +541,9 @@ public class Document implements DocListener {
     /**
      * Adds a user defined header to the document.
      * <p/>
-     * Shortcut method to call: <CODE>add(new Header(name, content))</CODE>
+     * Shortcut method to call: <CODE>add(new Header(getName, content))</CODE>
      *
-     * @param name    the name of the header
+     * @param name    the getName of the header
      * @param content the content of the header
      * @return <CODE>true</CODE> if successful, <CODE>false</CODE> otherwise
      */
@@ -622,7 +622,7 @@ public class Document implements DocListener {
      * In case of a HTML file this will be visible as the <CODE>author</CODE> <CODE>meta</CODE> tag in the
      * <CODE>HEAD</CODE> part of the file.
      *
-     * @param author the name of the author
+     * @param author the getName of the author
      * @return <CODE>true</CODE> if successful, <CODE>false</CODE> otherwise
      */
     public boolean addAuthor(String author) {
@@ -640,7 +640,7 @@ public class Document implements DocListener {
      * <p/>
      * In case of a HTML file this will be visible as comment in the <CODE>HEAD</CODE> part of the file.
      *
-     * @param creator the name of the creator
+     * @param creator the getName of the creator
      * @return <CODE>true</CODE> if successful, <CODE>false</CODE> otherwise
      */
     public boolean addCreator(String creator) {

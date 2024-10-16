@@ -64,7 +64,7 @@ import java.util.Set;
  * must be a
  * <CODE>PdfName</CODE>.
  * A value can be any kind of <CODE>PdfObject</CODE>, including a dictionary. A dictionary is generally used to collect
- * and tie together the attributes of a complex object, with each key-value pair specifying the name and value of an
+ * and tie together the attributes of a complex object, with each key-value pair specifying the getName and value of an
  * attribute.<BR> A dictionary is represented by two left angle brackets ({@literal <<}), followed by a sequence of
  * key-value pairs, followed by two right angle brackets ({@literal >>}).<BR> This object is described in the 'Portable
  * Document Format Reference Manual version 1.7' section 3.2.6 (page 59-60).
@@ -78,27 +78,27 @@ public class PdfDictionary extends PdfObject {
     // CONSTANTS
 
     /**
-     * This is a possible type of dictionary
+     * This is a possible getTypeImpl of dictionary
      */
     public static final PdfName FONT = PdfName.FONT;
 
     /**
-     * This is a possible type of dictionary
+     * This is a possible getTypeImpl of dictionary
      */
     public static final PdfName OUTLINES = PdfName.OUTLINES;
 
     /**
-     * This is a possible type of dictionary
+     * This is a possible getTypeImpl of dictionary
      */
     public static final PdfName PAGE = PdfName.PAGE;
 
     /**
-     * This is a possible type of dictionary
+     * This is a possible getTypeImpl of dictionary
      */
     public static final PdfName PAGES = PdfName.PAGES;
 
     /**
-     * This is a possible type of dictionary
+     * This is a possible getTypeImpl of dictionary
      */
     public static final PdfName CATALOG = PdfName.CATALOG;
 
@@ -108,7 +108,7 @@ public class PdfDictionary extends PdfObject {
      */
     protected Map<PdfName, PdfObject> hashMap;
     /**
-     * This is the type of this dictionary
+     * This is the getTypeImpl of this dictionary
      */
     private PdfName dictionaryType = null;
 
@@ -123,7 +123,7 @@ public class PdfDictionary extends PdfObject {
     }
 
     /**
-     * Constructs a <CODE>PdfDictionary</CODE>-object of a certain type.
+     * Constructs a <CODE>PdfDictionary</CODE>-object of a certain getTypeImpl.
      *
      * @param type a <CODE>PdfName</CODE>
      */
@@ -152,7 +152,7 @@ public class PdfDictionary extends PdfObject {
             PdfName pdfName = entry.getKey();
             PdfObject value = entry.getValue();
             pdfName.toPdf(writer, os);
-            int type = value.type();
+            int type = value.getTypeImpl();
             if (type != PdfObject.ARRAY && type != PdfObject.DICTIONARY && type != PdfObject.NAME
                     && type != PdfObject.STRING) {
                 os.write(' ');
@@ -167,7 +167,7 @@ public class PdfDictionary extends PdfObject {
      * Returns a string representation of this <CODE>PdfDictionary</CODE>.
      * <p>
      * The string doesn't contain any of the content of this dictionary. Rather the string "dictionary" is returned,
-     * possibly followed by the type of this <CODE>PdfDictionary</CODE>, if set.
+     * possibly followed by the getTypeImpl of this <CODE>PdfDictionary</CODE>, if set.
      *
      * @return the string representation of this <CODE>PdfDictionary</CODE>
      * @see com.lowagie.text.pdf.PdfObject#toString()
@@ -177,7 +177,7 @@ public class PdfDictionary extends PdfObject {
         if (get(PdfName.TYPE_CONST) == null) {
             return "Dictionary";
         }
-        return "Dictionary of type: " + get(PdfName.TYPE_CONST);
+        return "Dictionary of getTypeImpl: " + get(PdfName.TYPE_CONST);
     }
 
     // DICTIONARY contentMethod METHODS
@@ -320,7 +320,7 @@ public class PdfDictionary extends PdfObject {
     // DICTIONARY TYPE METHODS
 
     /**
-     * Checks if a <CODE>Dictionary</CODE> is of the type FONT.
+     * Checks if a <CODE>Dictionary</CODE> is of the getTypeImpl FONT.
      *
      * @return <CODE>true</CODE> if it is, otherwise <CODE>false</CODE>.
      */
@@ -329,7 +329,7 @@ public class PdfDictionary extends PdfObject {
     }
 
     /**
-     * Checks if a <CODE>Dictionary</CODE> is of the type PAGE.
+     * Checks if a <CODE>Dictionary</CODE> is of the getTypeImpl PAGE.
      *
      * @return <CODE>true</CODE> if it is, otherwise <CODE>false</CODE>.
      */
@@ -338,7 +338,7 @@ public class PdfDictionary extends PdfObject {
     }
 
     /**
-     * Checks if a <CODE>Dictionary</CODE> is of the type PAGES.
+     * Checks if a <CODE>Dictionary</CODE> is of the getTypeImpl PAGES.
      *
      * @return <CODE>true</CODE> if it is, otherwise <CODE>false</CODE>.
      */
@@ -347,7 +347,7 @@ public class PdfDictionary extends PdfObject {
     }
 
     /**
-     * Checks if a <CODE>Dictionary</CODE> is of the type CATALOG.
+     * Checks if a <CODE>Dictionary</CODE> is of the getTypeImpl CATALOG.
      *
      * @return <CODE>true</CODE> if it is, otherwise <CODE>false</CODE>.
      */
@@ -356,7 +356,7 @@ public class PdfDictionary extends PdfObject {
     }
 
     /**
-     * Checks if a <CODE>Dictionary</CODE> is of the type OUTLINES.
+     * Checks if a <CODE>Dictionary</CODE> is of the getTypeImpl OUTLINES.
      *
      * @return <CODE>true</CODE> if it is, otherwise <CODE>false</CODE>.
      */

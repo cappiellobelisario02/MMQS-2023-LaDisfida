@@ -88,7 +88,7 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
     /**
      * Reads an XFDF form.
      *
-     * @param filename the file name of the form
+     * @param filename the file getName of the form
      * @throws IOException on error
      */
     public XfdfReader(String filename) throws IOException {
@@ -115,7 +115,7 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
     /**
      * Gets the field value.
      *
-     * @param name the fully qualified field name
+     * @param name the fully qualified field getName
      * @return the field's value
      */
     public String getField(String name) {
@@ -125,7 +125,7 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
     /**
      * Gets the field value or <CODE>null</CODE> if the field does not exist or has no value defined.
      *
-     * @param name the fully qualified field name
+     * @param name the fully qualified field getName
      * @return the field value or <CODE>null</CODE>
      */
     @Override
@@ -136,7 +136,7 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
     /**
      * Gets the field values for a list or <CODE>null</CODE> if the field does not exist or has no value defined.
      *
-     * @param name the fully qualified field name
+     * @param name the fully qualified field getName
      * @return the field values or <CODE>null</CODE>
      * @since 2.1.4
      */
@@ -157,7 +157,7 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
     /**
      * Called when a start tag is found.
      *
-     * @param tag the tag name
+     * @param tag the tag getName
      * @param h   the tag's attributes
      */
     @Override
@@ -197,7 +197,7 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
     /**
      * Called when an end tag is found.
      *
-     * @param tag the tag name
+     * @param tag the tag getName
      */
     @Override
     public void endElement(String tag) {
@@ -209,7 +209,7 @@ public class XfdfReader implements SimpleXMLDocHandler, FieldReader {
                 fName.append(".").append(fieldName);
             }
 
-            // Remove leading dot if present
+            // Remove getLeading dot if present
             if (fName.toString().startsWith(".")) {
                 fName = new StringBuilder(fName.substring(1));
             }

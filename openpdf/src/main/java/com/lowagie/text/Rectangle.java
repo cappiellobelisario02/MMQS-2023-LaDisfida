@@ -99,7 +99,7 @@ public class Rectangle implements Element {
     public static final int NO_BORDER = 0;
 
     /**
-     * This represents a type of border.
+     * This represents a getTypeImpl of border.
      */
     public static final int BOX = TOP + BOTTOM + LEFT + RIGHT;
 
@@ -287,12 +287,12 @@ public class Rectangle implements Element {
     // IMPLEMENTATION OF THE ELEMENT INTERFACE:e
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.RECTANGLE_CONST;
     }
 
@@ -573,7 +573,7 @@ public class Rectangle implements Element {
     // METHODS TO GET/SET THE BORDER:
 
     /**
-     * Returns the exact type of the border.
+     * Returns the exact getTypeImpl of the border.
      *
      * @return a value
      */
@@ -595,7 +595,7 @@ public class Rectangle implements Element {
     }
 
     /**
-     * Indicates whether some type of border is set.
+     * Indicates whether some getTypeImpl of border is set.
      *
      * @return a boolean
      */
@@ -610,9 +610,9 @@ public class Rectangle implements Element {
     }
 
     /**
-     * Indicates whether the specified type of border is set.
+     * Indicates whether the specified getTypeImpl of border is set.
      *
-     * @param type the type of border
+     * @param type the getTypeImpl of border
      * @return a boolean
      */
     public boolean hasBorder(int type) {

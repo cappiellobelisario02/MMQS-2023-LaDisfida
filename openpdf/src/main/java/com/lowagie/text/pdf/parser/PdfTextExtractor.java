@@ -140,7 +140,7 @@ public class PdfTextExtractor {
      */
     private byte[] getContentBytesFromContentObject(PdfObject contentObject) throws IOException {
         final byte[] result;
-        switch (contentObject.type()) {
+        switch (contentObject.getTypeImpl()) {
             case PdfObject.INDIRECT:
                 PRIndirectReference ref = (PRIndirectReference) contentObject;
                 PdfObject directObject = PdfReader.getPdfObject(ref);
@@ -166,7 +166,7 @@ public class PdfTextExtractor {
                 result = allBytes.toByteArray();
                 break;
             default:
-                throw new IllegalStateException("Unable to handle Content of type " + contentObject.getClass());
+                throw new IllegalStateException("Unable to handle Content of getTypeImpl " + contentObject.getClass());
         }
         return result;
     }

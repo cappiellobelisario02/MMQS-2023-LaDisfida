@@ -82,7 +82,7 @@ public class XmpBasicSchema extends XmpSchema {
      */
     public static final String CREATEDATE = "xmp:CreateDate";
     /**
-     * The name of the first known tool used to create the resource. If history is present in the metadata, this value
+     * The getName of the first known tool used to create the resource. If history is present in the metadata, this value
      * should be equivalent to that of xmpMM:History's softwareAgent property.
      */
     public static final String CREATORTOOL = "xmp:CreatorTool";
@@ -99,7 +99,7 @@ public class XmpBasicSchema extends XmpSchema {
      */
     public static final String MODIFYDATE = "xmp:ModifyDate";
     /**
-     * A short informal name for the resource.
+     * A short informal getName for the resource.
      */
     public static final String NICKNAME = "xmp:Nickname";
     /**
@@ -164,7 +164,7 @@ public class XmpBasicSchema extends XmpSchema {
     /**
      * Adds the nickname.
      *
-     * @param name nick name
+     * @param name nick getName
      */
     public void addNickname(String name) {
         setProperty(NICKNAME, name);

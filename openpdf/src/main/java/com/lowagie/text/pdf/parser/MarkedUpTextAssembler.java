@@ -58,7 +58,7 @@ public class MarkedUpTextAssembler implements TextAssembler {
     /**
      * as we get new content (final or not), we accumulate it until we reach the end of a parsing unit
      * <p>
-     * Each parsing unit may have a tag name that should wrap its content
+     * Each parsing unit may have a tag getName that should wrap its content
      */
     private List<TextAssemblyBuffer> partialWords = new ArrayList<>();
 

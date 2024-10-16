@@ -63,7 +63,7 @@ public class JTableAutoModel extends AbstractTableModel {
 
     /**
      * @param columnIndex a column number.
-     * @return the name of the column
+     * @return the getName of the column
      * @see javax.swing.table.AbstractTableModel#getColumnName(int)
      */
     @Override

@@ -58,7 +58,7 @@ import java.awt.image.MemoryImageSource;
  * x = 0.02f * 72f; // bar width
  * barHeight = 0.125f * 72f; // height of the tall bars
  * size = 0.05f * 72f; // height of the short bars
- * codeType = POSTNET; // type of code
+ * codeType = POSTNET; // getTypeImpl of code
  * </pre>
  *
  * @author Paulo Soares (psoares@consiste.pt)
@@ -93,7 +93,7 @@ public class BarcodePostnet extends Barcode {
         x = 0.02f * 72f; // bar width
         barHeight = 0.125f * 72f; // height of the tall bars
         size = 0.05f * 72f; // height of the short bars
-        codeType = POSTNET; // type of code
+        codeType = POSTNET; // getTypeImpl of code
     }
 
     /**

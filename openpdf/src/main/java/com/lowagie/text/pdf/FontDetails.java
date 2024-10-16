@@ -77,7 +77,7 @@ class FontDetails {
      */
     PdfIndirectReference indirectReference;
     /**
-     * The font name that appears in the document body stream
+     * The font getName that appears in the document body stream
      */
     PdfName fontName;
     /**
@@ -106,7 +106,7 @@ class FontDetails {
      */
     IntHashtable cjkTag;
     /**
-     * The font type
+     * The font getTypeImpl
      */
     int fontType;
     /**
@@ -123,7 +123,7 @@ class FontDetails {
      * Each font used in a document has an instance of this class. This class stores the characters used in the document
      * and other specifics unique to the current working document.
      *
-     * @param fontName          the font name
+     * @param fontName          the font getName
      * @param indirectReference the indirect reference to the font
      * @param baseFont          the <CODE>BaseFont</CODE>
      */
@@ -181,9 +181,9 @@ class FontDetails {
     }
 
     /**
-     * Gets the font name as it appears in the document body.
+     * Gets the font getName as it appears in the document body.
      *
-     * @return the font name
+     * @return the font getName
      */
     PdfName getFontName() {
         return fontName;

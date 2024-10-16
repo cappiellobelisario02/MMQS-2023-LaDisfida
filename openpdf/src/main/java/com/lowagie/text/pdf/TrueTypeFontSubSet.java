@@ -71,7 +71,7 @@ class TrueTypeFontSubSet {
     static final String[] tableNamesCmap = {"cmap", "cvt ", "fpgm", "glyf", "head",
             "hhea", "hmtx", "loca", "maxp", "prep"};
     static final String[] tableNamesExtra = {"OS/2", "cmap", "cvt ", "fpgm", "glyf", "head",
-            "hhea", "hmtx", "loca", "maxp", "name, prep"};
+            "hhea", "hmtx", "loca", "maxp", "getName, prep"};
     static final int[] entrySelectors = {0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4};
     static final int TABLE_CHECKSUM = 0;
     static final int TABLE_OFFSET = 1;
@@ -86,7 +86,7 @@ class TrueTypeFontSubSet {
 
 
     /**
-     * Contains the location of the several tables. The key is the name of the table and the value is an
+     * Contains the location of the several tables. The key is the getName of the table and the value is an
      * <CODE>int[3]</CODE> where position 0 is the checksum, position 1 is the offset from the start of the file and
      * position 2 is the length of the table.
      */
@@ -96,7 +96,7 @@ class TrueTypeFontSubSet {
      */
     protected RandomAccessFileOrArray rf;
     /**
-     * The file name.
+     * The file getName.
      */
     protected String fileName;
     protected boolean includeCmap;
@@ -124,7 +124,7 @@ class TrueTypeFontSubSet {
      * Creates a new TrueTypeFontSubSet
      *
      * @param directoryOffset The offset from the start of the file to the table directory
-     * @param fileName        the file name of the font
+     * @param fileName        the file getName of the font
      * @param glyphsUsed      the glyphs used
      * @param includeCmap     <CODE>true</CODE> if the table cmap is to be included in the generated font
      */
@@ -263,7 +263,7 @@ class TrueTypeFontSubSet {
         rf.seek(directoryOffset);
         int id = rf.readInt();
         if (id != 0x00010000) {
-            throw new DocumentException(MessageLocalization.getComposedMessage("1.is.not.a.true.type.file", fileName));
+            throw new DocumentException(MessageLocalization.getComposedMessage("1.is.not.a.true.getTypeImpl.file", fileName));
         }
         int numTables = rf.readUnsignedShort();
         rf.skipBytes(6);

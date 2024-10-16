@@ -47,7 +47,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * <a href="https://github.com/LibrePDF/OpenPDF/files/4700100/pwProtectedAES256_openPDFiss375.pdf">
@@ -89,7 +89,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * Demo1_encrypted_.pdf provided by Lonzak
@@ -122,7 +122,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * copied-positive-P.pdf provided by Lonzak
@@ -153,7 +153,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * c-r6-in-pw=owner4.pdf provided by Lonzak
@@ -184,7 +184,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * encrypted_hello_world_r6-pw=hôtel.pdf provided by Lonzak
@@ -218,7 +218,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * encrypted-positive-P.pdf provided by Lonzak
@@ -248,7 +248,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * enc-XI-long-password=qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcv.pdf
@@ -284,7 +284,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * enc-XI-R6,V5,O=master.pdf provided by Lonzak
@@ -314,7 +314,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * enc-XI-R6,V5,O=master.pdf provided by Lonzak
@@ -344,7 +344,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * enc-XI-R6,V5,U=attachment,encrypted-attachments.pdf provided by Lonzak
@@ -375,7 +375,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * enc-XI-R6,V5,U=view,attachments,cleartext-metadata.pdf provided by Lonzak
@@ -406,7 +406,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * enc-XI-R6,V5,U=view,O=master.pdf provided by Lonzak
@@ -447,7 +447,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * enc-XI-R6,V5,U=view,O=master.pdf provided by Lonzak
@@ -498,7 +498,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * enc-XI-R6,V5,U=wwwww,O=wwwww.pdf provided by Lonzak
@@ -528,7 +528,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * graph-encrypted-pw=user.pdf provided by Lonzak
@@ -568,7 +568,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * issue6010_1-pw=owner.pdf provided by Lonzak
@@ -598,7 +598,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * issue6010_2-pw=æøå.pdf provided by Lonzak
@@ -642,7 +642,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * MuPDF-AES256-R6-u=user-o=owner.pdf provided by Lonzak
@@ -680,7 +680,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * MuPDF-AES256-R6-u=user-o=owner.pdf provided by Lonzak
@@ -718,7 +718,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * nontrivial-crypt-filter.pdf provided by Lonzak
@@ -748,7 +748,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * pr6531_1-pw=asdfasdf.pdf provided by Lonzak
@@ -779,7 +779,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * pr6531_2-pw=asdfasdf.pdf provided by Lonzak
@@ -808,7 +808,7 @@ class DecryptAES256R6Test {
 
     /**
      * <a href="https://github.com/LibrePDF/OpenPDF/issues/375">
-     * "Unknown encryption type R = 6" support AES256
+     * "Unknown encryption getTypeImpl R = 6" support AES256
      * </a>
      * <br>
      * unfilterable-with-crypt.pdf provided by Lonzak

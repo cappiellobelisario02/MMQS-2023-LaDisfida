@@ -22,18 +22,18 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 
 /**
- * Changing the padding and the leading of the content of a PdfPCell.
+ * Changing the padding and the getLeading of the content of a PdfPCell.
  */
 public class CellPaddingLeading {
 
     /**
-     * Changing padding and leading.
+     * Changing padding and getLeading.
      *
      * @param args no arguments needed
      */
     public static void main(String[] args) {
 
-        System.out.println("padding - leading");
+        System.out.println("padding - getLeading");
         // step1
         Document document = new Document(PageSize.A4.rotate(), 10, 10, 10, 10);
         try {
@@ -66,15 +66,15 @@ public class CellPaddingLeading {
 
             document.newPage();
             table = new PdfPTable(2);
-            table.addCell("no leading at all");
+            table.addCell("no getLeading at all");
             table.getDefaultCell().setLeading(0f, 0f);
             table.addCell(
                     "blah blah\nblah blah blah\nblah blah\nblah blah blah\nblah blah\nblah blah blah\nblah blah\nblah blah blah\n");
             table.getDefaultCell().setLeading(14f, 0f);
-            table.addCell("fixed leading of 14pt");
+            table.addCell("fixed getLeading of 14pt");
             table.addCell(
                     "blah blah\nblah blah blah\nblah blah\nblah blah blah\nblah blah\nblah blah blah\nblah blah\nblah blah blah\n");
-            table.addCell("relative leading of 1.0 times the fontsize");
+            table.addCell("relative getLeading of 1.0 times the fontsize");
             table.getDefaultCell().setLeading(0f, 1.0f);
             table.addCell(
                     "blah blah\nblah blah blah\nblah blah\nblah blah blah\nblah blah\nblah blah blah\nblah blah\nblah blah blah\n");

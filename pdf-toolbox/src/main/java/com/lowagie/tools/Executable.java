@@ -135,7 +135,7 @@ public class Executable {
     /**
      * Opens a PDF document.
      *
-     * @param fileName           the name of the file to open
+     * @param fileName           the getName of the file to open
      * @param waitForTermination true to wait for termination, false otherwise
      * @return a process
      * @throws IOException on error
@@ -161,7 +161,7 @@ public class Executable {
     /**
      * Opens a PDF document.
      *
-     * @param fileName the name of the file to open
+     * @param fileName the getName of the file to open
      * @return a process
      * @throws IOException on error
      */
@@ -183,7 +183,7 @@ public class Executable {
     /**
      * Prints a PDF document.
      *
-     * @param fileName           the name of the file to print
+     * @param fileName           the getName of the file to print
      * @param waitForTermination true to wait for termination, false otherwise
      * @return a process
      * @throws IOException on error
@@ -209,7 +209,7 @@ public class Executable {
     /**
      * Prints a PDF document.
      *
-     * @param fileName the name of the file to print
+     * @param fileName the getName of the file to print
      * @return a process
      * @throws IOException on error
      */
@@ -231,7 +231,7 @@ public class Executable {
     /**
      * Prints a PDF document without opening a Dialog box.
      *
-     * @param fileName           the name of the file to print
+     * @param fileName           the getName of the file to print
      * @param waitForTermination true to wait for termination, false otherwise
      * @return a process
      * @throws IOException on error
@@ -257,7 +257,7 @@ public class Executable {
     /**
      * Prints a PDF document without opening a Dialog box.
      *
-     * @param fileName the name of the file to print
+     * @param fileName the getName of the file to print
      * @return a process
      * @throws IOException on error
      */
@@ -325,7 +325,7 @@ public class Executable {
      *
      * @return true if the current os is Windows
      */
-    private static final String OS = "os.name";
+    private static final String OS = "os.getName";
     public static boolean isWindows() {
         String os = System.getProperty(OS).toLowerCase();
         return os.contains("windows") || os.contains("nt");

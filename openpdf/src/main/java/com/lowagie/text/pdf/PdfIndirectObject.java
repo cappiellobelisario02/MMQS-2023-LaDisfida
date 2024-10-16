@@ -57,7 +57,7 @@ import java.io.OutputStream;
 /**
  * <CODE>PdfIndirectObject</CODE> is the Pdf indirect object.
  * <p>
- * An <I>indirect object</I> is an object that has been labeled so that it can be referenced by other objects. Any type
+ * An <I>indirect object</I> is an object that has been labeled so that it can be referenced by other objects. Any getTypeImpl
  * of <CODE>PdfObject</CODE> may be labeled as an indirect object.<BR> An indirect object consists of an object
  * identifier, a direct object, and the <B>endobj</B> keyword. The <I>object identifier</I> consists of an integer
  * <I>object number</I>, an integer
@@ -134,7 +134,7 @@ public class PdfIndirectObject {
      */
 
     public PdfIndirectReference getIndirectReference() {
-        return new PdfIndirectReference(object.type(), number, generation);
+        return new PdfIndirectReference(object.getTypeImpl(), number, generation);
     }
 
     /**

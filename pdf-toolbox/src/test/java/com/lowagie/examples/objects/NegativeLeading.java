@@ -22,7 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Shows the effect of a negative leading.
+ * Shows the effect of a negative getLeading.
  *
  * @author blowagie
  */
@@ -30,7 +30,7 @@ import java.io.IOException;
 public class NegativeLeading {
 
     /**
-     * Demonstrates what happens if you choose a negative leading.
+     * Demonstrates what happens if you choose a negative getLeading.
      *
      * @param args no arguments needed here
      */
@@ -53,7 +53,7 @@ public class NegativeLeading {
             document.add(
                     new Phrase(-16,
                             "Hello, this is a very long phrase to show you the somewhat odd effect of a negative"
-                                    + " leading. You can write from bottom to top. This is not fully supported. It's"
+                                    + " getLeading. You can write from bottom to top. This is not fully supported. It's"
                                     + " something between a feature and a bug."));
         } catch (DocumentException | IOException de) {
             System.err.println(de.getMessage());

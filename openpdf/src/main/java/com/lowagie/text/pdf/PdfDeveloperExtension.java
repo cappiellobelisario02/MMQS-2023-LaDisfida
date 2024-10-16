@@ -95,7 +95,7 @@ public class PdfDeveloperExtension {
     }
 
     /**
-     * Gets the prefix name.
+     * Gets the prefix getName.
      *
      * @return a PdfName
      */
@@ -104,7 +104,7 @@ public class PdfDeveloperExtension {
     }
 
     /**
-     * Gets the baseversion name.
+     * Gets the baseversion getName.
      *
      * @return a PdfName
      */

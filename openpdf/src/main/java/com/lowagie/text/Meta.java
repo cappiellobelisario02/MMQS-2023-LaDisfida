@@ -54,7 +54,7 @@ import java.util.ArrayList;
 /**
  * This is an <CODE>Element</CODE> that contains some meta information about the document.
  * <p>
- * An object of type <CODE>Meta</CODE> can not be constructed by the user. User defined meta information should be
+ * An object of getTypeImpl <CODE>Meta</CODE> can not be constructed by the user. User defined meta information should be
  * placed in a <CODE>Header</CODE>-object.
  * <CODE>Meta</CODE> is reserved for: Subject, Keywords, Author, Title, Producer
  * and Creationdate information.
@@ -68,7 +68,7 @@ public class Meta implements Element {
     // membervariables
 
     /**
-     * This is the type of Meta-information this object contains.
+     * This is the getTypeImpl of Meta-information this object contains.
      */
     private int type;
 
@@ -82,7 +82,7 @@ public class Meta implements Element {
     /**
      * Constructs a <CODE>Meta</CODE>.
      *
-     * @param type    the type of meta-information
+     * @param type    the getTypeImpl of meta-information
      * @param content the content
      */
     Meta(int type, String content) {
@@ -97,19 +97,19 @@ public class Meta implements Element {
      * @param content the content
      */
     public Meta(String tag, String content) {
-        this.type = Meta.getType(tag);
+        this.type = Meta.type(tag);
         this.content = new StringBuilder(content);
     }
 
     // implementation of the Element-methods
 
     /**
-     * Returns the name of the meta information.
+     * Returns the getName of the meta information.
      *
      * @param tag iText tag for meta information
      * @return the Element value corresponding with the given tag
      */
-    public static int getType(String tag) {
+    public static int type(String tag) {
         if (ElementTags.SUBJECT.equals(tag)) {
             return Element.SUBJECT;
         }
@@ -147,11 +147,11 @@ public class Meta implements Element {
     }
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
-    public int type() {
+    public int getTypeImpl() {
         return type;
     }
 
@@ -224,7 +224,7 @@ public class Meta implements Element {
     }
 
     /**
-     * Returns the name of the meta information.
+     * Returns the getName of the meta information.
      *
      * @return a <CODE>String</CODE>
      */

@@ -51,7 +51,6 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.Anchor;
 import com.lowagie.text.Cell;
-import com.lowagie.text.Chapter;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Element;
 import com.lowagie.text.Image;
@@ -83,7 +82,7 @@ public class PdfCell extends Rectangle {
 
     public static final String UNEXPECTED_VALUE = "Unexpected value: ";
 
-    // membervariables
+    // member variables
 
     /**
      * These are the PdfLines in the Cell.
@@ -101,7 +100,7 @@ public class PdfCell extends Rectangle {
     private java.util.List<Image> images;
 
     /**
-     * This is the leading of the lines.
+     * This is the getLeading of the lines.
      */
     private float leading;
 
@@ -111,17 +110,17 @@ public class PdfCell extends Rectangle {
     private int rownumber;
 
     /**
-     * This is the rowspan of the cell.
+     * This is the getRowSpan of the cell.
      */
     private int rowspan;
 
     /**
-     * This is the cellspacing of the cell.
+     * This is the getCellSpacing of the cell.
      */
     private float cellspacing;
 
     /**
-     * This is the cellpadding of the cell.
+     * This is the getCellPadding of the cell.
      */
     private float cellpadding;
 
@@ -138,7 +137,7 @@ public class PdfCell extends Rectangle {
 
     /**
      * Indicates that the largest ascender height should be used to determine the height of the first line. Setting this
-     * to true can help with vertical alignment problems.
+     * to true can help with vertical getAlignment problems.
      */
     private boolean useAscender;
 
@@ -172,8 +171,8 @@ public class PdfCell extends Rectangle {
      * @param left        the left border of the <CODE>PdfCell</CODE>
      * @param right       the right border of the <CODE>PdfCell</CODE>
      * @param top         the top border of the <CODE>PdfCell</CODE>
-     * @param cellspacing the cellspacing of the <CODE>Table</CODE>
-     * @param cellpadding the cellpadding    of the <CODE>Table</CODE>
+     * @param cellspacing the getCellSpacing of the <CODE>Table</CODE>
+     * @param cellpadding the getCellPadding    of the <CODE>Table</CODE>
      */
 
     public PdfCell(Cell cell, int rownumber, float left, float right, float top, float cellspacing, float cellpadding) {
@@ -213,7 +212,7 @@ public class PdfCell extends Rectangle {
 
         for (Iterator<Element> i = cell.getElements(); i.hasNext(); ) {
             element = i.next();
-            switch (element.type()) {
+            switch (element.getTypeImpl()) {
                 case Element.JPEG,
                      Element.JPEG2000,
                      Element.JBIG2,
@@ -251,12 +250,12 @@ public class PdfCell extends Rectangle {
                     if (chunks.isEmpty()) {
                         addLine(line);
                         line = new PdfLine(currentLeft, currentRight, alignment, currentLineLeading);
-                        int type = element.type();
+                        int type = element.getTypeImpl();
                         if (type == Element.PARAGRAPH || type == Element.SECTION || type == Element.CHAPTER) {
                             line.resetAlignment();
                             flushCurrentLine();
                         } else {
-                            throw new IllegalStateException(UNEXPECTED_VALUE + element.type());
+                            throw new IllegalStateException(UNEXPECTED_VALUE + element.getTypeImpl());
                         }
                     } else {
                         for (Object chunk1 : chunks) {
@@ -268,12 +267,12 @@ public class PdfCell extends Rectangle {
                                 chunk = overflow;
                             }
                         }
-                        int type = element.type();
+                        int type = element.getTypeImpl();
                         if (type == Element.PARAGRAPH || type == Element.SECTION || type == Element.CHAPTER) {
                             line.resetAlignment();
                             flushCurrentLine();
                         } else {
-                            throw new IllegalStateException(UNEXPECTED_VALUE + element.type());
+                            throw new IllegalStateException(UNEXPECTED_VALUE + element.getTypeImpl());
                         }
                     }
             }
@@ -311,7 +310,7 @@ public class PdfCell extends Rectangle {
             contentHeight += firstLineRealHeight;
         }
 
-        float newBottom = top - contentHeight - (2f * cellpadding()) - (2f * cellspacing());
+        float newBottom = top - contentHeight - (2f * getCellPadding()) - (2f * getCellSpacing());
         newBottom -= getBorderWidthInside(TOP) + getBorderWidthInside(BOTTOM);
         setBottom(newBottom);
 
@@ -328,7 +327,7 @@ public class PdfCell extends Rectangle {
         processActions(list, null, allActions);
         int aCounter = 0;
         for (Element o1 : list.getItems()) {
-            switch (o1.type()) {
+            switch (o1.getTypeImpl()) {
                 case Element.LISTITEM:
                     ListItem item = (ListItem) o1;
                     line = new PdfLine(left + item.getIndentationLeft(), right, alignment, item.getLeading());
@@ -350,7 +349,7 @@ public class PdfCell extends Rectangle {
                     addList(sublist, left + sublist.getIndentationLeft(), right, alignment);
                     break;
                 default:
-                    throw new IllegalStateException(UNEXPECTED_VALUE + o1.type());
+                    throw new IllegalStateException(UNEXPECTED_VALUE + o1.getTypeImpl());
             }
         }
     }
@@ -412,8 +411,8 @@ public class PdfCell extends Rectangle {
         super.setBottom(value);
         float firstLineRealHeight = firstLineRealHeight();
 
-        float totalHeight = ury - value; // can't use top (already compensates for cellspacing)
-        float nonContentHeight = (cellpadding() * 2f) + (cellspacing() * 2f);
+        float totalHeight = ury - value; // can't use top (already compensates for getCellSpacing)
+        float nonContentHeight = (getCellPadding() * 2f) + (getCellSpacing() * 2f);
         nonContentHeight += getBorderWidthInside(TOP) + getBorderWidthInside(BOTTOM);
 
         float interiorHeight = totalHeight - nonContentHeight;
@@ -424,7 +423,7 @@ public class PdfCell extends Rectangle {
                     0f;
         };
 
-        extraHeight += cellpadding() + cellspacing();
+        extraHeight += getCellPadding() + getCellSpacing();
         extraHeight += getBorderWidthInside(TOP);
         if (firstLine != null) {
             firstLine.height = firstLineRealHeight + extraHeight;
@@ -510,7 +509,7 @@ public class PdfCell extends Rectangle {
      * @param i         the image to add
      * @param left      the left border
      * @param right     the right border
-     * @param alignment horizontal alignment (constant from Element class)
+     * @param alignment horizontal getAlignment (constant from Element class)
      */
 
     private void addImage(Image i, float left, float right, int alignment) {
@@ -615,12 +614,12 @@ public class PdfCell extends Rectangle {
     }
 
     /**
-     * Gets the leading of a cell.
+     * Gets the getLeading of a cell.
      *
-     * @return the leading of the lines is the cell.
+     * @return the getLeading of the lines is the cell.
      */
 
-    public float leading() {
+    public float getLeading() {
         return leading;
     }
 
@@ -630,37 +629,37 @@ public class PdfCell extends Rectangle {
      * @return a number
      */
 
-    public int rownumber() {
+    public int getRowNumber() {
         return rownumber;
     }
 
     /**
-     * Gets the rowspan of a cell.
+     * Gets the getRowSpan of a cell.
      *
-     * @return the rowspan of the cell
+     * @return the getRowSpan of the cell
      */
 
-    public int rowspan() {
+    public int getRowSpan() {
         return rowspan;
     }
 
     /**
-     * Gets the cellspacing of a cell.
+     * Gets the getCellSpacing of a cell.
      *
      * @return a value
      */
 
-    public float cellspacing() {
+    public float getCellSpacing() {
         return cellspacing;
     }
 
     /**
-     * Gets the cellpadding of a cell.
+     * Gets the getCellPadding of a cell.
      *
      * @return a value
      */
 
-    public float cellpadding() {
+    public float getCellPadding() {
         return cellpadding;
     }
 
@@ -673,7 +672,7 @@ public class PdfCell extends Rectangle {
      */
 
     protected void processActions(Element element, PdfAction action, java.util.List<PdfAction> allActions) {
-        if (element.type() == Element.ANCHOR) {
+        if (element.getTypeImpl() == Element.ANCHOR) {
             String url = ((Anchor) element).getReference();
             if (url != null) {
                 action = new PdfAction(url);
@@ -681,7 +680,7 @@ public class PdfCell extends Rectangle {
         }
 
         Iterator<Element> i;
-        switch (element.type()) {
+        switch (element.getTypeImpl()) {
             case Element.PHRASE,
                  Element.SECTION,
                  Element.ANCHOR,
@@ -691,10 +690,7 @@ public class PdfCell extends Rectangle {
                 // Check if element can be cast to a composite element like Section or Chapter
                 if (element instanceof Section sectionElement) {
                     i = sectionElement.iterator(); // Safely iterate over Section elements
-                } else if (element instanceof Chapter chapterElement) {
-                    i = chapterElement.iterator(); // Safely iterate over Chapter elements
-                } else {
-                    // For other elements like Paragraph, check for chunks
+                } else {// For other elements like Paragraph, check for chunks
                     i = element.getChunks().iterator(); // Safely iterate over chunks of the element
                 }
 
@@ -725,7 +721,7 @@ public class PdfCell extends Rectangle {
 
 
     /**
-     * Gets the number of the group this cell is in..
+     * Gets the number of the group this cell is in.
      *
      * @return a number
      */

@@ -592,10 +592,10 @@ public class PdfPKCS7 {
 
 
     /**
-     * Gets the digest name for a certain id
+     * Gets the digest getName for a certain id
      *
      * @param oid an id (for instance "1.2.840.113549.2.5")
-     * @return a digest name (for instance "MD5")
+     * @return a digest getName (for instance "MD5")
      * @since 2.1.6
      */
     public static String getDigest(String oid) {
@@ -604,10 +604,10 @@ public class PdfPKCS7 {
     }
 
     /**
-     * Gets the algorithm name for a certain id.
+     * Gets the algorithm getName for a certain id.
      *
      * @param oid an id (for instance "1.2.840.113549.1.1.1")
-     * @return an algorithm name (for instance "RSA")
+     * @return an algorithm getName (for instance "RSA")
      * @since 2.1.6
      */
     public static String getAlgorithm(String oid) {
@@ -616,10 +616,10 @@ public class PdfPKCS7 {
     }
 
     /**
-     * Gets the oid for given digest name.
+     * Gets the oid for given digest getName.
      *
-     * @param digestName digest name (for instance "SHA-256")
-     * @return a digest OID (for instance "2.16.840.1.101.3.4.2.1") or {@code null} if the oid for provided name is not
+     * @param digestName digest getName (for instance "SHA-256")
+     * @return a digest OID (for instance "2.16.840.1.101.3.4.2.1") or {@code null} if the oid for provided getName is not
      * found
      */
     public static String getDigestOid(String digestName) {
@@ -1675,7 +1675,7 @@ public class PdfPKCS7 {
     }
 
     /**
-     * a class that holds an X509 name
+     * a class that holds an X509 getName
      */
     public static class X509Name {
 
@@ -1692,7 +1692,7 @@ public class PdfPKCS7 {
                 "2.5.4.10");
 
         /**
-         * organizational unit name - StringType(SIZE(1..64))
+         * organizational unit getName - StringType(SIZE(1..64))
          */
         public static final ASN1ObjectIdentifier OU = new ASN1ObjectIdentifier(
                 "2.5.4.11");
@@ -1704,51 +1704,51 @@ public class PdfPKCS7 {
                 "2.5.4.12");
 
         /**
-         * common name - StringType(SIZE(1..64))
+         * common getName - StringType(SIZE(1..64))
          */
         public static final ASN1ObjectIdentifier CN = new ASN1ObjectIdentifier(
                 "2.5.4.3");
 
         /**
-         * device serial number name - StringType(SIZE(1..64))
+         * device serial number getName - StringType(SIZE(1..64))
          */
         public static final ASN1ObjectIdentifier SN = new ASN1ObjectIdentifier(
                 "2.5.4.5");
 
         /**
-         * locality name - StringType(SIZE(1..64))
+         * locality getName - StringType(SIZE(1..64))
          */
         public static final ASN1ObjectIdentifier L = new ASN1ObjectIdentifier(
                 "2.5.4.7");
 
         /**
-         * state, or province name - StringType(SIZE(1..64))
+         * state, or province getName - StringType(SIZE(1..64))
          */
         public static final ASN1ObjectIdentifier ST = new ASN1ObjectIdentifier(
                 "2.5.4.8");
 
         /**
-         * Naming attribute of type X520name
+         * Naming attribute of getTypeImpl X520name
          */
         public static final ASN1ObjectIdentifier SURNAME = new ASN1ObjectIdentifier(
                 "2.5.4.4");
         /**
-         * Naming attribute of type X520name
+         * Naming attribute of getTypeImpl X520name
          */
         public static final ASN1ObjectIdentifier GIVENNAME = new ASN1ObjectIdentifier(
                 "2.5.4.42");
         /**
-         * Naming attribute of type X520name
+         * Naming attribute of getTypeImpl X520name
          */
         public static final ASN1ObjectIdentifier INITIALS = new ASN1ObjectIdentifier(
                 "2.5.4.43");
         /**
-         * Naming attribute of type X520name
+         * Naming attribute of getTypeImpl X520name
          */
         public static final ASN1ObjectIdentifier GENERATION = new ASN1ObjectIdentifier(
                 "2.5.4.44");
         /**
-         * Naming attribute of type X520name
+         * Naming attribute of getTypeImpl X520name
          */
         public static final ASN1ObjectIdentifier UNIQUE_IDENTIFIER = new ASN1ObjectIdentifier(
                 "2.5.4.45");
@@ -1808,7 +1808,7 @@ public class PdfPKCS7 {
         public final Map<String, List<String>> valuesMap = new HashMap<>();
 
         /**
-         * Constructs an X509 name
+         * Constructs an X509 getName
          *
          * @param seq an ASN1 Sequence
          */
@@ -1832,9 +1832,9 @@ public class PdfPKCS7 {
         }
 
         /**
-         * Constructs an X509 name
+         * Constructs an X509 getName
          *
-         * @param dirName a directory name
+         * @param dirName a directory getName
          */
         public X509Name(String dirName) {
             com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer nTok = new com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer(dirName);
@@ -1865,7 +1865,7 @@ public class PdfPKCS7 {
         /**
          * gets a field array from the values Hashmap
          *
-         * @param name the name of the field array to get
+         * @param name the getName of the field array to get
          * @return an ArrayList
          */
         public List<String> getFieldsByName(String name) {
@@ -1875,7 +1875,7 @@ public class PdfPKCS7 {
         /**
          * getter for values
          *
-         * @return a HashMap with the fields of the X509 name
+         * @return a HashMap with the fields of the X509 getName
          */
         public Map<String, List<String>> getAllFields() {
             return valuesMap;

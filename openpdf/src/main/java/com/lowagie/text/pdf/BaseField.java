@@ -193,11 +193,11 @@ public abstract class BaseField {
      */
     protected String fieldName;
     /**
-     * Holds the value of the alternate field name. (PDF attribute 'TU')
+     * Holds the value of the alternate field getName. (PDF attribute 'TU')
      */
     protected String alternateFieldName;
     /**
-     * Holds the value of the mapping field name. (PDF attribute 'TM')
+     * Holds the value of the mapping field getName. (PDF attribute 'TM')
      */
     protected String mappingName;
     /**
@@ -214,7 +214,7 @@ public abstract class BaseField {
      *
      * @param writer    the document <CODE>PdfWriter</CODE>
      * @param box       the field location and dimensions
-     * @param fieldName the field name. If <CODE>null</CODE> only the widget keys will be included in the field allowing
+     * @param fieldName the field getName. If <CODE>null</CODE> only the widget keys will be included in the field allowing
      *                  it to be used as a kid field.
      */
     protected BaseField(PdfWriter writer, Rectangle box, String fieldName) {
@@ -502,19 +502,19 @@ public abstract class BaseField {
     }
 
     /**
-     * Gets the text horizontal alignment.
+     * Gets the text horizontal getAlignment.
      *
-     * @return the text horizontal alignment
+     * @return the text horizontal getAlignment
      */
     public int getAlignment() {
         return this.alignment;
     }
 
     /**
-     * Sets the text horizontal alignment. It can be <CODE>Element.ALIGN_LEFT</CODE>,
+     * Sets the text horizontal getAlignment. It can be <CODE>Element.ALIGN_LEFT</CODE>,
      * <CODE>Element.ALIGN_CENTER</CODE> and <CODE>Element.ALIGN_RIGHT</CODE>.
      *
-     * @param alignment the text horizontal alignment
+     * @param alignment the text horizontal getAlignment
      */
     public void setAlignment(int alignment) {
         this.alignment = alignment;
@@ -617,18 +617,18 @@ public abstract class BaseField {
     }
 
     /**
-     * Gets the field name.
+     * Gets the field getName.
      *
-     * @return the field name
+     * @return the field getName
      */
     public String getFieldName() {
         return this.fieldName;
     }
 
     /**
-     * Sets the field name.
+     * Sets the field getName.
      *
-     * @param fieldName the field name. If <CODE>null</CODE> only the widget keys will be included in the field allowing
+     * @param fieldName the field getName. If <CODE>null</CODE> only the widget keys will be included in the field allowing
      *                  it to be used as a kid field.
      */
     public void setFieldName(String fieldName) {
@@ -636,36 +636,36 @@ public abstract class BaseField {
     }
 
     /**
-     * Gets the alternate field name. (PDF attribute TU)
+     * Gets the alternate field getName. (PDF attribute TU)
      *
-     * @return the alternate field name
+     * @return the alternate field getName
      */
     public String getAlternateFieldName() {
         return this.alternateFieldName;
     }
 
     /**
-     * Sets the alternateFieldName field name.
+     * Sets the alternateFieldName field getName.
      *
-     * @param alternateFieldName the alternate field name.
+     * @param alternateFieldName the alternate field getName.
      */
     public void setAlternateFieldName(String alternateFieldName) {
         this.alternateFieldName = alternateFieldName;
     }
 
     /**
-     * Gets the mapping name. (PDF attribute TM)
+     * Gets the mapping getName. (PDF attribute TM)
      *
-     * @return the mapping field name
+     * @return the mapping field getName
      */
     public String getMappingName() {
         return this.mappingName;
     }
 
     /**
-     * Sets the mapping name. (PDF TM)
+     * Sets the mapping getName. (PDF TM)
      *
-     * @param mappingName the mapping name.
+     * @param mappingName the mapping getName.
      */
     public void setMappingName(String mappingName) {
         this.mappingName = mappingName;

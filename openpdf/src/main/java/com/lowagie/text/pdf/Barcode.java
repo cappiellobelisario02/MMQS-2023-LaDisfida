@@ -61,51 +61,51 @@ import java.awt.Color;
 public abstract class Barcode {
 
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int EAN13 = 1;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int EAN8 = 2;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int UPCA = 3;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int UPCE = 4;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int SUPP2 = 5;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int SUPP5 = 6;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int POSTNET = 7;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int PLANET = 8;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int CODE128 = 9;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int CODE128_UCC = 10;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int CODE128_RAW = 11;
     /**
-     * A type of barcode
+     * A getTypeImpl of barcode
      */
     public static final int CODABAR = 12;
 
@@ -140,7 +140,7 @@ public abstract class Barcode {
     protected float barHeight;
 
     /**
-     * The text alignment. Can be <CODE>Element.ALIGN_LEFT</CODE>,
+     * The text getAlignment. Can be <CODE>Element.ALIGN_LEFT</CODE>,
      * <CODE>Element.ALIGN_CENTER</CODE> or <CODE>Element.ALIGN_RIGHT</CODE>.
      */
     protected int textAlignment;
@@ -176,7 +176,7 @@ public abstract class Barcode {
     protected boolean guardBars;
 
     /**
-     * The code type.
+     * The code getTypeImpl.
      */
     protected int codeType;
 
@@ -300,20 +300,20 @@ public abstract class Barcode {
     }
 
     /**
-     * Gets the text alignment. Can be <CODE>Element.ALIGN_LEFT</CODE>,
+     * Gets the text getAlignment. Can be <CODE>Element.ALIGN_LEFT</CODE>,
      * <CODE>Element.ALIGN_CENTER</CODE> or <CODE>Element.ALIGN_RIGHT</CODE>.
      *
-     * @return the text alignment
+     * @return the text getAlignment
      */
     public int getTextAlignment() {
         return textAlignment;
     }
 
     /**
-     * Sets the text alignment. Can be <CODE>Element.ALIGN_LEFT</CODE>,
+     * Sets the text getAlignment. Can be <CODE>Element.ALIGN_LEFT</CODE>,
      * <CODE>Element.ALIGN_CENTER</CODE> or <CODE>Element.ALIGN_RIGHT</CODE>.
      *
-     * @param textAlignment the text alignment
+     * @param textAlignment the text getAlignment
      */
     public void setTextAlignment(int textAlignment) {
         this.textAlignment = textAlignment;
@@ -428,18 +428,18 @@ public abstract class Barcode {
     }
 
     /**
-     * Gets the code type.
+     * Gets the code getTypeImpl.
      *
-     * @return the code type
+     * @return the code getTypeImpl
      */
     public int getCodeType() {
         return codeType;
     }
 
     /**
-     * Sets the code type.
+     * Sets the code getTypeImpl.
      *
-     * @param codeType the code type
+     * @param codeType the code getTypeImpl
      */
     public void setCodeType(int codeType) {
         this.codeType = codeType;

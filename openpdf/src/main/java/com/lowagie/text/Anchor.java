@@ -31,7 +31,7 @@ public class Anchor extends Phrase {
     // membervariables
 
     /**
-     * This is the name of the <CODE>Anchor</CODE>.
+     * This is the getName of the <CODE>Anchor</CODE>.
      */
     protected String name = null;
 
@@ -43,16 +43,16 @@ public class Anchor extends Phrase {
     // constructors
 
     /**
-     * Constructs an <CODE>Anchor</CODE> without specifying a leading.
+     * Constructs an <CODE>Anchor</CODE> without specifying a getLeading.
      */
     public Anchor() {
         super(16);
     }
 
     /**
-     * Constructs an <CODE>Anchor</CODE> with a certain leading.
+     * Constructs an <CODE>Anchor</CODE> with a certain getLeading.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      */
 
     public Anchor(float leading) {
@@ -88,9 +88,9 @@ public class Anchor extends Phrase {
     }
 
     /**
-     * Constructs an <CODE>Anchor</CODE> with a certain <CODE>Chunk</CODE> and a certain leading.
+     * Constructs an <CODE>Anchor</CODE> with a certain <CODE>Chunk</CODE> and a certain getLeading.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param chunk   a <CODE>Chunk</CODE>
      */
     public Anchor(float leading, Chunk chunk) {
@@ -98,9 +98,9 @@ public class Anchor extends Phrase {
     }
 
     /**
-     * Constructs an <CODE>Anchor</CODE> with a certain leading and a certain <CODE>String</CODE>.
+     * Constructs an <CODE>Anchor</CODE> with a certain getLeading and a certain <CODE>String</CODE>.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param string  a <CODE>String</CODE>
      */
     public Anchor(float leading, String string) {
@@ -108,10 +108,10 @@ public class Anchor extends Phrase {
     }
 
     /**
-     * Constructs an <CODE>Anchor</CODE> with a certain leading, a certain <CODE>String</CODE> and a certain
+     * Constructs an <CODE>Anchor</CODE> with a certain getLeading, a certain <CODE>String</CODE> and a certain
      * <CODE>Font</CODE>.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param string  a <CODE>String</CODE>
      * @param font    a <CODE>Font</CODE>
      */
@@ -193,7 +193,7 @@ public class Anchor extends Phrase {
         // Use an iterator to go through the elements of this class (likely Phrase or Anchor)
         // Ensure 'this' is iterable and returns Elements
 
-        // Each element is of type 'Element'
+        // Each element is of getTypeImpl 'Element'
         for (Element element : this) {
             // Check if the element is a Chunk before casting
             if (element instanceof Chunk chunkElement) {
@@ -219,30 +219,30 @@ public class Anchor extends Phrase {
 
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.ANCHOR;
     }
 
     // methods
 
     /**
-     * Returns the name of this <CODE>Anchor</CODE>.
+     * Returns the getName of this <CODE>Anchor</CODE>.
      *
-     * @return a name
+     * @return a getName
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Sets the name of this <CODE>Anchor</CODE>.
+     * Sets the getName of this <CODE>Anchor</CODE>.
      *
-     * @param name a new name
+     * @param name a new getName
      */
     public void setName(String name) {
         this.name = name;

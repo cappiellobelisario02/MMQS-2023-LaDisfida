@@ -14,18 +14,18 @@ public class PdfSignatureAppDataDict extends PdfDictionary {
     }
 
     /**
-     * The name of the software module used to create the signature.
+     * The getName of the software module used to create the signature.
      *
-     * @return the name of the software module used to create the signature.
+     * @return the getName of the software module used to create the signature.
      */
     public PdfName getName() {
         return (PdfName) super.get(PdfName.NAME);
     }
 
     /**
-     * The name of the software module used to create the signature.
+     * The getName of the software module used to create the signature.
      *
-     * @param name sets the name of the software module used to create the signature.
+     * @param name sets the getName of the software module used to create the signature.
      */
     public void setName(String name) {
         if (name != null && !name.trim().isEmpty()) {

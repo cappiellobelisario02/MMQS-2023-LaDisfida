@@ -93,35 +93,35 @@ public class AcroFields {
     public static final int DA_SIZE = 1;
     public static final int DA_COLOR = 2;
     /**
-     * A field type invalid or not found.
+     * A field getTypeImpl invalid or not found.
      */
     public static final int FIELD_TYPE_NONE = 0;
     /**
-     * A field type.
+     * A field getTypeImpl.
      */
     public static final int FIELD_TYPE_PUSHBUTTON = 1;
     /**
-     * A field type.
+     * A field getTypeImpl.
      */
     public static final int FIELD_TYPE_CHECKBOX = 2;
     /**
-     * A field type.
+     * A field getTypeImpl.
      */
     public static final int FIELD_TYPE_RADIOBUTTON = 3;
     /**
-     * A field type.
+     * A field getTypeImpl.
      */
     public static final int FIELD_TYPE_TEXT = 4;
     /**
-     * A field type.
+     * A field getTypeImpl.
      */
     public static final int FIELD_TYPE_LIST = 5;
     /**
-     * A field type.
+     * A field getTypeImpl.
      */
     public static final int FIELD_TYPE_COMBO = 6;
     /**
-     * A field type.
+     * A field getTypeImpl.
      */
     public static final int FIELD_TYPE_SIGNATURE = 7;
     private static final HashMap<String, String[]> stdFieldFontNames = new HashMap<>();
@@ -466,9 +466,9 @@ public class AcroFields {
 
     /**
      * Gets the list of appearance names. Use it to get the names allowed with radio and checkbox fields. If the /Opt
-     * key exists the values will also be included. The name 'Off' may also be valid even if not returned in the list.
+     * key exists the values will also be included. The getName 'Off' may also be valid even if not returned in the list.
      *
-     * @param fieldName the fully qualified field name
+     * @param fieldName the fully qualified field getName
      * @return the list of names or <CODE>null</CODE> if the field does not exist
      */
     public String[] getAppearanceStates(String fieldName) {
@@ -530,7 +530,7 @@ public class AcroFields {
     /**
      * Returns the names of the N-appearance dictionaries
      *
-     * @param fieldName name of the form field
+     * @param fieldName getName of the form field
      * @param idx       widget index
      * @return String[] of appearance names or null if the field can not be found
      */
@@ -587,31 +587,31 @@ public class AcroFields {
     }
 
     /**
-     * Gets the list of export option values from fields of type list or combo. If the field doesn't exist or the field
-     * type is not list or combo it will return
+     * Gets the list of export option values from fields of getTypeImpl list or combo. If the field doesn't exist or the field
+     * getTypeImpl is not list or combo it will return
      * <CODE>null</CODE>.
      *
-     * @param fieldName the field name
-     * @return the array of export option values from fields of type list or combo
+     * @param fieldName the field getName
+     * @return the array of export option values from fields of getTypeImpl list or combo
      */
     public String[] getListOptionExport(String fieldName) {
         return getListOption(fieldName, 0);
     }
 
     /**
-     * Gets the list of display option values from fields of type list or combo. If the field doesn't exist or the field
-     * type is not list or combo it will return
+     * Gets the list of display option values from fields of getTypeImpl list or combo. If the field doesn't exist or the field
+     * getTypeImpl is not list or combo it will return
      * <CODE>null</CODE>.
      *
-     * @param fieldName the field name
-     * @return the array of export option values from fields of type list or combo
+     * @param fieldName the field getName
+     * @return the array of export option values from fields of getTypeImpl list or combo
      */
     public String[] getListOptionDisplay(String fieldName) {
         return getListOption(fieldName, 1);
     }
 
     /**
-     * Sets the option list for fields of type list or combo. One of <CODE>exportValues</CODE> or
+     * Sets the option list for fields of getTypeImpl list or combo. One of <CODE>exportValues</CODE> or
      * <CODE>displayValues</CODE> may be
      * <CODE>null</CODE> but not both. This method will only set the list but will not set the value or appearance. For
      * that, calling
@@ -625,7 +625,7 @@ public class AcroFields {
      * String[]{"a", "b", "c"}, new String[]{"first", "second", "third"}); af.setField("ComboBox", "b"); stp.close();
      * </PRE>
      *
-     * @param fieldName     the field name
+     * @param fieldName     the field getName
      * @param exportValues  the export values
      * @param displayValues the display values
      * @return <CODE>true</CODE> if the operation succeeded, <CODE>false</CODE> otherwise
@@ -667,7 +667,7 @@ public class AcroFields {
     }
 
     /**
-     * Gets the field type. The type can be one of: <CODE>FIELD_TYPE_PUSHBUTTON</CODE>,
+     * Gets the field getTypeImpl. The getTypeImpl can be one of: <CODE>FIELD_TYPE_PUSHBUTTON</CODE>,
      * <CODE>FIELD_TYPE_CHECKBOX</CODE>, <CODE>FIELD_TYPE_RADIOBUTTON</CODE>,
      * <CODE>FIELD_TYPE_TEXT</CODE>, <CODE>FIELD_TYPE_LIST</CODE>,
      * <CODE>FIELD_TYPE_COMBO</CODE> or <CODE>FIELD_TYPE_SIGNATURE</CODE>.
@@ -675,8 +675,8 @@ public class AcroFields {
      * <p>If the field does not exist or is invalid it returns
      * <CODE>FIELD_TYPE_NONE</CODE>.
      *
-     * @param fieldName the field name
-     * @return the field type
+     * @param fieldName the field getName
+     * @return the field getTypeImpl
      */
     public int getFieldType(String fieldName) {
         Item fd = getFieldItem(fieldName);
@@ -739,11 +739,11 @@ public class AcroFields {
     }
 
     /**
-     * Renames a field. Only the last part of the name can be renamed. For example, if the original field is "ab.cd.ef"
+     * Renames a field. Only the last part of the getName can be renamed. For example, if the original field is "ab.cd.ef"
      * only the "ef" part can be renamed.
      *
-     * @param oldName the old field name
-     * @param newName the new field name
+     * @param oldName the old field getName
+     * @param newName the new field getName
      * @return <CODE>true</CODE> if the renaming was successful, <CODE>false</CODE>
      * otherwise
      */
@@ -816,7 +816,7 @@ public class AcroFields {
     }
 
     private void handleFontObject(PdfObject po, PdfDictionary dr, BaseField tx, String fontName) throws DocumentException {
-        if (po != null && po.type() == PdfObject.INDIRECT) {
+        if (po != null && po.getTypeImpl() == PdfObject.INDIRECT) {
             PRIndirectReference por = (PRIndirectReference) po;
             adjustFontEncoding(dr, por);
             BaseFont bp = new DocumentFont(por);
@@ -1135,7 +1135,7 @@ public class AcroFields {
     /**
      * Gets the field value.
      *
-     * @param name the fully qualified field name
+     * @param name the fully qualified field getName
      * @return the field value
      */
     public String getField(String name) {
@@ -1244,7 +1244,7 @@ public class AcroFields {
     /**
      * Gets the field values of a Choice field.
      *
-     * @param name the fully qualified field name
+     * @param name the fully qualified field getName
      * @return the field value
      * @since 2.1.3
      */
@@ -1288,8 +1288,8 @@ public class AcroFields {
      * If <code>null</code> removes the border.<br>
      * </ul>
      *
-     * @param field the field name
-     * @param name  the property name
+     * @param field the field getName
+     * @param name  the property getName
      * @param value the property value
      * @param inst  an array of <CODE>int</CODE> indexing into <CODE>AcroField.Item.merged</CODE> elements to process.
      *              Set to <CODE>null</CODE> to process all
@@ -1546,7 +1546,7 @@ public class AcroFields {
      * instance form.setFieldProperty("f", "bgcolor", Color.BLUE, null); This won't have any effect, unless you use
      * regenerateField("f") after changing the property.
      *
-     * @param name the fully qualified field name or the partial name in the case of XFA forms
+     * @param name the fully qualified field getName or the partial getName in the case of XFA forms
      * @throws IOException       on error
      * @throws DocumentException on error
      */
@@ -1558,7 +1558,7 @@ public class AcroFields {
     /**
      * Sets the field value.
      *
-     * @param name  the fully qualified field name or the partial name in the case of XFA forms
+     * @param name  the fully qualified field getName or the partial getName in the case of XFA forms
      * @param value the field value
      * @throws IOException       on error
      * @throws DocumentException on error
@@ -1571,7 +1571,7 @@ public class AcroFields {
      * Sets the field value and the display string. The display string is used to build the appearance in the cases
      * where the value is modified by Acrobat with JavaScript and the algorithm is known.
      *
-     * @param name    the fully qualified field name or the partial name in the case of XFA forms
+     * @param name    the fully qualified field getName or the partial getName in the case of XFA forms
      * @param value   the field value
      * @param display the string that is used for the appearance. If <CODE>null</CODE> the <CODE>value</CODE> parameter
      *                will be used
@@ -1758,7 +1758,7 @@ public class AcroFields {
      * Sets different values in a list selection. No appearance is generated yet; nor does the code check if multiple
      * select is allowed.
      *
-     * @param name  the name of the field
+     * @param name  the getName of the field
      * @param value an array with values that need to be selected
      * @throws IOException       on error
      * @throws DocumentException on error
@@ -1813,7 +1813,7 @@ public class AcroFields {
     }
 
     /**
-     * Gets all the fields. The fields are keyed by the fully qualified field name and the value is an instance of
+     * Gets all the fields. The fields are keyed by the fully qualified field getName and the value is an instance of
      * <CODE>AcroFields.Item</CODE>.
      *
      * @return all the fields
@@ -1825,7 +1825,7 @@ public class AcroFields {
     /**
      * Gets the field structure.
      *
-     * @param name the name of the field
+     * @param name the getName of the field
      * @return the field structure or <CODE>null</CODE> if the field does not exist
      */
     public Item getFieldItem(String name) {
@@ -1839,10 +1839,10 @@ public class AcroFields {
     }
 
     /**
-     * Gets the long XFA translated name.
+     * Gets the long XFA translated getName.
      *
-     * @param name the name of the field
-     * @return the long field name
+     * @param name the getName of the field
+     * @return the long field getName
      */
     public String getTranslatedFieldName(String name) {
         if (xfa.isXfaPresent()) {
@@ -1859,7 +1859,7 @@ public class AcroFields {
      * each of these groups the values are: [page, llx, lly, urx, ury]. The coordinates have the page rotation in
      * consideration.
      *
-     * @param name the field name
+     * @param name the field getName
      * @return the positions or <CODE>null</CODE> if field does not exist
      */
     public float[] getFieldPositions(String name) {
@@ -1965,10 +1965,10 @@ public class AcroFields {
 
     /**
      * Removes a field from the document. If page equals -1 all the fields with this
-     * <CODE>name</CODE> are removed from the document otherwise only the fields in
+     * <CODE>getName</CODE> are removed from the document otherwise only the fields in
      * that particular page are removed.
      *
-     * @param name the field name
+     * @param name the field getName
      * @param page the page to remove the field from or -1 to remove it from all the pages
      * @return <CODE>true</CODE> if the field exists, <CODE>false otherwise</CODE>
      */
@@ -2061,7 +2061,7 @@ public class AcroFields {
     /**
      * Removes a field from the document.
      *
-     * @param name the field name
+     * @param name the field getName
      * @return <CODE>true</CODE> if the field exists, <CODE>false otherwise</CODE>
      */
     public boolean removeField(String name) {
@@ -2184,7 +2184,7 @@ public class AcroFields {
     /**
      * Gets the signature dictionary, the one keyed by /V.
      *
-     * @param name the field name
+     * @param name the field getName
      * @return the signature dictionary keyed by /V or <CODE>null</CODE> if the field is not a signature
      */
     public PdfDictionary getSignatureDictionary(String name) {
@@ -2201,7 +2201,7 @@ public class AcroFields {
     /**
      * Checks is the signature covers the entire document or just part of it.
      *
-     * @param name the signature field name
+     * @param name the signature field getName
      * @return <CODE>true</CODE> if the signature covers the entire document,
      * <CODE>false</CODE> otherwise
      */
@@ -2223,10 +2223,10 @@ public class AcroFields {
      * AcroFields af = reader.getAcroFields();
      * ArrayList names = af.getSignatureNames();
      * for (int k = 0; k &lt; names.size(); ++k) {
-     *    String name = (String)names.get(k);
-     *    System.out.println("Signature name: " + name);
-     *    System.out.println("Signature covers whole document: " + af.signatureCoversWholeDocument(name));
-     *    PdfPKCS7 pk = af.verifySignature(name);
+     *    String getName = (String)names.get(k);
+     *    System.out.println("Signature getName: " + getName);
+     *    System.out.println("Signature covers whole document: " + af.signatureCoversWholeDocument(getName));
+     *    PdfPKCS7 pk = af.verifySignature(getName);
      *    Calendar cal = pk.getSignDate();
      *    Certificate pkc[] = pk.getCertificates();
      *    System.out.println("Subject: " + PdfPKCS7.getSubjectFields(pk.getSigningCertificate()));
@@ -2239,7 +2239,7 @@ public class AcroFields {
      * }
      * </pre>
      *
-     * @param name the signature field name
+     * @param name the signature field getName
      * @return a <CODE>PdfPKCS7</CODE> class to continue the verification
      */
     public PdfPKCS7 verifySignature(String name) {
@@ -2255,10 +2255,10 @@ public class AcroFields {
      * AcroFields af = reader.getAcroFields();
      * ArrayList names = af.getSignatureNames();
      * for (int k = 0; k &lt; names.size(); ++k) {
-     *    String name = (String)names.get(k);
-     *    System.out.println("Signature name: " + name);
-     *    System.out.println("Signature covers whole document: " + af.signatureCoversWholeDocument(name));
-     *    PdfPKCS7 pk = af.verifySignature(name);
+     *    String getName = (String)names.get(k);
+     *    System.out.println("Signature getName: " + getName);
+     *    System.out.println("Signature covers whole document: " + af.signatureCoversWholeDocument(getName));
+     *    PdfPKCS7 pk = af.verifySignature(getName);
      *    Calendar cal = pk.getSignDate();
      *    Certificate pkc[] = pk.getCertificates();
      *    System.out.println("Subject: " + PdfPKCS7.getSubjectFields(pk.getSigningCertificate()));
@@ -2271,7 +2271,7 @@ public class AcroFields {
      * }
      * </pre>
      *
-     * @param name     the signature field name
+     * @param name     the signature field getName
      * @param provider the provider or <code>null</code> for the default provider
      * @return a <CODE>PdfPKCS7</CODE> class to continue the verification
      */
@@ -2368,7 +2368,7 @@ public class AcroFields {
     /**
      * Gets this <CODE>field</CODE> revision.
      *
-     * @param field the signature field name
+     * @param field the signature field getName
      * @return the revision or zero if it's not a signature field
      */
     public int getRevision(String field) {
@@ -2383,7 +2383,7 @@ public class AcroFields {
     /**
      * Extracts a revision from the document.
      *
-     * @param field the signature field name
+     * @param field the signature field getName
      * @return an <CODE>InputStream</CODE> covering the revision. Returns <CODE>null</CODE> if it's not a signature
      * field
      * @throws IOException on error
@@ -2518,12 +2518,12 @@ public class AcroFields {
     }
 
     /**
-     * Creates a new pushbutton from an existing field. If there are several pushbuttons with the same name only the
-     * first one is used. This pushbutton can be changed and be used to replace an existing one, with the same name or
-     * other name, as long is it is in the same document. To replace an existing pushbutton call
+     * Creates a new pushbutton from an existing field. If there are several pushbuttons with the same getName only the
+     * first one is used. This pushbutton can be changed and be used to replace an existing one, with the same getName or
+     * other getName, as long is it is in the same document. To replace an existing pushbutton call
      * {@link #replacePushbuttonField(String, PdfFormField)}.
      *
-     * @param field the field name that should be a pushbutton
+     * @param field the field getName that should be a pushbutton
      * @return a new pushbutton or <CODE>null</CODE> if the field is not a pushbutton
      */
     public PushbuttonField getNewPushbuttonFromField(String field) {
@@ -2532,11 +2532,11 @@ public class AcroFields {
 
     /**
      * Creates a new pushbutton from an existing field. This pushbutton can be changed and be used to replace an
-     * existing one, with the same name or other name, as long is it is in the same document. To replace an existing
+     * existing one, with the same getName or other getName, as long is it is in the same document. To replace an existing
      * pushbutton call {@link #replacePushbuttonField(String, PdfFormField, int)}.
      *
-     * @param field the field name that should be a pushbutton
-     * @param order the field order in fields with same name
+     * @param field the field getName that should be a pushbutton
+     * @param order the field order in fields with same getName
      * @return a new pushbutton or <CODE>null</CODE> if the field is not a pushbutton
      * @since 2.0.7
      */
@@ -2650,10 +2650,10 @@ public class AcroFields {
 
     /**
      * Replaces the first field with a new pushbutton. The pushbutton can be created with
-     * {@link #getNewPushbuttonFromField(String)} from the same document or it can be a generic PdfFormField of the type
+     * {@link #getNewPushbuttonFromField(String)} from the same document or it can be a generic PdfFormField of the getTypeImpl
      * pushbutton.
      *
-     * @param field  the field name
+     * @param field  the field getName
      * @param button the <CODE>PdfFormField</CODE> representing the pushbutton
      * @return <CODE>true</CODE> if the field was replaced, <CODE>false</CODE> if the field
      * was not a pushbutton
@@ -2665,11 +2665,11 @@ public class AcroFields {
     /**
      * Replaces the designated field with a new pushbutton. The pushbutton can be created with
      * {@link #getNewPushbuttonFromField(String, int)} from the same document or it can be a generic PdfFormField of the
-     * type pushbutton.
+     * getTypeImpl pushbutton.
      *
-     * @param field  the field name
+     * @param field  the field getName
      * @param button the <CODE>PdfFormField</CODE> representing the pushbutton
-     * @param order  the field order in fields with same name
+     * @param order  the field order in fields with same getName
      * @return <CODE>true</CODE> if the field was replaced, <CODE>false</CODE> if the field
      * was not a pushbutton
      * @since 2.0.7
@@ -2799,7 +2799,7 @@ public class AcroFields {
          * Mark all the item dictionaries used matching the given flags
          *
          * @param writeFlags   WRITE_MERGED is ignored
-         * @param parentFields parent fields
+         * @param parentFields getParent fields
          * @since 2.1.5
          */
         public void markUsed(AcroFields parentFields, int writeFlags) {
@@ -2902,7 +2902,7 @@ public class AcroFields {
 
         /**
          * Retrieve the merged dictionary for the given instance.  The merged dictionary contains all the keys present
-         * in parent fields, though they may have been overwritten (or modified?) by children. Example: a merged radio
+         * in getParent fields, though they may have been overwritten (or modified?) by children. Example: a merged radio
          * field dict will contain /V
          *
          * @param idx instance index

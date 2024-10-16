@@ -157,7 +157,7 @@ public class XmlDomWriter {
         }
     }
 
-// Helper methods for each node type
+// Helper methods for each node getTypeImpl
 
     private void writeDocumentNode(Document document) {
         fXML11 = false; // "1.1".equals(getVersion(document))

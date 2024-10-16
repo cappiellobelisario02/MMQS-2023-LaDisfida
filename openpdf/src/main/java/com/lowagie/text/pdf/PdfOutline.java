@@ -62,7 +62,7 @@ import java.util.List;
 /**
  * <CODE>PdfOutline</CODE> is an object that represents a PDF outline entry.
  * <p>
- * An outline allows a user to access views of a document by name.<BR> This object is described in the 'Portable
+ * An outline allows a user to access views of a document by getName.<BR> This object is described in the 'Portable
  * Document Format Reference Manual version 1.3' section 6.7 (page 104-106)
  *
  * @see PdfDictionary
@@ -137,7 +137,7 @@ public class PdfOutline extends PdfDictionary {
      * This is the constructor for an <CODE>outline entry</CODE>. The open mode is
      * <CODE>true</CODE>.
      *
-     * @param parent the parent of this outline item
+     * @param parent the getParent of this outline item
      * @param action the <CODE>PdfAction</CODE> for this outline item
      * @param title  the title of this outline item
      */
@@ -151,7 +151,7 @@ public class PdfOutline extends PdfDictionary {
      * <p>
      * This is the constructor for an <CODE>outline entry</CODE>.
      *
-     * @param parent the parent of this outline item
+     * @param parent the getParent of this outline item
      * @param action the <CODE>PdfAction</CODE> for this outline item
      * @param title  the title of this outline item
      * @param open   <CODE>true</CODE> if the children are visible
@@ -168,7 +168,7 @@ public class PdfOutline extends PdfDictionary {
      * This is the constructor for an <CODE>outline entry</CODE>. The open mode is
      * <CODE>true</CODE>.
      *
-     * @param parent      the parent of this outline item
+     * @param parent      the getParent of this outline item
      * @param destination the destination for this outline item
      * @param title       the title of this outline item
      */
@@ -182,7 +182,7 @@ public class PdfOutline extends PdfDictionary {
      * <p>
      * This is the constructor for an <CODE>outline entry</CODE>.
      *
-     * @param parent      the parent of this outline item
+     * @param parent      the getParent of this outline item
      * @param destination the destination for this outline item
      * @param title       the title of this outline item
      * @param open        <CODE>true</CODE> if the children are visible
@@ -199,7 +199,7 @@ public class PdfOutline extends PdfDictionary {
      * This is the constructor for an <CODE>outline entry</CODE>. The open mode is
      * <CODE>true</CODE>.
      *
-     * @param parent the parent of this outline item
+     * @param parent the getParent of this outline item
      * @param action the <CODE>PdfAction</CODE> for this outline item
      * @param title  the title of this outline item
      */
@@ -212,7 +212,7 @@ public class PdfOutline extends PdfDictionary {
      * <p>
      * This is the constructor for an <CODE>outline entry</CODE>.
      *
-     * @param parent the parent of this outline item
+     * @param parent the getParent of this outline item
      * @param action the <CODE>PdfAction</CODE> for this outline item
      * @param title  the title of this outline item
      * @param open   <CODE>true</CODE> if the children are visible
@@ -227,7 +227,7 @@ public class PdfOutline extends PdfDictionary {
      * This is the constructor for an <CODE>outline entry</CODE>. The open mode is
      * <CODE>true</CODE>.
      *
-     * @param parent      the parent of this outline item
+     * @param parent      the getParent of this outline item
      * @param destination the destination for this outline item
      * @param title       the title of this outline item
      */
@@ -241,7 +241,7 @@ public class PdfOutline extends PdfDictionary {
      * <p>
      * This is the constructor for an <CODE>outline entry</CODE>.
      *
-     * @param parent      the parent of this outline item
+     * @param parent      the getParent of this outline item
      * @param destination the destination for this outline item
      * @param title       the title of this outline item
      * @param open        <CODE>true</CODE> if the children are visible
@@ -256,7 +256,7 @@ public class PdfOutline extends PdfDictionary {
      * This is the constructor for an <CODE>outline entry</CODE>. The open mode is
      * <CODE>true</CODE>.
      *
-     * @param parent the parent of this outline item
+     * @param parent the getParent of this outline item
      * @param action the <CODE>PdfAction</CODE> for this outline item
      * @param title  the title of this outline item
      */
@@ -270,7 +270,7 @@ public class PdfOutline extends PdfDictionary {
      * <p>
      * This is the constructor for an <CODE>outline entry</CODE>.
      *
-     * @param parent the parent of this outline item
+     * @param parent the getParent of this outline item
      * @param action the <CODE>PdfAction</CODE> for this outline item
      * @param title  the title of this outline item
      * @param open   <CODE>true</CODE> if the children are visible
@@ -292,7 +292,7 @@ public class PdfOutline extends PdfDictionary {
      * This is the constructor for an <CODE>outline entry</CODE>. The open mode is
      * <CODE>true</CODE>.
      *
-     * @param parent      the parent of this outline item
+     * @param parent      the getParent of this outline item
      * @param destination the destination for this outline item
      * @param title       the title of this outline item
      */
@@ -306,7 +306,7 @@ public class PdfOutline extends PdfDictionary {
      * <p>
      * This is the constructor for an <CODE>outline entry</CODE>.
      *
-     * @param parent      the parent of this outline item
+     * @param parent      the getParent of this outline item
      * @param destination the destination for this outline item
      * @param title       the title of this outline item
      * @param open        <CODE>true</CODE> if the children are visible
@@ -327,7 +327,7 @@ public class PdfOutline extends PdfDictionary {
     /**
      * Helper for the constructors.
      *
-     * @param parent the parent outline
+     * @param parent the getParent outline
      * @param title  the title for this outline
      * @param open   <CODE>true</CODE> if the children are visible
      */
@@ -364,12 +364,12 @@ public class PdfOutline extends PdfDictionary {
     }
 
     /**
-     * Gets the parent of this <CODE>PdfOutline</CODE>.
+     * Gets the getParent of this <CODE>PdfOutline</CODE>.
      *
-     * @return the <CODE>PdfOutline</CODE> that is the parent of this outline.
+     * @return the <CODE>PdfOutline</CODE> that is the getParent of this outline.
      */
 
-    public PdfOutline parent() {
+    public PdfOutline getParent() {
         return parent;
     }
 

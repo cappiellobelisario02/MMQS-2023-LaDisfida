@@ -63,10 +63,10 @@ public interface PdfPageActions {
     /**
      * Sets the open and close page additional action.
      *
-     * @param actionType the action type. It can be <CODE>PdfWriter.PAGE_OPEN</CODE> or
+     * @param actionType the action getTypeImpl. It can be <CODE>PdfWriter.PAGE_OPEN</CODE> or
      *                   <CODE>PdfWriter.PAGE_CLOSE</CODE>
      * @param action     the action to perform
-     * @throws DocumentException if the action type is invalid
+     * @throws DocumentException if the action getTypeImpl is invalid
      */
     void setPageAction(PdfName actionType, PdfAction action) throws DocumentException;
 

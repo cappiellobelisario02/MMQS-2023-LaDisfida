@@ -67,77 +67,77 @@ import java.util.Set;
 public final class FontFactory {
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String COURIER = BaseFont.COURIER;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String COURIER_BOLD = BaseFont.COURIER_BOLD;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String COURIER_OBLIQUE = BaseFont.COURIER_OBLIQUE;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String COURIER_BOLDOBLIQUE = BaseFont.COURIER_BOLDOBLIQUE;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String HELVETICA = BaseFont.HELVETICA;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String HELVETICA_BOLD = BaseFont.HELVETICA_BOLD;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String HELVETICA_OBLIQUE = BaseFont.HELVETICA_OBLIQUE;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String HELVETICA_BOLDOBLIQUE = BaseFont.HELVETICA_BOLDOBLIQUE;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String SYMBOL = BaseFont.SYMBOL;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String TIMES = "Times";
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String TIMES_ROMAN = BaseFont.TIMES_ROMAN;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String TIMES_BOLD = BaseFont.TIMES_BOLD;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String TIMES_ITALIC = BaseFont.TIMES_ITALIC;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String TIMES_BOLDITALIC = BaseFont.TIMES_BOLDITALIC;
 
     /**
-     * This is a possible value of a base 14 type 1 font
+     * This is a possible value of a base 14 getTypeImpl 1 font
      */
     public static final String ZAPFDINGBATS = BaseFont.ZAPFDINGBATS;
     /**
@@ -159,7 +159,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @param size     the size of this font
@@ -175,7 +175,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @param size     the size of this font
@@ -207,7 +207,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @param size     the size of this font
@@ -222,7 +222,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @param size     the size of this font
@@ -236,7 +236,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param embedded true if the font is to be embedded in the PDF
      * @return the Font constructed based on the parameters
@@ -249,7 +249,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param size     the size of this font
      * @param style    the style of this font
@@ -264,7 +264,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param size     the size of this font
      * @param style    the style of this font
@@ -278,7 +278,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @param size     the size of this font
      * @return the Font constructed based on the parameters
@@ -291,7 +291,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param encoding the encoding of the font
      * @return the Font constructed based on the parameters
      */
@@ -303,7 +303,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param size     the size of this font
      * @param style    the style of this font
      * @param color    the <CODE>Color</CODE> of this font.
@@ -317,7 +317,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param size     the size of this font
      * @param color    the <CODE>Color</CODE> of this font.
      * @return the Font constructed based on the parameters
@@ -331,7 +331,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param size     the size of this font
      * @param style    the style of this font
      * @return the Font constructed based on the parameters
@@ -344,7 +344,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @param size     the size of this font
      * @return the Font constructed based on the parameters
      */
@@ -356,7 +356,7 @@ public final class FontFactory {
     /**
      * Constructs a <CODE>Font</CODE>-object.
      *
-     * @param fontname the name of the font
+     * @param fontname the getName of the font
      * @return the Font constructed based on the parameters
      */
 
@@ -454,7 +454,7 @@ public final class FontFactory {
     /**
      * Checks if a certain font is registered.
      *
-     * @param fontname the name of the font that has to be checked.
+     * @param fontname the getName of the font that has to be checked.
      * @return true if the font is found
      */
 
@@ -484,10 +484,10 @@ public final class FontFactory {
     }
 
     /**
-     * Register a font by giving explicitly the font family and name.
+     * Register a font by giving explicitly the font family and getName.
      *
      * @param familyName the font family
-     * @param fullName   the font name
+     * @param fullName   the font getName
      * @param path       the font path
      */
     public void registerFamily(String familyName, String fullName, String path) {

@@ -269,7 +269,7 @@ public class EntitiesToUnicode {
         map.put("isin", '\u2208'); // element of, U+2208 ISOtech
         map.put("notin", '\u2209'); // not an element of, U+2209 ISOtech
         map.put("ni", '\u220b'); // contains as member, U+220B ISOtech
-        // should there be a more memorable name than 'ni'?
+        // should there be a more memorable getName than 'ni'?
         map.put("prod", '\u220f'); // n-ary product = product sign, U+220F ISOamsb
         // prod is NOT the same character as U+03A0 'greek capital letter pi' though
         // the same glyph might be used for both
@@ -378,7 +378,7 @@ public class EntitiesToUnicode {
     /**
      * Translates an entity to a unicode character.
      *
-     * @param name the name of the entity
+     * @param name the getName of the entity
      * @return the corresponding unicode character
      */
     public static char decodeEntity(String name) {

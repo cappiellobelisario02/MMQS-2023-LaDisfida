@@ -92,15 +92,15 @@ public class ArabicLigaturizer {
      */
     public static final int DIGITS_MASK = 0xe0;
     /**
-     * Digit type option: Use Arabic-Indic digits (U+0660...U+0669).
+     * Digit getTypeImpl option: Use Arabic-Indic digits (U+0660...U+0669).
      */
     public static final int DIGIT_TYPE_AN = 0;
     /**
-     * Digit type option: Use Eastern (Extended) Arabic-Indic digits (U+06f0...U+06f9).
+     * Digit getTypeImpl option: Use Eastern (Extended) Arabic-Indic digits (U+06f0...U+06f9).
      */
     public static final int DIGIT_TYPE_AN_EXTENDED = 0x100;
     /**
-     * Bit mask for digit type options.
+     * Bit mask for digit getTypeImpl options.
      */
     public static final int DIGIT_TYPE_MASK = 0x0100; // 0x3f00?
     private static final char ALEF = 0x0627;

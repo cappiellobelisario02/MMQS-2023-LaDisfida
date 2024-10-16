@@ -23,18 +23,18 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 
 /**
- * Change the alignment of the contents of a PdfPCell.
+ * Change the getAlignment of the contents of a PdfPCell.
  */
 public class CellAlignment {
 
     /**
-     * Changing the alignment
+     * Changing the getAlignment
      *
      * @param args no arguments needed
      */
     public static void main(String[] args) {
 
-        System.out.println("indentation - alignment");
+        System.out.println("indentation - getAlignment");
         // step1
         Document document = new Document(PageSize.A4.rotate(), 10, 10, 10, 10);
         try {
@@ -48,18 +48,18 @@ public class CellAlignment {
             PdfPCell cell;
             Paragraph p = new Paragraph(
                     "Quick brown fox jumps over the lazy dog. Quick brown fox jumps over the lazy dog.");
-            table.addCell("default alignment");
+            table.addCell("default getAlignment");
             cell = new PdfPCell(p);
             table.addCell(cell);
-            table.addCell("centered alignment");
+            table.addCell("centered getAlignment");
             cell = new PdfPCell(p);
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
             table.addCell(cell);
-            table.addCell("right alignment");
+            table.addCell("right getAlignment");
             cell = new PdfPCell(p);
             cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             table.addCell(cell);
-            table.addCell("justified alignment");
+            table.addCell("justified getAlignment");
             cell = new PdfPCell(p);
             cell.setHorizontalAlignment(Element.ALIGN_JUSTIFIED);
             table.addCell(cell);

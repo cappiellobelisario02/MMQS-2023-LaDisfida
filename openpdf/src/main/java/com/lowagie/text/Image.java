@@ -94,32 +94,32 @@ public abstract class Image extends Rectangle {
     // static final membervariables
 
     /**
-     * this is a kind of image alignment.
+     * this is a kind of image getAlignment.
      */
     public static final int DEFAULT = 0;
 
     /**
-     * this is a kind of image alignment.
+     * this is a kind of image getAlignment.
      */
     public static final int RIGHT = 2;
 
     /**
-     * this is a kind of image alignment.
+     * this is a kind of image getAlignment.
      */
     public static final int LEFT = 0;
 
     /**
-     * this is a kind of image alignment.
+     * this is a kind of image getAlignment.
      */
     public static final int MIDDLE = 1;
 
     /**
-     * this is a kind of image alignment.
+     * this is a kind of image getAlignment.
      */
     public static final int TEXTWRAP = 4;
 
     /**
-     * this is a kind of image alignment.
+     * this is a kind of image getAlignment.
      */
     public static final int UNDERLYING = 8;
 
@@ -164,52 +164,52 @@ public abstract class Image extends Rectangle {
     public static final int DY = 7;
 
     /**
-     * type of image
+     * getTypeImpl of image
      */
     public static final int ORIGINAL_NONE = 0;
 
     /**
-     * type of image
+     * getTypeImpl of image
      */
     public static final int ORIGINAL_JPEG = 1;
 
     /**
-     * type of image
+     * getTypeImpl of image
      */
     public static final int ORIGINAL_PNG = 2;
 
     /**
-     * type of image
+     * getTypeImpl of image
      */
     public static final int ORIGINAL_GIF = 3;
 
     /**
-     * type of image
+     * getTypeImpl of image
      */
     public static final int ORIGINAL_BMP = 4;
 
     /**
-     * type of image
+     * getTypeImpl of image
      */
     public static final int ORIGINAL_TIFF = 5;
 
     /**
-     * type of image
+     * getTypeImpl of image
      */
     public static final int ORIGINAL_WMF = 6;
 
     /**
-     * type of image
+     * getTypeImpl of image
      */
     public static final int ORIGINAL_PS = 7;
 
     /**
-     * type of image
+     * getTypeImpl of image
      */
     public static final int ORIGINAL_JPEG2000 = 8;
 
     /**
-     * type of image
+     * getTypeImpl of image
      *
      * @since 2.1.5
      */
@@ -222,7 +222,7 @@ public abstract class Image extends Rectangle {
      */
     static long serialId = 0;
     /**
-     * The image type.
+     * The image getTypeImpl.
      */
     protected int type;
     /**
@@ -242,7 +242,7 @@ public abstract class Image extends Rectangle {
      */
     protected PdfTemplate[] template = new PdfTemplate[1];
     /**
-     * The alignment of the Image.
+     * The getAlignment of the Image.
      */
     protected int alignment;
     /**
@@ -381,7 +381,7 @@ public abstract class Image extends Rectangle {
      */
     private float initialRotation;
 
-    // checking the type of Image
+    // checking the getTypeImpl of Image
     /**
      * Holds value of property widthPercentage.
      */
@@ -574,7 +574,7 @@ public abstract class Image extends Rectangle {
      * Gets an instance of an Image.
      *
      * @param filename a filename
-     * @return an object of type <CODE>Gif</CODE>,<CODE>Jpeg</CODE> or
+     * @return an object of getTypeImpl <CODE>Gif</CODE>,<CODE>Jpeg</CODE> or
      * <CODE>Png</CODE>
      * @throws BadElementException if error in creating {@link ImgWMF#ImgWMF(byte[]) ImgWMF}
      * @throws IOException         if image is not recognized
@@ -588,7 +588,7 @@ public abstract class Image extends Rectangle {
      * Gets an instance of an Image from the classpath.
      *
      * @param filename a filename
-     * @return an object of type <CODE>Gif</CODE>,<CODE>Jpeg</CODE> or
+     * @return an object of getTypeImpl <CODE>Gif</CODE>,<CODE>Jpeg</CODE> or
      * <CODE>Png</CODE>
      * @throws BadElementException if error in creating {@link ImgWMF#ImgWMF(byte[]) ImgWMF}
      * @throws IOException         if image is not recognized
@@ -679,7 +679,7 @@ public abstract class Image extends Rectangle {
      * @param components 1,3 or 4 for GrayScale, RGB and CMYK
      * @param data       the image data
      * @param bpc        bits per component
-     * @return an object of type <CODE>ImgRaw</CODE>
+     * @return an object of getTypeImpl <CODE>ImgRaw</CODE>
      * @throws BadElementException on error
      */
     public static com.lowagie.text.Image getInstance(int width, int height, int components,
@@ -707,7 +707,7 @@ public abstract class Image extends Rectangle {
      * @param width       the exact width of the image
      * @param height      the exact height of the image
      * @param reverseBits reverses the bits in <code>data</code>. Bit 0 is swapped with bit 7 and so on
-     * @param typeCCITT   the type of compression in <code>data</code>. It can be CCITTG4, CCITTG31D, CCITTG32D
+     * @param typeCCITT   the getTypeImpl of compression in <code>data</code>. It can be CCITTG4, CCITTG31D, CCITTG32D
      * @param parameters  parameters associated with this stream. Possible values are CCITT_BLACKIS1,
      *                    CCITT_ENCODEDBYTEALIGN, CCITT_ENDOFLINE and CCITT_ENDOFBLOCK or a combination of them
      * @param data        the image data
@@ -727,7 +727,7 @@ public abstract class Image extends Rectangle {
      * @param width        the exact width of the image
      * @param height       the exact height of the image
      * @param reverseBits  reverses the bits in <code>data</code>. Bit 0 is swapped with bit 7 and so on
-     * @param typeCCITT    the type of compression in <code>data</code>. It can be CCITTG4, CCITTG31D, CCITTG32D
+     * @param typeCCITT    the getTypeImpl of compression in <code>data</code>. It can be CCITTG4, CCITTG31D, CCITTG32D
      * @param parameters   parameters associated with this stream. Possible values are CCITT_BLACKIS1,
      *                     CCITT_ENCODEDBYTEALIGN, CCITT_ENDOFLINE and CCITT_ENDOFBLOCK or a combination of them
      * @param data         the image data
@@ -757,7 +757,7 @@ public abstract class Image extends Rectangle {
      * @param data         the image data
      * @param bpc          bits per component
      * @param transparency transparency information in the Mask format of the image dictionary
-     * @return an object of type <CODE>ImgRaw</CODE>
+     * @return an object of getTypeImpl <CODE>ImgRaw</CODE>
      * @throws BadElementException on error
      */
     public static com.lowagie.text.Image getInstance(int width, int height, int components,
@@ -795,7 +795,7 @@ public abstract class Image extends Rectangle {
      * @param image   the <CODE>java.awt.Image</CODE> to convert
      * @param color   if different from <CODE>null</CODE> the transparency pixels are replaced by this color
      * @param forceBW if <CODE>true</CODE> the image is treated as black and white
-     * @return an object of type <CODE>ImgRaw</CODE>
+     * @return an object of getTypeImpl <CODE>ImgRaw</CODE>
      * @throws BadElementException on error
      * @throws IOException         on error
      */
@@ -977,7 +977,7 @@ public abstract class Image extends Rectangle {
      *
      * @param image the <CODE>java.awt.Image</CODE> to convert
      * @param color if different from <CODE>null</CODE> the transparency pixels are replaced by this color
-     * @return an object of type <CODE>ImgRaw</CODE>
+     * @return an object of getTypeImpl <CODE>ImgRaw</CODE>
      * @throws BadElementException on error
      * @throws IOException         on error
      */
@@ -992,7 +992,7 @@ public abstract class Image extends Rectangle {
      * @param writer   the <CODE>PdfWriter</CODE> object to which the image will be added
      * @param awtImage the <CODE>java.awt.Image</CODE> to convert
      * @param quality  a float value between <code>0</code> and <code>1</code>
-     * @return an object of type <CODE>PdfTemplate</CODE>
+     * @return an object of getTypeImpl <CODE>PdfTemplate</CODE>
      * @throws BadElementException on error
      * @throws IOException         on error
      */
@@ -1009,7 +1009,7 @@ public abstract class Image extends Rectangle {
      * @param cb       the <CODE>PdfContentByte</CODE> object to which the image will be added
      * @param awtImage the <CODE>java.awt.Image</CODE> to convert
      * @param quality  a float value between <code>0</code> and <code>1</code>
-     * @return an object of type <CODE>PdfTemplate</CODE>
+     * @return an object of getTypeImpl <CODE>PdfTemplate</CODE>
      * @throws BadElementException on error
      * @throws IOException         on error
      */
@@ -1116,12 +1116,12 @@ public abstract class Image extends Rectangle {
     }
 
     /**
-     * Returns the type.
+     * Returns the getTypeImpl.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return type;
     }
 
@@ -1188,7 +1188,7 @@ public abstract class Image extends Rectangle {
     /**
      * Gets the raw data for the image.
      * <p>
-     * Remark: this only makes sense for Images of the type <CODE>RawImage
+     * Remark: this only makes sense for Images of the getTypeImpl <CODE>RawImage
      * </CODE>.
      *
      * @return the raw data
@@ -1202,7 +1202,7 @@ public abstract class Image extends Rectangle {
     /**
      * Gets the bpc for the image.
      * <p>
-     * Remark: this only makes sense for Images of the type <CODE>RawImage
+     * Remark: this only makes sense for Images of the getTypeImpl <CODE>RawImage
      * </CODE>.
      *
      * @return a bpc value
@@ -1214,7 +1214,7 @@ public abstract class Image extends Rectangle {
     /**
      * Gets the template to be used as an image.
      * <p>
-     * Remark: this only makes sense for Images of the type <CODE>ImgTemplate
+     * Remark: this only makes sense for Images of the getTypeImpl <CODE>ImgTemplate
      * </CODE>.
      *
      * @return the template
@@ -1233,7 +1233,7 @@ public abstract class Image extends Rectangle {
     }
 
     /**
-     * Gets the alignment for the image.
+     * Gets the getAlignment for the image.
      *
      * @return a value
      */
@@ -1242,9 +1242,9 @@ public abstract class Image extends Rectangle {
     }
 
     /**
-     * Sets the alignment for the image.
+     * Sets the getAlignment for the image.
      *
-     * @param alignment the alignment
+     * @param alignment the getAlignment
      */
 
     public void setAlignment(int alignment) {
@@ -1568,7 +1568,7 @@ public abstract class Image extends Rectangle {
         indentationLeft = f;
     }
 
-    // original type and data
+    // original getTypeImpl and data
 
     /**
      * Gets the right indentation.
@@ -1811,7 +1811,7 @@ public abstract class Image extends Rectangle {
     /**
      * Gets the colorspace for the image.
      * <p>
-     * Remark: this only makes sense for Images of the type <CODE>Jpeg</CODE>.
+     * Remark: this only makes sense for Images of the getTypeImpl <CODE>Jpeg</CODE>.
      *
      * @return a colorspace value
      */

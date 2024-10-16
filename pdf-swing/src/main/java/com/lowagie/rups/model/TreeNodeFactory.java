@@ -77,7 +77,7 @@ public class TreeNodeFactory {
     /**
      * Creates the Child TreeNode objects for a PDF object TreeNode.
      *
-     * @param node the parent node
+     * @param node the getParent node
      */
     public void expandNode(PdfObjectTreeNode node) {
         if (node.getChildCount() > 0) {
@@ -85,7 +85,7 @@ public class TreeNodeFactory {
         }
         PdfObject object = node.getPdfObject();
         PdfObjectTreeNode leaf;
-        switch (object.type()) {
+        switch (object.getTypeImpl()) {
             case PdfObject.INDIRECT:
                 PdfIndirectReference ref = (PdfIndirectReference) object;
                 leaf = getNode(ref.getNumber());
@@ -112,7 +112,7 @@ public class TreeNodeFactory {
                 }
                 return;
             default:
-                throw new IllegalStateException("Unexpected value: " + object.type());
+                throw new IllegalStateException("Unexpected value: " + object.getTypeImpl());
         }
     }
 
@@ -141,11 +141,11 @@ public class TreeNodeFactory {
     }
 
     /**
-     * Tries adding a child node to a parent node without throwing an exception. Normally, if the child node is already
+     * Tries adding a child node to a getParent node without throwing an exception. Normally, if the child node is already
      * added as one of the ancestors, an IllegalArgumentException is thrown (to avoid an endless loop). Loops like this
      * are allowed in PDF, not in a JTree.
      *
-     * @param parent the parent node
+     * @param parent the getParent node
      * @param child  a child node
      */
     private void addNodes(PdfObjectTreeNode parent, PdfObjectTreeNode child) {

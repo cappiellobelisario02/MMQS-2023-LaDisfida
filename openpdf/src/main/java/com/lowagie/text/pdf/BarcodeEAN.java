@@ -540,7 +540,7 @@ public class BarcodeEAN extends Barcode {
                 width = x * (4 + 5 * 7 + 4 * 2);
                 break;
             default:
-                throw new InvalidCodeTypeException(MessageLocalization.getComposedMessage("invalid.code.type"));
+                throw new InvalidCodeTypeException(MessageLocalization.getComposedMessage("invalid.code.getTypeImpl"));
         }
         return new Rectangle(width, height);
     }
@@ -781,7 +781,7 @@ public class BarcodeEAN extends Barcode {
                 width = 4 + 5 * 7 + 4 * 2;
                 break;
             default:
-                throw new InvalidCodeTypeException(MessageLocalization.getComposedMessage("invalid.code.type"));
+                throw new InvalidCodeTypeException(MessageLocalization.getComposedMessage("invalid.code.getTypeImpl"));
         }
 
         boolean print = true;

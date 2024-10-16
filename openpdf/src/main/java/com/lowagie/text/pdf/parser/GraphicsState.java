@@ -74,7 +74,7 @@ public class GraphicsState {
      */
     private float horizontalScaling;
     /**
-     * The current leading.
+     * The current getLeading.
      */
     private float leading;
     /**

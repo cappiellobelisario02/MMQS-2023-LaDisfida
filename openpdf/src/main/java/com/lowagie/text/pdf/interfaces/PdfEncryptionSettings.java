@@ -71,7 +71,7 @@ public interface PdfEncryptionSettings {
      * @param userPassword   the user password. Can be null or empty
      * @param ownerPassword  the owner password. Can be null or empty
      * @param permissions    the user permissions
-     * @param encryptionType the type of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
+     * @param encryptionType the getTypeImpl of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
      *                       ENCRYPTION_AES128. Optionally DO_NOT_ENCRYPT_METADATA can be ored to output the metadata in
      *                       cleartext
      * @throws DocumentException if the document is already open
@@ -88,7 +88,7 @@ public interface PdfEncryptionSettings {
      *
      * @param certs          the public certificates to be used for the encryption
      * @param permissions    the user permissions for each of the certificates
-     * @param encryptionType the type of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
+     * @param encryptionType the getTypeImpl of encryption. It can be one of STANDARD_ENCRYPTION_40, STANDARD_ENCRYPTION_128 or
      *                       ENCRYPTION_AES128.
      * @throws DocumentException if the document is already open
      */

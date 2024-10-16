@@ -170,7 +170,7 @@ public class ElementTags {
     /**
      * attribute of phrase/paragraph/cell tag
      */
-    public static final String LEADING = "leading";
+    public static final String LEADING = "getLeading";
 
     /**
      * attribute of paragraph/image/table tag
@@ -334,12 +334,12 @@ public class ElementTags {
     /**
      * attribute of the table tag
      */
-    public static final String CELLPADDING = "cellpadding";
+    public static final String CELLPADDING = "getCellPadding";
 
     /**
      * attribute of the table tag
      */
-    public static final String CELLSPACING = "cellspacing";
+    public static final String CELLSPACING = "getCellSpacing";
 
     /**
      * attribute of the table tag
@@ -384,7 +384,7 @@ public class ElementTags {
     /**
      * attribute of the cell tag
      */
-    public static final String ROWSPAN = "rowspan";
+    public static final String ROWSPAN = "getRowSpan";
 
     /**
      * attribute of the cell tag
@@ -588,75 +588,75 @@ public class ElementTags {
      */
     public static final String CONTENT = "content";
 
-    // alignment attribute values
+    // getAlignment attribute values
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_LEFT = "Left";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_CENTER = "Center";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_RIGHT = "Right";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_JUSTIFIED = "Justify";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_JUSTIFIED_ALL = "JustifyAll";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_TOP = "Top";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_MIDDLE = "Middle";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_BOTTOM = "Bottom";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String ALIGN_BASELINE = "Baseline";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String DEFAULT = "Default";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String UNKNOWN = "unknown";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String FONT = "font";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String SIZE = "size";
 
     /**
-     * the possible value of an alignment attribute
+     * the possible value of an getAlignment attribute
      */
     public static final String STYLE = "fontstyle";
 
@@ -706,9 +706,9 @@ public class ElementTags {
     // methods
 
     /**
-     * Translates the alignment value to a String value.
+     * Translates the getAlignment value to a String value.
      *
-     * @param alignment the alignment value
+     * @param alignment the getAlignment value
      * @return the translated value
      */
     public static String getAlignment(int alignment) {
@@ -736,10 +736,10 @@ public class ElementTags {
     }
 
     /**
-     * Translates a String value to an alignment value. (written by Norman Richards, integrated into iText by Bruno)
+     * Translates a String value to an getAlignment value. (written by Norman Richards, integrated into iText by Bruno)
      *
      * @param alignment a String (one of the ALIGN_ constants of this class)
-     * @return an alignment value (one of the ALIGN_ constants of the Element interface)
+     * @return an getAlignment value (one of the ALIGN_ constants of the Element interface)
      */
     public static int alignmentValue(String alignment) {
         if (alignment == null) {

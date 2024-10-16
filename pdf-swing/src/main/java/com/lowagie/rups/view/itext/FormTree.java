@@ -136,7 +136,7 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
      * Method that can be used recursively to load the fields hierarchy into the tree.
      *
      * @param factory     a factory that can produce new PDF object nodes
-     * @param form_node   the parent node in the form tree
+     * @param form_node   the getParent node in the form tree
      * @param object_node the object node that will be used to create a child node
      */
     private void loadFields(TreeNodeFactory factory, FormTreeNode form_node, PdfObjectTreeNode object_node) {
@@ -162,7 +162,7 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
     /**
      * Method that will load the nodes that refer to XFA streams.
      *
-     * @param form_node   the parent node in the form tree
+     * @param form_node   the getParent node in the form tree
      * @param object_node the object node that will be used to create a child node
      */
     private void loadXfa(TreeNodeFactory factory, XfaTreeNode form_node, PdfObjectTreeNode object_node) {

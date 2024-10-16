@@ -86,7 +86,7 @@ public class PdfLister {
      * @param object a com.lowagie.text.pdf object
      */
     public void listAnyObject(PdfObject object) {
-        switch (object.type()) {
+        switch (object.getTypeImpl()) {
             case PdfObject.ARRAY:
                 listArray((PdfArray) object);
                 break;

@@ -297,11 +297,11 @@ public class List implements TextElementArray {
     }
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
-    public int type() {
+    public int getTypeImpl() {
         return Element.LIST;
     }
 
@@ -442,9 +442,9 @@ public class List implements TextElementArray {
     }
 
     /**
-     * Gets the leading of the first listitem.
+     * Gets the getLeading of the first listitem.
      *
-     * @return a <CODE>leading</CODE>
+     * @return a <CODE>getLeading</CODE>
      */
     public float getTotalLeading() {
         if (listOfListItems.isEmpty()) {

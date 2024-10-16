@@ -276,7 +276,7 @@ public class HtmlWriter extends DocWriter {
     }
 
     private boolean handleElementAddition(Element element) throws IOException, DocumentException, AddCellException {
-        return switch (element.type()) {
+        return switch (element.getTypeImpl()) {
             case Element.HEADER -> {
                 handleHeader((Header) element);
                 yield true;
@@ -455,7 +455,7 @@ public class HtmlWriter extends DocWriter {
     protected void writeHeader(Meta meta) throws IOException {
         addTabs(2);
         writeStart(HtmlTags.META);
-        switch (meta.type()) {
+        switch (meta.getTypeImpl()) {
             case Element.HEADER:
                 write(HtmlTags.NAME, meta.getName());
                 break;
@@ -512,7 +512,7 @@ public class HtmlWriter extends DocWriter {
         } else {
             /* JavaScript coding convention:
              *
-             * <script language="JavaScript" type="text/javascript">
+             * <script language="JavaScript" getTypeImpl="text/javascript">
              * <!--
              * // ... JavaScript methods ...
              * //-->
@@ -636,7 +636,7 @@ public class HtmlWriter extends DocWriter {
      * @throws IOException thrown when an I/O operation fails
      */
     protected void write(Element element, int indent) throws IOException, AddCellException {
-        switch (element.type()) {
+        switch (element.getTypeImpl()) {
             case Element.MARKED:
                 handleMarked(element);
                 break;

@@ -15,7 +15,7 @@ public class PdfCollectionSchema extends PdfDictionary {
     /**
      * Adds a Collection field to the Schema.
      *
-     * @param name  the name of the collection field
+     * @param name  the getName of the collection field
      * @param field a Collection Field
      */
     public void addField(String name, PdfCollectionField field) {

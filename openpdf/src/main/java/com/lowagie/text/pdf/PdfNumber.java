@@ -92,7 +92,7 @@ public class PdfNumber extends PdfObject implements Comparable<PdfNumber> {
     }
 
     /**
-     * Constructs a new <CODE>PdfNumber</CODE>-object of type integer.
+     * Constructs a new <CODE>PdfNumber</CODE>-object of getTypeImpl integer.
      *
      * @param value value of the new <CODE>PdfNumber</CODE>-object
      */
@@ -103,7 +103,7 @@ public class PdfNumber extends PdfObject implements Comparable<PdfNumber> {
     }
 
     /**
-     * Constructs a new <CODE>PdfNumber</CODE>-object of type long.
+     * Constructs a new <CODE>PdfNumber</CODE>-object of getTypeImpl long.
      *
      * @param value value of the new <CODE>PdfNumber</CODE>-object
      */
@@ -114,7 +114,7 @@ public class PdfNumber extends PdfObject implements Comparable<PdfNumber> {
     }
 
     /**
-     * Constructs a new <CODE>PdfNumber</CODE>-object of type real.
+     * Constructs a new <CODE>PdfNumber</CODE>-object of getTypeImpl real.
      *
      * @param value value of the new <CODE>PdfNumber</CODE>-object
      */
@@ -125,7 +125,7 @@ public class PdfNumber extends PdfObject implements Comparable<PdfNumber> {
     }
 
     /**
-     * Constructs a new <CODE>PdfNumber</CODE>-object of type real.
+     * Constructs a new <CODE>PdfNumber</CODE>-object of getTypeImpl real.
      *
      * @param value value of the new <CODE>PdfNumber</CODE>-object
      */

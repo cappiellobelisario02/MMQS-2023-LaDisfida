@@ -20,6 +20,6 @@ class FactoryPropertiesTest {
         // when
         FactoryProperties.insertStyle(h, cprops);
         // then
-        Assertions.assertThat(h.get("leading")).isEqualTo("1.4,0");
+        Assertions.assertThat(h.get("getLeading")).isEqualTo("1.4,0");
     }
 }

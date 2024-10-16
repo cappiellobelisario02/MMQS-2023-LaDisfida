@@ -78,7 +78,7 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     // member variables
     /**
      * Indicates that the largest ascender height should be used to determine the height of the first line.  Note that
-     * this only has an effect when rendered to PDF.  Setting this to true can help with vertical alignment problems.
+     * this only has an effect when rendered to PDF.  Setting this to true can help with vertical getAlignment problems.
      */
     protected boolean useAscender = false;
     /**
@@ -140,11 +140,11 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
      */
     private int colspan = 1;
     /**
-     * horizontal alignment inside the Cell.
+     * horizontal getAlignment inside the Cell.
      */
     private int horizontalAlignment = Element.ALIGN_UNDEFINED;
     /**
-     * vertical alignment inside the Cell.
+     * vertical getAlignment inside the Cell.
      */
     private int verticalAlignment = Element.ALIGN_UNDEFINED;
     /**
@@ -166,7 +166,7 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     /**
      * Adds content to this object.
      *
-     * @param element an object of type {@link Element} that you want to add to the cell
+     * @param element an object of getTypeImpl {@link Element} that you want to add to the cell
      * @throws BadElementException on error
      */
     public void addElement(Element element) throws BadElementException {
@@ -180,25 +180,25 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
                 return;
             } else {
                 throw new BadElementException(
-                        MessageLocalization.getComposedMessage("you.can.only.add.cells.to.rows.no.objects.of.type.1",
+                        MessageLocalization.getComposedMessage("you.can.only.add.cells.to.rows.no.objects.of.getTypeImpl.1",
                                 element.getClass().getName()));
             }
         }
-        if (element.type() == Element.PARAGRAPH
-                || element.type() == Element.PHRASE
-                || element.type() == Element.ANCHOR
-                || element.type() == Element.CHUNK
-                || element.type() == Element.LIST
-                || element.type() == Element.MARKED
-                || element.type() == Element.JPEG
-                || element.type() == Element.JPEG2000
-                || element.type() == Element.JBIG2
-                || element.type() == Element.IMGRAW
-                || element.type() == Element.IMGTEMPLATE) {
+        if (element.getTypeImpl() == Element.PARAGRAPH
+                || element.getTypeImpl() == Element.PHRASE
+                || element.getTypeImpl() == Element.ANCHOR
+                || element.getTypeImpl() == Element.CHUNK
+                || element.getTypeImpl() == Element.LIST
+                || element.getTypeImpl() == Element.MARKED
+                || element.getTypeImpl() == Element.JPEG
+                || element.getTypeImpl() == Element.JPEG2000
+                || element.getTypeImpl() == Element.JBIG2
+                || element.getTypeImpl() == Element.IMGRAW
+                || element.getTypeImpl() == Element.IMGTEMPLATE) {
             content.add(element);
         } else {
             throw new BadElementException(
-                    MessageLocalization.getComposedMessage("you.can.t.add.an.element.of.type.1.to.a.simplecell",
+                    MessageLocalization.getComposedMessage("you.can.t.add.an.element.of.getTypeImpl.1.to.a.simplecell",
                             element.getClass().getName()));
         }
     }
@@ -206,7 +206,7 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     /**
      * Creates a Cell with these attributes.
      *
-     * @param rowAttributes an object of type {@link SimpleCell} whose attributes are to be used to create new cell
+     * @param rowAttributes an object of getTypeImpl {@link SimpleCell} whose attributes are to be used to create new cell
      * @return a cell based on these attributes.
      * @throws BadElementException on error
      */
@@ -233,7 +233,7 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     /**
      * Creates a PdfPCell with these attributes.
      *
-     * @param rowAttributes an object of type {@link SimpleCell} whose attributes are to be used to create new cell
+     * @param rowAttributes an object of getTypeImpl {@link SimpleCell} whose attributes are to be used to create new cell
      * @return a PdfPCell based on these attributes.
      */
     public PdfPCell createPdfPCell(SimpleCell rowAttributes) {
@@ -520,7 +520,7 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     }
 
     /**
-     * @return Returns the horizontal alignment.
+     * @return Returns the horizontal getAlignment.
      */
     public int getHorizontalAlignment() {
         return horizontalAlignment;
@@ -534,7 +534,7 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     }
 
     /**
-     * @return Returns the vertical alignment.
+     * @return Returns the vertical getAlignment.
      */
     public int getVerticalAlignment() {
         return verticalAlignment;
@@ -640,10 +640,10 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     }
 
     /**
-     * @see com.lowagie.text.Element#type()
+     * @see com.lowagie.text.Element#getTypeImpl()
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.CELL;
     }
 }

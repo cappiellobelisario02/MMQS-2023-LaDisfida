@@ -60,12 +60,12 @@ import org.xml.sax.Attributes;
 public class XmlPeer {
 
     /**
-     * This is the name of the alias.
+     * This is the getName of the alias.
      */
     protected String tagname;
 
     /**
-     * This is the name of the alias.
+     * This is the getName of the alias.
      */
     protected String customTagname;
 
@@ -87,8 +87,8 @@ public class XmlPeer {
     /**
      * Creates a XmlPeer.
      *
-     * @param name  the iText name of a tag
-     * @param alias the user defined name of a tag
+     * @param name  the iText getName of a tag
+     * @param alias the user defined getName of a tag
      */
 
     public XmlPeer(String name, String alias) {
@@ -99,7 +99,7 @@ public class XmlPeer {
     /**
      * Gets the tagname of the peer.
      *
-     * @return the iText name of a tag
+     * @return the iText getName of a tag
      */
 
     public String getTag() {
@@ -170,10 +170,10 @@ public class XmlPeer {
     }
 
     /**
-     * Returns the iText attribute name.
+     * Returns the iText attribute getName.
      *
-     * @param name the custom attribute name
-     * @return iText translated attribute name
+     * @param name the custom attribute getName
+     * @return iText translated attribute getName
      */
 
     public String getName(String name) {

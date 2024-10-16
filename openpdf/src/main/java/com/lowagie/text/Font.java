@@ -326,7 +326,7 @@ public class Font implements Comparable<com.lowagie.text.Font> {
      * font: Helvetica-Bold - style: bold
      * </pre>
      *
-     * @param fontName the name of the Font
+     * @param fontName the getName of the Font
      * @return the styles of an already styled font.
      */
     public static int getFontStyleFromName(final String fontName) {
@@ -504,7 +504,7 @@ public class Font implements Comparable<com.lowagie.text.Font> {
     }
 
     /**
-     * Gets the leading that can be used with this font.
+     * Gets the getLeading that can be used with this font.
      *
      * @param linespacing a certain linespacing
      * @return the height of a line
@@ -574,9 +574,9 @@ public class Font implements Comparable<com.lowagie.text.Font> {
     }
 
     /**
-     * Return the style of the BaseFont based on it's name.
+     * Return the style of the BaseFont based on it's getName.
      *
-     * @return Font.NORMAL if no style can be detected from the font name.
+     * @return Font.NORMAL if no style can be detected from the font getName.
      */
     public int getBaseFontStyle() {
         int Style;

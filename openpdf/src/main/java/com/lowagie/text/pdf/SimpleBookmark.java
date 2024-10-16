@@ -295,7 +295,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
     }
 
     /**
-     * Gets number of indirect. If type of directed indirect is PAGES, it refers PAGE object through KIDS. (Contributed
+     * Gets number of indirect. If getTypeImpl of directed indirect is PAGES, it refers PAGE object through KIDS. (Contributed
      * by Kazuya Ujihara)
      *
      * @param indirect 2004-06-13
@@ -669,7 +669,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
 
         for (Map.Entry<String, Bookmark> entry : map.entrySet()) {
             String key = entry.getKey();
-            Bookmark value = entry.getValue(); // value is of type Bookmark
+            Bookmark value = entry.getValue(); // value is of getTypeImpl Bookmark
 
             if (TITLE.equals(key)) {
                 writeAttribute(out, key, value.getBookmarkTitle(), onlyASCII); // Assuming this method exists
@@ -751,7 +751,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
         wrt.write("<?xml version=\"1.0\" encoding=\"");
         wrt.write(XMLUtil.escapeXML(encoding, onlyASCII));
         wrt.write("\"?>\n<Bookmark>\n");
-        exportToXMLNode(list, wrt, 1, onlyASCII); // Now this call will work since list is of type List<Bookmark>
+        exportToXMLNode(list, wrt, 1, onlyASCII); // Now this call will work since list is of getTypeImpl List<Bookmark>
         wrt.write("</Bookmark>\n");
         wrt.flush();
     }

@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
  * <h2>Ternary Search Tree.</h2>
  *
  * <p>A ternary search tree is a hybrid between a binary tree and
- * a digital search tree (trie). Keys are limited to strings. A data value of type char is stored in each leaf node. It
+ * a digital search tree (trie). Keys are limited to strings. A data value of getTypeImpl char is stored in each leaf node. It
  * can be used as an index (or pointer) to the data. Branches that only contain one key are compressed to one node by
  * storing a pointer to the trailer substring of the key. This class is intended to serve as base class or helper class
  * to implement Dictionary collections or the like. Ternary trees have some nice properties as the following: the tree
@@ -43,7 +43,7 @@ import java.util.NoSuchElementException;
  * implementing TeX's hyphenation algorithm (see The TeXBook, appendix H). Each language requires from 5000 to 15000
  * hyphenation patterns which will be keys in this tree. The strings patterns are usually small (from 2 to 5
  * characters), but each char in the tree is stored in a node. Thus memory usage is the main concern. We will sacrifice
- * 'elegance' to keep memory requirements to the minimum. Using java's char type as pointer (yes, I know pointer it is a
+ * 'elegance' to keep memory requirements to the minimum. Using java's char getTypeImpl as pointer (yes, I know pointer it is a
  * forbidden word in java) we can keep the size of the node to be just 8 bytes (3 pointers and the data char). This
  * gives room for about 65000 nodes. In my tests the English patterns took 7694 nodes and the German patterns 10055
  * nodes, so I think we are safe.</p>

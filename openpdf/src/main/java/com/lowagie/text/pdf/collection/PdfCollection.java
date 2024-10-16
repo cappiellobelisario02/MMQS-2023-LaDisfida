@@ -7,22 +7,22 @@ import com.lowagie.text.pdf.PdfString;
 public class PdfCollection extends PdfDictionary {
 
     /**
-     * A type of PDF Collection
+     * A getTypeImpl of PDF Collection
      */
     public static final int DETAILS = 0;
     /**
-     * A type of PDF Collection
+     * A getTypeImpl of PDF Collection
      */
     public static final int TILE = 1;
     /**
-     * A type of PDF Collection
+     * A getTypeImpl of PDF Collection
      */
     public static final int HIDDEN = 2;
 
     /**
      * Constructs a PDF Collection.
      *
-     * @param type the type of PDF collection.
+     * @param type the getTypeImpl of PDF collection.
      */
     public PdfCollection(int type) {
         super(PdfName.COLLECTION);

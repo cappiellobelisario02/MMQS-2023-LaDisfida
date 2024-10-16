@@ -181,9 +181,9 @@ public final class HtmlEncoder {
     }
 
     /**
-     * Translates the alignment value.
+     * Translates the getAlignment value.
      *
-     * @param alignment the alignment value
+     * @param alignment the getAlignment value
      * @return the translated value
      */
 

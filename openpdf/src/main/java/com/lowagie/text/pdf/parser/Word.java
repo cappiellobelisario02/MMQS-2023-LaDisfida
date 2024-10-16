@@ -95,7 +95,7 @@ public class Word extends ParsedTextImpl {
      * accept a visitor that is assembling text
      *
      * @param p           the assembler that is visiting us.
-     * @param contextName What is the wrapping markup element name if any
+     * @param contextName What is the wrapping markup element getName if any
      * @see com.lowagie.text.pdf.parser.ParsedTextImpl#accumulate(com.lowagie.text.pdf.parser.TextAssembler, String)
      * @see com.lowagie.text.pdf.parser.TextAssemblyBuffer#accumulate(com.lowagie.text.pdf.parser.TextAssembler, String)
      */

@@ -19,12 +19,12 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 /**
- * Retrieving the full font name
+ * Retrieving the full font getName
  */
 public class FullFontNames {
 
     /**
-     * Retrieving the full font name
+     * Retrieving the full font getName
      *
      * @param args no arguments needed
      */
@@ -34,7 +34,7 @@ public class FullFontNames {
             out.write("postscriptname: " + bf.getPostscriptFontName());
             out.write("\r\n\r\n");
             String[][] names = bf.getFullFontName();
-            out.write("\n\nListing the full font name:\n\n");
+            out.write("\n\nListing the full font getName:\n\n");
             for (String[] name : names) {
                 // Microsoft encoding
                 if (name[0].equals("3") && name[1].equals("1")) {

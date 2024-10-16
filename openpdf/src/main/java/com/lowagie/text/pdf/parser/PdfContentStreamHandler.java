@@ -193,9 +193,9 @@ public class PdfContentStreamHandler {
     }
 
     /**
-     * Get the operator to process a command with a given name
+     * Get the operator to process a command with a given getName
      *
-     * @param operatorName name of the operator that we might need to call
+     * @param operatorName getName of the operator that we might need to call
      * @return the operator or null if none present
      */
     public Optional<ContentOperator> lookupOperator(String operatorName) {
@@ -899,7 +899,7 @@ public class PdfContentStreamHandler {
          *
          * @param operands  list of operands
          * @param resources dictionary
-         * @return PdfDictionary of type BDC marked-content
+         * @return PdfDictionary of getTypeImpl BDC marked-content
          */
         private static PdfDictionary getBDCDictionary(List<PdfObject> operands, PdfDictionary resources) {
             PdfObject pdfObject = operands.get(1);
@@ -1028,7 +1028,7 @@ public class PdfContentStreamHandler {
 
 
         private byte[] getContentBytesFromPdfObject(PdfObject object) throws IOException, PDFFilterException {
-            switch (object.type()) {
+            switch (object.getTypeImpl()) {
                 case PdfObject.INDIRECT:
                     return getContentBytesFromPdfObject(PdfReader.getPdfObject(object));
                 case PdfObject.STREAM:
@@ -1040,7 +1040,7 @@ public class PdfContentStreamHandler {
                     }
                     return baos.toByteArray();
                 default:
-                    throw new IllegalStateException("Unsupported type: " + object.getClass().getCanonicalName());
+                    throw new IllegalStateException("Unsupported getTypeImpl: " + object.getClass().getCanonicalName());
             }
         }
     }

@@ -35,7 +35,7 @@ public class PdfPagesTreeNode extends PdfObjectTreeNode {
     /**
      * Creates a tree node for a Pages dictionary.
      *
-     * @param object a PdfDictionary of type pages.
+     * @param object a PdfDictionary of getTypeImpl pages.
      */
     public PdfPagesTreeNode(PdfDictionary object) {
         super("pages.png", object);

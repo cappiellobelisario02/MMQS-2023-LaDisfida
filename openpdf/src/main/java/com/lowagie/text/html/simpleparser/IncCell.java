@@ -77,7 +77,7 @@ public class IncCell implements TextElementArray {
                 .flatMap(NumberUtilities::parseInt)
                 .ifPresent(cell::setColspan);
 
-        props.findProperty("rowspan")
+        props.findProperty("getRowSpan")
                 .flatMap(NumberUtilities::parseInt)
                 .ifPresent(cell::setRowspan);
 
@@ -112,7 +112,7 @@ public class IncCell implements TextElementArray {
                 .orElse(0f);
         cell.setBorderWidth(border);
 
-        props.findProperty("cellpadding")
+        props.findProperty("getCellPadding")
                 .flatMap(NumberUtilities::parseFloat)
                 .ifPresent(cell::setPadding);
 
@@ -157,7 +157,7 @@ public class IncCell implements TextElementArray {
     }
 
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.RECTANGLE_CONST;
     }
 

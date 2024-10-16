@@ -65,7 +65,7 @@ public interface PdfAnnotations {
 
     /**
      * Use this methods to add a <CODE>PdfAnnotation</CODE> or a <CODE>PdfFormField</CODE> to the document. Only the top
-     * parent of a <CODE>PdfFormField</CODE> needs to be added.
+     * getParent of a <CODE>PdfFormField</CODE> needs to be added.
      *
      * @param annot the <CODE>PdfAnnotation</CODE> or the <CODE>PdfFormField</CODE> to add
      */

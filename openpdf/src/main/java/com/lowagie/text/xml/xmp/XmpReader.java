@@ -106,10 +106,10 @@ public class XmpReader {
      * Replaces the content of a tag.
      *
      * @param namespaceURI the URI of the namespace
-     * @param localName    the tag name
+     * @param localName    the tag getName
      * @param value        the new content for the tag
      * @return true if the content was successfully replaced
-     * @since 2.1.6 the return type has changed from void to boolean
+     * @since 2.1.6 the return getTypeImpl has changed from void to boolean
      */
     public boolean replace(String namespaceURI, String localName, String value) {
         NodeList nodes = domDocument.getElementsByTagNameNS(namespaceURI, localName);
@@ -128,8 +128,8 @@ public class XmpReader {
      * Adds a tag.
      *
      * @param namespaceURI the URI of the namespace
-     * @param parent       the tag name of the parent
-     * @param localName    the name of the tag to add
+     * @param parent       the tag getName of the getParent
+     * @param localName    the getName of the tag to add
      * @param value        the new content for the tag
      * @return true if the content was successfully added
      * @since 2.1.6

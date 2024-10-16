@@ -54,12 +54,12 @@ public class Paragraphs {
             Paragraph p1 = new Paragraph(new Chunk(
                     "This is my first paragraph. ",
                     FontFactory.getFont(FontFactory.HELVETICA, 10)));
-            p1.add("The leading of this paragraph is calculated automagically. ");
-            p1.add("The default leading is 1.5 times the fontsize. ");
+            p1.add("The getLeading of this paragraph is calculated automagically. ");
+            p1.add("The default getLeading is 1.5 times the fontsize. ");
             p1.add(new Chunk("You can add chunks "));
             p1.add(new Phrase("or you can add phrases. "));
             p1.add(new Phrase(
-                    "Unless you change the leading with the method setLeading, the leading doesn't change if you add text with another leading. This can lead to some problems.",
+                    "Unless you change the getLeading with the method setLeading, the getLeading doesn't change if you add text with another getLeading. This can lead to some problems.",
                     FontFactory.getFont(FontFactory.HELVETICA, 18)));
             document.add(p1);
             Paragraph p2 = new Paragraph(new Phrase(

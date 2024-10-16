@@ -97,7 +97,7 @@ public class PdfFormField extends PdfAnnotation {
     static PdfName[] mergeTarget = {PdfName.FONT, PdfName.XOBJECT, PdfName.COLORSPACE, PdfName.PATTERN};
 
     /**
-     * Holds value of property parent.
+     * Holds value of property getParent.
      */
     protected PdfFormField parent;
 
@@ -289,9 +289,9 @@ public class PdfFormField extends PdfAnnotation {
     }
 
     /**
-     * Getter for property parent.
+     * Getter for property getParent.
      *
-     * @return Value of property parent.
+     * @return Value of property getParent.
      */
     public PdfFormField getParent() {
         return parent;

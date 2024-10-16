@@ -4,7 +4,7 @@ import com.lowagie.text.Element;
 import java.util.Optional;
 
 /**
- * Represents a possible horizontal alignment modes for document elements that can be aligned horizontally.
+ * Represents a possible horizontal getAlignment modes for document elements that can be aligned horizontally.
  *
  * @author noavarice
  * @see WithHorizontalAlignment
@@ -27,10 +27,10 @@ public enum HorizontalAlignment {
     }
 
     /**
-     * Constructs {@link HorizontalAlignment} instance from passed unique alignment {@code id}.
+     * Constructs {@link HorizontalAlignment} instance from passed unique getAlignment {@code id}.
      *
      * @param id Alignment unique ID
-     * @return {@link Optional} containing alignment instance. If {@code id} is not recognized, {@link Optional#empty()}
+     * @return {@link Optional} containing getAlignment instance. If {@code id} is not recognized, {@link Optional#empty()}
      * will be returned
      * @see Element#ALIGN_UNDEFINED
      * @see Element#ALIGN_LEFT

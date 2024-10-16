@@ -15,7 +15,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -35,9 +34,9 @@ class EmbeddedImageTest {
         final List<Element> elements = HTMLWorker.parseToList(reader, new StyleSheet(), interfaceProps);
 
         assertThat(elements).hasSize(13);
-        assertThat(elements.get(0).type()).isEqualTo(Element.PARAGRAPH);
+        assertThat(elements.get(0).getTypeImpl()).isEqualTo(Element.PARAGRAPH);
         assertThat(elements.get(0).getChunks()).hasSize(1);
-        assertThat(elements.get(0).getChunks().get(0).type()).isEqualTo(Element.CHUNK);
+        assertThat(elements.get(0).getChunks().get(0).getTypeImpl()).isEqualTo(Element.CHUNK);
         Chunk chunk = (Chunk) elements.get(0).getChunks().get(0);
         assertThat(chunk.getImage().isJpeg()).isTrue();
     }

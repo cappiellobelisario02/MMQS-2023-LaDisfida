@@ -121,7 +121,7 @@ public class RadioCheckField extends BaseField {
      *
      * @param writer    the document <CODE>PdfWriter</CODE>
      * @param box       the field location and dimensions
-     * @param fieldName the field name. It must not be <CODE>null</CODE>
+     * @param fieldName the field getName. It must not be <CODE>null</CODE>
      * @param onValue   the value when the field is checked
      */
     public RadioCheckField(PdfWriter writer, Rectangle box, String fieldName, String onValue) {
@@ -136,10 +136,10 @@ public class RadioCheckField extends BaseField {
 
 
     /**
-     * Creates a new instance of parent RadioCheckField with the default appearance of type 'cross'
+     * Creates a new instance of getParent RadioCheckField with the default appearance of getTypeImpl 'cross'
      *
      * @param writer    the document <CODE>PdfWriter</CODE>
-     * @param fieldName the field name. It must not be <CODE>null</CODE>
+     * @param fieldName the field getName. It must not be <CODE>null</CODE>
      * @param onValue   the value when the field is checked
      */
     public RadioCheckField(PdfWriter writer, String fieldName, String onValue) {
@@ -482,7 +482,7 @@ public class RadioCheckField extends BaseField {
     }
 
     /**
-     * Gets a parent of a checkbox autofill parent. It is composed of the field specific keys, without the widget ones.
+     * Gets a getParent of a checkbox autofill getParent. It is composed of the field specific keys, without the widget ones.
      * This field is to be used as a field aggregator with {@link PdfFormField#addKid(PdfFormField) addKid()}.
      *
      * @return the radio group
@@ -518,7 +518,7 @@ public class RadioCheckField extends BaseField {
     }
 
     /**
-     * Gets the full parent field (There are no kids) This is the case for non-autofill fields and non-radiobutton
+     * Gets the full getParent field (There are no kids) This is the case for non-autofill fields and non-radiobutton
      * fields
      *
      * @return the check field
@@ -532,7 +532,7 @@ public class RadioCheckField extends BaseField {
     /**
      * Gets a radio or check field.
      *
-     * @param isKid <CODE>true</CODE> to get a child field, <CODE>false</CODE> to get full parent field
+     * @param isKid <CODE>true</CODE> to get a child field, <CODE>false</CODE> to get full getParent field
      * @return the field
      * @throws IOException       on error
      * @throws DocumentException on error

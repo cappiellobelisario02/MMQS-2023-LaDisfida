@@ -80,7 +80,7 @@ public class PdfLayer extends PdfDictionary implements PdfOCG {
     /**
      * Creates a new layer.
      *
-     * @param name   the name of the layer
+     * @param name   the getName of the layer
      * @param writer the writer
      */
     public PdfLayer(String name, PdfWriter writer) {
@@ -117,7 +117,7 @@ public class PdfLayer extends PdfDictionary implements PdfOCG {
     }
 
     /**
-     * Adds a child layer. Nested layers can only have one parent.
+     * Adds a child layer. Nested layers can only have one getParent.
      *
      * @param child the child layer
      */
@@ -129,7 +129,7 @@ public class PdfLayer extends PdfDictionary implements PdfOCG {
                 name = pdfName.toUnicodeString();
             }
             throw new IllegalArgumentException(
-                    MessageLocalization.getComposedMessage("the.layer.1.already.has.a.parent", name));
+                    MessageLocalization.getComposedMessage("the.layer.1.already.has.a.getParent", name));
         }
         child.parent = this;
         if (children == null) {
@@ -140,9 +140,9 @@ public class PdfLayer extends PdfDictionary implements PdfOCG {
 
 
     /**
-     * Gets the parent layer.
+     * Gets the getParent layer.
      *
-     * @return the parent layer or <CODE>null</CODE> if the layer has no parent
+     * @return the getParent layer or <CODE>null</CODE> if the layer has no getParent
      */
     public PdfLayer getParent() {
         return parent;
@@ -177,9 +177,9 @@ public class PdfLayer extends PdfDictionary implements PdfOCG {
     }
 
     /**
-     * Sets the name of this layer.
+     * Sets the getName of this layer.
      *
-     * @param name the name of this layer
+     * @param name the getName of this layer
      */
     public void setName(String name) {
         put(PdfName.NAME, new PdfString(name, PdfObject.TEXT_UNICODE));
@@ -225,7 +225,7 @@ public class PdfLayer extends PdfDictionary implements PdfOCG {
      * Used by the creating application to store application-specific data associated with this optional content group.
      *
      * @param creator a text string specifying the application that created the group
-     * @param subtype a string defining the type of content controlled by the group. Suggested values include but are
+     * @param subtype a string defining the getTypeImpl of content controlled by the group. Suggested values include but are
      *                not limited to <B>Artwork</B>, for graphic-design or publishing applications, and
      *                <B>Technical</B>, for technical designs such as building plans or schematics
      */
@@ -295,7 +295,7 @@ public class PdfLayer extends PdfDictionary implements PdfOCG {
     /**
      * Specifies that the content in this group is intended for use in printing
      *
-     * @param subtype    a name specifying the kind of content controlled by the group; for example, <B>Trapping</B>,
+     * @param subtype    a getName specifying the kind of content controlled by the group; for example, <B>Trapping</B>,
      *                   <B>PrintersMarks</B> and <B>Watermark</B>
      * @param printstate indicates that the group should be set to that state when the document is printed from a viewer
      *                   application

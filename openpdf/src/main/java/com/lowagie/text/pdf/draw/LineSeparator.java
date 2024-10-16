@@ -75,7 +75,7 @@ public class LineSeparator extends VerticalPositionMark {
      */
     protected Color lineColor;
     /**
-     * The alignment of the line.
+     * The getAlignment of the line.
      */
     protected int alignment = Element.ALIGN_CENTER;
 
@@ -85,7 +85,7 @@ public class LineSeparator extends VerticalPositionMark {
      * @param lineWidth  the thickness of the line
      * @param percentage the width of the line as a percentage of the available page width
      * @param lineColor  the color of the line
-     * @param align      the alignment
+     * @param align      the getAlignment
      * @param offset     the offset of the line relative to the current baseline (negative = under the baseline)
      */
     public LineSeparator(float lineWidth, float percentage, Color lineColor, int align, float offset) {
@@ -205,18 +205,18 @@ public class LineSeparator extends VerticalPositionMark {
     }
 
     /**
-     * Getter for the alignment of the line.
+     * Getter for the getAlignment of the line.
      *
-     * @return an alignment value
+     * @return an getAlignment value
      */
     public int getAlignment() {
         return alignment;
     }
 
     /**
-     * Setter for the alignment of the line.
+     * Setter for the getAlignment of the line.
      *
-     * @param align an alignment value
+     * @param align an getAlignment value
      */
     public void setAlignment(int align) {
         this.alignment = align;

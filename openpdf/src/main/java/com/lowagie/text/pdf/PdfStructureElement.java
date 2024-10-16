@@ -72,8 +72,8 @@ public class PdfStructureElement extends PdfDictionary {
     /**
      * Creates a new instance of PdfStructureElement.
      *
-     * @param parent        the parent of this node
-     * @param structureType the type of structure. It may be a standard type or a user type mapped by the role map
+     * @param parent        the getParent of this node
+     * @param structureType the getTypeImpl of structure. It may be a standard getTypeImpl or a user getTypeImpl mapped by the role map
      */
     public PdfStructureElement(PdfStructureElement parent, PdfName structureType) {
         top = parent.top;
@@ -86,8 +86,8 @@ public class PdfStructureElement extends PdfDictionary {
     /**
      * Creates a new instance of PdfStructureElement.
      *
-     * @param parent        the parent of this node
-     * @param structureType the type of structure. It may be a standard type or a user type mapped by the role map
+     * @param parent        the getParent of this node
+     * @param structureType the getTypeImpl of structure. It may be a standard getTypeImpl or a user getTypeImpl mapped by the role map
      */
     public PdfStructureElement(PdfStructureTreeRoot parent, PdfName structureType) {
         top = parent;
@@ -101,7 +101,7 @@ public class PdfStructureElement extends PdfDictionary {
         PdfArray kids;
         if (kido != null && !kido.isArray()) {
             throw new IllegalArgumentException(
-                    MessageLocalization.getComposedMessage("the.parent.has.already.another.function"));
+                    MessageLocalization.getComposedMessage("the.getParent.has.already.another.function"));
         }
         if (kido == null) {
             kids = new PdfArray();
@@ -115,9 +115,9 @@ public class PdfStructureElement extends PdfDictionary {
     }
 
     /**
-     * Gets the parent of this node.
+     * Gets the getParent of this node.
      *
-     * @return the parent of this node
+     * @return the getParent of this node
      */
     public PdfDictionary getParent() {
         return parent;

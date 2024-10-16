@@ -53,7 +53,7 @@ public class Text {
             // step 4: we grab the ContentByte and do some stuff with it
             PdfContentByte cb = writer.getDirectContent();
 
-            // first we draw some lines to be able to visualize the text alignment functions
+            // first we draw some lines to be able to visualize the text getAlignment functions
             cb.setLineWidth(0f);
             cb.moveTo(250, 500);
             cb.lineTo(250, 800);
@@ -70,8 +70,8 @@ public class Text {
 
             BaseFont bf = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
             cb.setFontAndSize(bf, 12);
-            String text = "Sample text for alignment";
-            // we show some text starting on some absolute position with a given alignment
+            String text = "Sample text for getAlignment";
+            // we show some text starting on some absolute position with a given getAlignment
             cb.showTextAligned(PdfContentByte.ALIGN_CENTER, text + " Center", 250, 700, 0);
             cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, text + " Right", 250, 650, 0);
             cb.showTextAligned(PdfContentByte.ALIGN_LEFT, text + " Left", 250, 600, 0);

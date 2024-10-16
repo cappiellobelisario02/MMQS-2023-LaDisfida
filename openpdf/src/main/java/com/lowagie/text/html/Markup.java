@@ -288,7 +288,7 @@ public class Markup {
     public static final String CSS_KEY_PAGE_BREAK_BEFORE = "page-break-before";
 
     /**
-     * the CSS tag for the horizontal alignment of an object
+     * the CSS tag for the horizontal getAlignment of an object
      */
     public static final String CSS_KEY_TEXTALIGN = "text-align";
 
@@ -385,22 +385,22 @@ public class Markup {
     public static final String CSS_VALUE_TABLECELL = "table-cell";
 
     /**
-     * the CSS value for a horizontal alignment of an object
+     * the CSS value for a horizontal getAlignment of an object
      */
     public static final String CSS_VALUE_TEXTALIGNLEFT = "left";
 
     /**
-     * the CSS value for a horizontal alignment of an object
+     * the CSS value for a horizontal getAlignment of an object
      */
     public static final String CSS_VALUE_TEXTALIGNRIGHT = "right";
 
     /**
-     * the CSS value for a horizontal alignment of an object
+     * the CSS value for a horizontal getAlignment of an object
      */
     public static final String CSS_VALUE_TEXTALIGNCENTER = "center";
 
     /**
-     * the CSS value for a horizontal alignment of an object
+     * the CSS value for a horizontal getAlignment of an object
      */
     public static final String CSS_VALUE_TEXTALIGNJUSTIFY = "justify";
 

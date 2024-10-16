@@ -56,7 +56,7 @@ public class StringArgument extends AbstractArgument {
      * Constructs a StringArgument.
      *
      * @param tool        the tool that needs this argument
-     * @param name        the name of the argument
+     * @param name        the getName of the argument
      * @param description the description of the argument
      */
     public StringArgument(AbstractTool tool, String name, String description) {

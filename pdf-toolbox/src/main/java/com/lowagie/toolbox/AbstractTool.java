@@ -159,7 +159,7 @@ public abstract class AbstractTool implements ActionListener {
     /**
      * Gets the value of a given argument.
      *
-     * @param name the name of the argument
+     * @param name the getName of the argument
      * @return the value of an argument as an Object.
      * @throws InstantiationException on error
      */

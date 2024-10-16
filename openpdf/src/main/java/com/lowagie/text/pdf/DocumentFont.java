@@ -277,7 +277,7 @@ public class DocumentFont extends BaseFont {
             PdfObject ob = null;
             PdfObject last = null;
             while ((ob = ps.readPRObject()) != null) {
-                if (ob.type() == PdfContentParser.COMMAND_TYPE) {
+                if (ob.getTypeImpl() == PdfContentParser.COMMAND_TYPE) {
                     String command = ob.toString();
                     int n = ((PdfNumber) last).intValue();
                     if ("beginbfchar".equals(command)) {
@@ -533,12 +533,12 @@ public class DocumentFont extends BaseFont {
     }
 
     /**
-     * Gets the family name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the family getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @return the family name of the font
+     * @return the family getName of the font
      */
     public String[][] getFamilyFontName() {
         return getFullFontName();
@@ -574,12 +574,12 @@ public class DocumentFont extends BaseFont {
     }
 
     /**
-     * Gets the full name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the full getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @return the full name of the font
+     * @return the full getName of the font
      */
     public String[][] getFullFontName() {
         return new String[][]{{"", "", "", fontName}};
@@ -587,11 +587,11 @@ public class DocumentFont extends BaseFont {
 
     /**
      * Gets all the entries of the names-table. If it is a True Type font each array element will have {Name ID,
-     * Platform ID, Platform Encoding ID, Language ID, font name}. The interpretation of this values can be found in the
-     * Open Type specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element
-     * with {"4", "", "", "", font name}.
+     * Platform ID, Platform Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the
+     * Open Type specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element
+     * with {"4", "", "", "", font getName}.
      *
-     * @return the full name of the font
+     * @return the full getName of the font
      * @since 2.0.8
      */
     public String[][] getAllNameEntries() {
@@ -610,30 +610,30 @@ public class DocumentFont extends BaseFont {
     }
 
     /**
-     * Gets the postscript font name.
+     * Gets the postscript font getName.
      *
-     * @return the postscript font name
+     * @return the postscript font getName
      */
     public String getPostscriptFontName() {
         return fontName;
     }
 
     /**
-     * Sets the font name that will appear in the pdf font dictionary. It does nothing in this case as the font is
+     * Sets the font getName that will appear in the pdf font dictionary. It does nothing in this case as the font is
      * already in the document.
      *
-     * @param name the new font name
+     * @param name the new font getName
      */
     public void setPostscriptFontName(String name) {
-        throw new UnsupportedOperationException("Setting postscript font name is not supported.");
+        throw new UnsupportedOperationException("Setting postscript font getName is not supported.");
     }
 
     /**
-     * Gets the width from the font according to the Unicode char <CODE>c</CODE> or the <CODE>name</CODE>. If the
-     * <CODE>name</CODE> is null it's a symbolic font.
+     * Gets the width from the font according to the Unicode char <CODE>c</CODE> or the <CODE>getName</CODE>. If the
+     * <CODE>getName</CODE> is null it's a symbolic font.
      *
      * @param c    the unicode char
-     * @param name the glyph name
+     * @param name the glyph getName
      * @return the width of the char
      */
     int getRawWidth(int c, String name) {
@@ -654,7 +654,7 @@ public class DocumentFont extends BaseFont {
      *
      * @param writer the writer for this document
      * @param ref    the font indirect reference
-     * @param params several parameters that depend on the font type
+     * @param params several parameters that depend on the font getTypeImpl
      * @throws DocumentException error in generating the object
      */
     void writeFont(PdfWriter writer, PdfIndirectReference ref, Object[] params) throws DocumentException {

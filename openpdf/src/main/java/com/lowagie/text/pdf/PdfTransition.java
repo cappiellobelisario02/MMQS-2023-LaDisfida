@@ -119,7 +119,7 @@ public class PdfTransition {
      */
     protected int duration;
     /**
-     * type of the transition effect
+     * getTypeImpl of the transition effect
      */
     protected int type;
 
@@ -133,7 +133,7 @@ public class PdfTransition {
     /**
      * Constructs a <CODE>Transition</CODE>.
      *
-     * @param type type of the transition effect
+     * @param type getTypeImpl of the transition effect
      */
     public PdfTransition(int type) {
         this(type, 1);
@@ -142,7 +142,7 @@ public class PdfTransition {
     /**
      * Constructs a <CODE>Transition</CODE>.
      *
-     * @param type     type of the transition effect
+     * @param type     getTypeImpl of the transition effect
      * @param duration duration of the transition effect
      */
     public PdfTransition(int type, int duration) {
@@ -247,7 +247,7 @@ public class PdfTransition {
                 trans.put(PdfName.DI, new PdfNumber(315));
                 break;
             default:
-                throw new IllegalArgumentException("Unknown transition type: " + type);
+                throw new IllegalArgumentException("Unknown transition getTypeImpl: " + type);
         }
         return trans;
     }

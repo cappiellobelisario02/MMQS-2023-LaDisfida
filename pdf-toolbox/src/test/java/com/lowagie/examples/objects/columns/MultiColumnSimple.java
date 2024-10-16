@@ -40,7 +40,7 @@ public class MultiColumnSimple {
             "appears", "nags", "overflows", "burns", "dies", "writes",
             "flushes"};
     static String[] noun = {"ColumnText", "paragraph", "phrase", "chunk", "PdfContentByte",
-            "PdfPTable", "iText", "color", "vertical alignment", "horizontal alignment", "PdfWriter",
+            "PdfPTable", "iText", "color", "vertical getAlignment", "horizontal getAlignment", "PdfWriter",
             "ListItem", "PdfStamper", "PDF", "HTML", "XML", "column", "font",
             "table", "FDF", "field", "NullPointerException", "CJK font"};
     static String[] adjective = {"foul", "broken", "gray", "slow", "beautiful",

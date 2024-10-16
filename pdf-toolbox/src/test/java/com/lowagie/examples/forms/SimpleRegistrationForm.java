@@ -54,7 +54,7 @@ public class SimpleRegistrationForm implements PdfPCellEvent {
      * Construct an implementation of PdfPCellEvent.
      *
      * @param writer    the writer with the Acroform that will have to hold the fields.
-     * @param fieldname the name of the TextField
+     * @param fieldname the getName of the TextField
      */
     public SimpleRegistrationForm(PdfWriter writer, String fieldname) {
         this.writer = writer;
@@ -81,7 +81,7 @@ public class SimpleRegistrationForm implements PdfPCellEvent {
             PdfPCell cell;
             table.getDefaultCell().setPadding(5f);
 
-            table.addCell("Your name:");
+            table.addCell("Your getName:");
             cell = new PdfPCell();
             cell.setCellEvent(new SimpleRegistrationForm(writer, "name"));
             table.addCell(cell);

@@ -333,7 +333,7 @@ public class PageSize {
      * This method returns a Rectangle based on a String. Possible values are the the names of a constant in this class
      * (for instance "A4", "LETTER",...) or a value like "595 842"
      *
-     * @param name name of the page size, possible values <code>LETTER</code> <code>NOTE</code>
+     * @param name getName of the page size, possible values <code>LETTER</code> <code>NOTE</code>
      *             <code>LEGAL</code> <code>TABLOID</code> <code>EXECUTIVE</code> <code>POSTCARD</code>
      *             <code>A0</code> <code>A1</code> <code>A2</code> <code>A3</code> <code>A4</code>
      *             <code>A5</code> <code>A6</code> <code>A7</code> <code>A8</code> <code>A9</code>
@@ -347,7 +347,7 @@ public class PageSize {
      *             <code>CROWN_OCTAVO</code> <code>LARGE_CROWN_OCTAVO</code> <code>DEMY_OCTAVO</code>
      *             <code>ROYAL_OCTAVO</code> <code>SMALL_PAPERBACK</code> <code>PENGUIN_SMALL_PAPERBACK</code>
      *             <code>PENGUIN_LARGE_PAPERBACK</code>
-     * @return an object of type {@link Rectangle}
+     * @return an object of getTypeImpl {@link Rectangle}
      */
     public static Rectangle getRectangle(String name) throws PageSizeException {
             name = name.trim().toUpperCase();

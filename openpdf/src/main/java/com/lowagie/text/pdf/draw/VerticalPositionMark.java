@@ -114,9 +114,9 @@ public class VerticalPositionMark implements DrawInterface, Element {
     }
 
     /**
-     * @see com.lowagie.text.Element#type()
+     * @see com.lowagie.text.Element#getTypeImpl()
      */
-    public int type() {
+    public int getTypeImpl() {
         return Element.YMARK;
     }
 

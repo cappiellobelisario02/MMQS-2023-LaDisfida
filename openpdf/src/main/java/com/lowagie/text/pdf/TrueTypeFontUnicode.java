@@ -81,7 +81,7 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
     /**
      * Creates a new TrueType font addressed by Unicode characters. The font will always be embedded.
      *
-     * @param ttFile the location of the font on file. The file must end in '.ttf'. The modifiers after the name are
+     * @param ttFile the location of the font on file. The file must end in '.ttf'. The modifiers after the getName are
      *               ignored.
      * @param enc    the encoding to be applied to this font
      * @param emb    true if the font is to be embedded in the PDF
@@ -412,7 +412,7 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator<int[]> {
      *
      * @param writer the writer for this document
      * @param ref    the font indirect reference
-     * @param params several parameters that depend on the font type
+     * @param params several parameters that depend on the font getTypeImpl
      * @throws IOException       on error
      * @throws DocumentException error in generating the object
      */

@@ -56,7 +56,7 @@ public class PageSizeArgument extends OptionArgument {
      * Constructs an OptionArgument.
      *
      * @param tool        the tool that needs this argument
-     * @param name        the name of the argument
+     * @param name        the getName of the argument
      * @param description the description of the argument
      */
     public PageSizeArgument(AbstractTool tool, String name, String description) {

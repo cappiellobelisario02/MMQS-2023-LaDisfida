@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 class TableEndlessTest {
 
     /**
-     * Bug fix scenario: a table with setting alignment as bottom enters endless loop
+     * Bug fix scenario: a table with setting getAlignment as bottom enters endless loop
      */
     @Test
     void testNoEndlessLoopWithBottomPass(){
@@ -46,7 +46,7 @@ class TableEndlessTest {
     }
 
     /**
-     * Bug fix scenario: a table with setting alignment as center enters endless loop
+     * Bug fix scenario: a table with setting getAlignment as center enters endless loop
      */
     @Test
     void testNoEndlessLoopWithCenterPass(){

@@ -239,8 +239,8 @@ public class PdfTable extends Rectangle {
 
     private void updateOffsets(float[] offsets, PdfCell currentCell, int rowNumber) {
         try {
-            if (offsets[rowNumber] - currentCell.getHeight() - cellpadding() < offsets[rowNumber + currentCell.rowspan()]) {
-                offsets[rowNumber + currentCell.rowspan()] = offsets[rowNumber] - currentCell.getHeight() - cellpadding();
+            if (offsets[rowNumber] - currentCell.getHeight() - cellpadding() < offsets[rowNumber + currentCell.getRowSpan()]) {
+                offsets[rowNumber + currentCell.getRowSpan()] = offsets[rowNumber] - currentCell.getHeight() - cellpadding();
             }
         } catch (ArrayIndexOutOfBoundsException aioobe) {
             if (offsets[rowNumber] - currentCell.getHeight() < offsets[offsets.length - 1]) {
@@ -252,7 +252,7 @@ public class PdfTable extends Rectangle {
     private void setCellBottoms(ArrayList<PdfCell> newCells, float[] offsets) {
         for (PdfCell newCell : newCells) {
             try {
-                int rowIndex = newCell.rownumber() - rows() + newCell.rowspan();
+                int rowIndex = newCell.getRowNumber() - rows() + newCell.getRowSpan();
                 if (rowIndex >= offsets.length) {
                     rowIndex = offsets.length - 1;
                 }
@@ -269,14 +269,14 @@ public class PdfTable extends Rectangle {
      */
 
     int rows() {
-        return cells.isEmpty() ? 0 : cells.get(cells.size() - 1).rownumber() + 1;
+        return cells.isEmpty() ? 0 : cells.get(cells.size() - 1).getRowNumber() + 1;
     }
 
     /**
-     * @see com.lowagie.text.Element#type()
+     * @see com.lowagie.text.Element#getTypeImpl()
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.TABLE;
     }
 
@@ -321,9 +321,9 @@ public class PdfTable extends Rectangle {
     }
 
     /**
-     * Returns the cellpadding of the table.
+     * Returns the getCellPadding of the table.
      *
-     * @return the cellpadding
+     * @return the getCellPadding
      */
 
     final float cellpadding() {
@@ -331,9 +331,9 @@ public class PdfTable extends Rectangle {
     }
 
     /**
-     * Returns the cellspacing of the table.
+     * Returns the getCellSpacing of the table.
      *
-     * @return the cellspacing
+     * @return the getCellSpacing
      */
 
     final float cellspacing() {

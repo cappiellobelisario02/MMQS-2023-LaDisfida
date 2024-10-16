@@ -109,7 +109,7 @@ public class GlyphLayoutDocumentDin91379 {
      * Register and get font
      *
      * @param path     of font file
-     * @param alias    name
+     * @param alias    getName
      * @param fontSize size of font
      * @return the loaded font
      */

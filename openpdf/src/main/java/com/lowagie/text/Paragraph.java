@@ -60,7 +60,7 @@ import java.util.ArrayList;
  * layout-parameters:
  * <UL>
  * <LI>the indentation
- * <LI>the alignment of the text
+ * <LI>the getAlignment of the text
  * </UL>
  * <p>
  * Example:
@@ -83,7 +83,7 @@ public class Paragraph extends Phrase {
     // membervariables
 
     /**
-     * The alignment of the text.
+     * The getAlignment of the text.
      */
     protected int alignment = Element.ALIGN_UNDEFINED;
 
@@ -93,7 +93,7 @@ public class Paragraph extends Phrase {
     protected int runDirection = PdfWriter.RUN_DIRECTION_DEFAULT;
 
     /**
-     * The text leading that is multiplied by the biggest font size in the line.
+     * The text getLeading that is multiplied by the biggest font size in the line.
      */
     protected float multipliedLeading = 0;
 
@@ -137,9 +137,9 @@ public class Paragraph extends Phrase {
     }
 
     /**
-     * Constructs a <CODE>Paragraph</CODE> with a certain leading.
+     * Constructs a <CODE>Paragraph</CODE> with a certain getLeading.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      */
     public Paragraph(float leading) {
         super(leading);
@@ -155,9 +155,9 @@ public class Paragraph extends Phrase {
     }
 
     /**
-     * Constructs a <CODE>Paragraph</CODE> with a certain <CODE>Chunk</CODE> and a certain leading.
+     * Constructs a <CODE>Paragraph</CODE> with a certain <CODE>Chunk</CODE> and a certain getLeading.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param chunk   a <CODE>Chunk</CODE>
      */
     public Paragraph(float leading, Chunk chunk) {
@@ -184,9 +184,9 @@ public class Paragraph extends Phrase {
     }
 
     /**
-     * Constructs a <CODE>Paragraph</CODE> with a certain <CODE>String</CODE> and a certain leading.
+     * Constructs a <CODE>Paragraph</CODE> with a certain <CODE>String</CODE> and a certain getLeading.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param string  a <CODE>String</CODE>
      */
     public Paragraph(float leading, String string) {
@@ -194,9 +194,9 @@ public class Paragraph extends Phrase {
     }
 
     /**
-     * Constructs a <CODE>Paragraph</CODE> with a certain leading, <CODE>String</CODE> and <CODE>Font</CODE>.
+     * Constructs a <CODE>Paragraph</CODE> with a certain getLeading, <CODE>String</CODE> and <CODE>Font</CODE>.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param string  a <CODE>String</CODE>
      * @param font    a <CODE>Font</CODE>
      */
@@ -243,7 +243,7 @@ public class Paragraph extends Phrase {
         if (leading < 0) {
             throw new IllegalArgumentException("Leading cannot be negative.");
         }
-        // Set the leading safely
+        // Set the getLeading safely
         setLeading(leading, multipliedLeading);
     }
 
@@ -251,12 +251,12 @@ public class Paragraph extends Phrase {
     // implementation of the Element-methods
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
     @Override
-    public int type() {
+    public int getTypeImpl() {
         return Element.PARAGRAPH;
     }
 
@@ -303,11 +303,11 @@ public class Paragraph extends Phrase {
     }
 
     /**
-     * Sets the leading fixed and variable. The resultant leading will be fixedLeading+multipliedLeading*maxFontSize
+     * Sets the getLeading fixed and variable. The resultant getLeading will be fixedLeading+multipliedLeading*maxFontSize
      * where maxFontSize is the size of the biggest font in the line.
      *
-     * @param fixedLeading      the fixed leading
-     * @param multipliedLeading the variable leading
+     * @param fixedLeading      the fixed getLeading
+     * @param multipliedLeading the variable getLeading
      */
     public void setLeading(float fixedLeading, float multipliedLeading) {
         this.leading = fixedLeading;
@@ -333,27 +333,27 @@ public class Paragraph extends Phrase {
     }
 
     /**
-     * Gets the alignment of this paragraph.
+     * Gets the getAlignment of this paragraph.
      *
-     * @return alignment
+     * @return getAlignment
      */
     public int getAlignment() {
         return alignment;
     }
 
     /**
-     * Sets the alignment of this paragraph.
+     * Sets the getAlignment of this paragraph.
      *
-     * @param alignment the new alignment
+     * @param alignment the new getAlignment
      */
     public void setAlignment(int alignment) {
         this.alignment = alignment;
     }
 
     /**
-     * Sets the alignment of this paragraph.
+     * Sets the getAlignment of this paragraph.
      *
-     * @param alignment the new alignment as a <CODE>String</CODE>
+     * @param alignment the new getAlignment as a <CODE>String</CODE>
      */
     public void setAlignment(String alignment) {
         if (ElementTags.ALIGN_CENTER.equalsIgnoreCase(alignment)) {
@@ -376,19 +376,19 @@ public class Paragraph extends Phrase {
     }
 
     /**
-     * Gets the variable leading
+     * Gets the variable getLeading
      *
-     * @return the leading
+     * @return the getLeading
      */
     public float getMultipliedLeading() {
         return multipliedLeading;
     }
 
     /**
-     * Sets the variable leading. The resultant leading will be multipliedLeading*maxFontSize where maxFontSize is the
+     * Sets the variable getLeading. The resultant getLeading will be multipliedLeading*maxFontSize where maxFontSize is the
      * size of the biggest font in the line.
      *
-     * @param multipliedLeading the variable leading
+     * @param multipliedLeading the variable getLeading
      */
     public void setMultipliedLeading(float multipliedLeading) {
         this.leading = 0;
@@ -396,10 +396,10 @@ public class Paragraph extends Phrase {
     }
 
     /**
-     * Gets the total leading. This method is based on the assumption that the font of the Paragraph is the font of all
+     * Gets the total getLeading. This method is based on the assumption that the font of the Paragraph is the font of all
      * the elements that make part of the paragraph. This isn't necessarily true.
      *
-     * @return the total leading (fixed and multiplied)
+     * @return the total getLeading (fixed and multiplied)
      */
     public float getTotalLeading(Font font) {
         float m = font == null ?

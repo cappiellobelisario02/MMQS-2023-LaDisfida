@@ -61,7 +61,7 @@ class ColorDetails {
      */
     PdfIndirectReference indirectReference;
     /**
-     * The color name that appears in the document body stream
+     * The color getName that appears in the document body stream
      */
     PdfName colorName;
     /**
@@ -72,7 +72,7 @@ class ColorDetails {
     /**
      * Each spot color used in a document has an instance of this class.
      *
-     * @param colorName         the color name
+     * @param colorName         the color getName
      * @param indirectReference the indirect reference to the font
      * @param scolor            the <CODE>PDfSpotColor</CODE>
      */
@@ -92,9 +92,9 @@ class ColorDetails {
     }
 
     /**
-     * Gets the color name as it appears in the document body.
+     * Gets the color getName as it appears in the document body.
      *
-     * @return the color name
+     * @return the color getName
      */
     PdfName getColorName() {
         return colorName;

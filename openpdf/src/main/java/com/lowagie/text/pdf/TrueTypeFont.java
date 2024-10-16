@@ -144,7 +144,7 @@ class TrueTypeFont extends BaseFont {
 
     protected boolean justNames = false;
     /**
-     * Contains the location of the several tables. The key is the name of the table and the value is an
+     * Contains the location of the several tables. The key is the getName of the table and the value is an
      * <CODE>int[2]</CODE> where position 0 is the offset from the start of the file and position 1 is the length of
      * the table.
      */
@@ -154,7 +154,7 @@ class TrueTypeFont extends BaseFont {
      */
     protected RandomAccessFileOrArray rf;
     /**
-     * The file name.
+     * The file getName.
      */
     protected String fileName;
 
@@ -219,12 +219,12 @@ class TrueTypeFont extends BaseFont {
      */
     protected IntHashtable kerning = new IntHashtable();
     /**
-     * The font name. This name is usually extracted from the table 'name' with the 'Name ID' 6.
+     * The font getName. This getName is usually extracted from the table 'getName' with the 'Name ID' 6.
      */
     protected String fontName;
 
     /**
-     * The full name of the font
+     * The full getName of the font
      */
     protected String[][] fullName;
 
@@ -234,7 +234,7 @@ class TrueTypeFont extends BaseFont {
     protected String[][] allNameEntries;
 
     /**
-     * The family name of the font
+     * The family getName of the font
      */
     protected String[][] familyName;
     /**
@@ -256,7 +256,7 @@ class TrueTypeFont extends BaseFont {
      * Creates a new TrueType font.
      *
      * @param ttFile the location of the font on file. The file must end in '.ttf' or '.ttc' but can have modifiers
-     *               after the name
+     *               after the getName
      * @param enc    the encoding to be applied to this font
      * @param emb    true if the font is to be embedded in the PDF
      * @param ttfAfm the font as a <CODE>byte</CODE> array
@@ -290,7 +290,7 @@ class TrueTypeFont extends BaseFont {
     }
 
     private void validateFontFile(byte[] ttfAfm, boolean forceRead) throws DocumentException, IOException {
-        // Check file type and throw a more generic exception if invalid
+        // Check file getTypeImpl and throw a more generic exception if invalid
         if (fileName.toLowerCase().endsWith(".ttf") || fileName.toLowerCase().endsWith(".otf") || fileName.toLowerCase().endsWith(".ttc")) {
             process(ttfAfm, forceRead);
 
@@ -315,10 +315,10 @@ class TrueTypeFont extends BaseFont {
 
 
     /**
-     * Gets the name from a composed TTC file name. If I have for input "myfont.ttc,2" the return will be "myfont.ttc".
+     * Gets the getName from a composed TTC file getName. If I have for input "myfont.ttc,2" the return will be "myfont.ttc".
      *
-     * @param name the full name
-     * @return the simple file name
+     * @param name the full getName
+     * @return the simple file getName
      */
     protected static String getTTCName(String name) {
         int idx = name.toLowerCase().indexOf(".ttc,");
@@ -480,9 +480,9 @@ class TrueTypeFont extends BaseFont {
     }
 
     /**
-     * Gets the Postscript font name.
+     * Gets the Postscript font getName.
      *
-     * @return the Postscript font name
+     * @return the Postscript font getName
      * @throws DocumentException the font is invalid
      * @throws IOException       the font file could not be read
      */
@@ -518,7 +518,7 @@ class TrueTypeFont extends BaseFont {
     /**
      * Extracts the names of the font in all the languages available.
      *
-     * @param id the name id to retrieve
+     * @param id the getName id to retrieve
      * @throws DocumentException on error
      * @throws IOException       on error
      */
@@ -704,8 +704,8 @@ class TrueTypeFont extends BaseFont {
     private void processFontDetails() throws DocumentException, IOException {
         checkCff();
         fontName = getBaseFont();
-        fullName = getNames(4); // full name
-        familyName = getNames(1); // family name
+        fullName = getNames(4); // full getName
+        familyName = getNames(1); // family getName
         allNameEntries = getAllNames();
         if (!justNames) {
             fillTables();
@@ -1140,11 +1140,11 @@ class TrueTypeFont extends BaseFont {
     }
 
     /**
-     * Gets the width from the font according to the unicode char <CODE>c</CODE>. If the <CODE>name</CODE> is null it's
+     * Gets the width from the font according to the unicode char <CODE>c</CODE>. If the <CODE>getName</CODE> is null it's
      * a symbolic font.
      *
      * @param c    the unicode char
-     * @param name the glyph name
+     * @param name the glyph getName
      * @return the width of the char
      */
     int getRawWidth(int c, String name) {
@@ -1380,7 +1380,7 @@ class TrueTypeFont extends BaseFont {
      *
      * @param writer the writer for this document
      * @param ref    the font indirect reference
-     * @param params several parameters that depend on the font type
+     * @param params several parameters that depend on the font getTypeImpl
      * @throws IOException       on error
      * @throws DocumentException error in generating the object
      */
@@ -1564,19 +1564,19 @@ class TrueTypeFont extends BaseFont {
     }
 
     /**
-     * Gets the postscript font name.
+     * Gets the postscript font getName.
      *
-     * @return the postscript font name
+     * @return the postscript font getName
      */
     public String getPostscriptFontName() {
         return fontName;
     }
 
     /**
-     * Sets the font name that will appear in the pdf font dictionary. Use with care as it can easily make a font
+     * Sets the font getName that will appear in the pdf font dictionary. Use with care as it can easily make a font
      * unreadable if not embedded.
      *
-     * @param name the new font name
+     * @param name the new font getName
      */
     public void setPostscriptFontName(String name) {
         fontName = name;
@@ -1611,12 +1611,12 @@ class TrueTypeFont extends BaseFont {
     }
 
     /**
-     * Gets the full name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the full getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @return the full name of the font
+     * @return the full getName of the font
      */
     public String[][] getFullFontName() {
         return fullName;
@@ -1624,23 +1624,23 @@ class TrueTypeFont extends BaseFont {
 
     /**
      * Gets all the entries of the Names-Table. If it is a True Type font each array element will have {Name ID,
-     * Platform ID, Platform Encoding ID, Language ID, font name}. The interpretation of this values can be found in the
-     * Open Type specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element
-     * with {"", "", "", font name}.
+     * Platform ID, Platform Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the
+     * Open Type specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element
+     * with {"", "", "", font getName}.
      *
-     * @return the full name of the font
+     * @return the full getName of the font
      */
     public String[][] getAllNameEntries() {
         return allNameEntries;
     }
 
     /**
-     * Gets the family name of the font. If it is a True Type font each array element will have {Platform ID, Platform
-     * Encoding ID, Language ID, font name}. The interpretation of this values can be found in the Open Type
-     * specification, chapter 2, in the 'name' table.<br> For the other fonts the array has a single element with {"",
-     * "", "", font name}.
+     * Gets the family getName of the font. If it is a True Type font each array element will have {Platform ID, Platform
+     * Encoding ID, Language ID, font getName}. The interpretation of this values can be found in the Open Type
+     * specification, chapter 2, in the 'getName' table.<br> For the other fonts the array has a single element with {"",
+     * "", "", font getName}.
      *
-     * @return the family name of the font
+     * @return the family getName of the font
      */
     public String[][] getFamilyFontName() {
         return familyName;

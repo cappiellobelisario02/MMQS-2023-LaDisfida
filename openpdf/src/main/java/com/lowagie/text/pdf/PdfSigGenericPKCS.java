@@ -71,7 +71,7 @@ public abstract class PdfSigGenericPKCS extends PdfSignature {
      */
     protected PdfPKCS7 pkcs;
     /**
-     * The subject name in the signing certificate (the element "CN")
+     * The subject getName in the signing certificate (the element "CN")
      */
     protected String name;
 
@@ -82,8 +82,8 @@ public abstract class PdfSigGenericPKCS extends PdfSignature {
     /**
      * Creates a generic standard filter.
      *
-     * @param filter    the filter name
-     * @param subFilter the sub-filter name
+     * @param filter    the filter getName
+     * @param subFilter the sub-filter getName
      */
     protected PdfSigGenericPKCS(PdfName filter, PdfName subFilter) {
         super(filter, subFilter);
@@ -141,9 +141,9 @@ public abstract class PdfSigGenericPKCS extends PdfSignature {
     }
 
     /**
-     * Gets the subject name in the signing certificate (the element "CN")
+     * Gets the subject getName in the signing certificate (the element "CN")
      *
-     * @return the subject name in the signing certificate (the element "CN")
+     * @return the subject getName in the signing certificate (the element "CN")
      */
     public String getName() {
         return name;
@@ -172,7 +172,7 @@ public abstract class PdfSigGenericPKCS extends PdfSignature {
     }
 
     /**
-     * Creates a standard filter of the type VeriSign.
+     * Creates a standard filter of the getTypeImpl VeriSign.
      */
     public static class VeriSign extends PdfSigGenericPKCS {
 
@@ -197,7 +197,7 @@ public abstract class PdfSigGenericPKCS extends PdfSignature {
     }
 
     /**
-     * Creates a standard filter of the type self signed.
+     * Creates a standard filter of the getTypeImpl self signed.
      */
     public static class PPKLite extends PdfSigGenericPKCS {
 
@@ -222,7 +222,7 @@ public abstract class PdfSigGenericPKCS extends PdfSignature {
     }
 
     /**
-     * Creates a standard filter of the type Windows Certificate.
+     * Creates a standard filter of the getTypeImpl Windows Certificate.
      */
     public static class PPKMS extends PdfSigGenericPKCS {
 

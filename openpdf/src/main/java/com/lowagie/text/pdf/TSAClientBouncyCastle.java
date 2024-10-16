@@ -120,7 +120,7 @@ public class TSAClientBouncyCastle implements TSAClient {
      * Creates an instance of a TSAClient that will use BouncyCastle.
      *
      * @param url      String - Time Stamp Authority URL (i.e. "http://tsatest1.digistamp.com/TSA")
-     * @param username String - user(account) name
+     * @param username String - user(account) getName
      * @param password String - password
      */
     public TSAClientBouncyCastle(String url, String username, String password) {
@@ -132,7 +132,7 @@ public class TSAClientBouncyCastle implements TSAClient {
      * long as we call the same TSA using the same imprint length).
      *
      * @param url           String - Time Stamp Authority URL (i.e. "http://tsatest1.digistamp.com/TSA")
-     * @param username      String - user(account) name
+     * @param username      String - user(account) getName
      * @param password      String - password
      * @param tokSzEstimate int - estimated size of received time stamp token (DER encoded)
      */

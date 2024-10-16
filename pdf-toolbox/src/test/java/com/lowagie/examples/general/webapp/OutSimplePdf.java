@@ -75,7 +75,7 @@ public class OutSimplePdf extends HttpServlet {
             response.setHeader("Expires", "0");
             response.setHeader("Cache-Control", "must-revalidate, post-check=0, pre-check=0");
             response.setHeader("Pragma", "public");
-            // setting the content type
+            // setting the content getTypeImpl
             response.setContentType("application/pdf");
             // the contentlength is needed for MSIE!!!
             response.setContentLength(baos.size());

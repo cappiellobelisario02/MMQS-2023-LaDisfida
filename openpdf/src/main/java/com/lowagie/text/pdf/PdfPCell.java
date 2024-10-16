@@ -73,7 +73,7 @@ public class PdfPCell extends Rectangle {
     protected Phrase phrase;
     private ColumnText column = new ColumnText(null);
     /**
-     * Vertical alignment of the cell.
+     * Vertical getAlignment of the cell.
      */
     private int verticalAlignment = Element.ALIGN_TOP;
     /**
@@ -113,7 +113,7 @@ public class PdfPCell extends Rectangle {
      */
     private int colspan = 1;
     /**
-     * Holds value of property rowspan.
+     * Holds value of property getRowSpan.
      *
      * @since 2.1.6
      */
@@ -333,38 +333,38 @@ public class PdfPCell extends Rectangle {
     }
 
     /**
-     * Gets the horizontal alignment for the cell.
+     * Gets the horizontal getAlignment for the cell.
      *
-     * @return the horizontal alignment for the cell
+     * @return the horizontal getAlignment for the cell
      */
     public int getHorizontalAlignment() {
         return column.getAlignment();
     }
 
     /**
-     * Sets the horizontal alignment for the cell. It could be
+     * Sets the horizontal getAlignment for the cell. It could be
      * <CODE>Element.ALIGN_CENTER</CODE> for example.
      *
-     * @param horizontalAlignment The horizontal alignment
+     * @param horizontalAlignment The horizontal getAlignment
      */
     public void setHorizontalAlignment(int horizontalAlignment) {
         column.setAlignment(horizontalAlignment);
     }
 
     /**
-     * Gets the vertical alignment for the cell.
+     * Gets the vertical getAlignment for the cell.
      *
-     * @return the vertical alignment for the cell
+     * @return the vertical getAlignment for the cell
      */
     public int getVerticalAlignment() {
         return verticalAlignment;
     }
 
     /**
-     * Sets the vertical alignment for the cell. It could be
+     * Sets the vertical getAlignment for the cell. It could be
      * <CODE>Element.ALIGN_MIDDLE</CODE> for example.
      *
-     * @param verticalAlignment The vertical alignment
+     * @param verticalAlignment The vertical getAlignment
      */
     public void setVerticalAlignment(int verticalAlignment) {
         if (table != null) {
@@ -530,29 +530,29 @@ public class PdfPCell extends Rectangle {
     }
 
     /**
-     * Sets the leading fixed and variable. The resultant leading will be: fixedLeading+multipliedLeading*maxFontSize
+     * Sets the getLeading fixed and variable. The resultant getLeading will be: fixedLeading+multipliedLeading*maxFontSize
      * where maxFontSize is the size of the biggest font in the line.
      *
-     * @param fixedLeading      the fixed leading
-     * @param multipliedLeading the variable leading
+     * @param fixedLeading      the fixed getLeading
+     * @param multipliedLeading the variable getLeading
      */
     public void setLeading(float fixedLeading, float multipliedLeading) {
         column.setLeading(fixedLeading, multipliedLeading);
     }
 
     /**
-     * Gets the fixed leading.
+     * Gets the fixed getLeading.
      *
-     * @return the leading
+     * @return the getLeading
      */
     public float getLeading() {
         return column.getLeading();
     }
 
     /**
-     * Gets the variable leading.
+     * Gets the variable getLeading.
      *
-     * @return the leading
+     * @return the getLeading
      */
     public float getMultipliedLeading() {
         return column.getMultipliedLeading();
@@ -710,9 +710,9 @@ public class PdfPCell extends Rectangle {
     }
 
     /**
-     * Getter for property rowspan.
+     * Getter for property getRowSpan.
      *
-     * @return Value of property rowspan.
+     * @return Value of property getRowSpan.
      * @since 2.1.6
      */
     public int getRowspan() {
@@ -720,9 +720,9 @@ public class PdfPCell extends Rectangle {
     }
 
     /**
-     * Setter for property rowspan.
+     * Setter for property getRowSpan.
      *
-     * @param rowspan New value of property rowspan.
+     * @param rowspan New value of property getRowSpan.
      * @since 2.1.6
      */
     public void setRowspan(int rowspan) {

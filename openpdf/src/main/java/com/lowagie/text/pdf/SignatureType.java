@@ -13,14 +13,14 @@ public enum SignatureType {
     INCOMPLETE,
 
     /**
-     * Signed signature type. A document can contain one or more approval signatures. These signatures appear in
+     * Signed signature getTypeImpl. A document can contain one or more approval signatures. These signatures appear in
      * signature form fields. *dobe Reader shows a green check mark when a valid approval signature, signed with an
      * official certificate is present.
      */
     APPROVAL,
 
     /**
-     * Signed signature type. A document can contain (only) one certification signature. This signature can define
+     * Signed signature getTypeImpl. A document can contain (only) one certification signature. This signature can define
      * different permissions. *dobe Reader shows a blue ribbon when a document was certified with an official
      * certificate.
      * <p>
@@ -29,7 +29,7 @@ public enum SignatureType {
     CERTIFICATION_ALL_CHANGES,
 
     /**
-     * Signed signature type. A document can contain (only) one certification signature. This signature can define
+     * Signed signature getTypeImpl. A document can contain (only) one certification signature. This signature can define
      * different permissions. *dobe Reader shows a blue ribbon when a document was certified with an official
      * certificate.
      * <p>
@@ -38,7 +38,7 @@ public enum SignatureType {
     CERTIFICATION_NO_CHANGES,
 
     /**
-     * Signed signature type. A document can contain (only) one certification signature. This signature can define
+     * Signed signature getTypeImpl. A document can contain (only) one certification signature. This signature can define
      * different permissions. *dobe Reader shows a blue ribbon when a document was certified with an official
      * certificate.
      * <p>
@@ -48,7 +48,7 @@ public enum SignatureType {
     CERTIFICATION_FILLINGFORMS_SIGNING,
 
     /**
-     * Signed signature type. A document can contain (only) one certification signature. This signature can define
+     * Signed signature getTypeImpl. A document can contain (only) one certification signature. This signature can define
      * different permissions. *dobe Reader shows a blue ribbon when a document was certified with an official
      * certificate.
      * <p>
@@ -58,7 +58,7 @@ public enum SignatureType {
     CERTIFICATION_FILLINGFORMS_SIGNING_ANNOTATIONS,
 
     /**
-     * Signed signature type. A document can contain one usage rights signature (in previous PDF specs two). This
+     * Signed signature getTypeImpl. A document can contain one usage rights signature (in previous PDF specs two). This
      * signature is created by certain manufacturers using their own, proprietary key. When a PDF document is signed
      * with such a usage rights signature certain features might be unlocked. For instance *dobe has such a key which
      * unlocks certain features ('Reader enabled') in its reader software. But other vendors can use their own private

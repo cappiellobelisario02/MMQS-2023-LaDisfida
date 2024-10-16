@@ -396,10 +396,10 @@ public class PdfEncodings {
     }
 
     /**
-     * Clears the CJK cmaps from the cache. If <CODE>name</CODE> is the empty string then all the cache is cleared.
+     * Clears the CJK cmaps from the cache. If <CODE>getName</CODE> is the empty string then all the cache is cleared.
      * Calling this method has no consequences other than the need to reload the cmap if needed.
      *
-     * @param name the name of the cmap to clear or all the cmaps if the empty string
+     * @param name the getName of the cmap to clear or all the cmaps if the empty string
      */
     public static void clearCmap(String name) {
         if (name.isEmpty()) {
@@ -412,7 +412,7 @@ public class PdfEncodings {
     /**
      * Loads a CJK cmap to the cache with the option of associating sequences to the newline.
      *
-     * @param name    the CJK cmap name
+     * @param name    the CJK cmap getName
      * @param newline the sequences to be replaced by a newline in the resulting CID. See <CODE>CRLF_CID_NEWLINE</CODE>
      */
     public static void loadCmap(String name, byte[][] newline) {
@@ -429,11 +429,11 @@ public class PdfEncodings {
     }
 
     /**
-     * Converts a <CODE>byte</CODE> array encoded as <CODE>name</CODE> to a CID string. This is needed to reach some CJK
+     * Converts a <CODE>byte</CODE> array encoded as <CODE>getName</CODE> to a CID string. This is needed to reach some CJK
      * characters that don't exist in 16 bit Unicode.<p> The font to use this result must use the encoding "Identity-H"
      * or "Identity-V".</p> See ftp://ftp.oreilly.com/pub/examples/nutshell/cjkv/adobe/.
      *
-     * @param name the CJK encoding name
+     * @param name the CJK encoding getName
      * @param seq  the <CODE>byte</CODE> array to be decoded
      * @return the CID string
      */
@@ -442,11 +442,11 @@ public class PdfEncodings {
     }
 
     /**
-     * Converts a <CODE>byte</CODE> array encoded as <CODE>name</CODE> to a CID string. This is needed to reach some CJK
+     * Converts a <CODE>byte</CODE> array encoded as <CODE>getName</CODE> to a CID string. This is needed to reach some CJK
      * characters that don't exist in 16 bit Unicode.<p> The font to use this result must use the encoding "Identity-H"
      * or "Identity-V".</p> See ftp://ftp.oreilly.com/pub/examples/nutshell/cjkv/adobe/.
      *
-     * @param name   the CJK encoding name
+     * @param name   the CJK encoding getName
      * @param start  the start offset in the data
      * @param length the number of bytes to convert
      * @param seq    the <CODE>byte</CODE> array to be decoded
@@ -622,7 +622,7 @@ public class PdfEncodings {
     /**
      * Adds an extra encoding.
      *
-     * @param name the name of the encoding. The encoding recognition is case insensitive
+     * @param name the getName of the encoding. The encoding recognition is case insensitive
      * @param enc  the conversion class
      */
     public static void addExtraEncoding(String name, ExtraEncoding enc) {

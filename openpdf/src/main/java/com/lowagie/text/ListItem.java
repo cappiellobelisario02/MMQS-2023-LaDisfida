@@ -114,9 +114,9 @@ public class ListItem extends Paragraph {
     }
 
     /**
-     * Constructs a <CODE>ListItem</CODE> with a certain leading.
+     * Constructs a <CODE>ListItem</CODE> with a certain getLeading.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      */
     public ListItem(float leading) {
         paragraph = new Paragraph(leading);
@@ -151,9 +151,9 @@ public class ListItem extends Paragraph {
     }
 
     /**
-     * Constructs a <CODE>ListItem</CODE> with a certain <CODE>Chunk</CODE> and a certain leading.
+     * Constructs a <CODE>ListItem</CODE> with a certain <CODE>Chunk</CODE> and a certain getLeading.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param chunk   a <CODE>Chunk</CODE>
      */
     public ListItem(float leading, Chunk chunk) {
@@ -161,9 +161,9 @@ public class ListItem extends Paragraph {
     }
 
     /**
-     * Constructs a <CODE>ListItem</CODE> with a certain <CODE>String</CODE> and a certain leading.
+     * Constructs a <CODE>ListItem</CODE> with a certain <CODE>String</CODE> and a certain getLeading.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param string  a <CODE>String</CODE>
      */
     public ListItem(float leading, String string) {
@@ -171,9 +171,9 @@ public class ListItem extends Paragraph {
     }
 
     /**
-     * Constructs a <CODE>ListItem</CODE> with a certain leading, <CODE>String</CODE> and <CODE>Font</CODE>.
+     * Constructs a <CODE>ListItem</CODE> with a certain getLeading, <CODE>String</CODE> and <CODE>Font</CODE>.
      *
-     * @param leading the leading
+     * @param leading the getLeading
      * @param string  a <CODE>String</CODE>
      * @param font    a <CODE>Font</CODE>
      */
@@ -212,7 +212,7 @@ public class ListItem extends Paragraph {
         paragraph.setIndentationRight(indentation);
     }
 
-    public int type() {
+    public int getTypeImpl() {
         return Element.LISTITEM;
     }
 

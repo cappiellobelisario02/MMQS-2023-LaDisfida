@@ -45,7 +45,7 @@ public class PdfObjectTreeNode extends IconTreeNode {
      */
     protected transient PdfObject object;
     /**
-     * the key if the parent of this node is a dictionary.
+     * the key if the getParent of this node is a dictionary.
      */
     protected transient PdfName key = null;
     /**
@@ -69,7 +69,7 @@ public class PdfObjectTreeNode extends IconTreeNode {
     }
 
     private void initIcon() {
-        switch (object.type()) {
+        switch (object.getTypeImpl()) {
             case PdfObject.INDIRECT:
                 if (isRecursive()) {
                     icon = IconFetcher.getIcon("ref_recursive.png");
@@ -90,7 +90,7 @@ public class PdfObjectTreeNode extends IconTreeNode {
                 icon = IconFetcher.getIcon("boolean.png");
                 return;
             case PdfObject.NAME:
-                icon = IconFetcher.getIcon("name.png");
+                icon = IconFetcher.getIcon("getName.png");
                 return;
             case PdfObject.NULL:
                 icon = IconFetcher.getIcon("null.png");
@@ -152,7 +152,7 @@ public class PdfObjectTreeNode extends IconTreeNode {
     /**
      * Creates an instance of a tree node for the object corresponding with a key in a dictionary.
      *
-     * @param dict the dictionary that is the parent of this tree node.
+     * @param dict the dictionary that is the getParent of this tree node.
      * @param key  the dictionary key corresponding with the PDF object in this tree node.
      * @return a PdfObjectTreeNode
      */
@@ -173,7 +173,7 @@ public class PdfObjectTreeNode extends IconTreeNode {
         if (object == null) {
             return "null";
         }
-        return switch (object.type()) {
+        return switch (object.getTypeImpl()) {
             case PdfObject.INDIRECT -> {
                 String reffedCaption = getCaption(PdfReader.getPdfObject(object));
                 yield object + " -> " + reffedCaption;
@@ -231,7 +231,7 @@ public class PdfObjectTreeNode extends IconTreeNode {
      * @return true if the object is an indirect reference
      */
     public boolean isIndirectReference() {
-        return object.type() == PdfObject.INDIRECT;
+        return object.getTypeImpl() == PdfObject.INDIRECT;
     }
 
     /**

@@ -29,7 +29,7 @@ public interface TextAssemblyBuffer {
 
     /**
      * We pass ourselves to the assembler, which is a visitor, so that it can accumulate information on this text
-     * depending on its type. The result is calculated by a final "assembly" phase, after accumulation is done. This is
+     * depending on its getTypeImpl. The result is calculated by a final "assembly" phase, after accumulation is done. This is
      * because we may have non-contiguous items in a PDF text stream.
      *
      * @param p           the assembler that is visiting us.

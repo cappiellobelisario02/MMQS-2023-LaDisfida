@@ -95,7 +95,7 @@ public class RepeatingTable {
                 datatable.addCell("myUserId");
                 datatable.addCell("Somebody with a very, very, very, very, very, very, very, very, very, very, "
                         + "very, very, very, very, very, very, very, very, very, very, very, very, very, very, very, "
-                        + "very, very, very, very, very, very long long name");
+                        + "very, very, very, very, very, very long long getName");
                 datatable.addCell("No Name Company");
                 datatable.addCell("D" + i);
 

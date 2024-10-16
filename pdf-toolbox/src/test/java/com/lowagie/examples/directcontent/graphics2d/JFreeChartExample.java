@@ -54,7 +54,7 @@ public class JFreeChartExample {
     /**
      * Converts a JFreeChart to PDF syntax.
      *
-     * @param filename the name of the PDF file
+     * @param filename the getName of the PDF file
      * @param chart    the JFreeChart
      * @param width    the width of the resulting PDF
      * @param height   the height of the resulting PDF

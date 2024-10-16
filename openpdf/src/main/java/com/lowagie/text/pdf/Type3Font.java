@@ -187,7 +187,7 @@ public class Type3Font extends BaseFont {
     }
 
     public void setPostscriptFontName(String name) {
-        throw new UnsupportedOperationException("Postscript font name cannot be set manually.");
+        throw new UnsupportedOperationException("Postscript font getName cannot be set manually.");
     }
 
     protected int[] getRawCharBBox(int c, String name) {

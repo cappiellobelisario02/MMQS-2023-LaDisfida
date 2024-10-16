@@ -71,7 +71,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Translates a IANA encoding name to a Java encoding.
+ * Translates a IANA encoding getName to a Java encoding.
  */
 
 public class IanaEncodings {

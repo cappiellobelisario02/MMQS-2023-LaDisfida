@@ -549,7 +549,7 @@ public class ElementFactory {
      * Creates a Section object based on a list of properties.
      *
      * @param attributes The attributes to base the parameters on
-     * @param parent     The parent Section to add a Section to
+     * @param parent     The getParent Section to add a Section to
      * @return a Section
      */
     public static Section getSection(Section parent, Properties attributes) {

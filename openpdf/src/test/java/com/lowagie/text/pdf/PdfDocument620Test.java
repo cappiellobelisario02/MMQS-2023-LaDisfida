@@ -22,9 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PdfDocument620Test {
 
     /**
-     * According to the issue, there will be different when you use setKeepTogether and not use it in the leading.
+     * According to the issue, there will be different when you use setKeepTogether and not use it in the getLeading.
      * <p>First, we will use three paragraph to write a document and see the pdf file.
-     * We can see that after fix the issue, the leading will be same whenever you use setKeepTogether or not. When we
+     * We can see that after fix the issue, the getLeading will be same whenever you use setKeepTogether or not. When we
      * see the pdf file, the two should be same.
      */
     @Test

@@ -84,7 +84,7 @@
  *  Modifications by Rod Smith, 5/22/96                             *
  *                                                                  *
  *  These changes look for the strings "italic", "bold", "black",   *
- *  and "light" in the font's name and set the weight accordingly   *
+ *  and "light" in the font's getName and set the weight accordingly   *
  *  and adds an ItalicAngle line with a value of "0" or "-12.00".   *
  *  This allows OS/2 programs such as DeScribe to handle the bold   *
  *  and italic attributes appropriately, which was not the case     *
@@ -185,7 +185,7 @@ public final class Pfm2afm {
     private byte brkchar;
     private short widthby;
     private int device;
-    private int face;            /* Face name */
+    private int face;            /* Face getName */
     private int bits;
     private int bitoff;
     private short extlen;
@@ -194,7 +194,7 @@ public final class Pfm2afm {
     private int res1;
     private int kernpairs;       /* Kerning pairs */
     private int res2;
-    private int fontname;        /* Font name */
+    private int fontname;        /* Font getName */
     /*
      *  Some metrics from the PostScript extension
      */
@@ -247,7 +247,7 @@ public final class Pfm2afm {
             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1   /* f0 */
     };
     /**
-     * Windows character names.  Give a name to the used locations for when the all flag is specified.
+     * Windows character names.  Give a getName to the used locations for when the all flag is specified.
      */
     private String[] winChars = {
             "W00",              /*   00    */
@@ -685,7 +685,7 @@ public final class Pfm2afm {
 
     private void printFullName() throws IOException {
         out.print("FullName ");
-        // We need to seek to the correct position for the full name in this case
+        // We need to seek to the correct position for the full getName in this case
         in.seek(fontname);
         String fname = readString();
         out.print(fname.replace('-', ' '));

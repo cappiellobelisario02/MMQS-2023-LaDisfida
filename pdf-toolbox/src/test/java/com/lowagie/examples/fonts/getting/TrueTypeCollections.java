@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 public class TrueTypeCollections {
 
     /**
-     * Using true type collections.
+     * Using true getTypeImpl collections.
      *
      * @param args no arguments needed
      */

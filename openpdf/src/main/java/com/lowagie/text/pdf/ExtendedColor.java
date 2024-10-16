@@ -58,27 +58,27 @@ import java.io.Serial;
 public abstract class ExtendedColor extends Color {
 
     /**
-     * a type of extended color.
+     * a getTypeImpl of extended color.
      */
     public static final int TYPE_RGB = 0;
     /**
-     * a type of extended color.
+     * a getTypeImpl of extended color.
      */
     public static final int TYPE_GRAY = 1;
     /**
-     * a type of extended color.
+     * a getTypeImpl of extended color.
      */
     public static final int TYPE_CMYK = 2;
     /**
-     * a type of extended color.
+     * a getTypeImpl of extended color.
      */
     public static final int TYPE_SEPARATION = 3;
     /**
-     * a type of extended color.
+     * a getTypeImpl of extended color.
      */
     public static final int TYPE_PATTERN = 4;
     /**
-     * a type of extended color.
+     * a getTypeImpl of extended color.
      */
     public static final int TYPE_SHADING = 5;
     /**
@@ -98,7 +98,7 @@ public abstract class ExtendedColor extends Color {
     protected int type;
 
     /**
-     * Constructs an extended color of a certain type.
+     * Constructs an extended color of a certain getTypeImpl.
      *
      * @param type {@link ExtendedColor#type}
      */
@@ -108,7 +108,7 @@ public abstract class ExtendedColor extends Color {
     }
 
     /**
-     * Constructs an extended color of a certain type and a certain color.
+     * Constructs an extended color of a certain getTypeImpl and a certain color.
      *
      * @param type  {@link ExtendedColor#type}
      * @param red   red quotient
@@ -120,7 +120,7 @@ public abstract class ExtendedColor extends Color {
     }
 
     /**
-     * Constructs an extended color of a certain type and a certain color.
+     * Constructs an extended color of a certain getTypeImpl and a certain color.
      *
      * @param type  {@link ExtendedColor#type}
      * @param red   red quotient
@@ -134,7 +134,7 @@ public abstract class ExtendedColor extends Color {
     }
 
     /**
-     * Gets the type of given color.
+     * Gets the getTypeImpl of given color.
      *
      * @param color an object of {@link Color}
      * @return one of the types (see constants)
@@ -161,7 +161,7 @@ public abstract class ExtendedColor extends Color {
     }
 
     /**
-     * Gets the type of this color.
+     * Gets the getTypeImpl of this color.
      *
      * @return one of the types (see constants)
      */

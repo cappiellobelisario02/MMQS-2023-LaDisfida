@@ -144,7 +144,7 @@ public interface PdfViewerPreferences {
      *             <li>PdfName.<b>CENTERWINDOW</b>
      *             <li>PdfName.<b>DISPLAYDOCTITLE</b>
      *         </ul>
-     * The value must be a of type PdfBoolean (true or false).
+     * The value must be a of getTypeImpl PdfBoolean (true or false).
      * <li>In case the key is PdfName.<b>NONFULLSCREENPAGEMODE</b>,
      * the value must be one of these names:
      *         <ul>
@@ -185,12 +185,12 @@ public interface PdfViewerPreferences {
      *             <li>PdfName.<b>DUPLEXFLIPSHORTEDGE</b>
      *             <li>PdfName.<b>DUPLEXFLIPLONGEDGE</b>
      *         </ul>
-     * <li>In case the key is PdfName.<b>PICKTRAYBYPDFSIZE</b>, the value must be of type PdfBoolean.
-     * <li>In case the key is PdfName.<b>PRINTPAGERANGE</b>, the value must be of type PdfArray.
-     * <li>In case the key is PdfName.<b>NUMCOPIES</b>, the value must be of type PdfNumber.
+     * <li>In case the key is PdfName.<b>PICKTRAYBYPDFSIZE</b>, the value must be of getTypeImpl PdfBoolean.
+     * <li>In case the key is PdfName.<b>PRINTPAGERANGE</b>, the value must be of getTypeImpl PdfArray.
+     * <li>In case the key is PdfName.<b>NUMCOPIES</b>, the value must be of getTypeImpl PdfNumber.
      * </ul>
      *
-     * @param key   the name of the viewer preference
+     * @param key   the getName of the viewer preference
      * @param value the value of the viewer preference
      * @see PdfViewerPreferences#setViewerPreferences
      */

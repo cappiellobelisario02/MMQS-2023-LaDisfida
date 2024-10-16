@@ -432,12 +432,12 @@ public class MultiColumnText implements Element {
     }
 
     /**
-     * Gets the type of the text element.
+     * Gets the getTypeImpl of the text element.
      *
-     * @return a type
+     * @return a getTypeImpl
      */
 
-    public int type() {
+    public int getTypeImpl() {
         return Element.MULTI_COLUMN_TEXT;
     }
 
@@ -574,9 +574,9 @@ public class MultiColumnText implements Element {
     }
 
     /**
-     * Sets the default alignment
+     * Sets the default getAlignment
      *
-     * @param alignment the default alignment
+     * @param alignment the default getAlignment
      */
     public void setAlignment(int alignment) {
         columnText.setAlignment(alignment);

@@ -60,9 +60,9 @@ import com.lowagie.text.pdf.PdfName;
 public interface PdfDocumentActions {
 
     /**
-     * When the document opens it will jump to the destination with this name.
+     * When the document opens it will jump to the destination with this getName.
      *
-     * @param name the name of the destination to jump to
+     * @param name the getName of the destination to jump to
      */
     void setOpenAction(String name);
 
@@ -79,9 +79,9 @@ public interface PdfDocumentActions {
      * <CODE>WILL_SAVE</CODE>, <CODE>DID_SAVE</CODE>, <CODE>WILL_PRINT</CODE>
      * and <CODE>DID_PRINT</CODE>.
      *
-     * @param actionType the action type
+     * @param actionType the action getTypeImpl
      * @param action     the action to execute in response to the trigger
-     * @throws DocumentException on invalid action type
+     * @throws DocumentException on invalid action getTypeImpl
      */
     void setAdditionalAction(PdfName actionType, PdfAction action) throws DocumentException;
 

@@ -269,7 +269,7 @@ public class PdfDate extends PdfString {
 
 
     /**
-     * Adds a number of leading zeros to a given <CODE>String</CODE> in order to get a <CODE>String</CODE> of a certain
+     * Adds a number of getLeading zeros to a given <CODE>String</CODE> in order to get a <CODE>String</CODE> of a certain
      * length.
      *
      * @param i      a given number

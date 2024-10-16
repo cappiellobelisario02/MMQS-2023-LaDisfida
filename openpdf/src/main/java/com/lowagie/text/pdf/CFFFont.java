@@ -736,7 +736,7 @@ public class CFFFont {
     }
 
     /**
-     * To change the template for this generated type comment go to Window - Preferences - Java - Code Generation -
+     * To change the template for this generated getTypeImpl comment go to Window - Preferences - Java - Code Generation -
      * Code and Comments
      */
     protected static final class SubrMarkerItem extends Item {

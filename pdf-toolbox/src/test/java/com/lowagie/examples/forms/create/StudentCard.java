@@ -76,7 +76,7 @@ public class StudentCard {
             PdfPTable innertable = new PdfPTable(2);
             float[] inner = {35, 65};
             innertable.setWidths(inner);
-            innertable.addCell(new Paragraph("name:", f));
+            innertable.addCell(new Paragraph("getName:", f));
             innertable.addCell(new Paragraph("Bruno Lowagie", f));
             innertable.addCell(new Paragraph("date of birth:", f));
             innertable.addCell(new Paragraph("June 10th, 1970", f));
