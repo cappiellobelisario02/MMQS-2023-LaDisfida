@@ -451,12 +451,17 @@ public class PdfAction extends PdfDictionary {
         dic.put(PdfName.F, new PdfString(file));
         dic.put(PdfName.FS, PdfName.URL);
         action.put(PdfName.F, dic);
-        if (names != null) {
-            action.put(PdfName.FIELDS, buildArray(names));
+
+        // Check if names is null and handle accordingly
+        if (names == null) {
+            throw new IllegalArgumentException("Field names cannot be null");
         }
+
+        action.put(PdfName.FIELDS, buildArray(names));
         action.put(PdfName.FLAGS, new PdfNumber(flags));
         return action;
     }
+
 
     /**
      * Creates a resetform.

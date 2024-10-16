@@ -399,7 +399,7 @@ public class PdfLine {
      * @return a <CODE>PdfChunk</CODE> if the line has a listsymbol; <CODE>null</CODE> otherwise
      */
 
-    public Chunk listSymbol() {
+    public Chunk getListSymbol() {
         return listSymbol;
     }
 

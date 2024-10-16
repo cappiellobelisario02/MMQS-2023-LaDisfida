@@ -118,6 +118,8 @@ import javax.imageio.ImageWriter;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageOutputStream;
 
+import static com.lowagie.text.pdf.PdfWriter.logger;
+
 public class PdfGraphics2D extends Graphics2D {
 
     public static final int AFM_DIVISOR = 1000; // used to calculate coordinates
@@ -2151,12 +2153,19 @@ public class PdfGraphics2D extends Graphics2D {
             if (clazz == null) {
                 return null;
             }
-            Method method;
+            Method method = null;
             try {
                 method = clazz.getDeclaredMethod(methodName, parameterTypes);
-                // Removed the accessibility update
+            } catch (NoSuchMethodException e) {
+                // Log the absence of the method
+                logger.info("Method " + methodName + " not found in class " + clazz.getName());
+            } catch (SecurityException e) {
+                // Handle security-related issues
+                logger.info("Access to method " + methodName + " in class " + clazz.getName() + " denied due to "
+                        + "security restrictions.");
             } catch (Exception e) {
-                method = null; // You might want to log or handle the exception more specifically
+                // Handle other unexpected exceptions
+                logger.info("Unexpected error while retrieving method ");
             }
             return method;
         }

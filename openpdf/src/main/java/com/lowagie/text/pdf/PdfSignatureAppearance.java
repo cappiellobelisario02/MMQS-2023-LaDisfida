@@ -605,7 +605,7 @@ public class PdfSignatureAppearance {
      * @return the main appearance layer
      * @throws DocumentException on error
      */
-    public PdfTemplate getAppearance() throws DocumentException {
+    public PdfTemplate getAppearance() throws DocumentException, IOException {
         if (isInvisible()) {
             PdfTemplate t = new PdfTemplate(writer);
             t.setBoundingBox(new Rectangle(0, 0));
@@ -675,7 +675,6 @@ public class PdfSignatureAppearance {
 
             if (render == SIGNATURE_RENDER_NAME_AND_DESCRIPTION
                     || (render == SIGNATURE_RENDER_GRAPHIC_AND_DESCRIPTION && this.signatureGraphic != null)) {
-                // origin is the bottom-left
                 signatureRect = new Rectangle(MARGIN, MARGIN, rect.getWidth() / 2
                         - MARGIN, rect.getHeight() - MARGIN);
                 dataRect = new Rectangle(rect.getWidth() / 2 + MARGIN / 2, MARGIN,
@@ -689,7 +688,7 @@ public class PdfSignatureAppearance {
                 }
             } else if (this.render == SIGNATURE_RENDER_GRAPHIC) {
                 if (this.signatureGraphic == null) {
-                    throw new IllegalArgumentException("Missing signature image for renderingmode: " + this.render);
+                    throw new IllegalArgumentException("Missing signature image for rendering mode: " + this.render);
                 }
                 signatureRect = new Rectangle(
                         MARGIN,
@@ -704,70 +703,71 @@ public class PdfSignatureAppearance {
             if (render == SIGNATURE_RENDER_NAME_AND_DESCRIPTION) {
                 try {
                     String signedBy = PdfPKCS7.getSubjectFields((X509Certificate) certChain[0]).getField("CN");
-                    Rectangle sr2 = new Rectangle(Objects.requireNonNull(signatureRect).getWidth() - MARGIN,
-                            signatureRect.getHeight() - MARGIN);
-                    float signedSize = fitText(font, signedBy, sr2, -1, runDirection);
+                    if (signatureRect != null) {
+                        Rectangle sr2 = new Rectangle(signatureRect.getWidth() - MARGIN, signatureRect.getHeight() - MARGIN);
+                        float signedSize = fitText(font, signedBy, sr2, -1, runDirection);
 
-                    ColumnText ct2 = new ColumnText(t);
-                    ct2.setRunDirection(runDirection);
-                    ct2.setSimpleColumn(new Phrase(signedBy, font),
-                            signatureRect.getLeft(), signatureRect.getBottom(),
-                            signatureRect.getRight(), signatureRect.getTop(), signedSize,
-                            Element.ALIGN_LEFT);
-                    ct2.go();
+                        ColumnText ct2 = new ColumnText(t);
+                        ct2.setRunDirection(runDirection);
+                        ct2.setSimpleColumn(new Phrase(signedBy, font),
+                                signatureRect.getLeft(), signatureRect.getBottom(),
+                                signatureRect.getRight(), signatureRect.getTop(), signedSize,
+                                Element.ALIGN_LEFT);
+                        ct2.go();
+                    } else {
+                        throw new IllegalStateException("Signature rectangle is null");
+                    }
                 } catch (IOException | NullPointerException e) {
-                    //may need some logging or some other operation
+                    logger.info("Error rendering signature name and description");
                 }
             } else if (render == SIGNATURE_RENDER_GRAPHIC_AND_DESCRIPTION) {
-                ColumnText ct2 = new ColumnText(t);
-                ct2.setRunDirection(runDirection);
-                ct2.setSimpleColumn(Objects.requireNonNull(signatureRect).getLeft(), signatureRect.getBottom(),
-                        signatureRect.getRight(), signatureRect.getTop(), 0,
-                        Element.ALIGN_RIGHT);
+                if (signatureRect != null) {
+                    ColumnText ct2 = new ColumnText(t);
+                    ct2.setRunDirection(runDirection);
+                    ct2.setSimpleColumn(signatureRect.getLeft(), signatureRect.getBottom(),
+                            signatureRect.getRight(), signatureRect.getTop(), 0,
+                            Element.ALIGN_RIGHT);
 
-                Image im = Image.getInstance(signatureGraphic);
-                im.scaleToFit(signatureRect.getWidth(), signatureRect.getHeight());
+                    Image im = Image.getInstance(signatureGraphic);
+                    im.scaleToFit(signatureRect.getWidth(), signatureRect.getHeight());
 
-                Paragraph p = new Paragraph();
-                // must calculate the point to draw from to make image appear in middle
-                // of column
-                float x = 0;
-                // experimentation found this magic number to counteract Adobe's
-                // signature graphic, which
-                // offsets the y co-ordinate by 15 units
-                float y = -im.getScaledHeight() + 15;
-
-                x = x + (signatureRect.getWidth() - im.getScaledWidth()) / 2;
-                y = y - (signatureRect.getHeight() - im.getScaledHeight()) / 2;
-                p.add(new Chunk(im, x
-                        + (signatureRect.getWidth() - im.getScaledWidth()) / 2, y, false));
-                ct2.addElement(p);
-                try {
-                    ct2.go();
-                } catch (IOException e) {
-                    //may need some logging or some other operation
+                    Paragraph p = new Paragraph();
+                    float x = (signatureRect.getWidth() - im.getScaledWidth()) / 2;
+                    float y = -im.getScaledHeight() + 15;
+                    p.add(new Chunk(im, x, y, false));
+                    ct2.addElement(p);
+                    try {
+                        ct2.go();
+                    } catch (IOException e) {
+                        logger.info("Error rendering graphic and description");
+                    }
+                } else {
+                    throw new IllegalStateException("Signature rectangle is null");
                 }
             } else if (this.render == SIGNATURE_RENDER_GRAPHIC) {
-                ColumnText ct2 = new ColumnText(t);
-                ct2.setRunDirection(this.runDirection);
-                ct2.setSimpleColumn(Objects.requireNonNull(signatureRect).getLeft(), signatureRect.getBottom(), signatureRect.getRight(),
-                        signatureRect.getTop(), 0, Element.ALIGN_RIGHT);
+                if (signatureRect != null) {
+                    ColumnText ct2 = new ColumnText(t);
+                    ct2.setRunDirection(this.runDirection);
+                    ct2.setSimpleColumn(signatureRect.getLeft(), signatureRect.getBottom(), signatureRect.getRight(),
+                            signatureRect.getTop(), 0, Element.ALIGN_RIGHT);
 
-                Image im = Image.getInstance(this.signatureGraphic);
-                im.scaleToFit(signatureRect.getWidth(), signatureRect.getHeight());
+                    Image im = Image.getInstance(this.signatureGraphic);
+                    im.scaleToFit(signatureRect.getWidth(), signatureRect.getHeight());
 
-                Paragraph p = new Paragraph(signatureRect.getHeight());
-                // must calculate the point to draw from, to make image appear in the middle of the column
-                float x = (signatureRect.getWidth() - im.getScaledWidth()) / 2f;
-                float y = (signatureRect.getHeight() - im.getScaledHeight()) / 2f;
+                    Paragraph p = new Paragraph(signatureRect.getHeight());
+                    float x = (signatureRect.getWidth() - im.getScaledWidth()) / 2f;
+                    float y = (signatureRect.getHeight() - im.getScaledHeight()) / 2f;
 
-                p.add(new Chunk(im, x, y, false));
+                    p.add(new Chunk(im, x, y, false));
 
-                ct2.addElement(p);
-                try {
-                    ct2.go();
-                } catch (IOException e) {
-                    //may need some logging or some other operation
+                    ct2.addElement(p);
+                    try {
+                        ct2.go();
+                    } catch (IOException e) {
+                        logger.info("Error rendering signature graphic");
+                    }
+                } else {
+                    throw new IllegalStateException("Signature rectangle is null");
                 }
             }
 
@@ -778,12 +778,12 @@ public class PdfSignatureAppearance {
                 }
                 ColumnText ct = new ColumnText(t);
                 ct.setRunDirection(runDirection);
-                ct.setSimpleColumn(new Phrase(text, font), Objects.requireNonNull(dataRect).getLeft(), dataRect.getBottom(),
+                ct.setSimpleColumn(new Phrase(text, font), dataRect.getLeft(), dataRect.getBottom(),
                         dataRect.getRight(), dataRect.getTop(), size, Element.ALIGN_LEFT);
                 try {
                     ct.go();
                 } catch (IOException e) {
-                    //may need some logging or some other operation
+                    logger.info("Error rendering signature content");
                 }
             }
         }
@@ -814,52 +814,13 @@ public class PdfSignatureAppearance {
             size = fitText(font, text, sr, 15, runDirection);
             ColumnText ct = new ColumnText(t);
             ct.setRunDirection(runDirection);
-            ct.setSimpleColumn(new Phrase(text, font), MARGIN, 0, rect.getWidth()
+            ct.setSimpleColumn(new Phrase(text, font), MARGIN, MARGIN, rect.getWidth()
                     - MARGIN, rect.getHeight() - MARGIN, size, Element.ALIGN_LEFT);
-            try {
-                ct.go();
-            } catch (IOException e) {
-                //may need some logging or some other operation
-            }
+            ct.go();
         }
-        int rotation = writer.reader.getPageRotation(page);
-        Rectangle rotated = new Rectangle(rect);
-        int n = rotation;
-        while (n > 0) {
-            rotated = rotated.rotate();
-            n -= 90;
-        }
-        if (frm == null) {
-            frm = new PdfTemplate(writer);
-            frm.setBoundingBox(rotated);
-            writer.addDirectTemplateSimple(frm, new PdfName("FRM"));
-            float scale = Math.min(rect.getWidth(), rect.getHeight()) * 0.9f;
-            float x = (rect.getWidth() - scale) / 2;
-            float y = (rect.getHeight() - scale) / 2;
-            scale /= 100;
-            if (rotation == 90) {
-                frm.concatCTM(0, 1, -1, 0, rect.getHeight(), 0);
-            } else if (rotation == 180) {
-                frm.concatCTM(-1, 0, 0, -1, rect.getWidth(), rect.getHeight());
-            } else if (rotation == 270) {
-                frm.concatCTM(0, -1, 1, 0, 0, rect.getWidth());
-            }
-            frm.addTemplate(app[0], 0, 0);
-            if (!acro6Layers) {
-                frm.addTemplate(app[1], scale, 0, 0, scale, x, y);
-            }
-            frm.addTemplate(app[2], 0, 0);
-            if (!acro6Layers) {
-                frm.addTemplate(app[3], scale, 0, 0, scale, x, y);
-                frm.addTemplate(app[4], 0, 0);
-            }
-        }
-        PdfTemplate napp = new PdfTemplate(writer);
-        napp.setBoundingBox(rotated);
-        writer.addDirectTemplateSimple(napp, null);
-        napp.addTemplate(frm, 0, 0);
-        return napp;
+        return app[acro6Layers ? 0 : 2];
     }
+
 
     /**
      * Sets the digest/signature to an external calculated value.
@@ -1277,11 +1238,13 @@ public class PdfSignatureAppearance {
             docmdp.put(new PdfName("DocMDP"), refSig);
             writer.reader.getCatalog().put(new PdfName("Perms"), docmdp);
         }
-        try{
+        try {
             writer.close(stamper.getInfoDictionary());
-        }catch(NoSuchAlgorithmException nsae){
-            //may need some logging
+        } catch (NoSuchAlgorithmException nsae) {
+            // Log the exception with info level
+            logger.info("NoSuchAlgorithmException encountered while closing the stamper: " + nsae.getMessage());
         }
+
 
         range = new long[exclusionLocations.size() * 2];
         long byteRangePosition = exclusionLocations

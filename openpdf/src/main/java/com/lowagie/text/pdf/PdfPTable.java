@@ -200,10 +200,12 @@ public class PdfPTable implements LargeElement {
         this.relativeWidths = new float[relativeWidths.length];
         System.arraycopy(relativeWidths, 0, this.relativeWidths, 0, relativeWidths.length);
         absoluteWidths = new float[relativeWidths.length];
-        calculateWidths();
+        calculateWidths(); // Call to the method that should not be overridden
         currentRow = new PdfPCell[absoluteWidths.length];
         keepTogether = false;
     }
+
+
 
     /**
      * Constructs a <CODE>PdfPTable</CODE> with <CODE>numColumns</CODE> columns.

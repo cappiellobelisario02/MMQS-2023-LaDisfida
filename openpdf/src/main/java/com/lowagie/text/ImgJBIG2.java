@@ -51,6 +51,7 @@ package com.lowagie.text;
 
 import java.net.URL;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Support for JBIG2 images.
@@ -105,17 +106,17 @@ public class ImgJBIG2 extends Image {
         rawData = data;
         plainWidth = getWidth();
         plainHeight = getHeight();
+
         if (globals != null) {
             this.global = globals;
-            MessageDigest md;
             try {
-                md = MessageDigest.getInstance("MD5");
+                MessageDigest md = MessageDigest.getInstance("MD5");
                 md.update(this.global);
                 this.globalHash = md.digest();
-            } catch (Exception e) {
-                //ignore
+            } catch (NoSuchAlgorithmException e) {
+                // Log specific error related to the algorithm not being found
+                logger.info("MD5 algorithm not found. Unable to compute hash.");
             }
-
         }
     }
 

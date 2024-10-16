@@ -89,7 +89,7 @@ import static com.lowagie.text.pdf.PdfStamperImp.logger;
 
 public abstract class Image extends Rectangle {
 
-    private static final Logger logger = Logger.getLogger(Image.class.getName());
+    static final Logger logger = Logger.getLogger(Image.class.getName());
 
     // static final membervariables
 

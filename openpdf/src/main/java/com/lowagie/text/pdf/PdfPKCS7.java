@@ -357,14 +357,12 @@ public class PdfPKCS7 {
             // Basic checks to make sure it's a PKCS#7 SignedData Object
             ASN1Primitive pkcs = readASN1InputStream(din);
             if (!(pkcs instanceof ASN1Sequence signedData)) {
-                throw new IllegalArgumentException(
-                        MessageLocalization.getComposedMessage("not.a.valid.pkcs.7.object.not.a.sequence"));
+                throw new IllegalArgumentException("Not a valid PKCS#7 object: not a sequence");
             }
 
             ASN1ObjectIdentifier objId = (ASN1ObjectIdentifier) signedData.getObjectAt(0);
             if (!objId.getId().equals(ID_PKCS7_SIGNED_DATA)) {
-                throw new IllegalArgumentException(
-                        MessageLocalization.getComposedMessage("not.a.valid.pkcs.7.object.not.signed.data"));
+                throw new IllegalArgumentException("Not a valid PKCS#7 object: not signed data");
             }
 
             ASN1Sequence content = (ASN1Sequence) ((ASN1TaggedObject) signedData.getObjectAt(1)).getBaseObject();
@@ -403,8 +401,7 @@ public class PdfPKCS7 {
             // Signer info processing...
             ASN1Set signerInfos = (ASN1Set) content.getObjectAt(next);
             if (signerInfos.size() != 1) {
-                throw new IllegalArgumentException(
-                        MessageLocalization.getComposedMessage("this.pkcs.7.object.has.multiple.signerinfos.only.one.is.supported.at.this.time"));
+                throw new IllegalArgumentException("This PKCS#7 object has multiple SignerInfos; only one is supported at this time");
             }
             ASN1Sequence signerInfo = (ASN1Sequence) signerInfos.getObjectAt(0);
 
@@ -420,8 +417,7 @@ public class PdfPKCS7 {
                 }
             }
             if (signCert == null) {
-                throw new IllegalArgumentException(
-                        MessageLocalization.getComposedMessage("can.t.find.signing.certificate.with.serial.1", serialNumber.toString(16)));
+                throw new IllegalArgumentException("Can't find signing certificate with serial " + serialNumber.toString(16));
             }
             signCertificateChain();
             digestAlgorithm = ((ASN1ObjectIdentifier) ((ASN1Sequence) signerInfo.getObjectAt(2)).getObjectAt(0)).getId();
@@ -450,8 +446,7 @@ public class PdfPKCS7 {
                     }
                 }
                 if (digestAttr == null) {
-                    throw new IllegalArgumentException(
-                            MessageLocalization.getComposedMessage("authenticated.attribute.is.missing.the.digest"));
+                    throw new IllegalArgumentException("Authenticated attribute is missing the digest");
                 }
                 ++next;
             }
@@ -472,32 +467,30 @@ public class PdfPKCS7 {
 
             // Initialize message digest
             if (rsaData != null || digestAttr != null) {
-                if (provider != null) {
-                    String msg = "Provider is set to: " + provider;
-                    logger.info(msg);
-                    if (provider.startsWith("SunPKCS11")) {
-                        messageDigest = MessageDigest.getInstance(getStandardJavaName(getHashAlgorithm()));
-                    } else {
-                        messageDigest = MessageDigest.getInstance(getStandardJavaName(getHashAlgorithm()), provider);
-                    }
-                } else {
-                    logger.info("Provider is null, using default");
-                    messageDigest = MessageDigest.getInstance(getStandardJavaName(getHashAlgorithm()));
-                }
+                initializeMessageDigest();
             }
 
             // Initialize signature
-            if (provider == null) {
-                logger.info("Provider is null, using default signature provider");
-                sig = Signature.getInstance(getDigestAlgorithm());
-            } else {
-                String msg = "Using provider for signature: " + provider;
-                logger.info(msg);
-                sig = Signature.getInstance(getDigestAlgorithm(), provider);
-            }
+            initializeSignature();
+
             sig.initVerify(signCert.getPublicKey());
         } catch (Exception e) {
             throw new ExceptionConverter(e);
+        }
+    }
+
+    private void initializeMessageDigest() throws NoSuchAlgorithmException, NoSuchProviderException {
+        if (provider != null) {
+            String msg = "Provider is set to: " + provider;
+            logger.info(msg);
+            if (provider.startsWith("SunPKCS11")) {
+                messageDigest = MessageDigest.getInstance(getStandardJavaName(getHashAlgorithm()));
+            } else {
+                messageDigest = MessageDigest.getInstance(getStandardJavaName(getHashAlgorithm()), provider);
+            }
+        } else {
+            logger.info("Provider is null, using default");
+            messageDigest = MessageDigest.getInstance(getStandardJavaName(getHashAlgorithm()));
         }
     }
 

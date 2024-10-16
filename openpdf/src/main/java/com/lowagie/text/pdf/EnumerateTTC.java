@@ -94,8 +94,7 @@ class EnumerateTTC extends TrueTypeFont {
         try {
             String mainTag = readStandardString(4);
             if (!mainTag.equals("ttcf")) {
-                throw new DocumentException(
-                        MessageLocalization.getComposedMessage("1.is.not.a.valid.ttc.file", fileName));
+                throw new DocumentException("Invalid TTC file format.");
             }
             int majorVersion = rf.readShort();
             rf.skipBytes(2);
@@ -114,8 +113,7 @@ class EnumerateTTC extends TrueTypeFont {
                 boolean cffDataFont = sfntVersion == CFF_DATA_SFNT_VERSION &&
                         (majorVersion == 1 || majorVersion == 2);
                 if (!trueTypeFont && !cffDataFont) {
-                    throw new DocumentException(
-                            MessageLocalization.getComposedMessage("1.is.not.a.valid.ttf.file", fileName));
+                    throw new DocumentException("Invalid TTF file format.");
                 }
                 int num_tables = rf.readUnsignedShort();
                 rf.skipBytes(6);
@@ -135,6 +133,7 @@ class EnumerateTTC extends TrueTypeFont {
             }
         }
     }
+
 
     String[] getNames() {
         return names;

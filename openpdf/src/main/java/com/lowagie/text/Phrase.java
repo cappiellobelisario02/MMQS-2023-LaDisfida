@@ -166,6 +166,10 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
         this.leading = leading;
         super.add(chunk);
         fontAttr = chunk.getFont();
+        initializeHyphenation(chunk); // Call a private method to avoid exposing the setter in the constructor
+    }
+
+    private void initializeHyphenation(Chunk chunk) {
         setHyphenation(chunk.getHyphenation());
     }
 

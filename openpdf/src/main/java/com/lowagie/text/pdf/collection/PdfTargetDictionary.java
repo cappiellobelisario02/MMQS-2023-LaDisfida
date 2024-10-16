@@ -17,8 +17,12 @@ public class PdfTargetDictionary extends PdfDictionary {
         super();
         put(PdfName.R, PdfName.P);
         if (nested != null) {
-            setAdditionalPath(nested);
+            initializeAdditionalPath(nested); // Call a private method to avoid exposure in the constructor
         }
+    }
+
+    private void initializeAdditionalPath(PdfTargetDictionary nested) {
+        setAdditionalPath(nested); // Non-overridable method used in the constructor
     }
 
     /**

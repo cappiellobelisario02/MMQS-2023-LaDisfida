@@ -3072,7 +3072,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (IOException e) {
-                // empty on purpose
+                // Log the exception or handle it accordingly
+                logger.info("Failed to close RandomAccessFileOrArray");
             }
         }
         return b;

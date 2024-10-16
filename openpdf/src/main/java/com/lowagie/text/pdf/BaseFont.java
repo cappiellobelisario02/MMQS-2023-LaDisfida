@@ -54,10 +54,12 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -811,15 +813,16 @@ public abstract class BaseFont {
      * @throws DocumentException on error
      * @throws IOException       on error
      */
-    public static String[][] getFullFontName(String name, String encoding,
-            byte[] ttfAfm) throws DocumentException, IOException {
+    public static String[][] getFullFontName(String name, String encoding, byte[] ttfAfm)
+            throws DocumentException, IOException {
         String nameBase = getBaseName(name);
         BaseFont fontBuilt = null;
-        if (nameBase.toLowerCase().endsWith(".ttf")
-                || nameBase.toLowerCase().endsWith(".otf")
-                || nameBase.toLowerCase().indexOf(TTC_KEY) >= 1) {
-            fontBuilt = new TrueTypeFont(name, CP1252, false, ttfAfm, true,
-                    false);
+
+        // Use Locale.ENGLISH to ensure consistency in string comparisons
+        if (nameBase.toLowerCase(Locale.ENGLISH).endsWith(".ttf")
+                || nameBase.toLowerCase(Locale.ENGLISH).endsWith(".otf")
+                || nameBase.toLowerCase(Locale.ENGLISH).contains(TTC_KEY)) {
+            fontBuilt = new TrueTypeFont(name, StandardCharsets.ISO_8859_1.name(), false, ttfAfm, true, false);
         } else {
             fontBuilt = createFont(name, encoding, false, false, ttfAfm, null);
         }

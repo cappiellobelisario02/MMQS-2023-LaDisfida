@@ -221,7 +221,20 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
         if (element instanceof Phrase phrase) {
             setLeading(phrase.getLeading());
         }
-        addElement(element);
+
+        // Validate the element type before adding
+        if (isValidElement(element)) {
+            addElement(element);
+        } else {
+            throw new BadElementException("Invalid element type: " + element.getClass().getName());
+        }
+    }
+
+    // Method to validate the type of the element
+    private boolean isValidElement(Element element) {
+        // Check if the element is one of the allowed types
+        return element instanceof Phrase;
+        // Add more checks for allowed types as necessary
     }
 
     // implementation of the Element-methods
