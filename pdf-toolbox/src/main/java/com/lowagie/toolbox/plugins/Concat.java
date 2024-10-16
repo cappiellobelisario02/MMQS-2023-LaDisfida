@@ -136,22 +136,42 @@ public class Concat extends AbstractTool {
                 shiftPageNumbers(bookmarks, pageOffset);
                 logPageInfo(file, numberOfPages);
 
-                writer = initializeDocument(reader, destinationFile);
+                // Initialize the document
+                if (writer == null) {
+                    writer = initializeDocument(reader, destinationFile);
+                }
+
                 addPages(reader, numberOfPages, writer);
                 logProcessedPages(numberOfPages);
                 pageOffset += numberOfPages;
             }
 
-            if (!bookmarks.isEmpty()) {
+            // Only set outlines if writer was initialized
+            if (writer != null && !bookmarks.isEmpty()) {
                 writer.setOutlines(bookmarks);
             }
 
-            document.close();
-            reader.close();
-            fos.close();
-            writer.close();
         } catch (InstantiationException | IOException | PDFFilterException e) {
             throw new ExceptionConverter(e);
+        } finally {
+            // Ensure all resources are closed properly
+            try {
+                if (document != null) {
+                    document.close();
+                }
+                if (reader != null) {
+                    reader.close();
+                }
+                if (fos != null) {
+                    fos.close();
+                }
+                if (writer != null) {  // Check for null before closing
+                    writer.close();
+                }
+            } catch (IOException e) {
+                // Handle closing exceptions as necessary
+                e.printStackTrace(); // You may want to log this exception instead
+            }
         }
     }
 

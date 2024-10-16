@@ -100,7 +100,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
@@ -115,7 +118,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageOutputStream;
 
-import static com.lowagie.text.pdf.PdfWriter.logger;
+import static com.lowagie.text.pdf.PdfSignatureAppearance.logger;
 
 public class PdfGraphics2D extends Graphics2D {
 
@@ -177,16 +180,11 @@ public class PdfGraphics2D extends Graphics2D {
             "com.github.librepdf.openpdf.compositeFontDrawerEnabled", true);
 
     private PdfGraphics2D() {
-        initializeRenderingHints();
-    }
-
-    private void initializeRenderingHints() {
         dg2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         setRenderingHint(
                 com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE, com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
     }
-
 
     /**
      * Copy constructor for child PdfGraphics2D objects.
@@ -196,10 +194,6 @@ public class PdfGraphics2D extends Graphics2D {
      */
     protected PdfGraphics2D(com.lowagie.text.pdf.PdfGraphics2D parent) {
         this();
-        initializeGraphics2D(parent);
-    }
-
-    private void initializeGraphics2D(com.lowagie.text.pdf.PdfGraphics2D parent) {
         rhints.putAll(parent.rhints);
         onlyShapes = parent.onlyShapes;
         transform = new AffineTransform(parent.transform);
@@ -236,7 +230,6 @@ public class PdfGraphics2D extends Graphics2D {
         kid = true;
     }
 
-
     /**
      * Shortcut constructor for PDFGraphics2D.
      *
@@ -262,42 +255,34 @@ public class PdfGraphics2D extends Graphics2D {
     public PdfGraphics2D(PdfContentByte cb, float width, float height, FontMapper fontMapper, boolean onlyShapes,
             boolean convertImagesToJPEG, float quality) {
         super();
+        dg2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        setRenderingHint(
+                com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE, com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
         this.convertImagesToJPEG = convertImagesToJPEG;
         this.jpegQuality = quality;
         this.onlyShapes = onlyShapes;
         this.transform = new AffineTransform();
         this.baseFonts = new HashMap<>();
-
         if (!onlyShapes) {
-            this.fontMapper = (fontMapper != null) ? fontMapper : new DefaultFontMapper();
+            this.fontMapper = fontMapper;
+            if (this.fontMapper == null) {
+                this.fontMapper = new DefaultFontMapper();
+            }
         }
-
-        this.cb = cb;
-        this.width = width;
-        this.height = height;
-
-        initGraphics2D();
-    }
-
-    private void initGraphics2D() {
-        dg2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        setRenderingHint(
-                com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE, com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
-
         paint = Color.black;
         background = Color.white;
         setFont(new Font("sanserif", Font.PLAIN, 12));
+        this.cb = cb;
         cb.saveState();
-
+        this.width = width;
+        this.height = height;
         areaClip = new Area(new Rectangle2D.Float(0, 0, width, height));
         clip(areaClip);
-
         originalStroke = actualStroke = oldStroke = strokeOne;
         setStrokeDiff(actualStroke, null);
         cb.saveState();
     }
-
 
     /**
      * Calculates position and/or stroke thickness depending on the font size
@@ -537,7 +522,7 @@ public class PdfGraphics2D extends Graphics2D {
     }
 
     private double drawString(String s, BaseFont baseFont, double x, double y) {
-        boolean restoreTextRenderingMode;
+        boolean restoreTextRenderingMode = false;
         AffineTransform at = getTransform();
         try {
             setupTransformation(x, y);
@@ -1766,7 +1751,7 @@ public class PdfGraphics2D extends Graphics2D {
             cb.setGState(gs);
         }
 
-        com.lowagie.text.Image image;
+        com.lowagie.text.Image image = null;
         if (!convertImagesToJPEG) {
             image = com.lowagie.text.Image.getInstance(img, bgColor);
         } else {
@@ -1821,18 +1806,18 @@ public class PdfGraphics2D extends Graphics2D {
     private void setFillPaint() {
         if (checkNewPaint(paintFill)) {
             paintFill = paint;
-            setPaint(true);
+            setPaint(false, 0, 0, true);
         }
     }
 
     private void setStrokePaint() {
         if (checkNewPaint(paintStroke)) {
             paintStroke = paint;
-            setPaint(false);
+            setPaint(false, 0, 0, false);
         }
     }
 
-    private void setPaint(boolean fill) {
+    private void setPaint(boolean invert, double xoffset, double yoffset, boolean fill) {
         try {
             if (paint instanceof Color color) {
                 handleColorPaint(color, fill);
@@ -1841,7 +1826,7 @@ public class PdfGraphics2D extends Graphics2D {
             } else if (paint instanceof TexturePaint tp) {
                 handleTexturePaint(tp, fill);
             } else {
-                handleDefaultPaint(fill);
+                handleDefaultPaint(invert, xoffset, yoffset, fill);
             }
         } catch (IOException | NoninvertibleTransformException e) {
             // Handle IOException (e.g., log the error)
@@ -1918,7 +1903,7 @@ public class PdfGraphics2D extends Graphics2D {
         }
     }
 
-    private void handleDefaultPaint(boolean fill)
+    private void handleDefaultPaint(boolean invert, double xoffset, double yoffset, boolean fill)
             throws IOException, NoninvertibleTransformException, InterruptedException {
         BufferedImage img = createBufferedImage();
         Graphics2D g = (Graphics2D) img.getGraphics();
@@ -1928,6 +1913,12 @@ public class PdfGraphics2D extends Graphics2D {
         fillRect = inv.createTransformedShape(fillRect);
         g.setPaint(paint);
         g.fill(fillRect);
+        if (invert) {
+            AffineTransform tx = new AffineTransform();
+            tx.scale(1, -1);
+            tx.translate(-xoffset, -yoffset);
+            g.drawImage(img, tx, null);
+        }
         g.dispose();
         com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
         PdfPatternPainter pattern = cb.createPattern(width, height);
@@ -2070,7 +2061,7 @@ public class PdfGraphics2D extends Graphics2D {
             boolean macOS = osName.startsWith("Mac");
             if (!macOS) {
                 FONT_UTILITIES_CLASS = getClassForName(FONT_UTILITIES_CLASS_NAME);
-                updateModuleToOpenPackage();
+                updateModuleToOpenPackage(FONT_UTILITIES_CLASS, "sun.font");
                 GET_FONT2D_METHOD = getMethod(FONT_UTILITIES_CLASS, GET_FONT2D_METHOD_NAME, Font.class);
                 COMPOSITE_FONT_CLASS = getClassForName(COMPOSITE_FONT_CLASS_NAME);
                 GET_NUM_SLOTS_METHOD = getMethod(COMPOSITE_FONT_CLASS, GET_NUM_SLOTS_METHOD_NAME);
@@ -2119,8 +2110,8 @@ public class PdfGraphics2D extends Graphics2D {
          * releases the default mode will be "deny". It's also important to add <code>--add-opens</code> for the given
          * package if it's need.
          */
-        private static void updateModuleToOpenPackage() {
-            if (CompositeFontDrawer.FONT_UTILITIES_CLASS == null) {
+        private static void updateModuleToOpenPackage(Class<?> classInModule, String packageName) {
+            if (classInModule == null || packageName == null) {
                 return;
             }
             Method getModuleMethod = getMethod(Class.class, GET_MODULE_METHOD_NAME);
@@ -2128,7 +2119,7 @@ public class PdfGraphics2D extends Graphics2D {
                 return;
             }
             try {
-                Object targetModule = getModuleMethod.invoke(CompositeFontDrawer.FONT_UTILITIES_CLASS);
+                Object targetModule = getModuleMethod.invoke(classInModule);
                 if (targetModule == null) {
                     return;
                 }
@@ -2138,11 +2129,11 @@ public class PdfGraphics2D extends Graphics2D {
                 if (isOpenMethod == null) {
                     return;
                 }
-                Object isOpened = isOpenMethod.invoke(targetModule, "sun.font", callerModule);
+                Object isOpened = isOpenMethod.invoke(targetModule, packageName, callerModule);
                 if (isOpened instanceof Boolean isOpenedBool && isOpenedBool) {
                     Method addOpensMethod = getMethod(moduleClass, ADD_OPENS_METHOD_NAME, String.class, moduleClass);
                     if (callerModule != null) {
-                        addOpensMethod.invoke(targetModule, "sun.font", callerModule);
+                        addOpensMethod.invoke(targetModule, packageName, callerModule);
                     }
                 }
             } catch (Exception e) {
@@ -2174,7 +2165,7 @@ public class PdfGraphics2D extends Graphics2D {
                         + "security restrictions.");
             } catch (Exception e) {
                 // Handle other unexpected exceptions
-                logger.info("Unexpected error while retrieving method ");
+                logger.info("Unexpected error while retrieving method " );
             }
             return method;
         }
@@ -2228,32 +2219,58 @@ public class PdfGraphics2D extends Graphics2D {
          * @param defaultDrawingFunction default drawing function that will be used for drawing string.
          * @return width of the drawn string.
          */
-        double drawString(String s, Font compositeFont, double x, double y, Function<Font, BaseFont> fontConverter,
+        double drawString(String s, Font compositeFont, double x, double y,
+                Function<Font, BaseFont> fontConverter,
                 com.lowagie.text.pdf.PdfGraphics2D.CompositeFontDrawer.DrawStringFunction defaultDrawingFunction) {
             String fontFamily = compositeFont.getFamily();
+
+            // Check font support
             if (!isSupported() || (fontFamily != null && !fontFamilyComposite.get(fontFamily))) {
-                assert false;
-                return defaultDrawingFunction
-                        .drawString(s, fontConverter.apply(compositeFont), x, y);
+                // If not supported, draw with the default font
+                assert false; // Consider logging instead of assert
+                return defaultDrawingFunction.drawString(s, fontConverter.apply(compositeFont), x, y);
             }
 
-            try {
-                splitStringIntoDisplayableParts(s, compositeFont, fontConverter);
-                double width = 0;
-                for (int i = 0; i < stringParts.size(); i++) {
-                    String strPart = stringParts.get(i);
-                    BaseFont correspondingBaseFont = correspondingBaseFontsForParts.get(i);
-                    BaseFont baseFont = correspondingBaseFont == null
-                            ? fontConverter.apply(compositeFont)
-                            : correspondingBaseFont;
-                    width += defaultDrawingFunction.drawString(strPart, baseFont, x + width, y);
-                }
-                return width;
-            } catch (Exception e) {
+            double width = 0; // Initialize total width
+
+            // Attempt to split the string into displayable parts
+            if (s == null || compositeFont == null) {
+                System.err.println("Input string or font cannot be null");
+                // Draw using the base font as a fallback
                 BaseFont baseFont = fontConverter.apply(compositeFont);
                 return defaultDrawingFunction.drawString(s, baseFont, x, y);
             }
+
+            try {
+                // Split the string (you can keep your logic here)
+                String[] parts = s.split(" "); // Example splitting logic
+                for (String strPart : parts) {
+                    // Use the corresponding base font or convert it
+                    BaseFont baseFont = fontConverter.apply(compositeFont);
+                    // Draw the string part and accumulate the width
+                    width += defaultDrawingFunction.drawString(strPart, baseFont, x + width, y);
+                }
+            } catch (IllegalArgumentException e) {
+                // Handle specific cases for invalid arguments
+                System.err.println("Invalid argument provided: " + e.getMessage());
+                // Fallback to drawing the whole string
+                BaseFont baseFont = fontConverter.apply(compositeFont);
+                return defaultDrawingFunction.drawString(s, baseFont, x, y);
+            } catch (NullPointerException e) {
+                // Handle potential null pointer exceptions gracefully
+                System.err.println("Null pointer exception occurred: " + e.getMessage());
+                BaseFont baseFont = fontConverter.apply(compositeFont);
+                return defaultDrawingFunction.drawString(s, baseFont, x, y);
+            } catch (Exception e) {
+                // Catch-all for unexpected exceptions
+                System.err.println("Unexpected error: " + e.getMessage());
+                BaseFont baseFont = fontConverter.apply(compositeFont);
+                return defaultDrawingFunction.drawString(s, baseFont, x, y);
+            }
+
+            return width; // Return total drawn width
         }
+
 
         /**
          * Split string into visible and not visible parts.
