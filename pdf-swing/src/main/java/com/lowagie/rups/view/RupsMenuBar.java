@@ -24,6 +24,7 @@ import com.lowagie.rups.io.FileChooserAction;
 import com.lowagie.rups.io.FileCloseAction;
 import com.lowagie.rups.io.filters.PdfFilter;
 import java.awt.event.ActionListener;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
@@ -63,6 +64,7 @@ public class RupsMenuBar extends JMenuBar implements Observer {
     /**
      * A Serial Version UID.
      */
+    @Serial
     private static final long serialVersionUID = 6403040037592308742L;
     /**
      * The Observable object.
@@ -85,19 +87,28 @@ public class RupsMenuBar extends JMenuBar implements Observer {
     public RupsMenuBar(Observable observable) {
         this.observable = observable;
         items = new HashMap<>();
+        initMenuBar();
+    }
+
+    private void initMenuBar() {
         fileChooserAction = new FileChooserAction(observable, "Open", PdfFilter.INSTANCE, false);
         MessageAction message = new MessageAction();
+
         JMenu file = new JMenu(FILE_MENU);
         addItem(file, OPEN, fileChooserAction);
         addItem(file, CLOSE, new FileCloseAction(observable));
         add(file);
+
         add(Box.createGlue());
+
         JMenu help = new JMenu(HELP_MENU);
         addItem(help, ABOUT, message);
         addItem(help, VERSION, message);
         add(help);
+
         enableItems(false);
     }
+
 
     /**
      * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
@@ -136,16 +147,15 @@ public class RupsMenuBar extends JMenuBar implements Observer {
      * @param enabled true for enabling; false for disabling
      */
     protected void enableItems(boolean enabled) {
-        enableItem(CLOSE, enabled);
+        enableItem(enabled);
     }
 
     /**
      * Enables/disables a specific menu item
      *
-     * @param caption the caption of the item that needs to be enabled/disabled
      * @param enabled true for enabling; false for disabling
      */
-    protected void enableItem(String caption, boolean enabled) {
-        items.get(caption).setEnabled(enabled);
+    protected void enableItem(boolean enabled) {
+        items.get(RupsMenuBar.CLOSE).setEnabled(enabled);
     }
 }

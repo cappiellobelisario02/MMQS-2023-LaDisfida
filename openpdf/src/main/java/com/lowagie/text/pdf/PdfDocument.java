@@ -1312,11 +1312,7 @@ public class PdfDocument extends Document {
         setRenderingMode(chunk, text, attributes);
         setRiseAndColor(chunk, text, attributes);
 
-        if (chunk.isImage()) {
-            // Logica per il rendering dell'immagine, se necessario
-        } else if (chunk.isVerticalSeparator()) {
-            // Gestione del separatore verticale
-        } else if (chunk.isHorizontalSeparator()) {
+        if (chunk.isHorizontalSeparator()) {
             handleHorizontalSeparator(chunk, text, params);
         } else if (chunk.isTab()) {
             handleTabChunk(chunk, text, attributes, params);
@@ -2684,7 +2680,7 @@ public class PdfDocument extends Document {
         ColumnText ct = new ColumnText(writer.getDirectContent());
         // if the table prefers to be on a single page, and it wouldn't
         //fit on the current page, start a new page.
-        if (ptable.getKeepTogether() && !fitsPage(ptable, 0f) && currentHeight > 0) {
+        if (ptable.getKeepTogether() && !fitsPage(ptable) && currentHeight > 0) {
             newPage();
         }
         // add dummy paragraph if we aren't at the top of a page, so that
@@ -2729,17 +2725,16 @@ public class PdfDocument extends Document {
     /**
      * Checks if a <CODE>PdfPTable</CODE> fits the current page of the <CODE>PdfDocument</CODE>.
      *
-     * @param table  the table that has to be checked
-     * @param margin a certain margin
+     * @param table the table that has to be checked
      * @return <CODE>true</CODE> if the <CODE>PdfPTable</CODE> fits the page, <CODE>false</CODE> otherwise.
      */
 
-    boolean fitsPage(PdfPTable table, float margin) {
+    boolean fitsPage(PdfPTable table) {
         setTableWidth(table);
         // ensuring that a new line has been started.
         ensureNewLine();
         return table.getTotalHeight() + ((currentHeight > 0) ? table.spacingBefore() : 0f)
-                <= indentTop() - currentHeight - indentBottom() - margin;
+                <= indentTop() - currentHeight - indentBottom() - 0.0;
     }
 
     //    [M4] Adding a PdfPTable
@@ -2768,7 +2763,7 @@ public class PdfDocument extends Document {
             return;
         }
         isDoFooter = true;
-        // Begin added by Edgar Leonardo Prieto Perilla
+        // Being added by Edgar Leonardo Prieto Perilla
         // Avoid footer indentation
         float tmpIndentLeft = indentation.indentLeft;
         float tmpIndentRight = indentation.indentRight;
@@ -2889,6 +2884,10 @@ public class PdfDocument extends Document {
 
         PdfInfo(String author, String title, String subject) {
             this();
+            initPdfInfo(title, subject, author);
+        }
+
+        private void initPdfInfo(String title, String subject, String author) {
             addProducer();
             addCreationDate();
             addTitle(title);

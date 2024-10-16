@@ -28,6 +28,7 @@ import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfString;
+import java.io.Serial;
 
 /**
  * Every node in our tree corresponds with a PDF object. This class is the superclass of all tree nodes used.
@@ -37,6 +38,7 @@ public class PdfObjectTreeNode extends IconTreeNode {
     /**
      * a serial version UID.
      */
+    @Serial
     private static final long serialVersionUID = -5617844659397445879L;
     /**
      * the PDF object corresponding with this node.
@@ -63,6 +65,10 @@ public class PdfObjectTreeNode extends IconTreeNode {
     protected PdfObjectTreeNode(PdfObject object) {
         super(null, getCaption(object));
         this.object = object;
+        initIcon();
+    }
+
+    private void initIcon() {
         switch (object.type()) {
             case PdfObject.INDIRECT:
                 if (isRecursive()) {
@@ -99,6 +105,7 @@ public class PdfObjectTreeNode extends IconTreeNode {
                 break;
         }
     }
+
 
 
     /**
@@ -166,21 +173,16 @@ public class PdfObjectTreeNode extends IconTreeNode {
         if (object == null) {
             return "null";
         }
-        switch (object.type()) {
-            case PdfObject.INDIRECT: {
+        return switch (object.type()) {
+            case PdfObject.INDIRECT -> {
                 String reffedCaption = getCaption(PdfReader.getPdfObject(object));
-                return object.toString() + " -> " + reffedCaption;
+                yield object + " -> " + reffedCaption;
             }
-            case PdfObject.ARRAY:
-                return "Array";
-            case PdfObject.STREAM:
-                return "Stream";
-            case PdfObject.STRING:
-                return ((PdfString) object).toUnicodeString();
-            default:
-                break;
-        }
-        return object.toString();
+            case PdfObject.ARRAY -> "Array";
+            case PdfObject.STREAM -> "Stream";
+            case PdfObject.STRING -> ((PdfString) object).toUnicodeString();
+            default -> object.toString();
+        };
     }
 
     /**

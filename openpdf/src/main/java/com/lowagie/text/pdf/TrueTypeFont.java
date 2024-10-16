@@ -284,6 +284,12 @@ class TrueTypeFont extends BaseFont {
             ttcIndex = nameBase.substring(ttcName.length() + 1);
         }
 
+        validateFontFile(ttfAfm, forceRead);
+        checkEncoding(enc);
+        createEncoding();
+    }
+
+    private void validateFontFile(byte[] ttfAfm, boolean forceRead) throws DocumentException, IOException {
         // Check file type and throw a more generic exception if invalid
         if (fileName.toLowerCase().endsWith(".ttf") || fileName.toLowerCase().endsWith(".otf") || fileName.toLowerCase().endsWith(".ttc")) {
             process(ttfAfm, forceRead);
@@ -298,13 +304,14 @@ class TrueTypeFont extends BaseFont {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("the.file.provided.is.not.a.valid.font.file"));
         }
+    }
 
+    private void checkEncoding(String enc) throws DocumentException {
         if (!encoding.startsWith("#")) {
             PdfEncodings.convertToBytes(" ", enc); // check if the encoding exists
         }
-
-        createEncoding();
     }
+
 
 
     /**

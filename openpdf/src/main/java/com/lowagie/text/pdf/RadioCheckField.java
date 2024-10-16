@@ -126,9 +126,14 @@ public class RadioCheckField extends BaseField {
      */
     public RadioCheckField(PdfWriter writer, Rectangle box, String fieldName, String onValue) {
         super(writer, box, fieldName);
+        initRadioCheckField(onValue);
+    }
+
+    private void initRadioCheckField(String onValue) {
         setOnValue(onValue);
         setCheckType(TYPE_CHECK);
     }
+
 
     /**
      * Creates a new instance of parent RadioCheckField with the default appearance of type 'cross'

@@ -106,9 +106,12 @@ public class PdfArray extends PdfObject {
      */
     public PdfArray(float[] values) {
         this();
-        add(values);
+        callAddValues(values);
     }
 
+    private void callAddValues(float[] values) {
+        add(values);
+    }
     /**
      * Constructs a <CODE>PdfArray</CODE>-object, containing all
      * <CODE>int</CODE> values in a specified array.

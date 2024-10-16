@@ -125,7 +125,11 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      */
     public Phrase(com.lowagie.text.Phrase phrase) {
         super();
-        this.addAll(phrase);
+        initPhrase(phrase);
+    }
+
+    private void initPhrase(com.lowagie.text.Phrase phrase) {
+        this.addAll(phrase);  // Questo metodo viene chiamato solo dopo che il costruttore ha finito
         leading = phrase.getLeading();
         fontAttr = phrase.getFont();
         setHyphenation(phrase.getHyphenation());

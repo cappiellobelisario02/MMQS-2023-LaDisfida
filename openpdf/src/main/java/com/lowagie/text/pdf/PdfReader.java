@@ -233,7 +233,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @throws IOException on error
      */
     public PdfReader(String filename, Certificate certificate,
-            Key certificateKey, String certificateKeyProvider) throws IOException, PDFFilterException {
+            Key certificateKey, String certificateKeyProvider) throws IOException {
         this.certificate = certificate;
         this.certificateKey = certificateKey;
         this.certificateKeyProvider = certificateKeyProvider;
@@ -255,6 +255,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     private void readPdfSecurely() {
+        //yes
     }
 
     /**
@@ -318,13 +319,17 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param ownerPassword the password or <CODE>null</CODE> for no password
      * @throws IOException on error
      */
-    public PdfReader(RandomAccessFileOrArray raf, byte[] ownerPassword)
-            throws IOException {
+    public PdfReader(RandomAccessFileOrArray raf, byte[] ownerPassword) throws IOException {
         password = ownerPassword;
         partial = true;
         tokens = new PRTokeniser(raf);
-        readPdfPartial();
+        initReader();
     }
+
+    private void initReader() throws IOException {
+        readPdfPartial();  // Spostato fuori dal costruttore
+    }
+
 
     /**
      * Creates an independent duplicate.
@@ -1504,7 +1509,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      *
      */
 
-    private byte[] controlIfDocumentIDsAreNull(PdfArray documentIDs, byte[] documentID){
+    private byte[] controlIfDocumentIDsAreNull(PdfArray documentIDs){
         String s;
         PdfObject o;
 
@@ -1512,7 +1517,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             o = documentIDs.getPdfObject(0);
             strings.remove(o);
             s = o.toString();
-            documentID = DocWriter.getISOBytes(s);
+            byte[] documentID = DocWriter.getISOBytes(s);
             if (documentIDs.size() > 1) {
                 strings.remove(documentIDs.getPdfObject(1));
             }
@@ -1594,8 +1599,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     private byte[] getDocumentIDMethod() {
         PdfArray documentIDs = trailer.getAsArray(PdfName.ID);
-        byte[] documentID = null;
-        return controlIfDocumentIDsAreNull(documentIDs, null);
+        return controlIfDocumentIDsAreNull(documentIDs);
     }
 
     private Object[] processFilter(PdfDictionary enc, PdfObject filter) throws InvalidPdfException {
@@ -4193,6 +4197,10 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
         private PageRefs(com.lowagie.text.pdf.PdfReader reader) {
             this.reader = reader;
+            initPageRefs();
+        }
+
+        private void initPageRefs() {
             if (reader.partial) {
                 refsp = new IntHashtable();
                 PdfNumber npages = (PdfNumber) com.lowagie.text.pdf.PdfReader.getPdfObjectRelease(reader.rootPages.get(PdfName.COUNT));
@@ -4202,19 +4210,13 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                     sizep = npages.intValue();
                 } else {
                     // Handle the case where npages is null
-                    // Option 1: Throw an exception
                     throw new IllegalStateException("Page count is not available. 'npages' is null.");
-
-                    // Option 2: Set sizep to a default value
-                    // sizep = 0; // or another appropriate default value
-
-                    // Option 3: Log a warning message (if using a logging framework)
-                    // Logger.warn("Page count is null. Defaulting sizep to 0.")
                 }
             } else {
-                readPages();
+                readPages();  // Assicurati che 'readPages()' non chiami metodi sovrascrivibili
             }
         }
+
 
 
         PageRefs(com.lowagie.text.pdf.PdfReader.PageRefs other, com.lowagie.text.pdf.PdfReader reader) {

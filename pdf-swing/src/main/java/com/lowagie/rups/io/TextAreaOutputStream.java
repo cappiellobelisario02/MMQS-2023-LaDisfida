@@ -46,6 +46,10 @@ public class TextAreaOutputStream extends OutputStream {
      */
     public TextAreaOutputStream(JTextArea text) {
         this.text = text;
+        callClear();
+    }
+
+    private void callClear() {
         clear();
     }
 

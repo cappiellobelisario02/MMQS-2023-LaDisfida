@@ -85,10 +85,15 @@ public class PdfLayer extends PdfDictionary implements PdfOCG {
      */
     public PdfLayer(String name, PdfWriter writer) {
         super(PdfName.OCG);
-        setName(name);
+        initPdfLayer(name, writer);
+    }
+
+    private void initPdfLayer(String name, PdfWriter writer) {
+        setName(name);  // Spostato fuori dal costruttore
         ref = writer.getPdfIndirectReference();
         writer.registerLayer(this);
     }
+
 
     /**
      * Creates a title layer. A title layer is not really a layer but a collection of layers under the same title

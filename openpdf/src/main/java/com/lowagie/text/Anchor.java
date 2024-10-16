@@ -1,5 +1,6 @@
 package com.lowagie.text;
 
+import java.io.Serial;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.Iterator;
  * <BLOCKQUOTE><PRE>
  * <STRONG>Anchor anchor = new Anchor("this is a link");</STRONG>
  * <STRONG>anchor.setName("LINK");</STRONG>
- * <STRONG>anchor.setReference("http://www.lowagie.com");</STRONG>
+ * <STRONG>anchor.setReference("<a href="http://www.lowagie.com">...</a>");</STRONG>
  * </PRE></BLOCKQUOTE>
  *
  * @see Element
@@ -24,6 +25,7 @@ import java.util.Iterator;
 public class Anchor extends Phrase {
 
     // constant
+    @Serial
     private static final long serialVersionUID = -852278536049236911L;
 
     // membervariables
@@ -124,10 +126,13 @@ public class Anchor extends Phrase {
      */
     public Anchor(Phrase phrase) {
         super(phrase);
-        if (phrase instanceof Anchor) {
-            Anchor a = (Anchor) phrase;
-            setName(a.name);
-            setReference(a.reference);
+        initNameReference(phrase);
+    }
+
+    private void initNameReference(Phrase phrase) {
+        if (phrase instanceof Anchor anchorPhrase) {
+            setName(anchorPhrase.name);
+            setReference(anchorPhrase.reference);
         }
     }
 
@@ -153,20 +158,19 @@ public class Anchor extends Phrase {
                 Element element = i.next();
 
                 // Check if the element is a Chunk before casting
-                if (element instanceof Chunk) {
-                    Chunk chunk = (Chunk) element;
+                if (element instanceof Chunk chunkElement) {
 
                     // Apply anchor-specific logic to the Chunk
-                    if (name != null && notGotoOK && !chunk.isEmpty()) {
-                        chunk.setLocalDestination(name);
+                    if (name != null && notGotoOK && !chunkElement.isEmpty()) {
+                        chunkElement.setLocalDestination(name);
                         notGotoOK = false;
                     }
                     if (localDestination) {
-                        chunk.setLocalGoto(reference.substring(1));
+                        chunkElement.setLocalGoto(reference.substring(1));
                     }
 
                     // Pass the chunk to the listener
-                    listener.add(chunk);
+                    listener.add(chunkElement);
                 }
             }
             return true;
@@ -187,24 +191,22 @@ public class Anchor extends Phrase {
         boolean notGotoOK = true;
 
         // Use an iterator to go through the elements of this class (likely Phrase or Anchor)
-        Iterator<Element> iterator = this.iterator();  // Ensure 'this' is iterable and returns Elements
+        // Ensure 'this' is iterable and returns Elements
 
-        while (iterator.hasNext()) {
-            Element element = iterator.next();  // Each element is of type 'Element'
-
+        // Each element is of type 'Element'
+        for (Element element : this) {
             // Check if the element is a Chunk before casting
-            if (element instanceof Chunk) {
-                Chunk chunk = (Chunk) element;
+            if (element instanceof Chunk chunkElement) {
 
                 // Apply anchor-specific logic to the Chunk
-                if (name != null && notGotoOK && !chunk.isEmpty()) {
-                    chunk.setLocalDestination(name);
+                if (name != null && notGotoOK && !chunkElement.isEmpty()) {
+                    chunkElement.setLocalDestination(name);
                     notGotoOK = false;
                 }
                 if (localDestination) {
-                    chunk.setLocalGoto(reference.substring(1));
+                    chunkElement.setLocalGoto(reference.substring(1));
                 } else if (reference != null) {
-                    chunk.setAnchor(reference);
+                    chunkElement.setAnchor(reference);
                 }
             }
 

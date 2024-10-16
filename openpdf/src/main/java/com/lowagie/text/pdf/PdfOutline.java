@@ -50,6 +50,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.Chunk;
+import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.Paragraph;
 import java.awt.Color;
@@ -277,7 +278,7 @@ public class PdfOutline extends PdfDictionary {
     public PdfOutline(PdfOutline parent, PdfAction action, Paragraph title, boolean open) {
         super();
         StringBuilder buf = new StringBuilder();
-        for (Object o : title.getChunks()) {
+        for (Element o : title.getChunks()) {
             Chunk chunk = (Chunk) o;
             buf.append(chunk.getContent());
         }

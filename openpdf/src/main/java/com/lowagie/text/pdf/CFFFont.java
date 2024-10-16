@@ -194,7 +194,10 @@ public class CFFFont {
     public CFFFont(RandomAccessFileOrArray inputbuffer) {
         buf = inputbuffer;
         seek(0);
+        initCFFFont();
+    }
 
+    private void initCFFFont() {
         int hdrSize = getCard8();
         offSize = getCard8();
 
@@ -212,6 +215,7 @@ public class CFFFont {
         extractFontNames();
         parseTopDicts();
     }
+
 
     private void extractFontNames() {
         for (int j = 0; j < nameOffsets.length - 1; j++) {

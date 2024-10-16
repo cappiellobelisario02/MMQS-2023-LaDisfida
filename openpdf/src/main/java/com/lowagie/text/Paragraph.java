@@ -209,8 +209,11 @@ public class Paragraph extends Phrase {
      */
     public Paragraph(Phrase phrase) {
         super(phrase);
-        if (phrase instanceof com.lowagie.text.Paragraph) {
-            com.lowagie.text.Paragraph p = (com.lowagie.text.Paragraph) phrase;
+        initParagraph(phrase);
+    }
+
+    private void initParagraph(Phrase phrase) {
+        if (phrase instanceof com.lowagie.text.Paragraph p) {
             setAlignment(p.alignment);
             setLeading(phrase.getLeading(), p.multipliedLeading);
             setIndentationLeft(p.getIndentationLeft());
@@ -224,6 +227,7 @@ public class Paragraph extends Phrase {
             setExtraParagraphSpaceInternal(p.getExtraParagraphSpace());
         }
     }
+
 
     // Internal method to set extra paragraph space
     private void setExtraParagraphSpaceInternal(float extraSpace) {
