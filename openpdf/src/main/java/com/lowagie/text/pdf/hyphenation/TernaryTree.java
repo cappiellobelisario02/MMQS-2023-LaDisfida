@@ -99,10 +99,13 @@ public class TernaryTree implements Serializable {
     protected char freenode;
     protected int length;    // number of items in tree
 
-    TernaryTree() {
-        init();
+    public TernaryTree() {
+        initializeTree();
     }
 
+    private void initializeTree(){
+        init();
+    }
     /**
      * Compares 2 null terminated char arrays
      *
@@ -321,16 +324,22 @@ public class TernaryTree implements Serializable {
         return length;
     }
 
-    public TernaryTree(com.lowagie.text.pdf.hyphenation.TernaryTree original){
+    public TernaryTree(com.lowagie.text.pdf.hyphenation.TernaryTree original) {
+        // Clone the arrays to ensure deep copy
         this.lo = original.lo.clone();
         this.hi = original.hi.clone();
         this.eq = original.eq.clone();
         this.sc = original.sc.clone();
+
+        // Copy the CharVector directly as it should be managed by its own methods
         this.kv = original.kv;
+
+        // Copy primitive fields
         this.root = original.root;
         this.freenode = original.freenode;
         this.length = original.length;
     }
+
 
     /**
      * Recursively insert the median first and then the median of the lower and upper halves, and so on in order to get
@@ -543,30 +552,26 @@ public class TernaryTree implements Serializable {
                 }
             }
 
-            return climb ? -1 : res;
+            return res;
         }
 
         /**
          * Traverse the tree to find next key
          */
-        private int run() {
+        private void run() {
             if (cur == -1) {
-                return -1;
+                return;
             }
 
-            while (true) {
-                if (exploreLowBranch()) {
-                    break;
-                }
+            while (!exploreLowBranch()) {
                 // If no leaf is found, go up one node
                 cur = up();
                 if (cur == -1) {
-                    return -1;
+                    return;
                 }
             }
 
             constructCurrentKey();
-            return 0;
         }
 
         private boolean exploreLowBranch() {

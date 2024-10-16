@@ -63,13 +63,13 @@ import java.util.HashMap;
 class EnumerateTTC extends TrueTypeFont {
 
     /**
-     * OpenType fonts that contain TrueType outlines should use the value of 0x00010000 for the sfntVersion. OpenType
+     * OpenType's fonts that contain TrueType outlines should use the value of 0x00010000 for the sfntVersion. OpenType's
      * fonts containing CFF data (version 1 or 2) should use 0x4F54544F ('OTTO', when re-interpreted as a Tag) for
      * sfntVersion.
      * <p>
      * Note: The Apple specification for TrueType fonts allows for 'true' and 'typ1' for sfnt version. These version
      * tags should not be used for fonts which contain OpenType tables. See more at:
-     * https://docs.microsoft.com/de-de/typography/opentype/spec/otff#organization-of-an-opentype-font
+     * <a href="https://docs.microsoft.com/de-de/typography/opentype/spec/otff#organization-of-an-opentype-font">...</a>
      */
     private static final int TRUE_TYPE_SFNT_VERSION = 0x00010000;
     private static final int CFF_DATA_SFNT_VERSION = 0x4F54544F; //'OTTO'
@@ -79,13 +79,17 @@ class EnumerateTTC extends TrueTypeFont {
     EnumerateTTC(String ttcFile) throws DocumentException, IOException {
         fileName = ttcFile;
         rf = new RandomAccessFileOrArray(ttcFile);
+        callFindNames();
+    }
+
+    private void callFindNames() throws IOException {
         findNames();
     }
 
     EnumerateTTC(byte[] ttcArray) throws DocumentException, IOException {
         fileName = "Byte array TTC";
         rf = new RandomAccessFileOrArray(ttcArray);
-        findNames();
+        callFindNames();
     }
 
     void findNames() throws DocumentException, IOException {
@@ -115,15 +119,15 @@ class EnumerateTTC extends TrueTypeFont {
                 if (!trueTypeFont && !cffDataFont) {
                     throw new DocumentException("Invalid TTF file format.");
                 }
-                int num_tables = rf.readUnsignedShort();
+                int numTables = rf.readUnsignedShort();
                 rf.skipBytes(6);
-                for (int k = 0; k < num_tables; ++k) {
+                for (int k = 0; k < numTables; ++k) {
                     String tag = readStandardString(4);
                     rf.skipBytes(4);
-                    int[] table_location = new int[2];
-                    table_location[0] = rf.readInt();
-                    table_location[1] = rf.readInt();
-                    tables.put(tag, table_location);
+                    int[] tableLocation = new int[2];
+                    tableLocation[0] = rf.readInt();
+                    tableLocation[1] = rf.readInt();
+                    tables.put(tag, tableLocation);
                 }
                 names[dirIdx] = getBaseFont();
             }

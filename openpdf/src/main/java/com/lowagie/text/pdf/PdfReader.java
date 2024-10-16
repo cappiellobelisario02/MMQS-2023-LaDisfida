@@ -197,9 +197,12 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     public PdfReader(String filename, byte[] ownerPassword) throws IOException, PDFFilterException {
         password = ownerPassword;
         tokens = new PRTokeniser(filename);
-        readPdf();
+        callReadPdf();
     }
 
+    private void callReadPdf() throws IOException, PDFFilterException {
+        readPdf();
+    }
     /**
      * Reads and parses a PDF document.
      *
@@ -220,9 +223,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     public PdfReader(byte[] pdfIn, byte[] ownerPassword) throws IOException, PDFFilterException {
         password = ownerPassword;
         tokens = new PRTokeniser(pdfIn);
-        readPdf();
+        callReadPdf();
     }
-
     /**
      * Reads and parses a PDF document.
      *
@@ -282,7 +284,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
         this.password = ownerPassword;
         this.tokens = new PRTokeniser(new RandomAccessFileOrArray(url));
-        readPdf();
+        callReadPdf();
     }
 
 
@@ -297,7 +299,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     public PdfReader(InputStream is, byte[] ownerPassword) throws IOException, PDFFilterException {
         password = ownerPassword;
         tokens = new PRTokeniser(new RandomAccessFileOrArray(is));
-        readPdf();
+        callReadPdf();
     }
 
     /**

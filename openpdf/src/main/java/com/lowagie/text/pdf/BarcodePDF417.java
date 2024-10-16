@@ -637,6 +637,10 @@ public class BarcodePDF417 {
      * Creates a new <CODE>BarcodePDF417</CODE> with the default settings.
      */
     public BarcodePDF417() {
+        callSetDefaultParameters();
+    }
+
+    private void callSetDefaultParameters(){
         setDefaultParameters();
     }
 
@@ -739,22 +743,22 @@ public class BarcodePDF417 {
     protected void outCodeword17(int codeword) {
         int bytePtr = bitPtr / 8;
         int bit = bitPtr - bytePtr * 8;
-        outBits[bytePtr++] |= codeword >> (9 + bit);
-        outBits[bytePtr++] |= codeword >> (1 + bit);
+        outBits[bytePtr++] |= (byte) (codeword >> (9 + bit));
+        outBits[bytePtr++] |= (byte) (codeword >> (1 + bit));
         codeword <<= 8;
-        outBits[bytePtr] |= codeword >> (1 + bit);
+        outBits[bytePtr] |= (byte) (codeword >> (1 + bit));
         bitPtr += 17;
     }
 
     protected void outCodeword18(int codeword) {
         int bytePtr = bitPtr / 8;
         int bit = bitPtr - bytePtr * 8;
-        outBits[bytePtr++] |= codeword >> (10 + bit);
-        outBits[bytePtr++] |= codeword >> (2 + bit);
+        outBits[bytePtr++] |= (byte) (codeword >> (10 + bit));
+        outBits[bytePtr++] |= (byte) (codeword >> (2 + bit));
         codeword <<= 8;
-        outBits[bytePtr] |= codeword >> (2 + bit);
+        outBits[bytePtr] |= (byte) (codeword >> (2 + bit));
         if (bit == 7) {
-            outBits[++bytePtr] |= 0x80;
+            outBits[++bytePtr] |= (byte) 0x80;
         }
         bitPtr += 18;
     }
@@ -781,41 +785,28 @@ public class BarcodePDF417 {
             int rowMod = row % 3;
             int[] cluster = CLUSTERS[rowMod];
             outStartPattern();
-            int edge = 0;
-            switch (rowMod) {
-                case 0:
-                    edge = 30 * (row / 3) + ((codeRows - 1) / 3);
-                    break;
-                case 1:
-                    edge = 30 * (row / 3) + errorLevel * 3 + ((codeRows - 1) % 3);
-                    break;
-                default:
-                    edge = 30 * (row / 3) + codeColumns - 1;
-                    break;
-            }
+            int edge = switch (rowMod) {
+                case 0 -> 30 * (row / 3) + ((codeRows - 1) / 3);
+                case 1 -> 30 * (row / 3) + errorLevel * 3 + ((codeRows - 1) % 3);
+                default -> 30 * (row / 3) + codeColumns - 1;
+            };
             outCodeword(cluster[edge]);
 
             for (int column = 0; column < codeColumns; ++column) {
                 outCodeword(cluster[codewords[codePtr++]]);
             }
 
-            switch (rowMod) {
-                case 0:
-                    edge = 30 * (row / 3) + codeColumns - 1;
-                    break;
-                case 1:
-                    edge = 30 * (row / 3) + ((codeRows - 1) / 3);
-                    break;
-                default:
-                    edge = 30 * (row / 3) + errorLevel * 3 + ((codeRows - 1) % 3);
-                    break;
-            }
+            edge = switch (rowMod) {
+                case 0 -> 30 * (row / 3) + codeColumns - 1;
+                case 1 -> 30 * (row / 3) + ((codeRows - 1) / 3);
+                default -> 30 * (row / 3) + errorLevel * 3 + ((codeRows - 1) % 3);
+            };
             outCodeword(cluster[edge]);
             outStopPattern();
         }
         if ((options & PDF417_INVERT_BITMAP) != 0) {
             for (int k = 0; k < outBits.length; ++k) {
-                outBits[k] ^= 0xff;
+                outBits[k] ^= (byte) 0xff;
             }
         }
     }
@@ -1095,7 +1086,7 @@ public class BarcodePDF417 {
         }
         length += start;
         for (k = start; k < length; k += 44) {
-            size = length - k < 44 ? length - k : 44;
+            size = Math.min(length - k, 44);
             basicNumberCompaction(input, k, size);
         }
     }
@@ -1373,7 +1364,7 @@ public class BarcodePDF417 {
 
         macroIndex = cwPtr;
         codewords[cwPtr++] = MACRO_SEGMENT_ID;
-        append(macroSegmentId, 5);
+        append(macroSegmentId);
 
         if (macroFileId != null) {
             append(macroFileId);
@@ -1385,10 +1376,10 @@ public class BarcodePDF417 {
 
     }
 
-    private void append(int in, int len) {
-        StringBuilder sb = new StringBuilder(len + 1);
+    private void append(int in) {
+        StringBuilder sb = new StringBuilder(5 + 1);
         sb.append(in);
-        for (int i = sb.length(); i < len; i++) {
+        for (int i = sb.length(); i < 5; i++) {
             sb.insert(0, "0");
         }
 
@@ -1415,10 +1406,8 @@ public class BarcodePDF417 {
                     c[j] = '\n';
                 }
             }
-            StringBuilder sb = new StringBuilder();
-            sb.append(v.type);
-            sb.append(c);
-            String stringToLog = sb.toString();
+            String stringToLog = v.type
+                    + String.valueOf(c);
             logger.info(stringToLog);
         }
     }

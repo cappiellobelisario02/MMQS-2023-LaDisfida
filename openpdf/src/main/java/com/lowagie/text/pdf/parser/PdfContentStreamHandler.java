@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -107,6 +108,10 @@ public class PdfContentStreamHandler {
 
     public PdfContentStreamHandler(TextAssembler renderListener) {
         this.renderListener = renderListener;
+        installOperatorAndReset();
+    }
+
+    private void installOperatorAndReset() {
         installDefaultOperators();
         reset();
     }
@@ -407,7 +412,7 @@ public class PdfContentStreamHandler {
         public void invoke(List<PdfObject> operands, PdfContentStreamHandler handler, PdfDictionary resources) {
             Matrix matrix = getMatrix(operands);
             GraphicsState graphicsState = handler.gsStack.peek();
-            graphicsState.multiplyCtm(matrix);
+            Objects.requireNonNull(graphicsState).multiplyCtm(matrix);
         }
     }
 
@@ -572,7 +577,7 @@ public class PdfContentStreamHandler {
         @Override
         public void invoke(List<PdfObject> operands, PdfContentStreamHandler handler, PdfDictionary resources) {
             GraphicsState gs = handler.gsStack.peek();
-            GraphicsState copy = new GraphicsState(gs);
+            GraphicsState copy = new GraphicsState(Objects.requireNonNull(gs));
             handler.gsStack.push(copy);
         }
     }
@@ -907,6 +912,7 @@ public class PdfContentStreamHandler {
                     pdfObject = properties.getAsDict((PdfName) pdfObject);
                 }
             }
+            assert pdfObject instanceof PdfDictionary;
             return (PdfDictionary) pdfObject;
         }
 

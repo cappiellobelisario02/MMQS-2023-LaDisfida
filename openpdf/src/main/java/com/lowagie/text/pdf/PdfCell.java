@@ -293,7 +293,7 @@ public class PdfCell extends Rectangle {
                         while (!lastChunk.toString().isEmpty() && lastChunk.width() + moreWidth > right - left) {
                             lastChunk.setValue(lastChunk.toString().substring(0, lastChunk.length() - 1));
                         }
-                        lastChunk.setValue(lastChunk.toString() + more);
+                        lastChunk.setValue(lastChunk + more);
                     } else {
                         lastLine.add(new PdfChunk(new Chunk(more), null));
                     }
@@ -439,7 +439,7 @@ public class PdfCell extends Rectangle {
         this.line = null;
     }
 
-    private PdfLine removeLine(int index) {
+    private void removeLine(int index) {
         PdfLine oldLine = lines.remove(index);
         contentHeight -= oldLine.height();
         if ((index == 0) && (!lines.isEmpty()))  {
@@ -449,7 +449,6 @@ public class PdfCell extends Rectangle {
                 firstLine.height = firstLineRealHeight;
                 contentHeight += firstLineRealHeight;
         }
-        return oldLine;
     }
 
     private void flushCurrentLine() {
@@ -508,14 +507,13 @@ public class PdfCell extends Rectangle {
     /**
      * Adds an image to this Cell.
      *
-     * @param i           the image to add
-     * @param left        the left border
-     * @param right       the right border
-     * @param alignment   horizontal alignment (constant from Element class)
-     * @return the height of the image
+     * @param i         the image to add
+     * @param left      the left border
+     * @param right     the right border
+     * @param alignment horizontal alignment (constant from Element class)
      */
 
-    private float addImage(Image i, float left, float right, int alignment) {
+    private void addImage(Image i, float left, float right, int alignment) {
         Image image = Image.getInstance(i);
         if (image.getScaledWidth() > right - left) {
             image.scaleToFit(right - left, Float.MAX_VALUE);
@@ -538,7 +536,7 @@ public class PdfCell extends Rectangle {
         Chunk imageChunk = new Chunk(image, left, 0);
         imageLine.add(new PdfChunk(imageChunk, null));
         addLine(imageLine);
-        return imageLine.height();
+        imageLine.height();
     }
 
     /**
@@ -739,7 +737,7 @@ public class PdfCell extends Rectangle {
     /**
      * Sets the group number.
      *
-     * @param number
+     * @param number group number
      */
 
     void setGroupNumber(int number) {

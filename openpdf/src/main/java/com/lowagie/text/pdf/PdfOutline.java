@@ -314,7 +314,7 @@ public class PdfOutline extends PdfDictionary {
     public PdfOutline(PdfOutline parent, PdfDestination destination, Paragraph title, boolean open) {
         super();
         StringBuilder buf = new StringBuilder();
-        for (Object o : title.getChunks()) {
+        for (Element o : title.getChunks()) {
             Chunk chunk = (Chunk) o;
             buf.append(chunk.getContent());
         }
@@ -377,14 +377,13 @@ public class PdfOutline extends PdfDictionary {
      * Set the page of the <CODE>PdfDestination</CODE>-object.
      *
      * @param pageReference indirect reference to the page
-     * @return <CODE>true</CODE> if this page was set as the <CODE>PdfDestination</CODE>-page.
      */
 
-    public boolean setDestinationPage(PdfIndirectReference pageReference) {
+    public void setDestinationPage(PdfIndirectReference pageReference) {
         if (destination == null) {
-            return false;
+            return;
         }
-        return destination.addPage(pageReference);
+        destination.addPage(pageReference);
     }
 
     /**

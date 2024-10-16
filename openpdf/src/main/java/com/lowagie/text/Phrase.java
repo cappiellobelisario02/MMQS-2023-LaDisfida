@@ -51,6 +51,7 @@ package com.lowagie.text;
 
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.pdf.HyphenationEvent;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -86,11 +87,12 @@ import java.util.logging.Logger;
 public class Phrase extends ArrayList<Element> implements TextElementArray {
 
     // constants
+    @Serial
     private static final long serialVersionUID = 2643594602455068231L;
 
     // membervariables
 
-    private static Logger logger = Logger.getLogger(com.lowagie.text.Phrase.class.getName());
+    private static final Logger logger = Logger.getLogger(com.lowagie.text.Phrase.class.getName());
 
     /**
      * This is the leading of this phrase.
@@ -153,7 +155,11 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     public Phrase(Chunk chunk) {
         super.add(chunk);
         fontAttr = chunk.getFont();
-        setHyphenation(chunk.getHyphenation());
+        callSetHyphenation(chunk.getHyphenation());
+    }
+
+    private void callSetHyphenation(HyphenationEvent hyphEv) {
+        setHyphenation(hyphEv);
     }
 
     /**
@@ -214,7 +220,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
         this.leading = leading;
         this.fontAttr = fontAttr;
         /* bugfix by August Detlefsen */
-        if (string != null && string.length() != 0) {
+        if (string != null && !string.isEmpty()) {
             super.add(new Chunk(string, fontAttr));
         }
     }
@@ -222,18 +228,12 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     // implementation of the Element-methods
 
     /**
-     * Constructs a Phrase that can be used in the static getInstance() method.
-     *
-     * @param dummy a dummy parameter
-     */
-
-    /**
      * Gets a special kind of Phrase that changes some characters into corresponding symbols.
      *
      * @param string input
      * @return a newly constructed Phrase
      */
-    public static final com.lowagie.text.Phrase getInstance(String string) {
+    public static com.lowagie.text.Phrase getInstance(String string) {
         return getInstance(16, string, new Font());
     }
 
@@ -244,7 +244,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      * @param string  input
      * @return a newly constructed Phrase
      */
-    public static final com.lowagie.text.Phrase getInstance(int leading, String string) {
+    public static com.lowagie.text.Phrase getInstance(int leading, String string) {
         return getInstance(leading, string, new Font());
     }
 
@@ -256,7 +256,7 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      * @param fontAttr    font to be used
      * @return a newly constructed Phrase
      */
-    public static final com.lowagie.text.Phrase getInstance(int leading, String string, Font fontAttr) {
+    public static com.lowagie.text.Phrase getInstance(int leading, String string, Font fontAttr) {
         com.lowagie.text.Phrase p = new com.lowagie.text.Phrase();
         p.setLeading(leading);
         p.fontAttr = fontAttr;
@@ -270,16 +270,14 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
                 }
                 Font symbol = new Font(Font.SYMBOL, fontAttr.getSize(), fontAttr.getStyle(), fontAttr.getColor());
                 StringBuilder buf = new StringBuilder();
-                buf.append(SpecialSymbol.getCorrespondingSymbol(string.charAt(0)));
-                string = string.substring(1);
-                while (SpecialSymbol.index(string) == 0) {
+                do {
                     buf.append(SpecialSymbol.getCorrespondingSymbol(string.charAt(0)));
                     string = string.substring(1);
-                }
+                } while (SpecialSymbol.index(string) == 0);
                 p.add(new Chunk(buf.toString(), symbol));
             }
         }
-        if (string != null && string.length() != 0) {
+        if (string != null && !string.isEmpty()) {
             p.add(new Chunk(string, fontAttr));
         }
         return p;
@@ -295,8 +293,8 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
     @Override
     public boolean process(ElementListener listener) {
         try {
-            for (Object o : this) {
-                listener.add((Element) o);
+            for (Element o : this) {
+                listener.add(o);
             }
             return true;
         } catch (DocumentException de) {
@@ -436,29 +434,28 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
             switch (element.type()) {
                 case Element.CHUNK:
                     return addChunk((Chunk) element);
-                case Element.PHRASE:
-                case Element.PARAGRAPH:
+                case Element.PHRASE,
+                     Element.PARAGRAPH:
                     com.lowagie.text.Phrase phrase = (com.lowagie.text.Phrase) element;
                     boolean success = true;
                     Element e;
-                    for (Object o1 : phrase) {
-                        e = (Element) o1;
-                        if (e instanceof Chunk) {
-                            success &= addChunk((Chunk) e);
+                    for (Element o1 : phrase) {
+                        e = o1;
+                        if (e instanceof Chunk eChunk) {
+                            success &= addChunk(eChunk);
                         } else {
                             success &= this.add(e);
                         }
                     }
                     return success;
-                case Element.MARKED:
-                case Element.ANCHOR:
-                case Element.ANNOTATION:
-                case Element.FOOTNOTE:
-                case Element.TABLE: // case added by David Freels
-                case Element.PTABLE: // case added by mr. Karen Vardanyan
-                    // This will only work for PDF!!! Not for RTF/HTML
-                case Element.LIST:
-                case Element.YMARK:
+                case Element.MARKED,
+                     Element.ANCHOR,
+                     Element.ANNOTATION,
+                     Element.FOOTNOTE,
+                     Element.TABLE,
+                     Element.PTABLE,
+                     Element.LIST,
+                     Element.YMARK:
                     return super.add(element);
                 default:
                     throw new ClassCastException(String.valueOf(element.type()));
@@ -507,8 +504,8 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
                 if (!previous.hasAttributes()
                         && (f == null
                         || f.compareTo(previous.getFont()) == 0)
-                        && !"".equals(previous.getContent().trim())
-                        && !"".equals(c.trim())) {
+                        && !previous.getContent().trim().isEmpty()
+                        && !c.trim().isEmpty()) {
                     previous.append(c);
                     return true;
                 }
@@ -610,15 +607,14 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
      */
     @Override
     public boolean isEmpty() {
-        switch (size()) {
-            case 0:
-                return true;
-            case 1:
+        return switch (size()) {
+            case 0 -> true;
+            case 1 -> {
                 Element element = get(0);
-                return element.type() == Element.CHUNK && ((Chunk) element).isEmpty();
-            default:
-                return false;
-        }
+                yield element.type() == Element.CHUNK && ((Chunk) element).isEmpty();
+            }
+            default -> false;
+        };
     }
 
     /**

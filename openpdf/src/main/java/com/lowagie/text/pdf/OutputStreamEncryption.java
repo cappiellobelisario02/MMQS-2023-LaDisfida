@@ -79,20 +79,25 @@ public class OutputStreamEncryption extends OutputStream {
         try {
             this.out = out;
             aes = (revision == AES_128) || (revision == AES_256_V3);
-            if (aes) {
-                byte[] iv = IVGenerator.getIV();
-                byte[] nkey = new byte[len];
-                System.arraycopy(key, off, nkey, 0, len);
-                cipher = new AESCipher(true, nkey, iv);
-                write(iv);
-            } else {
-                arcfour = new ARCFOUREncryption();
-                arcfour.prepareARCFOURKey(key, off, len);
-            }
+            initializeEncryption(key, off, len);
         } catch (Exception ex) {
             throw new ExceptionConverter(ex);
         }
     }
+
+    private void initializeEncryption(byte[] key, int off, int len) throws IOException {
+        if (aes) {
+            byte[] iv = IVGenerator.getIV();
+            byte[] nKey = new byte[len];
+            System.arraycopy(key, off, nKey, 0, len);
+            cipher = new AESCipher(true, nKey, iv);
+            write(iv);
+        } else {
+            arcfour = new ARCFOUREncryption();
+            arcfour.prepareARCFOURKey(key, off, len);
+        }
+    }
+
 
     public OutputStreamEncryption(OutputStream out, byte[] key, int revision) {
         this(out, key, 0, key.length, revision);

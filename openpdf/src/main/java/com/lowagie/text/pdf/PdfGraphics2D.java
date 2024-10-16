@@ -100,10 +100,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
@@ -180,11 +177,16 @@ public class PdfGraphics2D extends Graphics2D {
             "com.github.librepdf.openpdf.compositeFontDrawerEnabled", true);
 
     private PdfGraphics2D() {
+        initializeRenderingHints();
+    }
+
+    private void initializeRenderingHints() {
         dg2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         setRenderingHint(
                 com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE, com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
     }
+
 
     /**
      * Copy constructor for child PdfGraphics2D objects.
@@ -194,6 +196,10 @@ public class PdfGraphics2D extends Graphics2D {
      */
     protected PdfGraphics2D(com.lowagie.text.pdf.PdfGraphics2D parent) {
         this();
+        initializeGraphics2D(parent);
+    }
+
+    private void initializeGraphics2D(com.lowagie.text.pdf.PdfGraphics2D parent) {
         rhints.putAll(parent.rhints);
         onlyShapes = parent.onlyShapes;
         transform = new AffineTransform(parent.transform);
@@ -230,6 +236,7 @@ public class PdfGraphics2D extends Graphics2D {
         kid = true;
     }
 
+
     /**
      * Shortcut constructor for PDFGraphics2D.
      *
@@ -255,34 +262,42 @@ public class PdfGraphics2D extends Graphics2D {
     public PdfGraphics2D(PdfContentByte cb, float width, float height, FontMapper fontMapper, boolean onlyShapes,
             boolean convertImagesToJPEG, float quality) {
         super();
-        dg2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-        setRenderingHint(
-                com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE, com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
         this.convertImagesToJPEG = convertImagesToJPEG;
         this.jpegQuality = quality;
         this.onlyShapes = onlyShapes;
         this.transform = new AffineTransform();
         this.baseFonts = new HashMap<>();
+
         if (!onlyShapes) {
-            this.fontMapper = fontMapper;
-            if (this.fontMapper == null) {
-                this.fontMapper = new DefaultFontMapper();
-            }
+            this.fontMapper = (fontMapper != null) ? fontMapper : new DefaultFontMapper();
         }
+
+        this.cb = cb;
+        this.width = width;
+        this.height = height;
+
+        initGraphics2D();
+    }
+
+    private void initGraphics2D() {
+        dg2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        setRenderingHint(
+                com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.KEY_INSTANCE, com.lowagie.text.pdf.PdfGraphics2D.HyperLinkKey.VALUE_HYPERLINKKEY_OFF);
+
         paint = Color.black;
         background = Color.white;
         setFont(new Font("sanserif", Font.PLAIN, 12));
-        this.cb = cb;
         cb.saveState();
-        this.width = width;
-        this.height = height;
+
         areaClip = new Area(new Rectangle2D.Float(0, 0, width, height));
         clip(areaClip);
+
         originalStroke = actualStroke = oldStroke = strokeOne;
         setStrokeDiff(actualStroke, null);
         cb.saveState();
     }
+
 
     /**
      * Calculates position and/or stroke thickness depending on the font size
@@ -522,7 +537,7 @@ public class PdfGraphics2D extends Graphics2D {
     }
 
     private double drawString(String s, BaseFont baseFont, double x, double y) {
-        boolean restoreTextRenderingMode = false;
+        boolean restoreTextRenderingMode;
         AffineTransform at = getTransform();
         try {
             setupTransformation(x, y);
@@ -1751,7 +1766,7 @@ public class PdfGraphics2D extends Graphics2D {
             cb.setGState(gs);
         }
 
-        com.lowagie.text.Image image = null;
+        com.lowagie.text.Image image;
         if (!convertImagesToJPEG) {
             image = com.lowagie.text.Image.getInstance(img, bgColor);
         } else {
@@ -1806,18 +1821,18 @@ public class PdfGraphics2D extends Graphics2D {
     private void setFillPaint() {
         if (checkNewPaint(paintFill)) {
             paintFill = paint;
-            setPaint(false, 0, 0, true);
+            setPaint(true);
         }
     }
 
     private void setStrokePaint() {
         if (checkNewPaint(paintStroke)) {
             paintStroke = paint;
-            setPaint(false, 0, 0, false);
+            setPaint(false);
         }
     }
 
-    private void setPaint(boolean invert, double xoffset, double yoffset, boolean fill) {
+    private void setPaint(boolean fill) {
         try {
             if (paint instanceof Color color) {
                 handleColorPaint(color, fill);
@@ -1826,7 +1841,7 @@ public class PdfGraphics2D extends Graphics2D {
             } else if (paint instanceof TexturePaint tp) {
                 handleTexturePaint(tp, fill);
             } else {
-                handleDefaultPaint(invert, xoffset, yoffset, fill);
+                handleDefaultPaint(fill);
             }
         } catch (IOException | NoninvertibleTransformException e) {
             // Handle IOException (e.g., log the error)
@@ -1903,7 +1918,7 @@ public class PdfGraphics2D extends Graphics2D {
         }
     }
 
-    private void handleDefaultPaint(boolean invert, double xoffset, double yoffset, boolean fill)
+    private void handleDefaultPaint(boolean fill)
             throws IOException, NoninvertibleTransformException, InterruptedException {
         BufferedImage img = createBufferedImage();
         Graphics2D g = (Graphics2D) img.getGraphics();
@@ -1913,12 +1928,6 @@ public class PdfGraphics2D extends Graphics2D {
         fillRect = inv.createTransformedShape(fillRect);
         g.setPaint(paint);
         g.fill(fillRect);
-        if (invert) {
-            AffineTransform tx = new AffineTransform();
-            tx.scale(1, -1);
-            tx.translate(-xoffset, -yoffset);
-            g.drawImage(img, tx, null);
-        }
         g.dispose();
         com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(img, null);
         PdfPatternPainter pattern = cb.createPattern(width, height);
@@ -2061,7 +2070,7 @@ public class PdfGraphics2D extends Graphics2D {
             boolean macOS = osName.startsWith("Mac");
             if (!macOS) {
                 FONT_UTILITIES_CLASS = getClassForName(FONT_UTILITIES_CLASS_NAME);
-                updateModuleToOpenPackage(FONT_UTILITIES_CLASS, "sun.font");
+                updateModuleToOpenPackage();
                 GET_FONT2D_METHOD = getMethod(FONT_UTILITIES_CLASS, GET_FONT2D_METHOD_NAME, Font.class);
                 COMPOSITE_FONT_CLASS = getClassForName(COMPOSITE_FONT_CLASS_NAME);
                 GET_NUM_SLOTS_METHOD = getMethod(COMPOSITE_FONT_CLASS, GET_NUM_SLOTS_METHOD_NAME);
@@ -2110,8 +2119,8 @@ public class PdfGraphics2D extends Graphics2D {
          * releases the default mode will be "deny". It's also important to add <code>--add-opens</code> for the given
          * package if it's need.
          */
-        private static void updateModuleToOpenPackage(Class<?> classInModule, String packageName) {
-            if (classInModule == null || packageName == null) {
+        private static void updateModuleToOpenPackage() {
+            if (CompositeFontDrawer.FONT_UTILITIES_CLASS == null) {
                 return;
             }
             Method getModuleMethod = getMethod(Class.class, GET_MODULE_METHOD_NAME);
@@ -2119,7 +2128,7 @@ public class PdfGraphics2D extends Graphics2D {
                 return;
             }
             try {
-                Object targetModule = getModuleMethod.invoke(classInModule);
+                Object targetModule = getModuleMethod.invoke(CompositeFontDrawer.FONT_UTILITIES_CLASS);
                 if (targetModule == null) {
                     return;
                 }
@@ -2129,11 +2138,11 @@ public class PdfGraphics2D extends Graphics2D {
                 if (isOpenMethod == null) {
                     return;
                 }
-                Object isOpened = isOpenMethod.invoke(targetModule, packageName, callerModule);
+                Object isOpened = isOpenMethod.invoke(targetModule, "sun.font", callerModule);
                 if (isOpened instanceof Boolean isOpenedBool && isOpenedBool) {
                     Method addOpensMethod = getMethod(moduleClass, ADD_OPENS_METHOD_NAME, String.class, moduleClass);
                     if (callerModule != null) {
-                        addOpensMethod.invoke(targetModule, packageName, callerModule);
+                        addOpensMethod.invoke(targetModule, "sun.font", callerModule);
                     }
                 }
             } catch (Exception e) {
