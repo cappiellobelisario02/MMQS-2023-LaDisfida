@@ -35,6 +35,7 @@
 
 package com.lowagie.toolbox.arguments;
 
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.filters.ImageFilter;
@@ -110,7 +111,7 @@ public class ImageArgument extends AbstractArgument {
         try {
             setValue(fc.getSelectedFile().getAbsolutePath());
         } catch (NullPointerException npe) {
-            //da vedere come effettuare il log
+            throw new ExceptionConverter(npe);
         }
     }
 

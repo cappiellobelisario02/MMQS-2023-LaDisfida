@@ -118,7 +118,7 @@ public class IndirectObjectFactory {
     private void store(PdfObject object) {
         if (object.isDictionary()) {
             PdfDictionary dict = (PdfDictionary) object;
-            if (PdfName.PAGE.equals(dict.get(PdfName.TYPE))) {
+            if (PdfName.PAGE.equals(dict.get(PdfName.pdfNameTYPE))) {
                 objects.add(dict);
                 return;
             }

@@ -25,7 +25,7 @@ class PdfStructureTreeRootTest {
         PdfStructureTreeRoot root = new PdfStructureTreeRoot(writer);
 
         assertNotNull(root);
-        assertNull(root.get(PdfName.TYPE));
+        assertNull(root.get(PdfName.pdfNameTYPE));
         assertNotNull(root.getReference());
         assertSame(writer, root.getWriter());
     }

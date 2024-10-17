@@ -627,11 +627,10 @@ public class Document implements DocListener {
      * <CODE>HEAD</CODE> part of the file.
      *
      * @param author the getName of the author
-     * @return <CODE>true</CODE> if successful, <CODE>false</CODE> otherwise
      */
-    public boolean addAuthor(String author) {
+    public void addAuthor(String author) {
         try {
-            return add(new Meta(Element.AUTHOR, author));
+            add(new Meta(Element.AUTHOR, author));
         } catch (DocumentException de) {
             throw new ExceptionConverter(de);
         }
@@ -645,11 +644,10 @@ public class Document implements DocListener {
      * In case of a HTML file this will be visible as comment in the <CODE>HEAD</CODE> part of the file.
      *
      * @param creator the getName of the creator
-     * @return <CODE>true</CODE> if successful, <CODE>false</CODE> otherwise
      */
-    public boolean addCreator(String creator) {
+    public void addCreator(String creator) {
         try {
-            return add(new Meta(Element.CREATOR, creator));
+            add(new Meta(Element.CREATOR, creator));
         } catch (DocumentException de) {
             throw new ExceptionConverter(de);
         }
@@ -660,12 +658,10 @@ public class Document implements DocListener {
      * <p/>
      * In case of a PDF this will be visible in the document properties panel.
      * <p/>
-     * In case of a HTML file this will be visible as comment in the <CODE>HEAD</CODE> part of the file.
-     *
-     * @return <CODE>true</CODE> if successful, <CODE>false</CODE> otherwise
+     * In case of an HTML file this will be visible as comment in the <CODE>HEAD</CODE> part of the file.
      */
-    public boolean addProducer() {
-        return this.addProducer(getVersion());
+    public void addProducer() {
+        this.addProducer(getVersion());
     }
 
     /**
@@ -691,15 +687,13 @@ public class Document implements DocListener {
      * In case of a PDF this will be visible in the document properties panel.
      * <p/>
      * In case of a HTML file this will be visible as comment in the <CODE>HEAD</CODE> part of the file.
-     *
-     * @return <CODE>true</CODE> if successful, <CODE>false</CODE> otherwise
      */
-    public boolean addCreationDate() {
+    public void addCreationDate() {
         try {
             /* bugfix by 'taqua' (Thomas) */
             final SimpleDateFormat sdf = new SimpleDateFormat(
                     "EEE MMM dd HH:mm:ss zzz yyyy");
-            return add(new Meta(Element.CREATIONDATE, sdf.format(new Date())));
+            add(new Meta(Element.CREATIONDATE, sdf.format(new Date())));
         } catch (DocumentException de) {
             throw new ExceptionConverter(de);
         }

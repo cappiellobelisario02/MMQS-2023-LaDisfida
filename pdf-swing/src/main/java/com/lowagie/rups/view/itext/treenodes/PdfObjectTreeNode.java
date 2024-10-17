@@ -127,9 +127,9 @@ public class PdfObjectTreeNode extends IconTreeNode {
      */
     public static com.lowagie.rups.view.itext.treenodes.PdfObjectTreeNode getInstance(PdfObject object) {
         if (object.isDictionary()) {
-            if (PdfName.PAGE.equals(((PdfDictionary) object).get(PdfName.TYPE))) {
+            if (PdfName.PAGE.equals(((PdfDictionary) object).get(PdfName.pdfNameTYPE))) {
                 return new PdfPageTreeNode((PdfDictionary) object);
-            } else if (PdfName.PAGES.equals(((PdfDictionary) object).get(PdfName.TYPE))) {
+            } else if (PdfName.PAGES.equals(((PdfDictionary) object).get(PdfName.pdfNameTYPE))) {
                 return new PdfPagesTreeNode((PdfDictionary) object);
             }
         }

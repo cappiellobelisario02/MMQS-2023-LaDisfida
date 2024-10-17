@@ -40,6 +40,7 @@ import com.lowagie.toolbox.arguments.filters.DirFilter;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
@@ -66,6 +67,8 @@ public class FileArgument extends AbstractArgument {
     public FileArgument() {
         super();
     }
+
+    private static final Logger logger = Logger.getLogger(FileArgument.class.getName());
 
     /**
      * Constructs a FileArgument.
@@ -140,7 +143,7 @@ public class FileArgument extends AbstractArgument {
         try {
             setValue(fc.getSelectedFile());
         } catch (NullPointerException npe) {
-            //da vedere come effettuare il log
+            logger.severe("Exception raised in actionPerformed in FileArgument");
         }
     }
 

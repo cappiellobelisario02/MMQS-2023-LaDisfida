@@ -224,7 +224,7 @@ public class PdfXConformanceImp implements PdfXConformance {
     }
 
     private static void checkTransparency(PdfDictionary gs) {
-        PdfObject obj = gs.get(PdfName.CA);
+        PdfObject obj = gs.get(PdfName.pdfNameCA);
         if (obj != null && ((PdfNumber) obj).doubleValue() != 1.0) {
             throw new PdfXConformanceException(
                     MessageLocalization.getComposedMessage("transparency.is.not.allowed.ca.eq.1",

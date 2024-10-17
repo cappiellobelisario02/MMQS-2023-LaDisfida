@@ -131,7 +131,8 @@ public class PdfCopy extends PdfWriter {
                     currentPdfReaderInstance.getReader().close();
                     currentPdfReaderInstance.getReaderFile().close();
                 } catch (IOException ioe) {
-                    // empty on purpose
+                    String msg = "Error closing reader: " + ioe;
+                    logger.severe(msg);
                 }
                 currentPdfReaderInstance = reader.getPdfReaderInstance(this);
             }
@@ -490,7 +491,8 @@ public class PdfCopy extends PdfWriter {
                     ri.getReader().close();
                     ri.getReaderFile().close();
                 } catch (IOException ioe) {
-                    // empty on purpose
+                    String msg = "Exception while closing PdfReaderInstance: " + ioe;
+                    logger.severe(msg);
                 }
             }
         }
@@ -514,7 +516,8 @@ public class PdfCopy extends PdfWriter {
                 currentPdfReaderInstance.getReader().close();
                 currentPdfReaderInstance.getReaderFile().close();
             } catch (IOException ioe) {
-                // empty on purpose
+                String msg = "Exception while closing PdfReaderInstance: " + ioe;
+                logger.severe(msg);
             }
             currentPdfReaderInstance = null;
         }
@@ -704,8 +707,8 @@ public class PdfCopy extends PdfWriter {
 
                 pageN.put(PdfName.RESOURCES, pageResources.getResources());
             } catch (Exception e) {
-                // Log a generic error message without revealing sensitive information
-                logger.warning("Error altering PDF contents: " + e.getClass().getSimpleName());
+                String msg = "Error altering PDF contents: " + e.getClass().getSimpleName();
+                logger.warning(msg);
             }
         }
 

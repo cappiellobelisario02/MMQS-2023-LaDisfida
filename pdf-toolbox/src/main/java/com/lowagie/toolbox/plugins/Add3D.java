@@ -206,7 +206,7 @@ public class Add3D extends AbstractTool {
                     wr);
             stream.put(new PdfName("OnInstantiate"),
                     wr.addToBody(oni).getIndirectReference());
-            stream.put(PdfName.TYPE, new PdfName(PDF_NAME_3D)); // Mandatory keys
+            stream.put(PdfName.pdfNameTYPE, new PdfName(PDF_NAME_3D)); // Mandatory keys
             stream.put(PdfName.SUBTYPE, new PdfName(PDF_NAME_U3D));
             stream.flateCompress();
 
@@ -244,7 +244,7 @@ public class Add3D extends AbstractTool {
 
             annot.put(PdfName.CONTENTS, new PdfString("3D Model"));
             annot.put(PdfName.SUBTYPE, new PdfName(PDF_NAME_3D)); // Mandatory keys
-            annot.put(PdfName.TYPE, PdfName.ANNOT);
+            annot.put(PdfName.pdfNameTYPE, PdfName.ANNOT);
             annot.put(new PdfName(PDF_NAME_3DD), streamRef); // Reference to stream object
             annot.put(new PdfName(PDF_NAME_3DV), objRef.getIndirectReference()); // Reference to view dictionary object
             annot.put(new PdfName("3DI"), PdfBoolean.PDFFALSE);
