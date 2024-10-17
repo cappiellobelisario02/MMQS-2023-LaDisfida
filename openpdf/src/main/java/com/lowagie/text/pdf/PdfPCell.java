@@ -800,7 +800,7 @@ public class PdfPCell extends Rectangle {
     }
 
     /**
-     * Sets the run direction of the text content in the cell. May be either of: PdfWriter.RUN_DIRECTION_DEFAULT,
+     * Sets the run direction of the text content in the cell. Maybe either of: PdfWriter.RUN_DIRECTION_DEFAULT,
      * PdfWriter.RUN_DIRECTION_NO_BIDI, PdfWriter.RUN_DIRECTION_LTR or PdfWriter.RUN_DIRECTION_RTL.
      *
      * @param runDirection the run direction (see above)
@@ -848,8 +848,8 @@ public class PdfPCell extends Rectangle {
             this.cellEvent = null;
         } else if (this.cellEvent == null) {
             this.cellEvent = cellEvent;
-        } else if (this.cellEvent instanceof PdfPCellEventForwarder) {
-            ((PdfPCellEventForwarder) this.cellEvent).addCellEvent(cellEvent);
+        } else if (this.cellEvent instanceof PdfPCellEventForwarder pdfPCellEventForwarder) {
+            pdfPCellEventForwarder.addCellEvent(cellEvent);
         } else {
             PdfPCellEventForwarder forward = new PdfPCellEventForwarder();
             forward.addCellEvent(this.cellEvent);

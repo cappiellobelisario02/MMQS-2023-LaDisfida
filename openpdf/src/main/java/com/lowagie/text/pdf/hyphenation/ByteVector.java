@@ -16,6 +16,7 @@
 
 package com.lowagie.text.pdf.hyphenation;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -25,6 +26,7 @@ import java.io.Serializable;
  */
 public class ByteVector implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -1096301185375029343L;
     /**
      * Capacity increment size

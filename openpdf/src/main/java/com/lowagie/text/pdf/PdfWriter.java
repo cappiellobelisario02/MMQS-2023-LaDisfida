@@ -1272,7 +1272,7 @@ public class PdfWriter extends DocWriter implements
      * Use this method to allow page reordering with method reorderPages.
      */
     public void setLinearPageMode() {
-        root.setLinearMode(null);
+        root.setLinearMode();
     }
 
     /**
