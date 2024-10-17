@@ -276,23 +276,33 @@ public class DocumentFont extends BaseFont {
             PdfContentParser ps = new PdfContentParser(new PRTokeniser(touni));
             PdfObject ob = null;
             PdfObject last = null;
+
             while ((ob = ps.readPRObject()) != null) {
                 if (ob.getTypeImpl() == PdfContentParser.COMMAND_TYPE) {
                     String command = ob.toString();
-                    int n = ((PdfNumber) last).intValue();
-                    if ("beginbfchar".equals(command)) {
-                        handleBeginbfchar(ps, widths, dw, n);
-                    } else if ("beginbfrange".equals(command)) {
-                        handleBeginbfrange(ps, widths, dw, n);
+
+                    // Check if last is a PdfNumber before dereferencing it
+                    if (last instanceof PdfNumber) {
+                        int n = ((PdfNumber) last).intValue();
+
+                        if ("beginbfchar".equals(command)) {
+                            handleBeginbfchar(ps, widths, dw, n);
+                        } else if ("beginbfrange".equals(command)) {
+                            handleBeginbfrange(ps, widths, dw, n);
+                        }
+                    } else {
+                        // Optionally log a warning or handle the case where last is not a PdfNumber
+                        // logger.warning("Last object is not a PdfNumber: " + last);
                     }
                 } else {
-                    last = ob;
+                    last = ob; // Update last to the current PdfObject
                 }
             }
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
     }
+
 
     private void handleBeginbfchar(PdfContentParser ps, IntHashtable widths, int dw, int n) throws IOException {
         for (int k = 0; k < n; ++k) {

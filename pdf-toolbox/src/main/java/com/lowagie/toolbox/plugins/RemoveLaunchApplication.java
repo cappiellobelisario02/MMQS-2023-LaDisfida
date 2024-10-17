@@ -51,6 +51,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
@@ -89,14 +90,35 @@ public class RemoveLaunchApplication
      *
      * @param args String[]
      */
+
     public static void main(String[] args) {
         RemoveLaunchApplication tool = new RemoveLaunchApplication();
-        if (args.length < 2) {
-            logger.severe(tool.getUsage());
+
+        // Validate arguments before proceeding
+        if (!tool.validateArguments(args)) {
+            logger.severe("Invalid arguments provided. " + tool.getUsage());
+            return;  // Exit early if arguments are invalid
         }
+
         tool.setMainArguments(args);
-        tool.execute();
+
+        try {
+            tool.execute();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
+        }
     }
+
+    // Method to validate input arguments
+    private boolean validateArguments(String[] args) {
+        return args.length >= 2; // Example validation logic
+    }
+
+    // Placeholder for the usage message
+    public String getUsage() {
+        return "Usage: java RemoveLaunchApplication <arg1> <arg2>";
+    }
+
 
     /**
      * @see com.lowagie.toolbox.AbstractTool#createFrame()

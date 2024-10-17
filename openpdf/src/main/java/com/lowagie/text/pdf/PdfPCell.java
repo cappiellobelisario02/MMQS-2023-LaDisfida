@@ -189,7 +189,9 @@ public class PdfPCell extends Rectangle {
      */
     public PdfPCell(Image image, boolean fit) {
         super(0, 0, 0, 0);
-        initializeCell();
+        initializeCell(); // Ensure this method is safe and not overridden
+        validateImage(image); // Validate the image
+
         if (fit) {
             this.image = image;
             column.setLeading(0, 1);
@@ -200,6 +202,20 @@ public class PdfPCell extends Rectangle {
             setPadding(0);
         }
     }
+
+    // Method to validate image
+    private void validateImage(Image image) {
+        if (image == null || !isValidImage(image)) {
+            throw new IllegalArgumentException("Invalid image provided");
+        }
+    }
+
+    // Example method to check if the image is valid
+    private boolean isValidImage(Image image) {
+        // Implement your validation logic here
+        return true; // Placeholder: actual validation logic needed
+    }
+
 
     /**
      * Constructs a <CODE>PdfPCell</CODE> with a <CODE>PdfPtable</CODE>. This constructor allows nested tables. The

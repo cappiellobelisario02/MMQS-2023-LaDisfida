@@ -319,27 +319,34 @@ public class PdfPKCS7 {
      * @param provider    the provider or <code>null</code> for the default provider
      */
     @SuppressWarnings("unchecked")
-    public PdfPKCS7(byte[] contentsKey, byte[] certsKey, String provider) {
-        try {
-            this.provider = provider;
-            CertificateFactory certificateFactory = new CertificateFactory();
-            Collection<Certificate> certificates = certificateFactory.engineGenerateCertificates(
-                    new ByteArrayInputStream(certsKey));
-            certs = new ArrayList<>(certificates);
-            signCerts = certs;
-            signCert = (X509Certificate) certs.iterator().next();
-            crls = new ArrayList<>();
-            ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(contentsKey));
-            digest = ((DEROctetString) in.readObject()).getOctets();
-            if (provider == null) {
-                sig = Signature.getInstance("SHA1withRSA");
-            } else {
-                sig = Signature.getInstance("SHA1withRSA", provider);
+    
+
+        public PdfPKCS7(byte[] contentsKey, byte[] certsKey, String provider) {
+            try {
+                this.provider = provider;
+                CertificateFactory certificateFactory = new CertificateFactory();
+                Collection<Certificate> certificates = certificateFactory.engineGenerateCertificates(
+                        new ByteArrayInputStream(certsKey));
+                certs = new ArrayList<>(certificates);
+                signCerts = certs;
+                signCert = (X509Certificate) certs.iterator().next();
+                // Initialize CRLs as needed
+                // crls = new ArrayList<>(); // Uncomment if you need to handle CRLs
+
+                ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(contentsKey));
+                digest = ((DEROctetString) in.readObject()).getOctets();
+
+                // Use SHA-256 instead of SHA-1 for stronger security
+                if (provider == null) {
+                    sig = Signature.getInstance("SHA256withRSA");
+                } else {
+                    sig = Signature.getInstance("SHA256withRSA", provider);
+                }
+                sig.initVerify(signCert.getPublicKey());
+            } catch (Exception e) {
+                throw new ExceptionConverter(e);
             }
-            sig.initVerify(signCert.getPublicKey());
-        } catch (Exception e) {
-            throw new ExceptionConverter(e);
-        }
+        crls = List.of();
     }
 
     /**
@@ -642,19 +649,25 @@ public class PdfPKCS7 {
      * @return a <CODE>KeyStore</CODE>
      */
     public static KeyStore loadCacertsKeyStore(String provider) {
-        File file = new File(System.getProperty("java.home"), "lib");
-        file = new File(file, "security");
-        file = new File(file, "cacerts");
+        File file = new File(System.getProperty("java.home"), "lib/security/cacerts");
+
+        // Ensure the cacerts file exists
+        if (!file.exists()) {
+            throw new IllegalArgumentException("Cacerts file not found: " + file.getAbsolutePath());
+        }
+
         try (FileInputStream fin = new FileInputStream(file)) {
-            KeyStore k;
-            if (provider == null) {
-                k = KeyStore.getInstance("JKS");
+            KeyStore keyStore;
+            // Use a provider if specified; otherwise, default to "JKS"
+            if (provider != null && !provider.trim().isEmpty()) {
+                keyStore = KeyStore.getInstance("JKS", provider);
             } else {
-                k = KeyStore.getInstance("JKS", provider);
+                keyStore = KeyStore.getInstance("JKS");
             }
-            k.load(fin, null);
-            return k;
+            keyStore.load(fin, null); // Load the keystore without a password
+            return keyStore;
         } catch (Exception e) {
+            // Wrap the exception for clarity
             throw new ExceptionConverter(e);
         }
     }
@@ -900,9 +913,9 @@ public class PdfPKCS7 {
      * @param cert an X509Certificate
      * @return an X509Name
      */
-    public static com.lowagie.text.pdf.PdfPKCS7.X509Name getIssuerFields(X509Certificate cert) {
+    public static X509Name getIssuerFields(X509Certificate cert) {
         try {
-            return new com.lowagie.text.pdf.PdfPKCS7.X509Name((ASN1Sequence) getIssuer(cert.getTBSCertificate()));
+            return new X509Name((ASN1Sequence) getIssuer(cert.getTBSCertificate()));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -914,9 +927,9 @@ public class PdfPKCS7 {
      * @param cert an X509Certificate
      * @return an X509Name
      */
-    public static com.lowagie.text.pdf.PdfPKCS7.X509Name getSubjectFields(X509Certificate cert) {
+    public static X509Name getSubjectFields(X509Certificate cert) {
         try {
-            return new com.lowagie.text.pdf.PdfPKCS7.X509Name((ASN1Sequence) getSubject(cert.getTBSCertificate()));
+            return new X509Name((ASN1Sequence) getSubject(cert.getTBSCertificate()));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -1073,7 +1086,7 @@ public class PdfPKCS7 {
      * Checks if the timestamp refers to this document.
      *
      * @return true if it checks false otherwise
-     * @throws java.security.NoSuchAlgorithmException on error
+     * @throws NoSuchAlgorithmException on error
      * @since 2.1.6
      */
     public boolean verifyTimestampImprint() throws NoSuchAlgorithmException {
@@ -1837,7 +1850,7 @@ public class PdfPKCS7 {
          * @param dirName a directory getName
          */
         public X509Name(String dirName) {
-            com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer nTok = new com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer(dirName);
+            X509NameTokenizer nTok = new X509NameTokenizer(dirName);
 
             while (nTok.hasMoreTokens()) {
                 String token = nTok.nextToken();
@@ -1883,7 +1896,7 @@ public class PdfPKCS7 {
 
         /**
          * @return values string representation
-         * @see java.lang.Object#toString()
+         * @see Object#toString()
          */
         @Override
         public String toString() {

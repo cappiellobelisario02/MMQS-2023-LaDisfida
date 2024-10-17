@@ -316,8 +316,8 @@ public class PdfTable extends Rectangle {
      * @return the number of columns
      */
 
-    int columns() {
-        return columns;
+    int getColumns() { // Renamed method
+        return columns; // Returns the field
     }
 
     /**

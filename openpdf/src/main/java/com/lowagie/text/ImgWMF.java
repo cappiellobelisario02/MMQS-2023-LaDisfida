@@ -181,10 +181,19 @@ public class ImgWMF extends Image {
             }
             MetaDo meta = new MetaDo(is, template);
             meta.readAll();
+        } catch (IOException | DocumentException e) {
+            // Log the exception here or handle it as needed
+            throw e; // Rethrow the exception after logging it, if necessary
         } finally {
             if (is != null) {
-                is.close();
+                try {
+                    is.close(); // Close the stream safely
+                } catch (IOException e) {
+                    // Optionally log the closing exception
+                    // logger.warning("Failed to close InputStream: " + e.getMessage());
+                }
             }
         }
     }
+
 }

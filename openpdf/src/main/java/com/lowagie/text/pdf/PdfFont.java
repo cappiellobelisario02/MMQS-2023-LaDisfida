@@ -131,13 +131,17 @@ class PdfFont implements Comparable<Object> {
         }
     }
 
+    private Object size() {
+        return null;
+    }
+
     /**
      * Returns the size of this font.
      *
      * @return a size
      */
 
-    float size() {
+    float getSize() { // renamed from 'size'
         if (image == null) {
             return size;
         } else {

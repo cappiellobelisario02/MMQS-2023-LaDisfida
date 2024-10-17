@@ -277,15 +277,23 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
      * @param ownerPassword the password to read the document
      * @throws IOException on error
      */
+
     public PdfReader(URL url, byte[] ownerPassword) throws IOException, PDFFilterException {
+        // Validate the ownerPassword to ensure it's not null or empty
         if (ownerPassword == null || ownerPassword.length == 0) {
             throw new IllegalArgumentException("Password cannot be null or empty for security reasons.");
         }
 
-        this.password = ownerPassword;
+        // Make a defensive copy of the password to prevent external modification
+        this.password = ownerPassword.clone();
+
+        // Initialize the tokens with a secure method
         this.tokens = new PRTokeniser(new RandomAccessFileOrArray(url));
+
+        // Read the PDF file
         callReadPdf();
     }
+
 
 
     /**

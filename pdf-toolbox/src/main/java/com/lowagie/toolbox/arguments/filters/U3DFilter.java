@@ -54,8 +54,14 @@ public class U3DFilter extends FileFilter {
         if (f.isDirectory()) {
             return true;
         }
-        return f.getName().toLowerCase().endsWith(".u3d");
+        return isU3DFile(f);
     }
+
+    private boolean isU3DFile(File f) {
+        // Use regex to check for .u3d extension, case insensitive
+        return f.getName().matches("(?i).*\\.u3d$");
+    }
+
 
     /**
      * @return String

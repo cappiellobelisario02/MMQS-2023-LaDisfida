@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+
 /**
  * A <CODE>Cell</CODE> is a <CODE>Rectangle</CODE> containing other
  * <CODE>Element</CODE>s.
@@ -197,14 +198,21 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      *
      * @param content a <CODE>String</CODE>
      */
-    public Cell(String content) {
-        this();
-        try {
-            addElement(new Paragraph(content));
-        } catch(BadElementException e) {
-            logger.info("ERROR: " + e.getMessage());
+
+
+        public Cell(String content) {
+            this(); // Call the no-argument constructor
+            initializeCell(content); // Move initialization logic here
         }
-    }
+
+        // Private method to handle the content initialization
+        private void initializeCell(String content) {
+            try {
+                addElement(new Paragraph(content)); // Calls a method that could be overridden
+            } catch (BadElementException e) {
+                logger.info("ERROR: " + e.getMessage());
+            }
+        }
 
     /**
      * Constructs a <CODE>Cell</CODE> with a certain <CODE>Element</CODE>.<p> if the element is a

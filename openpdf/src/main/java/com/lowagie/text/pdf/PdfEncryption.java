@@ -63,6 +63,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.Arrays;
+import java.util.UUID;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -205,11 +206,15 @@ public class PdfEncryption {
         } catch (NoSuchAlgorithmException e) {
             throw new NoSuchAlgorithmException("Algorithm not found", e);
         }
+
         long time = System.currentTimeMillis();
-        long mem = Runtime.getRuntime().freeMemory();
-        String s = time + "+" + mem + "+" + (seq++);
+        // Generate a random UUID as a unique identifier instead of using freeMemory()
+        String uniqueId = UUID.randomUUID().toString();
+
+        String s = time + "+" + uniqueId + "+" + (seq++);
         return sha256.digest(s.getBytes());
     }
+
 
     public static PdfObject createInfoId(byte[] id) throws NoSuchAlgorithmException {
         return createInfoId(id, createDocumentId());

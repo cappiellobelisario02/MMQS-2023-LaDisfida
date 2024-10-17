@@ -148,6 +148,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -533,20 +534,25 @@ public final class Pfm2afm {
         p.out.flush();
     }
 
+
     public static void main(String[] args) {
-            RandomAccessFileOrArray in = null;
-            try {
-                in = createRandomAccessFileOrArray(args[0]);
-                OutputStream out = new FileOutputStream(args[1]);
-                convert(in, out);
-                in.close();
-                out.close();
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
+        if (args.length < 2) {
+            logger.severe("Usage: java Pfm2afm <input file> <output file>");
+            return;
+        }
+
+        try (RandomAccessFileOrArray in = createRandomAccessFileOrArray(args[0]);
+                OutputStream out = new FileOutputStream(args[1])) {
+            convert(in, out);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "I/O error occurred: {0}", e.getMessage());
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "An unexpected error occurred: {0}", e.getMessage());
+        }
     }
 
-        private static RandomAccessFileOrArray createRandomAccessFileOrArray(String fileName) {
+
+    private static RandomAccessFileOrArray createRandomAccessFileOrArray(String fileName) {
             try {
                 return new RandomAccessFileOrArray(fileName);
             } catch (Exception e) {

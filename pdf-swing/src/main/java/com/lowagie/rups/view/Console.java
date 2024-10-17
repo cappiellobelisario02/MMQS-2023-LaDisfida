@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Logger;
@@ -199,7 +200,6 @@ public class Console implements Observer {
          * Create the ReaderThread.
          */
         ReadWriteThread(PipedInputStream pi, String type) {
-            super();
             this.pi = pi;
             this.type = type;
         }
@@ -219,13 +219,15 @@ public class Console implements Observer {
                     }
                     Document doc = textArea.getDocument();
                     AttributeSet attset = styleContext.getStyle(type);
-                    String snippet = new String(buf, 0, len);
-                    doc.insertString(doc.getLength(),
-                            snippet, attset);
+
+                    // Convert the byte array to a String using a specified charset (e.g., UTF-8)
+                    String snippet = new String(buf, 0, len, "UTF-8");
+                    doc.insertString(doc.getLength(), snippet, attset);
                     printStream.print(snippet);
                     textArea.setCaretPosition(textArea.getDocument().getLength());
-                } catch (BadLocationException | IOException ignored) {
-                    // ignored
+                } catch (BadLocationException | IOException e) {
+                    // Handle exceptions appropriately
+                    e.printStackTrace(); // Or use your logging framework
                 }
             }
         }

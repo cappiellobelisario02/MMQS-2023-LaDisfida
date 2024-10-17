@@ -330,13 +330,16 @@ public class BarcodeCodabar extends Barcode {
         int g = background.getRGB();
         Canvas canvas = new Canvas();
 
+        // Use 'code' directly if 'fullCode' is never utilized
         String fullCode = code;
         if (generateChecksum && checksumText) {
             fullCode = calculateChecksum(code);
         }
         if (!startStopText) {
+            // Check if we need to modify the 'fullCode'
             fullCode = fullCode.substring(1, fullCode.length() - 1);
         }
+
         byte[] bars = getBarsCodabar(generateChecksum ? calculateChecksum(code) : code);
         int wide = 0;
         for (byte bar1 : bars) {
@@ -348,6 +351,7 @@ public class BarcodeCodabar extends Barcode {
         int ptr = 0;
         int height = (int) barHeight;
         int[] pix = new int[fullWidth * height];
+
         for (byte bar : bars) {
             int w = (bar == 0 ? 1 : (int) n);
             int c = g;
@@ -359,11 +363,14 @@ public class BarcodeCodabar extends Barcode {
                 pix[ptr++] = c;
             }
         }
+
         for (int k = fullWidth; k < pix.length; k += fullWidth) {
             System.arraycopy(pix, 0, pix, k, fullWidth);
         }
+
         Image img = canvas.createImage(new MemoryImageSource(fullWidth, height, pix, 0, fullWidth));
 
         return img;
     }
+
 }
