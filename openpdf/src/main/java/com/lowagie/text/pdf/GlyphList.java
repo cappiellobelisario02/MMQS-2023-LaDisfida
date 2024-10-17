@@ -110,11 +110,13 @@ public class GlyphList {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    // empty on purpose
+                    // Log the exception when closing the InputStream
+                    logger.warning("Failed to close InputStream: " + e.getMessage());
                 }
             }
         }
     }
+
 
 
     public static int[] nameToUnicode(String name) {

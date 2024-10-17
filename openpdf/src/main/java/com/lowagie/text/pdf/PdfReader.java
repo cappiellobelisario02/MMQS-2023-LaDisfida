@@ -4002,11 +4002,12 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         if (this.appendable != appendable) {
             this.appendable = appendable;
             // Execute this block only if the new value is true
-            if (appendable) {
+            if (this.appendable) {
                 getPdfObject(trailer.get(PdfName.ROOT));
             }
         }
     }
+
 
 
     /**
