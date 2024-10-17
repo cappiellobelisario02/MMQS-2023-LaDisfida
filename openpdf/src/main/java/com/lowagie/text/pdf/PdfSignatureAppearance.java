@@ -91,6 +91,7 @@ import java.util.logging.Logger;
  */
 public class PdfSignatureAppearance {
 
+    public static final String SIGNATURE_RECTANGLE_IS_NULL = "Signature rectangle is null";
     static Logger logger = Logger.getLogger(PdfSignatureAppearance.class.getName());
 
     /**
@@ -715,7 +716,7 @@ public class PdfSignatureAppearance {
                                 Element.ALIGN_LEFT);
                         ct2.go();
                     } else {
-                        throw new IllegalStateException("Signature rectangle is null");
+                        throw new IllegalStateException(SIGNATURE_RECTANGLE_IS_NULL);
                     }
                 } catch (IOException | NullPointerException e) {
                     logger.info("Error rendering signature getName and description");
@@ -742,7 +743,7 @@ public class PdfSignatureAppearance {
                         logger.info("Error rendering graphic and description");
                     }
                 } else {
-                    throw new IllegalStateException("Signature rectangle is null");
+                    throw new IllegalStateException(SIGNATURE_RECTANGLE_IS_NULL);
                 }
             } else if (this.render == SIGNATURE_RENDER_GRAPHIC) {
                 if (signatureRect != null) {
@@ -767,7 +768,7 @@ public class PdfSignatureAppearance {
                         logger.info("Error rendering signature graphic");
                     }
                 } else {
-                    throw new IllegalStateException("Signature rectangle is null");
+                    throw new IllegalStateException(SIGNATURE_RECTANGLE_IS_NULL);
                 }
             }
 
@@ -778,7 +779,7 @@ public class PdfSignatureAppearance {
                 }
                 ColumnText ct = new ColumnText(t);
                 ct.setRunDirection(runDirection);
-                ct.setSimpleColumn(new Phrase(text, font), dataRect.getLeft(), dataRect.getBottom(),
+                ct.setSimpleColumn(new Phrase(text, font), Objects.requireNonNull(dataRect).getLeft(), dataRect.getBottom(),
                         dataRect.getRight(), dataRect.getTop(), size, Element.ALIGN_LEFT);
                 try {
                     ct.go();
@@ -1242,7 +1243,8 @@ public class PdfSignatureAppearance {
             writer.close(stamper.getInfoDictionary());
         } catch (NoSuchAlgorithmException nsae) {
             // Log the exception with info level
-            logger.info("NoSuchAlgorithmException encountered while closing the stamper: " + nsae.getMessage());
+            String msg = "NoSuchAlgorithmException encountered while closing the stamper: " + nsae.getMessage();
+            logger.info(msg);
         }
 
 
@@ -1274,7 +1276,8 @@ public class PdfSignatureAppearance {
                 bf.append(']');
                 System.arraycopy(bf.getBuffer(), 0, bout, (int) byteRangePosition, bf.size());
             } catch(NullPointerException e){
-                logger.info("ByteBuffer error: " + e.getMessage());
+                String msg = "ByteBuffer error: " + e.getMessage();
+                logger.info(msg);
             }
         } else {
             try (ByteBuffer bf = createByteBuffer()) {
@@ -1292,12 +1295,14 @@ public class PdfSignatureAppearance {
                 try {
                     raf.close();
                 } catch (IOException ee) {
-                    //da vedere come effettuare il log
+                    String msg = "Error closing temp file: " + ee;
+                    logger.severe(msg);
                 }
                 try {
                     Files.delete(Path.of(tempFile.getCanonicalPath()));
-                } catch (NullPointerException ee) {
-                    //da vedere come effettuare il log
+                } catch (IOException ee) {
+                    String msg = "Error closing temp file: " + ee;
+                    logger.severe(msg);
                 }
                 throw e;
             }

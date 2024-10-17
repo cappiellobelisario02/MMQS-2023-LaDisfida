@@ -181,7 +181,7 @@ public class PdfCopy extends PdfWriter {
     }
 
     /**
-     * Translate a PRDictionary to a PdfDictionary. Also translate all of the objects contained in it.
+     * Translate a PRDictionary to a PdfDictionary. Also translate all the objects contained in it.
      *
      * @param in the PRDictionary to translate
      * @return the translated PRDictionary

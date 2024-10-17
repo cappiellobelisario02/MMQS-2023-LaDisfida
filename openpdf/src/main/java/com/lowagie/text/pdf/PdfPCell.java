@@ -60,6 +60,7 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.pdf.events.PdfPCellEventForwarder;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * A cell in a PdfPTable.
@@ -138,6 +139,8 @@ public class PdfPCell extends Rectangle {
      * The rotation of the cell. Possible values are 0, 90, 180 and 270.
      */
     private int rotationPdfPCell;
+
+    private static final Logger logger = Logger.getLogger(PdfPCell.class.getName());
 
     /**
      * Constructs an empty <CODE>PdfPCell</CODE>. The default padding is 2.
@@ -984,7 +987,8 @@ public class PdfPCell extends Rectangle {
         try {
             column.go(true);
         } catch (DocumentException | IOException e) {
-            // do nothing
+            String msg = "Exception: " + e.getMessage();
+            logger.severe(msg);
         }
     }
 

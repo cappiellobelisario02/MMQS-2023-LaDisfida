@@ -163,7 +163,6 @@ class TrueTypeFontSubSet {
                 rf.close();
             } catch (IOException e) {
                 logger.severe("Exception raised in process in TrueTypeFontSubSet");
-                // empty on purpose
             }
         }
     }
