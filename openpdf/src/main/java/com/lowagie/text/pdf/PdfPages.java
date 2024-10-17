@@ -71,7 +71,6 @@ public class PdfPages {
     private final ArrayList<PdfIndirectReference> parents = new ArrayList<>();
     private final PdfWriter writer;
     private int leafSize = 10;
-    private PdfIndirectReference topParent;
 
     // constructors
 
@@ -140,8 +139,7 @@ public class PdfPages {
             }
 
             if (tParents.size() == 1) {
-                topParent = tParents.get(0);
-                return topParent;
+                return tParents.get(0);
             }
 
             tPages = tParents;
@@ -180,15 +178,10 @@ public class PdfPages {
         }
     }
 
-    void setLinearMode(PdfIndirectReference topParent) {
+    void setLinearMode() {
         if (parents.size() > 1) {
             throw new UnsupportedOperationException(
                     MessageLocalization.getComposedMessage("linear.page.mode.can.only.be.called.with.a.single.getParent"));
-        }
-        if (topParent != null) {
-            this.topParent = topParent;
-            parents.clear();
-            parents.add(topParent);
         }
         leafSize = 10000000;
     }

@@ -113,7 +113,8 @@ public class PdfSmartCopy extends PdfCopy {
                     return streamRef;
                 }
             } catch (IOException ioe) {
-                //
+                String msg = "Error reading stream: " + ioe;
+                logger.severe(msg);
             }
         }
 

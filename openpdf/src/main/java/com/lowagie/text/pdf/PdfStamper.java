@@ -71,6 +71,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -200,10 +201,11 @@ public class PdfStamper
             stp.sigApp.setTempFile(tempFile);
 
             } catch (IOException e) {
-            // Exception handling
+                String msg = "Error creating temp file: " + e.getMessage();
+                logger.severe(msg);
             }
         }
-        stp.sigApp.setOriginalout(os);
+        Objects.requireNonNull(stp).sigApp.setOriginalout(os);
         stp.sigApp.setStamper(stp);
         stp.hasSignature = true;
         PdfDictionary catalog = reader.getCatalog();
@@ -382,8 +384,9 @@ public class PdfStamper
                     XmpWriter writer = new XmpWriter(baos, moreInfo);
                     writer.close();
                     stamper.setXmpMetadata(baos.toByteArray());
-                } catch (IOException ignore) {
-                    // ignore exception
+                } catch (IOException ioe) {
+                    String msg = "Error writing XMP metadata: " + ioe.getMessage();
+                    logger.severe(msg);
                 }
             }
             stamper.close(moreInfo);

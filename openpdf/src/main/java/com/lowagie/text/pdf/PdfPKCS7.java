@@ -772,8 +772,10 @@ public class PdfPKCS7 {
         try {
             cert.verify(certNext.getPublicKey());
             return true; // Verified successfully
-        } catch (Exception ignored) {
-            // Handle logging or any other actions needed
+        } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException |
+                 SignatureException ignored) {
+            String msg = "Error verifying certificate " + cert + " " + certNext;
+            logger.severe(msg);
             return false; // Verification failed
         }
     }
@@ -783,16 +785,11 @@ public class PdfPKCS7 {
     private Object[] certificateVerification(KeyStore keyStore, Calendar calendar,
             X509Certificate certificate) {
         try{
-            for (Enumeration<?> aliases = keyStore.aliases(); aliases
-                    .hasMoreElements(); ) {
-                Object[] certificate1 = getObjects(keyStore, calendar, certificate, aliases);
-                if (certificate1 != null)
-                    return certificate1;
-            }
+            Enumeration<?> aliases = keyStore.aliases();
+            return getObjects(keyStore, calendar, certificate, aliases);
         } catch (KeyStoreException ignored) {
             return new Object[0];
         }
-        return new Object[0];
     }
 
     private Object[] getObjects(KeyStore keyStore, Calendar calendar, X509Certificate certificate,
@@ -849,8 +846,8 @@ public class PdfPKCS7 {
 
                 }
             }
-        } catch (Exception ignored) {
-//da vedere come effettuare il log
+        } catch (IOException ignored) {
+            logger.severe("Error reading OCSP URL");
         }
         return null;
     }
@@ -1413,7 +1410,7 @@ public class PdfPKCS7 {
             ASN1InputStream tempStream;
             try {
                 tempStream = new ASN1InputStream(
-                        new ByteArrayInputStream(((X509Certificate) cert).getEncoded()));
+                        new ByteArrayInputStream(cert.getEncoded()));
             } catch (CertificateEncodingException e) {
                 throw new CertificateEncodingException(e);
             }

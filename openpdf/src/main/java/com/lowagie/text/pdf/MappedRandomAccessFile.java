@@ -78,36 +78,23 @@ public class MappedRandomAccessFile implements AutoCloseable {
      *
      * @param filename String
      * @param mode     String r, w or rw
-     * @throws FileNotFoundException on error
-     * @throws IOException           on error
      */
-    public MappedRandomAccessFile(String filename, String mode)
-            throws IOException {
-
-        FileInputStream fis = null; // Declare fis here
+    public MappedRandomAccessFile(String filename, String mode) {
 
         if (mode.equals("rw")) {
             try (RandomAccessFile raf = new RandomAccessFile(filename, mode)) {
                 init(raf.getChannel(), FileChannel.MapMode.READ_WRITE);
             } catch (IOException e) {
-                logger.info("Error in RandomAccessFile: " + e.getMessage());
+                String msg = "Error in RandomAccessFile: " + e.getMessage();
+                logger.info(msg);
             }
         } else {
-            try {
-                fis = new FileInputStream(filename); // Initialize fis inside try block
+            try(FileInputStream fis = new FileInputStream(filename)) {
                 init(fis.getChannel(), FileChannel.MapMode.READ_ONLY);
             } catch (FileNotFoundException e) {
                 logger.info("File not found: " + e.getMessage());
             } catch (IOException e) {
                 logger.info("I/O Error: " + e.getMessage());
-            } finally {
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (IOException e) {
-                        logger.info("Failed to close FileInputStream: " + e.getMessage());
-                    }
-                }
             }
         }
     }
@@ -117,18 +104,16 @@ public class MappedRandomAccessFile implements AutoCloseable {
      * invokes the clean method on the ByteBuffer's cleaner
      *
      * @param buffer ByteBuffer
-     * @return boolean true on success
      */
-    public static boolean clean(final java.nio.ByteBuffer buffer) {
+    public static void clean(final ByteBuffer buffer) {
         if (buffer == null || !buffer.isDirect()) {
-            return false;
+            return;
         }
-        return cleanJava11(buffer);
+        cleanJava11(buffer);
 
     }
 
-    private static boolean cleanJava11(final ByteBuffer buffer) {
-        boolean success = false;  // Changed to a primitive boolean
+    private static void cleanJava11(final ByteBuffer buffer) {
         try {
             MethodHandles.Lookup lookup = MethodHandles.lookup();
             Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
@@ -137,13 +122,10 @@ public class MappedRandomAccessFile implements AutoCloseable {
             MethodHandle invokeCleanerMethod = lookup.findVirtual(unsafeClass, "invokeCleaner",
                     MethodType.methodType(void.class, ByteBuffer.class));
             invokeCleanerMethod.invoke(theUnsafe, buffer);
-            success = true;  // Set success to true if cleaning was successful
         } catch (Throwable e) {
-            // Log the exception for debugging purposes
-            System.err.println("Failed to clean ByteBuffer: " + e.getMessage());
-            e.printStackTrace();  // Print stack trace for further investigation
+            String msg = "Failed to clean ByteBuffer: " + e.getMessage();
+            logger.severe(msg);
         }
-        return success;  // Return success status
     }
 
 
@@ -152,7 +134,7 @@ public class MappedRandomAccessFile implements AutoCloseable {
      *
      * @param channel FileChannel
      * @param mapMode FileChannel.MapMode
-     * @throws IOException
+     * @throws IOException exception thrown in the method body
      */
     private void init(FileChannel channel, FileChannel.MapMode mapMode)
             throws IOException {

@@ -103,7 +103,6 @@ public class GlyphList {
                 names2unicode.put(name, new int[]{num});
             }
         } catch (IOException e) {
-            // Log a generic message without exposing sensitive information
             logger.warning("An error occurred while loading the glyph list.");
         } finally {
             if (is != null) {
@@ -111,7 +110,8 @@ public class GlyphList {
                     is.close();
                 } catch (IOException e) {
                     // Log the exception when closing the InputStream
-                    logger.warning("Failed to close InputStream: " + e.getMessage());
+                    String msg = "Failed to close InputStream: " + e.getMessage();
+                    logger.warning(msg);
                 }
             }
         }

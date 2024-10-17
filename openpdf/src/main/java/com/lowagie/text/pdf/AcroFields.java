@@ -1222,7 +1222,8 @@ public class AcroFields {
                 lastWasString = true;
                 return optionString.toUnicodeString();
             } catch (NumberFormatException e) {
-                //da vedere come effettuare il log
+                String msg = "Error parsing option '" + value + "': " + e.getMessage();
+                logger.severe(msg);
             }
         }
         return "";

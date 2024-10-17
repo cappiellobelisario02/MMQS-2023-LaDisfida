@@ -74,28 +74,39 @@ public class Executable {
     /**
      * Performs an action on a PDF document.
      *
-     * @param fileName
-     * @param parameters
-     * @param waitForTermination
+     * @param fileName name of the file
+     * @param parameters string of parameters
+     * @param waitForTermination has to wait for termination
      * @return a process
-     * @throws IOException
+     * @throws IOException exception thrown by the method body
      */
     private static Process action(final String fileName,
             String parameters, boolean waitForTermination) throws IOException {
         Process process = null;
         String sanitizedFileName = sanitizeInput(fileName);
         String sanitizedParameters = sanitizeInput(parameters.trim());
+        String commandEnv;
+        String commandDisk;
+        String commandStart = "start";
+        String commandProgramStart = "acrord32";
+
 
         if (acroread != null) {
             process = Runtime.getRuntime().exec(new String[]{
                     acroread, sanitizedParameters, sanitizedFileName});
         } else if (isWindows()) {
             if (isWindows9X()) {
-                process = Runtime.getRuntime().exec(new String[]{
-                        "command.com", "/C", "start", "acrord32", sanitizedParameters, sanitizedFileName});
+                commandEnv = "command.com";
+                commandDisk = "/C";
+                String[] command = {commandEnv, commandDisk, commandStart, commandProgramStart, sanitizedParameters,
+                        sanitizedFileName};
+                process = Runtime.getRuntime().exec(command);
             } else {
-                process = Runtime.getRuntime().exec(new String[]{
-                        "cmd", "/c", "start", "acrord32", sanitizedParameters, sanitizedFileName});
+                commandEnv = "cmd";
+                commandDisk = "/c";
+                String[] command = {commandEnv, commandDisk, commandStart, commandProgramStart, sanitizedParameters,
+                        sanitizedFileName};
+                process = Runtime.getRuntime().exec(command);
             }
         } else if (isMac()) {
             if (sanitizedParameters.isEmpty()) {
@@ -125,7 +136,7 @@ public class Executable {
     /**
      * Creates a command string array from the string arguments.
      *
-     * @param arguments
+     * @param arguments list of arguments for the command
      * @return String[] of commands
      */
     private static String[] createCommand(String... arguments) {
@@ -150,12 +161,11 @@ public class Executable {
      *
      * @param file               the file to open
      * @param waitForTermination true to wait for termination, false otherwise
-     * @return a process
      * @throws IOException on error
      */
-    public static Process openDocument(File file,
+    public static void openDocument(File file,
             boolean waitForTermination) throws IOException {
-        return openDocument(file.getAbsolutePath(), waitForTermination);
+        openDocument(file.getAbsolutePath(), waitForTermination);
     }
 
     /**
@@ -173,11 +183,10 @@ public class Executable {
      * Opens a PDF document.
      *
      * @param file the file to open
-     * @return a process
      * @throws IOException on error
      */
-    public static Process openDocument(File file) throws IOException {
-        return openDocument(file, false);
+    public static void openDocument(File file) throws IOException {
+        openDocument(file, false);
     }
 
     /**
@@ -198,12 +207,11 @@ public class Executable {
      *
      * @param file               the File to print
      * @param waitForTermination true to wait for termination, false otherwise
-     * @return a process
      * @throws IOException on error
      */
-    public static Process printDocument(File file,
+    public static void printDocument(File file,
             boolean waitForTermination) throws IOException {
-        return printDocument(file.getAbsolutePath(), waitForTermination);
+        printDocument(file.getAbsolutePath(), waitForTermination);
     }
 
     /**
@@ -221,11 +229,10 @@ public class Executable {
      * Prints a PDF document.
      *
      * @param file the File to print
-     * @return a process
      * @throws IOException on error
      */
-    public static Process printDocument(File file) throws IOException {
-        return printDocument(file, false);
+    public static void printDocument(File file) throws IOException {
+        printDocument(file, false);
     }
 
     /**
@@ -246,12 +253,11 @@ public class Executable {
      *
      * @param file               the File to print
      * @param waitForTermination true to wait for termination, false otherwise
-     * @return a process
      * @throws IOException on error
      */
-    public static Process printDocumentSilent(File file,
+    public static void printDocumentSilent(File file,
             boolean waitForTermination) throws IOException {
-        return printDocumentSilent(file.getAbsolutePath(), waitForTermination);
+        printDocumentSilent(file.getAbsolutePath(), waitForTermination);
     }
 
     /**
@@ -269,11 +275,10 @@ public class Executable {
      * Prints a PDF document without opening a Dialog box.
      *
      * @param file the File to print
-     * @return a process
      * @throws IOException on error
      */
-    public static Process printDocumentSilent(File file) throws IOException {
-        return printDocumentSilent(file, false);
+    public static void printDocumentSilent(File file) throws IOException {
+        printDocumentSilent(file, false);
     }
 
     /**
@@ -292,8 +297,9 @@ public class Executable {
                 String[] browsers = {
                         "firefox", "opera", "konqueror", "mozilla", "netscape"};
                 String browser = null;
+                String which = "which";
                 for (int count = 0; count < browsers.length && browser == null; count++) {
-                    if (Runtime.getRuntime().exec(new String[]{"which", browsers[count]}).waitFor() == 0) {
+                    if (Runtime.getRuntime().exec(new String[]{which, browsers[count]}).waitFor() == 0) {
                         browser = browsers[count];
                     }
                 }
@@ -323,7 +329,6 @@ public class Executable {
     /**
      * Checks the Operating System.
      *
-     * @return true if the current os is Windows
      */
     private static final String OS = "os.getName";
     public static boolean isWindows() {

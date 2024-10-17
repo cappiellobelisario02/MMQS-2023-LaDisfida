@@ -1,5 +1,6 @@
 package com.lowagie.text.pdf.hyphenation;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -9,6 +10,7 @@ import java.io.Serializable;
  */
 public class CharVector implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = -4875768298308363544L;
     /**
      * Capacity increment size

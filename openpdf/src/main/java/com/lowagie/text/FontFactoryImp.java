@@ -101,12 +101,12 @@ public class FontFactoryImp implements FontProvider {
     /**
      * This is the default encoding to use.
      */
-    public static String DEFAULT_ENCODING = BaseFont.WINANSI;
+    public static String defaultEncoding = BaseFont.WINANSI;
 
     /**
      * This is the default value of the <VAR>embedded</VAR> variable.
      */
-    public static boolean DEFAULT_EMBEDDING = BaseFont.NOT_EMBEDDED;
+    public static boolean defaultEmbedding = BaseFont.NOT_EMBEDDED;
 
     /**
      * Creates new FontFactory
@@ -210,9 +210,9 @@ public class FontFactoryImp implements FontProvider {
             lock.readLock().unlock(); // Ensure the lock is always released
         }
 
-        BaseFont basefont = null;
+        BaseFont basefont;
         try {
-            basefont = createBaseFont(fontname, encoding, embedded, cached, true);
+            basefont = createBaseFont(fontname, encoding, embedded, cached);
             if (basefont == null) {
                 // Check for TrueType font registration
                 fontname = trueTypeFonts.get(lowerCaseFontname);
@@ -231,11 +231,12 @@ public class FontFactoryImp implements FontProvider {
         return new Font(basefont, size, style, color); // Return the constructed Font
     }
 
-    private BaseFont createBaseFont(String fontname, String encoding, boolean embedded, boolean cached, boolean isType1) throws DocumentException, IOException {
+    private BaseFont createBaseFont(String fontname, String encoding, boolean embedded, boolean cached) throws DocumentException, IOException {
         try {
-            return BaseFont.createFont(fontname, encoding, embedded, cached, null, null, isType1);
+            return BaseFont.createFont(fontname, encoding, embedded, cached, null, null, true);
         } catch (DocumentException de) {
-            // Handle or log exception if needed
+            String msg = "Error creating base font: " + de.getMessage();
+            logger.severe(msg);
             return null;
         }
     }
@@ -272,7 +273,7 @@ public class FontFactoryImp implements FontProvider {
 
     private String extractEncoding(Properties attributes) {
         String value = attributes.getProperty(ElementTags.ENCODING);
-        return value != null ? value : DEFAULT_ENCODING;
+        return value != null ? value : defaultEncoding;
     }
 
     private boolean extractEmbedded(Properties attributes) {
@@ -375,7 +376,7 @@ public class FontFactoryImp implements FontProvider {
      */
 
     public Font getFont(String fontname, String encoding, float size, int style, Color color) {
-        return getFont(fontname, encoding, DEFAULT_EMBEDDING, size, style, color);
+        return getFont(fontname, encoding, defaultEmbedding, size, style, color);
     }
 
     /**
@@ -389,7 +390,7 @@ public class FontFactoryImp implements FontProvider {
      */
 
     public Font getFont(String fontname, String encoding, float size, int style) {
-        return getFont(fontname, encoding, DEFAULT_EMBEDDING, size, style, null);
+        return getFont(fontname, encoding, defaultEmbedding, size, style, null);
     }
 
     /**
@@ -402,7 +403,7 @@ public class FontFactoryImp implements FontProvider {
      */
 
     public Font getFont(String fontname, String encoding, float size) {
-        return getFont(fontname, encoding, DEFAULT_EMBEDDING, size, Font.UNDEFINED, null);
+        return getFont(fontname, encoding, defaultEmbedding, size, Font.UNDEFINED, null);
     }
 
 
@@ -417,7 +418,7 @@ public class FontFactoryImp implements FontProvider {
      */
 
     public Font getFont(String fontname, float size, Color color) {
-        return getFont(fontname, DEFAULT_ENCODING, DEFAULT_EMBEDDING, size, Font.UNDEFINED, color);
+        return getFont(fontname, defaultEncoding, defaultEmbedding, size, Font.UNDEFINED, color);
     }
 
     /**
@@ -429,7 +430,7 @@ public class FontFactoryImp implements FontProvider {
      */
 
     public Font getFont(String fontname, String encoding) {
-        return getFont(fontname, encoding, DEFAULT_EMBEDDING, Font.UNDEFINED, Font.UNDEFINED, null);
+        return getFont(fontname, encoding, defaultEmbedding, Font.UNDEFINED, Font.UNDEFINED, null);
     }
 
     /**
@@ -443,7 +444,7 @@ public class FontFactoryImp implements FontProvider {
      */
 
     public Font getFont(String fontname, float size, int style, Color color) {
-        return getFont(fontname, DEFAULT_ENCODING, DEFAULT_EMBEDDING, size, style, color);
+        return getFont(fontname, defaultEncoding, defaultEmbedding, size, style, color);
     }
 
     /**
@@ -456,7 +457,7 @@ public class FontFactoryImp implements FontProvider {
      */
 
     public Font getFont(String fontname, float size, int style) {
-        return getFont(fontname, DEFAULT_ENCODING, DEFAULT_EMBEDDING, size, style, null);
+        return getFont(fontname, defaultEncoding, defaultEmbedding, size, style, null);
     }
 
     /**
@@ -468,7 +469,7 @@ public class FontFactoryImp implements FontProvider {
      */
 
     public Font getFont(String fontname, float size) {
-        return getFont(fontname, DEFAULT_ENCODING, DEFAULT_EMBEDDING, size, Font.UNDEFINED, null);
+        return getFont(fontname, defaultEncoding, defaultEmbedding, size, Font.UNDEFINED, null);
     }
 
     /**
@@ -479,7 +480,7 @@ public class FontFactoryImp implements FontProvider {
      */
 
     public Font getFont(String fontname) {
-        return getFont(fontname, DEFAULT_ENCODING, DEFAULT_EMBEDDING, Font.UNDEFINED, Font.UNDEFINED, null);
+        return getFont(fontname, defaultEncoding, defaultEmbedding, Font.UNDEFINED, Font.UNDEFINED, null);
     }
 
     /**
@@ -522,9 +523,9 @@ public class FontFactoryImp implements FontProvider {
                     tmp.add(fullName);
                 }
             }
-        } catch (Exception e) {
-            // Handle any exceptions if necessary
-            // Log or manage the exception accordingly (not shown here)
+        } catch (ClassCastException e) {
+            String msg = "Error registering family '" + familyName + "': " + e;
+            logger.severe(msg);
         } finally {
             // Ensure the lock is always released
             lock.writeLock().unlock();
@@ -690,8 +691,9 @@ public class FontFactoryImp implements FontProvider {
                 File file = new File(dir, fileName);
                 count += processFile(file, scanSubdirectories);
             }
-        } catch (Exception e) {
-            // Handle or log exception if needed
+        } catch (SecurityException e) {
+            String msg = "Exception threw: " + e;
+            logger.severe(msg);
         }
         return count;
     }
@@ -720,7 +722,8 @@ public class FontFactoryImp implements FontProvider {
                 }
             }
         } catch (Exception e) {
-            // Handle or log exception if needed
+            String msg = "Exception threw: " + e;
+            logger.severe(msg);
         }
         return count;
     }

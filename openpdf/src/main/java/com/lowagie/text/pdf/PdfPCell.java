@@ -60,6 +60,7 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.pdf.events.PdfPCellEventForwarder;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * A cell in a PdfPTable.
@@ -138,6 +139,8 @@ public class PdfPCell extends Rectangle {
      * The rotation of the cell. Possible values are 0, 90, 180 and 270.
      */
     private int rotationPdfPCell;
+
+    private static final Logger logger = Logger.getLogger(PdfPCell.class.getName());
 
     /**
      * Constructs an empty <CODE>PdfPCell</CODE>. The default padding is 2.
@@ -813,7 +816,7 @@ public class PdfPCell extends Rectangle {
     }
 
     /**
-     * Sets the run direction of the text content in the cell. May be either of: PdfWriter.RUN_DIRECTION_DEFAULT,
+     * Sets the run direction of the text content in the cell. Maybe either of: PdfWriter.RUN_DIRECTION_DEFAULT,
      * PdfWriter.RUN_DIRECTION_NO_BIDI, PdfWriter.RUN_DIRECTION_LTR or PdfWriter.RUN_DIRECTION_RTL.
      *
      * @param runDirection the run direction (see above)
@@ -861,8 +864,8 @@ public class PdfPCell extends Rectangle {
             this.cellEvent = null;
         } else if (this.cellEvent == null) {
             this.cellEvent = cellEvent;
-        } else if (this.cellEvent instanceof PdfPCellEventForwarder) {
-            ((PdfPCellEventForwarder) this.cellEvent).addCellEvent(cellEvent);
+        } else if (this.cellEvent instanceof PdfPCellEventForwarder pdfPCellEventForwarder) {
+            pdfPCellEventForwarder.addCellEvent(cellEvent);
         } else {
             PdfPCellEventForwarder forward = new PdfPCellEventForwarder();
             forward.addCellEvent(this.cellEvent);
@@ -1000,7 +1003,8 @@ public class PdfPCell extends Rectangle {
         try {
             column.go(true);
         } catch (DocumentException | IOException e) {
-            // do nothing
+            String msg = "Exception: " + e.getMessage();
+            logger.severe(msg);
         }
     }
 

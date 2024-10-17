@@ -199,8 +199,8 @@ public final class FontFactory {
      */
 
     public static Font getFont(Properties attributes) {
-        FontFactoryImp.DEFAULT_EMBEDDING = defaultEmbedding;
-        FontFactoryImp.DEFAULT_ENCODING = defaultEncoding;
+        FontFactoryImp.defaultEmbedding = defaultEmbedding;
+        FontFactoryImp.defaultEncoding = defaultEncoding;
         return fontImp.getFont(attributes);
     }
 

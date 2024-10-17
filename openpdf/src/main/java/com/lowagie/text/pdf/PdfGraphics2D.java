@@ -100,10 +100,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
@@ -522,7 +519,7 @@ public class PdfGraphics2D extends Graphics2D {
     }
 
     private double drawString(String s, BaseFont baseFont, double x, double y) {
-        boolean restoreTextRenderingMode = false;
+        boolean restoreTextRenderingMode;
         AffineTransform at = getTransform();
         try {
             setupTransformation(x, y);
@@ -1751,7 +1748,7 @@ public class PdfGraphics2D extends Graphics2D {
             cb.setGState(gs);
         }
 
-        com.lowagie.text.Image image = null;
+        com.lowagie.text.Image image;
         if (!convertImagesToJPEG) {
             image = com.lowagie.text.Image.getInstance(img, bgColor);
         } else {
@@ -2158,11 +2155,13 @@ public class PdfGraphics2D extends Graphics2D {
                 method = clazz.getDeclaredMethod(methodName, parameterTypes);
             } catch (NoSuchMethodException e) {
                 // Log the absence of the method
-                logger.info("Method " + methodName + " not found in class " + clazz.getName());
+                String msg = "Method " + methodName + " not found in class " + clazz.getName();
+                logger.info(msg);
             } catch (SecurityException e) {
                 // Handle security-related issues
-                logger.info("Access to method " + methodName + " in class " + clazz.getName() + " denied due to "
-                        + "security restrictions.");
+                String msg = "Access to method " + methodName + " in class " + clazz.getName() + " denied due to "
+                        + "security restrictions.";
+                logger.info(msg);
             } catch (Exception e) {
                 // Handle other unexpected exceptions
                 logger.info("Unexpected error while retrieving method " );
@@ -2189,8 +2188,7 @@ public class PdfGraphics2D extends Graphics2D {
             }
 
             try {
-                assert GET_FONT2D_METHOD != null;
-                Object result = GET_FONT2D_METHOD.invoke(null, font);
+                Object result = Objects.requireNonNull(GET_FONT2D_METHOD).invoke(null, font);
                 boolean composite = result != null && result.getClass() == COMPOSITE_FONT_CLASS;
                 if (fontFamily != null) {
                     fontFamilyComposite.put(fontFamily, composite);
@@ -2234,11 +2232,11 @@ public class PdfGraphics2D extends Graphics2D {
             double width = 0; // Initialize total width
 
             // Attempt to split the string into displayable parts
-            if (s == null || compositeFont == null) {
-                System.err.println("Input string or font cannot be null");
+            if (s == null) {
+                logger.severe("Input string or font cannot be null");
                 // Draw using the base font as a fallback
                 BaseFont baseFont = fontConverter.apply(compositeFont);
-                return defaultDrawingFunction.drawString(s, baseFont, x, y);
+                return defaultDrawingFunction.drawString(null, baseFont, x, y);
             }
 
             try {
@@ -2252,18 +2250,21 @@ public class PdfGraphics2D extends Graphics2D {
                 }
             } catch (IllegalArgumentException e) {
                 // Handle specific cases for invalid arguments
-                System.err.println("Invalid argument provided: " + e.getMessage());
+                String msg = "Invalid argument provided: " + e.getMessage();
+                logger.severe(msg);
                 // Fallback to drawing the whole string
                 BaseFont baseFont = fontConverter.apply(compositeFont);
                 return defaultDrawingFunction.drawString(s, baseFont, x, y);
             } catch (NullPointerException e) {
                 // Handle potential null pointer exceptions gracefully
-                System.err.println("Null pointer exception occurred: " + e.getMessage());
+                String msg = "Null pointer exception occurred: " + e.getMessage();
+                logger.severe(msg);
                 BaseFont baseFont = fontConverter.apply(compositeFont);
                 return defaultDrawingFunction.drawString(s, baseFont, x, y);
             } catch (Exception e) {
                 // Catch-all for unexpected exceptions
-                System.err.println("Unexpected error: " + e.getMessage());
+                String msg = "Unexpected error: " + e.getMessage();
+                logger.severe(msg);
                 BaseFont baseFont = fontConverter.apply(compositeFont);
                 return defaultDrawingFunction.drawString(s, baseFont, x, y);
             }
