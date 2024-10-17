@@ -199,7 +199,8 @@ public class Toolbox extends JFrame implements ActionListener {
             } catch (PropertyVetoException | InstantiationException | IllegalAccessException
                      | ClassNotFoundException ex) {
                 // Log the exception instead of exiting
-                logger.severe("Error during tool execution: " + ex.getMessage());
+                String msg = "Error during tool execution: " + ex.getMessage();
+                logger.severe(msg);
                 // You might also show a dialog or perform another action
             }
         }
@@ -323,13 +324,13 @@ public class Toolbox extends JFrame implements ActionListener {
             item.addActionListener(this);
             tool = (String) entry.getValue();
             try {
-                if (Class.forName(tool) != null) {
-                    toolmap.put(item.getText(), tool);
-                    current.add(item);
-                }
+                Class.forName(tool);
+                toolmap.put(item.getText(), tool);
+                current.add(item);
             } catch (ClassNotFoundException e) {
-                logger.info("Plugin " + name
-                        + " was not found in your CLASSPATH.");
+                String msg = "Plugin " + name
+                        + " was not found in your CLASSPATH.";
+                logger.info(msg);
             }
         }
     }
@@ -453,6 +454,7 @@ public class Toolbox extends JFrame implements ActionListener {
             frame.setMaximum(false);
             frame.reshape(x, y, frame.getWidth(), frame.getHeight());
         } catch (PropertyVetoException e) {
+            logger.severe("Error while setting frame position.");
             //da vedere come effettuare il log
         }
     }
@@ -467,6 +469,7 @@ public class Toolbox extends JFrame implements ActionListener {
         try {
             createFrame(actionCommand);
         } catch (Exception e) {
+            logger.severe("An error occurred while trying to create the toolbox.");
             //da vedere come effettuare il log
         }
     }
@@ -577,7 +580,7 @@ public class Toolbox extends JFrame implements ActionListener {
                         oriout.print(snippet);
                         textArea.setCaretPosition(textArea.getDocument().getLength());
                     } catch (BadLocationException | IOException ex) {
-//da vedere come effettuare il log
+                        logger.severe("An error occurred while reading the file.");
                     }
                 }
             }

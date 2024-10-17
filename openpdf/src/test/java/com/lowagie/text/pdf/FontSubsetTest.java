@@ -70,7 +70,7 @@ class FontSubsetTest {
                     continue;
                 }
                 PdfDictionary dic = (PdfDictionary) obj;
-                PdfObject type = PdfReader.getPdfObjectRelease(dic.get(PdfName.TYPE));
+                PdfObject type = PdfReader.getPdfObjectRelease(dic.get(PdfName.pdfNameTYPE));
                 if (type == null || !type.isName()) {
                     continue;
                 }

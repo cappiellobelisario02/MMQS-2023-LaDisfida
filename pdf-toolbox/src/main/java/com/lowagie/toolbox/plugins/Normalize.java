@@ -151,7 +151,7 @@ public class Normalize
             pageInh.add(pagecount, page);
             pagecount++;
         } else {
-            page.put(PdfName.TYPE, PdfName.PAGES);
+            page.put(PdfName.pdfNameTYPE, PdfName.PAGES);
 
             for (int k = 0; k < kidsPR.size(); ++k) {
                 PdfDictionary kid = kidsPR.getAsDict(k);

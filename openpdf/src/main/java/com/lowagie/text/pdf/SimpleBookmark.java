@@ -302,7 +302,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
      */
     private static int getNumber(PdfIndirectReference indirect) {
         PdfDictionary pdfObj = (PdfDictionary) PdfReader.getPdfObjectRelease(indirect);
-        if (pdfObj.contains(PdfName.TYPE) && pdfObj.get(PdfName.TYPE).equals(PdfName.PAGES) && pdfObj.contains(
+        if (pdfObj.contains(PdfName.pdfNameTYPE) && pdfObj.get(PdfName.pdfNameTYPE).equals(PdfName.PAGES) && pdfObj.contains(
                 PdfName.KIDS)) {
             PdfArray kids = (PdfArray) pdfObj.get(PdfName.KIDS);
             indirect = (PdfIndirectReference) kids.getPdfObject(0);

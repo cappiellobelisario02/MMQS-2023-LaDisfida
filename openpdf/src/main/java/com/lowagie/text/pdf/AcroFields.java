@@ -2578,7 +2578,7 @@ public class AcroFields {
     }
 
     private void setText(PushbuttonField newButton, PdfDictionary mk) {
-        PdfString text = mk.getAsString(PdfName.CA);
+        PdfString text = mk.getAsString(PdfName.pdfNameCA);
         if (text != null) {
             newButton.setText(text.toUnicodeString());
         }

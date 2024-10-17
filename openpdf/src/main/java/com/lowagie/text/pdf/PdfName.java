@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -77,7 +78,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
 
     public static PdfName op;
     public static PdfName ca;
-    public static PdfName TYPE;
+    public static PdfName pdfNameTYPE;
     static Logger logger = Logger.getLogger(PdfName.class.getName());
 
     // CLASS CONSTANTS (a variety of standard names used in PDF))
@@ -443,7 +444,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
      * Value: 1.0 <p>The specified value shall not be used if the annotation has an appearance stream; in that case, the
      * appearance stream shall specify any transparency.
      */
-    public static final PdfName CA = new PdfName("CA");
+    public static final PdfName pdfNameCA = new PdfName("CA");
     /**
      * (Optional; PDF 2.0) When regenerating the annotation's appearance stream, this is the opacity value that shall be
      * used for all nonstroking operations on all visible elements of the annotation in its closed state (including its
@@ -1947,7 +1948,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
     /**
      * A getName
      */
-    public static final PdfName OP = new PdfName("op");
+    public static final PdfName pdfNameNonCapitalOP = new PdfName("op");
     /**
      * A getName
      */
@@ -3312,7 +3313,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
         widgetNames.add(PdfName.OC);
         widgetNames.add(PdfName.AF);
         widgetNames.add(PdfName.CA_CONST);
-        widgetNames.add(PdfName.CA);
+        widgetNames.add(PdfName.pdfNameCA);
         widgetNames.add(PdfName.BM);
         widgetNames.add(PdfName.LANG);
         //Additional entries specific to a widget annotation
@@ -3376,9 +3377,10 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
         try{
             buf = new ByteBuffer(length + 20);
         } catch(Exception e){
-            logger.info("ByteBuffer error: " + e.getMessage());
+            String msg = "ByteBuffer error: " + e.getMessage();
+            logger.severe(msg);
         }
-        buf.append('/');
+        Objects.requireNonNull(buf).append('/');
         char c;
         char[] chars = name.toCharArray();
         for (int k = 0; k < length; k++) {
@@ -3426,6 +3428,8 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
                 k++;
             }
         } catch (IndexOutOfBoundsException e) {
+            String msg = "Error while decoding name: " + e.getMessage();
+            logger.severe(msg);
             // empty on purpose
         }
         return buf.toString();

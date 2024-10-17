@@ -2894,7 +2894,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (IOException exc) {
-                logger.info("Random Access File or Array ERROR: " + exc.getMessage());
+                String msg = "Random Access File or Array ERROR: " + exc.getMessage();
+                logger.severe(msg);
             }
         }
     }
@@ -3827,21 +3828,18 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     public void removeUnusedObjects() {
         boolean[] hits = new boolean[xrefObj.size()];
         removeUnusedNode(trailer, hits);
-        int total = 0;
         if (partial) {
             for (int k = 1; k < hits.length; ++k) {
                 if (!hits[k]) {
                     xref[k * 2] = -1;
                     xref[k * 2 + 1] = 0;
                     xrefObj.set(k, null);
-                    ++total;
                 }
             }
         } else {
             for (int k = 1; k < hits.length; ++k) {
                 if (!hits[k]) {
                     xrefObj.set(k, null);
-                    ++total;
                 }
             }
         }
@@ -3918,7 +3916,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         } catch (PDFFilterException e) {
             throw new IOException(e.getMessage());
         }
-        //da vedere come effettuare il log
     }
 
     /**

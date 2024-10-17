@@ -57,6 +57,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 
 /**
@@ -83,6 +84,7 @@ class TrueTypeFontSubSet {
     static final int MORE_COMPONENTS = 32;
     static final int WE_HAVE_AN_X_AND_Y_SCALE = 64;
     static final int WE_HAVE_A_TWO_BY_TWO = 128;
+    static final Logger logger = Logger.getLogger(TrueTypeFontSubSet.class.getName());
 
 
     /**
@@ -160,6 +162,7 @@ class TrueTypeFontSubSet {
             try {
                 rf.close();
             } catch (IOException e) {
+                logger.severe("Exception raised in process in TrueTypeFontSubSet");
                 // empty on purpose
             }
         }

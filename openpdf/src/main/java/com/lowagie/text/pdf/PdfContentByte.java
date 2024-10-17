@@ -80,6 +80,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * <CODE>PdfContentByte</CODE> is an object containing the user positioned
@@ -163,6 +164,7 @@ public class PdfContentByte {
     public static final String DO_Q = " Do Q";
     public static final String BEFORE_WRITING_ANY_TEXT = "font.and.size.must.be.set.before.writing.any.text";
     public static final String UNBALANCED_BEGIN_END_TEXT_OPERATORS = "unbalanced.begin.end.text.operators";
+    private static final Logger logger = Logger.getLogger(PdfContentByte.class.getName());
     // membervariables
 
     static {
@@ -321,7 +323,7 @@ public class PdfContentByte {
      * y1) to (x4, y4) with (x2, y2) and (x3, y3) as their respective Bezier control points.
      * <p>
      * Note: this code was taken from ReportLab (www.reportlab.org), an excellent PDF generator for Python (BSD license:
-     * http://www.reportlab.org/devfaq.html#1.3 ).
+     * <a href="http://www.reportlab.org/devfaq.html#1.3">...</a> ).
      *
      * @param x1       a corner of the enclosing rectangle
      * @param y1       a corner of the enclosing rectangle
@@ -1579,9 +1581,7 @@ public class PdfContentByte {
         annot = new Annotation(annot);
         annot.setDimensions(annotRect.getLeft(), annotRect.getBottom(), annotRect.getRight(), annotRect.getTop());
         PdfAnnotation pdfAnnot = PdfAnnotationsImp.convertAnnotation(writer, annot, annotRect);
-        if (pdfAnnot != null) {
-            addAnnotation(pdfAnnot);
-        }
+        addAnnotation(pdfAnnot);
     }
 
     private float[] transformRectangle(TransformationMatrix matrix) {
@@ -1625,7 +1625,8 @@ public class PdfContentByte {
         content.reset();
 
         // Debugging statement to log the value of validateContent
-        logger.info("Resetting content with validateContent set to: " + validateContent);
+        String msg = "Resetting content with validateContent set to: " + validateContent;
+        logger.info(msg);
 
         if (validateContent) {
             sanityCheck();

@@ -112,7 +112,7 @@ public class PdfGState extends PdfDictionary {
      * @param ov true to apply overprint for stroking false otherwise
      */
     public void setOverPrintStroking(boolean ov) {
-        put(PdfName.OP, ov ? PdfBoolean.PDFTRUE : PdfBoolean.PDFFALSE);
+        put(PdfName.pdfNameNonCapitalOP, ov ? PdfBoolean.PDFTRUE : PdfBoolean.PDFFALSE);
     }
 
     /**
@@ -140,7 +140,7 @@ public class PdfGState extends PdfDictionary {
      * @param n the stroking alpha constant
      */
     public void setStrokeOpacity(float n) {
-        put(PdfName.CA, new PdfNumber(n));
+        put(PdfName.pdfNameCA, new PdfNumber(n));
     }
 
     /**

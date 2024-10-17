@@ -860,7 +860,7 @@ public class PdfAnnotation extends PdfDictionary {
     }
 
     public void setMKNormalCaption(String caption) {
-        getMK().put(PdfName.CA, new PdfString(caption, PdfObject.TEXT_UNICODE));
+        getMK().put(PdfName.pdfNameCA, new PdfString(caption, PdfObject.TEXT_UNICODE));
     }
 
     public void setMKRolloverCaption(String caption) {
