@@ -156,7 +156,7 @@ import java.util.logging.Logger;
  */
 public final class Pfm2afm {
 
-    static Logger logger = Logger.getLogger(Pfm2afm.class.getName());
+    static Logger logger = Logger.getLogger(com.lowagie.text.pdf.Pfm2afm.class.getName());
 
     private RandomAccessFileOrArray in;
     private PrintWriter out;
@@ -525,7 +525,7 @@ public final class Pfm2afm {
      * @throws IOException on error
      */
     public static void convert(RandomAccessFileOrArray in, OutputStream out) throws IOException {
-        Pfm2afm p = new Pfm2afm(in, out);
+        com.lowagie.text.pdf.Pfm2afm p = new com.lowagie.text.pdf.Pfm2afm(in, out);
         p.openPfm();
         p.putheader();
         p.putchartab();
@@ -553,13 +553,13 @@ public final class Pfm2afm {
 
 
     private static RandomAccessFileOrArray createRandomAccessFileOrArray(String fileName) {
-            try {
-                return new RandomAccessFileOrArray(fileName);
-            } catch (Exception e) {
-                logger.warning("Failed to create RandomAccessFileOrArray for file: " + fileName);
-                return null;
-            }
+        try {
+            return new RandomAccessFileOrArray(fileName);
+        } catch (Exception e) {
+            logger.warning("Failed to create RandomAccessFileOrArray for file: " + fileName);
+            return null;
         }
+    }
 
     private String readString(int n) throws IOException {
         byte[] b = new byte[n];

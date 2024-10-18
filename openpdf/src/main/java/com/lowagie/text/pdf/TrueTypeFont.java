@@ -60,7 +60,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -293,10 +292,7 @@ class TrueTypeFont extends BaseFont {
 
     private void validateFontFile(byte[] ttfAfm, boolean forceRead) throws DocumentException, IOException {
         // Check file getTypeImpl and throw a more generic exception if invalid
-        if (fileName.toLowerCase(Locale.ROOT).endsWith(".ttf") ||
-                fileName.toLowerCase(Locale.ROOT).endsWith(".otf") ||
-                fileName.toLowerCase(Locale.ROOT).endsWith(".ttc")) {
-
+        if (fileName.toLowerCase().endsWith(".ttf") || fileName.toLowerCase().endsWith(".otf") || fileName.toLowerCase().endsWith(".ttc")) {
             process(ttfAfm, forceRead);
 
             // Check for licensing restrictions with a generic message
@@ -310,7 +306,6 @@ class TrueTypeFont extends BaseFont {
                     MessageLocalization.getComposedMessage("the.file.provided.is.not.a.valid.font.file"));
         }
     }
-
 
     private void checkEncoding(String enc) throws DocumentException {
         if (!encoding.startsWith("#")) {

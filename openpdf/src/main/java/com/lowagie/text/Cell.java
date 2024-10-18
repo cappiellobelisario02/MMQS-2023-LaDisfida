@@ -97,7 +97,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
 
     // membervariables
 
-    Logger logger = Logger.getLogger(Cell.class.getName());
+    Logger logger = Logger.getLogger(com.lowagie.text.Cell.class.getName());
 
     /**
      * The <CODE>ArrayList</CODE> of <CODE>Element</CODE>s that are part of the content of the Cell.
@@ -200,19 +200,19 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      */
 
 
-        public Cell(String content) {
-            this(); // Call the no-argument constructor
-            initializeCell(content); // Move initialization logic here
-        }
+    public Cell(String content) {
+        this(); // Call the no-argument constructor
+        initializeCell(content); // Move initialization logic here
+    }
 
-        // Private method to handle the content initialization
-        private void initializeCell(String content) {
-            try {
-                addElement(new Paragraph(content)); // Calls a method that could be overridden
-            } catch (BadElementException e) {
-                logger.info("ERROR: " + e.getMessage());
-            }
+    // Private method to handle the content initialization
+    private void initializeCell(String content) {
+        try {
+            addElement(new Paragraph(content)); // Calls a method that could be overridden
+        } catch (BadElementException e) {
+            logger.info("ERROR: " + e.getMessage());
         }
+    }
 
     /**
      * Constructs a <CODE>Cell</CODE> with a certain <CODE>Element</CODE>.<p> if the element is a
@@ -252,8 +252,8 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
      *
      * @return a cell with colspan 3 and no border
      */
-    private static Cell getDummyCell() {
-        Cell cell = new Cell(true);
+    private static com.lowagie.text.Cell getDummyCell() {
+        com.lowagie.text.Cell cell = new com.lowagie.text.Cell(true);
         cell.setColspan(3);
         cell.setBorder(NO_BORDER);
         return cell;
@@ -695,7 +695,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
 
     private void handleTableElement(Element element) {
         Table table = (Table) arrayList.get(0);
-        Cell tmp = new Cell(element);
+        com.lowagie.text.Cell tmp = new com.lowagie.text.Cell(element);
         tmp.setBorder(NO_BORDER);
         tmp.setColspan(table.getColumns());
         try {
@@ -764,12 +764,12 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
     }
 
     private void addElementsToTable(Table table) {
-        Cell tmp;
+        com.lowagie.text.Cell tmp;
         try {
             if (arrayList.isEmpty()) {
                 table.addCell(getDummyCell());
             } else {
-                tmp = new Cell();
+                tmp = new com.lowagie.text.Cell();
                 tmp.setBorder(NO_BORDER);
                 tmp.setColspan(3);
                 for (Element o : arrayList) {

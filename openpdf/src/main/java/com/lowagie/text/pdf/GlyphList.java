@@ -63,7 +63,7 @@ public class GlyphList {
 
     private GlyphList(){}
 
-    static Logger logger = Logger.getLogger(GlyphList.class.getName());
+    static final Logger logger = Logger.getLogger(GlyphList.class.getName());
 
     private static HashMap<Integer, String> unicode2names = new HashMap<>();
     private static HashMap<String, int[]> names2unicode = new HashMap<>();

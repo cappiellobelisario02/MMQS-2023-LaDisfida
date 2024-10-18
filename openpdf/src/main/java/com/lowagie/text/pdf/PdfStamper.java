@@ -88,7 +88,7 @@ public class PdfStamper
 
     public static final String NOT_SUPPORT_CHANGING_THE_ENCRYPTION_STATUS = "append.mode.does.not.support.changing.the.encryption.status";
     public static final String ALREADY_WRITTEN_TO_THE_OUTPUT = "content.was.already.written.to.the.output";
-    static Logger logger = Logger.getLogger(PdfStamper.class.getName());
+    static final Logger logger = Logger.getLogger(PdfStamper.class.getName());
 
     /**
      * The writer

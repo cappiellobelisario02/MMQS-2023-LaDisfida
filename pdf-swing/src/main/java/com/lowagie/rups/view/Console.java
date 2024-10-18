@@ -20,6 +20,8 @@
 
 package com.lowagie.rups.view;
 
+import com.lowagie.rups.view.Console.ConsoleStyleContext;
+import com.lowagie.rups.view.Console.ReadWriteThread;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -43,12 +45,12 @@ import javax.swing.text.StyleContext;
  */
 public class Console implements Observer {
 
-    static Logger logger = Logger.getLogger(Console.class.getName());
+    static Logger logger = Logger.getLogger(com.lowagie.rups.view.Console.class.getName());
 
     /**
      * Single Console instance.
      */
-    private static Console console = null;
+    private static com.lowagie.rups.view.Console console = null;
 
     /**
      * Custom PrintStream.
@@ -84,7 +86,7 @@ public class Console implements Observer {
     /**
      * The StyleContext for the Console.
      */
-    ConsoleStyleContext styleContext = new ConsoleStyleContext();
+    com.lowagie.rups.view.Console.ConsoleStyleContext styleContext = new com.lowagie.rups.view.Console.ConsoleStyleContext();
 
     /**
      * The text area to which everything is written.
@@ -116,9 +118,9 @@ public class Console implements Observer {
         textArea.setEditable(false);
 
         // Create reader threads
-        new ReadWriteThread(piCustom, ConsoleStyleContext.CUSTOM).start();
-        new ReadWriteThread(piOut, ConsoleStyleContext.SYSTEMOUT).start();
-        new ReadWriteThread(piErr, ConsoleStyleContext.SYSTEMERR).start();
+        new com.lowagie.rups.view.Console.ReadWriteThread(piCustom, com.lowagie.rups.view.Console.ConsoleStyleContext.CUSTOM).start();
+        new com.lowagie.rups.view.Console.ReadWriteThread(piOut, com.lowagie.rups.view.Console.ConsoleStyleContext.SYSTEMOUT).start();
+        new com.lowagie.rups.view.Console.ReadWriteThread(piErr, com.lowagie.rups.view.Console.ConsoleStyleContext.SYSTEMERR).start();
     }
 
     /**
@@ -126,10 +128,10 @@ public class Console implements Observer {
      *
      * @return the Console
      */
-    public static synchronized Console getInstance() {
+    public static synchronized com.lowagie.rups.view.Console getInstance() {
         if (console == null) {
             try {
-                console = new Console();
+                console = new com.lowagie.rups.view.Console();
             } catch (IOException e) {
                 console = null;
             }

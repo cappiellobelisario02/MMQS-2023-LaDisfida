@@ -237,7 +237,7 @@ public class PdfPCell extends Rectangle {
      * @param style The style to apply to the cell (you could use getDefaultCell())
      * @since 2.1.0
      */
-    public PdfPCell(PdfPTable table, PdfPCell style) {
+    public PdfPCell(PdfPTable table, com.lowagie.text.pdf.PdfPCell style) {
         super(0, 0, 0, 0);
         initializeCell2();
         setupTable(table);
@@ -257,7 +257,7 @@ public class PdfPCell extends Rectangle {
         column.addElement(table);
     }
 
-    private void applyStyle(PdfPCell style) {
+    private void applyStyle(com.lowagie.text.pdf.PdfPCell style) {
         if (style != null) {
             cloneNonPositionParameters(style);
             verticalAlignment = style.verticalAlignment;
@@ -282,12 +282,12 @@ public class PdfPCell extends Rectangle {
      *
      * @param cell the <CODE>PdfPCell</CODE> to duplicate
      */
-    public PdfPCell(PdfPCell cell) {
+    public PdfPCell(com.lowagie.text.pdf.PdfPCell cell) {
         super(cell.llx, cell.lly, cell.urx, cell.ury);
         initializeFromCell(cell);
     }
 
-    private void initializeFromCell(PdfPCell cell) {
+    private void initializeFromCell(com.lowagie.text.pdf.PdfPCell cell) {
         cloneNonPositionParameters(cell);
         verticalAlignment = cell.verticalAlignment;
         paddingLeft = cell.paddingLeft;

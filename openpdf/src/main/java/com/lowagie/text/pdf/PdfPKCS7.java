@@ -88,6 +88,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import com.lowagie.text.exceptions.InvalidTokenException;
+import com.lowagie.text.pdf.PdfPKCS7.X509Name;
+import com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -147,7 +149,7 @@ public class PdfPKCS7 {
     private static final Map<String, String> digestNames = new HashMap<>();
     private static final Map<String, String> algorithmNames = new HashMap<>();
     private static final Map<String, String> allowedDigests = new HashMap<>();
-    private static final Logger logger = Logger.getLogger(PdfPKCS7.class.getName());
+    private static final Logger logger = Logger.getLogger(com.lowagie.text.pdf.PdfPKCS7.class.getName());
 
 
     public static final String KEY11354925 = "1.2.840.113549.2.5";
@@ -319,33 +321,33 @@ public class PdfPKCS7 {
      * @param provider    the provider or <code>null</code> for the default provider
      */
     @SuppressWarnings("unchecked")
-    
 
-        public PdfPKCS7(byte[] contentsKey, byte[] certsKey, String provider) {
-            try {
-                this.provider = provider;
-                CertificateFactory certificateFactory = new CertificateFactory();
-                Collection<Certificate> certificates = certificateFactory.engineGenerateCertificates(
-                        new ByteArrayInputStream(certsKey));
-                certs = new ArrayList<>(certificates);
-                signCerts = certs;
-                signCert = (X509Certificate) certs.iterator().next();
-                // Initialize CRLs as needed
-                // crls = new ArrayList<>(); // Uncomment if you need to handle CRLs
 
-                ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(contentsKey));
-                digest = ((DEROctetString) in.readObject()).getOctets();
+    public PdfPKCS7(byte[] contentsKey, byte[] certsKey, String provider) {
+        try {
+            this.provider = provider;
+            CertificateFactory certificateFactory = new CertificateFactory();
+            Collection<Certificate> certificates = certificateFactory.engineGenerateCertificates(
+                    new ByteArrayInputStream(certsKey));
+            certs = new ArrayList<>(certificates);
+            signCerts = certs;
+            signCert = (X509Certificate) certs.iterator().next();
+            // Initialize CRLs as needed
+            // crls = new ArrayList<>(); // Uncomment if you need to handle CRLs
 
-                // Use SHA-256 instead of SHA-1 for stronger security
-                if (provider == null) {
-                    sig = Signature.getInstance("SHA256withRSA");
-                } else {
-                    sig = Signature.getInstance("SHA256withRSA", provider);
-                }
-                sig.initVerify(signCert.getPublicKey());
-            } catch (Exception e) {
-                throw new ExceptionConverter(e);
+            ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(contentsKey));
+            digest = ((DEROctetString) in.readObject()).getOctets();
+
+            // Use SHA-256 instead of SHA-1 for stronger security
+            if (provider == null) {
+                sig = Signature.getInstance("SHA256withRSA");
+            } else {
+                sig = Signature.getInstance("SHA256withRSA", provider);
             }
+            sig.initVerify(signCert.getPublicKey());
+        } catch (Exception e) {
+            throw new ExceptionConverter(e);
+        }
         crls = List.of();
     }
 
@@ -910,9 +912,9 @@ public class PdfPKCS7 {
      * @param cert an X509Certificate
      * @return an X509Name
      */
-    public static X509Name getIssuerFields(X509Certificate cert) {
+    public static com.lowagie.text.pdf.PdfPKCS7.X509Name getIssuerFields(X509Certificate cert) {
         try {
-            return new X509Name((ASN1Sequence) getIssuer(cert.getTBSCertificate()));
+            return new com.lowagie.text.pdf.PdfPKCS7.X509Name((ASN1Sequence) getIssuer(cert.getTBSCertificate()));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -924,9 +926,9 @@ public class PdfPKCS7 {
      * @param cert an X509Certificate
      * @return an X509Name
      */
-    public static X509Name getSubjectFields(X509Certificate cert) {
+    public static com.lowagie.text.pdf.PdfPKCS7.X509Name getSubjectFields(X509Certificate cert) {
         try {
-            return new X509Name((ASN1Sequence) getSubject(cert.getTBSCertificate()));
+            return new com.lowagie.text.pdf.PdfPKCS7.X509Name((ASN1Sequence) getSubject(cert.getTBSCertificate()));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
@@ -1847,7 +1849,7 @@ public class PdfPKCS7 {
          * @param dirName a directory getName
          */
         public X509Name(String dirName) {
-            X509NameTokenizer nTok = new X509NameTokenizer(dirName);
+            com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer nTok = new com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer(dirName);
 
             while (nTok.hasMoreTokens()) {
                 String token = nTok.nextToken();
