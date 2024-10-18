@@ -135,17 +135,27 @@ public class FileArgument extends AbstractArgument {
             fc.addPropertyChangeListener(
                     JFileChooser.SELECTED_FILE_CHANGED_PROPERTY, label);
         }
+
+        int returnValue;
         if (newFile) {
-            fc.showSaveDialog(tool.getInternalFrame());
+            returnValue = fc.showSaveDialog(tool.getInternalFrame());
         } else {
-            fc.showOpenDialog(tool.getInternalFrame());
+            returnValue = fc.showOpenDialog(tool.getInternalFrame());
         }
-        try {
-            setValue(fc.getSelectedFile());
-        } catch (NullPointerException npe) {
-            logger.severe("Exception raised in actionPerformed in FileArgument");
+
+        // Handle the selected file only if the user approves the dialog (not canceled)
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fc.getSelectedFile();
+            if (selectedFile != null) {
+                setValue(selectedFile);
+            } else {
+                logger.warning("No file selected");
+            }
+        } else {
+            logger.info("File selection was canceled");
         }
     }
+
 
     /**
      * @return Returns the filter.

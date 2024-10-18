@@ -206,6 +206,7 @@ public class PdfPCell extends Rectangle {
         }
     }
 
+
     // Method to validate image
     private void validateImage(Image image) {
         if (image == null || !isValidImage(image)) {

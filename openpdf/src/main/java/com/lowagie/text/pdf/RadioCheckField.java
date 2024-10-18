@@ -142,11 +142,6 @@ public class RadioCheckField extends BaseField {
      * @param fieldName the field getName. It must not be <CODE>null</CODE>
      * @param onValue   the value when the field is checked
      */
-    public RadioCheckField(PdfWriter writer, String fieldName, String onValue) {
-        super(writer, null, fieldName);
-        setOnValue(onValue);
-        setCheckType(TYPE_CROSS);
-    }
 
     /**
      * Gets the field appearance.

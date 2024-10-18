@@ -35,6 +35,7 @@
 package com.lowagie.toolbox.arguments.filters;
 
 import java.io.File;
+import java.util.Locale;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -116,13 +117,15 @@ public class ImageFilter extends FileFilter {
         if (f.isDirectory()) {
             return true;
         }
+        String fileName = f.getName().toLowerCase(Locale.ROOT);  // Locale-independent lowercase conversion
         for (int i = 0; i < IMAGES.length; i++) {
-            if (filter[i] && f.getName().toLowerCase().endsWith(IMAGES[i])) {
+            if (filter[i] && fileName.endsWith(IMAGES[i])) {
                 return true;
             }
         }
         return false;
     }
+
 
     /**
      * @return String

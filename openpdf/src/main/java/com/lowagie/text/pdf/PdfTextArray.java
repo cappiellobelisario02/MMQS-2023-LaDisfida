@@ -73,10 +73,6 @@ public class PdfTextArray {
     private Float lastNum;
     private boolean isRTL = false;
 
-    // constructors
-    public PdfTextArray(String str) {
-        add(str);
-    }
 
     public PdfTextArray() {
     }

@@ -45,6 +45,7 @@ package com.lowagie.toolbox;
 import com.lowagie.text.Document;
 import com.lowagie.text.exceptions.InitializationException;
 import java.awt.BorderLayout;
+import java.io.IOException;
 import java.io.Serial;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -53,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Logger;
+import javax.naming.ConfigurationException;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -99,12 +101,17 @@ public class Versions
      */
     public Versions() {
         super("Plugins and their version");
+        // Handle the I/O exception appropriately, e.g., retry or notify the user
+        // Handle configuration issues, such as missing or incorrect settings
         try {
             initialize();
-        } catch (Exception ex) {
-            logger.severe("Exception raised in constructor of Versions");
+        } catch (InitializationException ex) {
+            // Catch any unexpected exceptions and rethrow or handle them
+            logger.severe("Unexpected exception in Versions: " + ex.getMessage());
+            throw new RuntimeException("Unexpected exception during initialization", ex);
         }
     }
+
 
     /**
      * Initialization of the jFrame.

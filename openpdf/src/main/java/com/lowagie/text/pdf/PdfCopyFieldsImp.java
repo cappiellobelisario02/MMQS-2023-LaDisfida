@@ -499,17 +499,25 @@ class PdfCopyFieldsImp extends PdfWriter {
                     PRIndirectReference ref = new PRIndirectReference(reader, key);
                     addToBody(PdfReader.getPdfObjectRelease(ref), t.get(key));
                 }
+            } catch (IOException ioe) {
+                logger.severe("IOException while processing file: " + ioe.getMessage());
+                throw ioe; // Re-throw if needed to alert the calling method
+            } catch (Exception e) {
+                logger.warning("Unexpected exception: " + e.getMessage());
             } finally {
                 try {
-                    file.close();
+                    if (file != null) {
+                        file.close();
+                    }
                     reader.close();
-                } catch (Exception e) {
-                    // empty on purpose
+                } catch (IOException ioe) {
+                    logger.warning("IOException during file or reader close: " + ioe.getMessage());
                 }
             }
         }
         pdf.close();
     }
+
 
     void addPageOffsetToField(Map<String, Item> fd, int pageOffset) {
         if (pageOffset == 0) {
