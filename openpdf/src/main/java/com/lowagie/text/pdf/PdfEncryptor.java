@@ -53,6 +53,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class takes any PDF and returns exactly the same but encrypted. All the content, links, outlines, etc, are kept.
@@ -139,12 +141,24 @@ public final class PdfEncryptor {
      */
     public static void encrypt(PdfReader reader, OutputStream os, boolean strength, String userPassword,
             String ownerPassword, int permissions) throws DocumentException, IOException {
-        try (PdfStamper stamper = new PdfStamper(reader, os)){
+        Logger logger = Logger.getLogger(PdfEncryptor.class.getName()); // Initialize the logger
+        try (PdfStamper stamper = new PdfStamper(reader, os)) {
             stamper.setEncryption(strength, userPassword, ownerPassword, permissions);
+        } catch (DocumentException | IOException e) {
+            // Log the exception with a message and severity level
+            logger.log(Level.SEVERE, "Error during PDF encryption", e);
+
+            // Optionally rethrow the exception if you want to propagate it
+            throw e;
         } catch (Exception e) {
-            //may need some logging or some other operation
+            // Catch-all for any other exceptions that may occur
+            logger.log(Level.SEVERE, "Unexpected error during PDF encryption", e);
+
+            // Optionally rethrow the exception to indicate failure
+            throw new RuntimeException("Unexpected error during PDF encryption", e);
         }
     }
+
 
     /**
      * Entry point to encrypt a PDF document. The encryption parameters are the same as in

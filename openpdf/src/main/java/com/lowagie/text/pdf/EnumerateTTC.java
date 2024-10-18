@@ -94,18 +94,20 @@ class EnumerateTTC extends TrueTypeFont {
 
     void findNames() throws DocumentException, IOException {
         tables = new HashMap<>();
+        RandomAccessFileOrArray rf = null; // Assuming rf is instantiated somewhere before usage
 
         try {
             String mainTag = readStandardString(4);
             if (!mainTag.equals("ttcf")) {
                 throw new DocumentException("Invalid TTC file format.");
             }
+
             int majorVersion = rf.readShort();
             rf.skipBytes(2);
-
             int dirCount = rf.readInt();
             names = new String[dirCount];
             int dirPos = rf.getFilePointer();
+
             for (int dirIdx = 0; dirIdx < dirCount; ++dirIdx) {
                 tables.clear();
                 rf.seek(dirPos);
@@ -119,6 +121,7 @@ class EnumerateTTC extends TrueTypeFont {
                 if (!trueTypeFont && !cffDataFont) {
                     throw new DocumentException("Invalid TTF file format.");
                 }
+
                 int numTables = rf.readUnsignedShort();
                 rf.skipBytes(6);
                 for (int k = 0; k < numTables; ++k) {
@@ -131,12 +134,22 @@ class EnumerateTTC extends TrueTypeFont {
                 }
                 names[dirIdx] = getBaseFont();
             }
+        } catch (IOException | DocumentException e) {
+            // Handle the exception and possibly log it
+            throw e; // Rethrow the exception to maintain the original behavior
         } finally {
+            // Ensure the resource is closed properly without throwing new exceptions
             if (rf != null) {
-                rf.close();
+                try {
+                    rf.close();
+                } catch (IOException e) {
+                    // Log the exception for debugging purposes without masking the original exception
+                    System.err.println("Failed to close RandomAccessFileOrArray: " + e.getMessage());
+                }
             }
         }
     }
+
 
 
     String[] getNames() {

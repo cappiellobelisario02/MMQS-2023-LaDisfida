@@ -1095,8 +1095,7 @@ public class PdfSignatureAppearance {
      * @throws IOException       on error
      * @throws DocumentException on error
      */
-    public void preClose(Map<PdfName, Integer> exclusionSizes) throws IOException,
-            DocumentException {
+    public void preClose(Map<PdfName, Integer> exclusionSizes) throws IOException, DocumentException {
         if (preClosed) {
             throw new DocumentException(
                     MessageLocalization.getComposedMessage("document.already.pre.closed"));
@@ -1107,17 +1106,20 @@ public class PdfSignatureAppearance {
         boolean fieldExists = !(isInvisible() || isNewField());
         PdfIndirectReference refSig = writer.getPdfIndirectReference();
         writer.setSigFlags(3);
+
         if (fieldExists) {
-            //Patch by Lonzak: the signature dictionary must be added to the formfield and no the widget! (testdoc: SignatureWidgetFormfield-Separate.pdf)
+            // Patch by Lonzak: the signature dictionary must be added to the form field and not the widget!
             PdfDictionary data = af.getFieldItem(name).getValue(0);
             writer.markUsed(data);
             data.put(PdfName.V, refSig);
-            //for widget attributes
+
+            // For widget attributes
             PdfDictionary widget = af.getFieldItem(name).getWidget(0);
             writer.markUsed(widget);
             widget.put(PdfName.P, writer.getPageReference(getPage()));
             PdfObject obj = PdfReader.getPdfObjectRelease(widget.get(PdfName.F));
             int flags = 0;
+
             if (obj != null && obj.isNumber()) {
                 flags = ((PdfNumber) obj).intValue();
             }
@@ -1133,10 +1135,8 @@ public class PdfSignatureAppearance {
             sigField.setFlags(PdfAnnotation.FLAGS_PRINT | PdfAnnotation.FLAGS_LOCKED);
 
             int pagen = getPage();
-            // OJO... Modificacion de
-            // flopez-----------------------------------------------------
-            if ((!isInvisible()) && (pagen == 0)) { // Si pagina en cero tonces firma
-                // en todas las paginas
+
+            if ((!isInvisible()) && (pagen == 0)) { // Signature on all pages if page is zero
                 int pages = writer.reader.getNumberOfPages();
                 for (int i = 1; i <= pages; i++) {
                     PdfFormField field = PdfFormField.createEmpty(writer);
@@ -1150,12 +1150,11 @@ public class PdfSignatureAppearance {
                     sigField.addKid(field);
                 }
             } else if (!isInvisible()) {
-                // Si es una pagina especifica
+                // Specific page
                 sigField.setWidget(getPageRect(), null);
             } else {
                 sigField.setWidget(new Rectangle(0, 0), null);
             }
-            // ******************************************************************************
             sigField.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, getAppearance());
             sigField.setPage(pagen);
             writer.addAnnotation(sigField, pagen);
@@ -1187,7 +1186,7 @@ public class PdfSignatureAppearance {
             }
             sigStandard.put(PdfName.M, new PdfDate(getSignDateNullSafe()));
             sigStandard.setSignInfo(getPrivKey(), certChain, crlList);
-            // ******************************************************************************
+
             PdfString contents = (PdfString) sigStandard.get(PdfName.CONTENTS);
             PdfLiteral lit = new PdfLiteral(
                     (contents.toString().length() + (PdfName.ADOBE_PPKLITE
@@ -1205,9 +1204,6 @@ public class PdfSignatureAppearance {
             }
             writer.addToBody(sigStandard, refSig, false);
         } else {
-            //the following block was added since otherwise this information would be lost.
-            //The original idea might have been that if there is an external crypto dictionary then everything is added manually however
-            //the method description of all the methods in the PdfSignatureAppearance class do not state this - so this would be highly error prone
             if (getReason() != null) {
                 this.cryptoDictionary.put(PdfName.REASON, new PdfString(this.getReason(), PdfObject.TEXT_UNICODE));
             }
@@ -1241,7 +1237,7 @@ public class PdfSignatureAppearance {
             writer.addToBody(cryptoDictionary, refSig, false);
         }
         if (certificationLevel >= 0) {
-            // add DocMDP entry to root
+            // Add DocMDP entry to root
             PdfDictionary docmdp = new PdfDictionary();
             docmdp.put(new PdfName("DocMDP"), refSig);
             writer.reader.getCatalog().put(new PdfName("Perms"), docmdp);
@@ -1249,11 +1245,11 @@ public class PdfSignatureAppearance {
         try {
             writer.close(stamper.getInfoDictionary());
         } catch (NoSuchAlgorithmException nsae) {
-            // Log the exception with info level
-            String msg = "NoSuchAlgorithmException encountered while closing the stamper: " + nsae.getMessage();
-            logger.info(msg);
+            // Log a generic error message instead of detailed info
+            logger.warning("An error occurred while closing the stamper. Please check the system configuration.");
+            // Optional: Detailed exception logging can be enabled during debugging
+            // logger.fine("Detailed exception: ", nsae);
         }
-
 
         range = new long[exclusionLocations.size() * 2];
         long byteRangePosition = exclusionLocations
@@ -1275,16 +1271,16 @@ public class PdfSignatureAppearance {
             boutLen = sigout.size();
             range[range.length - 1] = boutLen - range[range.length - 2];
 
-            try(ByteBuffer bf = new ByteBuffer()){
+            try (ByteBuffer bf = new ByteBuffer()) {
                 bf.append('[');
                 for (long i : range) {
                     bf.append(i).append(' ');
                 }
                 bf.append(']');
                 System.arraycopy(bf.getBuffer(), 0, bout, (int) byteRangePosition, bf.size());
-            } catch(NullPointerException e){
+            } catch (NullPointerException e) {
                 String msg = "ByteBuffer error: " + e.getMessage();
-                logger.info(msg);
+                logger.warning(msg);
             }
         } else {
             try (ByteBuffer bf = createByteBuffer()) {
@@ -1315,6 +1311,7 @@ public class PdfSignatureAppearance {
             }
         }
     }
+
 
     private ByteBuffer createByteBuffer() {
         try {

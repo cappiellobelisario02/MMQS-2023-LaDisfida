@@ -84,8 +84,15 @@ public class PdfBorderArray extends PdfArray {
         super(new PdfNumber(hRadius));
         add(new PdfNumber(vRadius));
         add(new PdfNumber(width));
+
+        // Check if dash is not null and add it to the border array
         if (dash != null) {
             add(dash);
+        } else {
+            // Optionally handle the case where dash is null
+            // For example, you might want to add a default dash pattern or log a warning
+            // add(new PdfDashPattern(...)); // Uncomment if a default dash pattern is desired
         }
     }
+
 }

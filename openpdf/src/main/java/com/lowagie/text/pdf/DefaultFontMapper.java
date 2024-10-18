@@ -246,29 +246,30 @@ public class DefaultFontMapper implements FontMapper {
      * @return the number of files processed
      */
 
-    public int insertDirectory(String dir) {
-        // Normalizza il percorso utilizzando Path
-        Path normalizedPath = Paths.get(dir).normalize();
-        File file = normalizedPath.toFile();
 
-        if (!file.exists() || !file.isDirectory()) {
+    public int insertDirectory(String dir) {
+        // Normalize the path using Path
+        Path normalizedPath = Paths.get(dir).normalize();
+        File directory = normalizedPath.toFile();
+
+        if (!directory.exists() || !directory.isDirectory()) {
             return 0;
         }
 
-        File[] files = file.listFiles();
+        File[] files = directory.listFiles();
         if (files == null) {
             return 0;
         }
 
         int count = 0;
-        for (File file1 : files) {
-            file = file1;
-            String name = file.getPath().toLowerCase();
+        for (File file : files) {
+            String name = file.getPath().toLowerCase(); // Normalize the name
             try {
-                if (name.endsWith(".ttf") || name.endsWith(".otf") || name.endsWith(".afm")) {
+                // Use regex to check for valid file extensions
+                if (isValidFontFile(name)) {
                     Object[] allNames = BaseFont.getAllFontNames(file.getPath(), BaseFont.CP1252, null);
                     insertNames(allNames, file.getPath());
-                    ++count;
+                    count++;
                 } else if (name.endsWith(".ttc")) {
                     String[] ttcs = BaseFont.enumerateTTCNames(file.getPath());
                     for (int j = 0; j < ttcs.length; ++j) {
@@ -276,15 +277,21 @@ public class DefaultFontMapper implements FontMapper {
                         Object[] allNames = BaseFont.getAllFontNames(nt, BaseFont.CP1252, null);
                         insertNames(allNames, nt);
                     }
-                    ++count;
+                    count++;
                 }
             } catch (IOException e) {
-                String stringToLog = "Exception raised in DefaultFontMapper in method 'InsertDirectory'";
+                String stringToLog = "Exception raised in DefaultFontMapper in method 'insertDirectory'";
                 logger.severe(stringToLog);
             }
         }
         return count;
     }
+
+    // Helper method to validate font file extensions
+    private boolean isValidFontFile(String fileName) {
+        return fileName.matches(".*\\.(ttf|otf|afm)$");
+    }
+
 
     public HashMap<String, BaseFontParameters> getMapper() {
         return mapper;

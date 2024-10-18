@@ -210,22 +210,24 @@ public final class SimpleNamedDestination implements SimpleXMLDocHandler {
         return ar;
     }
 
-    public static PdfDictionary outputNamedDestinationAsNames(HashMap<?,?> names, PdfWriter writer) {
+    public static PdfDictionary outputNamedDestinationAsNames(HashMap<?, ?> names, PdfWriter writer) {
         PdfDictionary dic = new PdfDictionary();
-        names.entrySet().stream().map(o -> (Entry<?, ?>) o).forEachOrdered(entry -> {
-            try {
-                String key = (String) entry.getKey();
-                String value = (String) entry.getValue();
-                PdfArray ar = createDestinationArray(value, writer);
-                PdfName kn = new PdfName(key);
-                dic.put(kn, ar);
-            } catch (NullPointerException e) {
-                String stringToLog = "Exception raised in SimpleNamedDestination";
-                logger.severe(stringToLog);
-            }
-        });
+
+        // Stream through the entries and handle potential nulls before they cause exceptions
+        names.entrySet().stream()
+                .filter(entry -> entry.getKey() instanceof String && entry.getValue() instanceof String) // Filter non-string keys/values
+                .map(entry -> (Entry<String, String>) entry) // Cast safely after filtering
+                .forEachOrdered(entry -> {
+                    String key = entry.getKey(); // No longer need to check for null
+                    String value = entry.getValue(); // No longer need to check for null
+                    PdfArray ar = createDestinationArray(value, writer);
+                    PdfName kn = new PdfName(key);
+                    dic.put(kn, ar);
+                });
+
         return dic;
     }
+
 
     public static PdfDictionary outputNamedDestinationAsStrings(Map<String, String> names, PdfWriter writer)
             throws IOException {

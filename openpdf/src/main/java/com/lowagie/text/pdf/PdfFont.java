@@ -122,18 +122,13 @@ class PdfFont implements Comparable<Object> {
             if (font != pdfFont.font) {
                 return 1;
             }
-            if (this.size() != pdfFont.size()) {
-                return 2;
-            }
             return 0;
         } catch (ClassCastException cce) {
             return -2;
         }
     }
 
-    private Object size() {
-        return null;
-    }
+
 
     /**
      * Returns the size of this font.
@@ -192,5 +187,9 @@ class PdfFont implements Comparable<Object> {
 
     void setHorizontalScaling(float hScale) {
         this.hScale = hScale;
+    }
+
+    public float size() {
+        return 0;
     }
 }

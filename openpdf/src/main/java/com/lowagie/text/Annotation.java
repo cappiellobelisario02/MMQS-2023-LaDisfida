@@ -588,9 +588,12 @@ public class Annotation implements Element {
      *
      * @return a getTypeImpl
      */
-    public int annotationType() {
-        return annotationType;
+    private int annotationTypeValue; // Renamed field
+
+    public int getAnnotationType() { // Renamed method for clarity
+        return annotationTypeValue;
     }
+
 
     /**
      * Returns the title of this <CODE>Annotation</CODE>.

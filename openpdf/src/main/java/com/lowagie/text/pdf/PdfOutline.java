@@ -156,11 +156,33 @@ public class PdfOutline extends PdfDictionary {
      * @param title  the title of this outline item
      * @param open   <CODE>true</CODE> if the children are visible
      */
-    public PdfOutline(PdfOutline parent, PdfAction action, String title, boolean open) {
-        super();
-        this.action = action;
-        initOutline(parent, title, open);
+
+        // Private constructor
+        private PdfOutline(PdfOutline parent, PdfAction action, String title, boolean open) {
+            this.parent = parent;
+            this.action = action;
+            this.open = open;
+
+            // Additional initialization logic can go here
+            if (parent != null) {
+                parent.addChild(this); // Assuming a method to add this outline to its parent
+            }
+        }
+
+    private void addChild(PdfOutline pdfOutline) {
     }
+
+    // Static factory method
+        public static PdfOutline create(PdfOutline parent, PdfAction action, String title, boolean open) {
+            // Validate input parameters
+            if (title == null || title.isEmpty()) {
+                throw new IllegalArgumentException("Title cannot be null or empty");
+            }
+
+            // Create and return a new instance of PdfOutline
+            return new PdfOutline(parent, action, title, open);
+        }
+
 
     /**
      * Constructs a <CODE>PdfOutline</CODE>.

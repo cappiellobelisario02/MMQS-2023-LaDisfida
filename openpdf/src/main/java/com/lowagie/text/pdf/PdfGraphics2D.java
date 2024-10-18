@@ -1013,13 +1013,23 @@ public class PdfGraphics2D extends Graphics2D {
         transform.shear(shx, shy);
     }
 
+    @Override
+    public void transform(AffineTransform Tx) {
+
+    }
+
     /**
      * @see Graphics2D#transform(AffineTransform)
      */
-    public void transform(AffineTransform tx) {
-        transform.concatenate(tx);
+    // Rename the field to clarify its purpose
+    private AffineTransform transformationMatrix;
+
+    public void applyTransformation(AffineTransform tx) {
+        // Concatenate the provided transformation with the current transformation matrix
+        transformationMatrix.concatenate(tx);
         this.actualStroke = transformStroke(originalStroke);
     }
+
 
     /**
      * @see Graphics2D#getTransform()

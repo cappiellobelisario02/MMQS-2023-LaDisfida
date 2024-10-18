@@ -2149,15 +2149,25 @@ public class PdfDocument extends Document {
     }
 
     void addJavaScript(PdfAction js) {
+        // Validate the action to ensure it is a JavaScript action
         if (js.get(PdfName.JS) == null) {
             throw new ActionException(MessageLocalization.getComposedMessage("only.javascript.actions.are.allowed"));
         }
+
+        // Safeguard against potential IOException during the body addition
         try {
-            documentLevelJS.put(SIXTEEN_DIGITS.format(jsCounter++), writer.addToBody(js).getIndirectReference());
+            // Add the JavaScript action to the document-level JavaScript map
+            // Use a unique key based on a counter to avoid collisions
+            PdfIndirectReference reference = writer.addToBody(js).getIndirectReference();
+            documentLevelJS.put(SIXTEEN_DIGITS.format(jsCounter++), reference);
         } catch (IOException e) {
-            throw new ExceptionConverter(e);
+            // Log a generic error message without revealing sensitive information
+            logger.warning("An error occurred while adding JavaScript action: " + e.getMessage());
+            // Rethrow the exception with a generic message to avoid leaking sensitive information
+            throw new ActionException("Failed to add JavaScript action due to an internal error.");
         }
     }
+
 
     void addJavaScript(String name, PdfAction js) {
         if (js.get(PdfName.JS) == null) {

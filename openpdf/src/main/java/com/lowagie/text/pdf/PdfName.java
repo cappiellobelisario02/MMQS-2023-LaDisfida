@@ -3272,15 +3272,17 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
      */
     public PdfName(String name, boolean lengthCheck) {
         super(PdfObject.NAME);
+
         // The minimum number of characters in a getName is 0, the maximum is 127 (the '/' not included)
-        int length = name.length();
-        if (lengthCheck && length > 127) {
-            throw new IllegalArgumentException(
-                    MessageLocalization.getComposedMessage("the.getName.1.is.too.long.2.characters", name,
-                            String.valueOf(length)));
+        if (lengthCheck && (name.length() > 127)) {
+            // Throw a generic exception message to avoid revealing system data
+            throw new IllegalArgumentException(MessageLocalization.getComposedMessage("the.provided.name.is.invalid.length"));
         }
+
+        // Proceed to encode the name if the length is valid
         bytes = encodeName(name);
     }
+
 
     // CLASS VARIABLES
 

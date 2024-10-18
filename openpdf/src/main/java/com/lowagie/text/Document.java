@@ -111,7 +111,16 @@ public class Document implements DocListener {
     /**
      * Allows the pdf documents to be produced without compression for debugging purposes.
      */
-    public static boolean compress = true;
+    public class CompressionSettings {
+        // Make the field private to encapsulate it
+        private static final boolean COMPRESS = true;
+
+        // Provide a public getter to access the value
+        public static boolean isCompressEnabled() {
+            return COMPRESS;
+        }
+    }
+
     /**
      * When true the file access is not done through a memory mapped file. Use it if the file is too big to be mapped in
      * your address space.

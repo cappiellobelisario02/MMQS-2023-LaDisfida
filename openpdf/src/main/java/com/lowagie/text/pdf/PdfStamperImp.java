@@ -715,16 +715,24 @@ public class PdfStamperImp extends PdfWriter {
     }
 
     public void registerReader(PdfReader reader, boolean openFile) throws IOException {
-        if (readers2intrefs.containsKey(reader)) {
-            return;
-        }
-        readers2intrefs.put(reader, new IntHashtable());
-        if (openFile) {
-            RandomAccessFileOrArray raf = reader.getSafeFile();
-            readers2file.put(reader, raf);
-            raf.reOpen();
+        // Check if the reader is already registered
+        if (!readers2intrefs.containsKey(reader)) {
+            // Register the reader if it is not already registered
+            readers2intrefs.put(reader, new IntHashtable());
+
+            if (openFile) {
+                RandomAccessFileOrArray raf = reader.getSafeFile();
+                // Store the RandomAccessFileOrArray associated with this reader
+                readers2file.put(reader, raf);
+                // Reopen the file if it is marked to do so
+                raf.reOpen();
+            }
+        } else {
+            // Optional: Log or handle the case where the reader is already registered
+            System.out.println("Reader is already registered.");
         }
     }
+
 
     public void unRegisterReader(PdfReader reader) {
         if (!readers2intrefs.containsKey(reader)) {

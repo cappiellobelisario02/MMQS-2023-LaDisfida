@@ -99,6 +99,7 @@ public class ConcatN extends AbstractTool {
     public void execute() {
         File[] sourceFiles;
         File destinationFile;
+
         try {
             sourceFiles = validateInputFiles();
             destinationFile = getDestinationFile();
@@ -114,36 +115,59 @@ public class ConcatN extends AbstractTool {
         int pageOffset = 0;
 
         try {
+            // Initialize the Document before the loop
+            document = new Document();
+            fos = new FileOutputStream(destinationFile);
+            writer = new PdfCopy(document, fos);
+            document.open();
+
             for (File sourceFile : sourceFiles) {
-                reader = new PdfReader(sourceFile.getAbsolutePath());
-                reader.consolidateNamedDestinations();
+                try {
+                    reader = new PdfReader(sourceFile.getAbsolutePath());
+                    reader.consolidateNamedDestinations();
 
-                int numberOfPages = reader.getNumberOfPages();
-                processBookmarks(bookmarks, pageOffset, reader);
-                pageOffset += numberOfPages;
+                    int numberOfPages = reader.getNumberOfPages();
+                    processBookmarks(bookmarks, pageOffset, reader);
+                    pageOffset += numberOfPages;
 
-                logPageInfo(sourceFile, numberOfPages);
+                    logPageInfo(sourceFile, numberOfPages);
+                    addPages(reader, numberOfPages, writer);
+                    logProcessedPages(numberOfPages);
 
-                writer = initializeDocument(reader, destinationFile);
-
-                addPages(reader, numberOfPages, writer);
-                logProcessedPages(numberOfPages);
-
-                reader.close();  // Close reader after processing each file
+                } catch (IOException | PDFFilterException e) {
+                    throw new ExceptionConverter(e);
+                } finally {
+                    if (reader != null) {
+                        reader.close();  // Close reader after processing each file
+                    }
+                }
             }
 
             if (!bookmarks.isEmpty()) {
                 writer.setOutlines(bookmarks);
             }
 
-            document.close();  // Close document after processing all files
-            reader.close();
-            fos.close();
-            writer.close();
-        } catch (PDFFilterException | IOException e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
+        } finally {
+            // Ensure resources are closed in the correct order
+            if (writer != null) {
+                writer.close();
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    // Handle exception while closing fos
+                    logger.warning("Failed to close FileOutputStream: " + e.getMessage());
+                }
+            }
+            if (document != null) {
+                document.close();  // Close document after processing all files
+            }
         }
     }
+
 
     private File[] validateInputFiles() throws InstantiationException {
         File[] files = (File[]) getValue(SRCFILES);
