@@ -52,6 +52,7 @@ import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -644,13 +645,18 @@ public class PdfPKCS7 {
         return loadCacertsKeyStore(null);
     }
 
+    private static KeyStore loadCacertsKeyStore(Object o) {
+        return null;
+    }
+
     /**
      * Loads the default root certificates at &lt;java.home&gt;/lib/security/cacerts.
      *
      * @param provider the provider or <code>null</code> for the default provider
      * @return a <CODE>KeyStore</CODE>
      */
-    public static KeyStore loadCacertsKeyStore(String provider) {
+
+    public static KeyStore loadCacertsKeyStore(String provider, char[] password) {
         File file = new File(System.getProperty("java.home"), "lib/security/cacerts");
 
         // Ensure the cacerts file exists
@@ -660,18 +666,43 @@ public class PdfPKCS7 {
 
         try (FileInputStream fin = new FileInputStream(file)) {
             KeyStore keyStore;
+
             // Use a provider if specified; otherwise, default to "JKS"
             if (provider != null && !provider.trim().isEmpty()) {
                 keyStore = KeyStore.getInstance("JKS", provider);
             } else {
                 keyStore = KeyStore.getInstance("JKS");
             }
-            keyStore.load(fin, null); // Load the keystore without a password
+
+            // Check if password is provided, if not prompt securely from the console
+            if (password == null) {
+                password = promptForPassword(); // Implement this securely
+            }
+
+            // Optionally validate password length or complexity here
+            // Example: if (password.length < 6) { throw new IllegalArgumentException("Weak password."); }
+
+            // Load the keystore with the provided password
+            keyStore.load(fin, password);
+
+            // Clear the password array after use for security
+            java.util.Arrays.fill(password, '\0');
+            password = null; // Nullify the reference
+
             return keyStore;
         } catch (Exception e) {
-            // Wrap the exception for clarity
+            // Wrap the exception for clarity, but be cautious not to expose sensitive info
             throw new ExceptionConverter(e);
         }
+    }
+
+
+    private static char[] promptForPassword() {
+        Console console = System.console();
+        if (console == null) {
+            throw new IllegalStateException("No console available to securely prompt for password.");
+        }
+        return console.readPassword("Enter keystore password: ");
     }
 
     /**

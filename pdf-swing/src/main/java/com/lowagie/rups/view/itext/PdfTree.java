@@ -49,9 +49,14 @@ public class PdfTree extends JTree implements Observer {
     public PdfTree() {
         super();
         root = new PdfTrailerTreeNode();
+        initializeTree();
+    }
+
+    private void initializeTree() {
         setCellRenderer(new IconTreeCellRenderer());
         update(null, null);
     }
+
 
     /**
      * Getter for the root node

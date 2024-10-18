@@ -238,15 +238,6 @@ public class Paragraph extends Phrase {
     }
 
 
-    private void validateAndSetLeading(float leading, float multipliedLeading) {
-        // Add validation logic to prevent invalid values
-        if (leading < 0) {
-            throw new IllegalArgumentException("Leading cannot be negative.");
-        }
-        // Set the getLeading safely
-        setLeading(leading, multipliedLeading);
-    }
-
 
     // implementation of the Element-methods
 

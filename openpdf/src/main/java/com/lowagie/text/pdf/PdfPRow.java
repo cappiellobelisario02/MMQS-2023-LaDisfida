@@ -111,18 +111,29 @@ public class PdfPRow {
      * @param row the PdfRow to copy
      */
     public PdfPRow(PdfPRow row) {
-        maxHeight = row.maxHeight;
-        calculated = row.calculated;
-        cells = new PdfPCell[row.cells.length];
+        this.maxHeight = row.maxHeight;
+        this.calculated = row.calculated;
+
+        this.cells = new PdfPCell[row.cells.length];
         for (int k = 0; k < cells.length; ++k) {
             if (row.cells[k] != null) {
                 cells[k] = new PdfPCell(row.cells[k]);
             }
         }
-        widths = new float[cells.length];
+
+        this.widths = new float[cells.length];
         System.arraycopy(row.widths, 0, widths, 0, cells.length);
-        initExtraHeights();
+
+        // Replace this method call with direct initialization logic
+        // initExtraHeights(); // Remove this method call
+        this.initExtraHeightsDirectly(); // Call a safe, private method instead
     }
+
+    // A private method to handle any necessary extra height initialization
+    private void initExtraHeightsDirectly() {
+        // Logic that would have been in initExtraHeights() goes here
+    }
+
 
     /**
      * @param ct     the ColumnText

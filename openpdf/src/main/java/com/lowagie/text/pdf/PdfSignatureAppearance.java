@@ -773,13 +773,19 @@ public class PdfSignatureAppearance {
             }
 
             if (this.render != SIGNATURE_RENDER_GRAPHIC) {
+                // Ensure dataRect is not null before proceeding
+                if (dataRect == null) {
+                    throw new IllegalStateException("dataRect is null; it must be initialized properly.");
+                }
+
                 if (size <= 0) {
-                    Rectangle sr = new Rectangle(Objects.requireNonNull(dataRect).getWidth(), dataRect.getHeight());
+                    Rectangle sr = new Rectangle(dataRect.getWidth(), dataRect.getHeight());
                     size = fitText(font, text, sr, 12, runDirection);
                 }
+
                 ColumnText ct = new ColumnText(t);
                 ct.setRunDirection(runDirection);
-                ct.setSimpleColumn(new Phrase(text, font), Objects.requireNonNull(dataRect).getLeft(), dataRect.getBottom(),
+                ct.setSimpleColumn(new Phrase(text, font), dataRect.getLeft(), dataRect.getBottom(),
                         dataRect.getRight(), dataRect.getTop(), size, Element.ALIGN_LEFT);
                 try {
                     ct.go();
@@ -787,6 +793,7 @@ public class PdfSignatureAppearance {
                     logger.info("Error rendering signature content");
                 }
             }
+
         }
         if (app[3] == null && !acro6Layers) {
             PdfTemplate t = app[3] = new PdfTemplate(writer);
