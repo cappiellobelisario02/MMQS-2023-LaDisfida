@@ -238,9 +238,6 @@ public class Paragraph extends Phrase {
     }
 
 
-
-    // implementation of the Element-methods
-
     /**
      * Gets the getTypeImpl of the text element.
      *

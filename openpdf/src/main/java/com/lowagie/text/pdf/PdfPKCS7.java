@@ -320,34 +320,28 @@ public class PdfPKCS7 {
      * @param provider    the provider or <code>null</code> for the default provider
      */
     @SuppressWarnings("unchecked")
-    
+    public PdfPKCS7(byte[] contentsKey, byte[] certsKey, String provider) {
+        try {
+            // Ensure provider has a default value to avoid null checks later
+            this.provider = (provider != null) ? provider : "SunJSSE"; // Default provider (modify as needed)
 
-        public PdfPKCS7(byte[] contentsKey, byte[] certsKey, String provider) {
-            try {
-                this.provider = provider;
-                CertificateFactory certificateFactory = new CertificateFactory();
-                Collection<Certificate> certificates = certificateFactory.engineGenerateCertificates(
-                        new ByteArrayInputStream(certsKey));
-                certs = new ArrayList<>(certificates);
-                signCerts = certs;
-                signCert = (X509Certificate) certs.iterator().next();
-                // Initialize CRLs as needed
-                // crls = new ArrayList<>(); // Uncomment if you need to handle CRLs
+            CertificateFactory certificateFactory = new CertificateFactory();
+            Collection<Certificate> certificates = certificateFactory.engineGenerateCertificates(
+                    new ByteArrayInputStream(certsKey));
+            certs = new ArrayList<>(certificates);
+            signCerts = certs;
+            signCert = (X509Certificate) certs.iterator().next();
 
-                ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(contentsKey));
-                digest = ((DEROctetString) in.readObject()).getOctets();
+            ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(contentsKey));
+            digest = ((DEROctetString) in.readObject()).getOctets();
 
-                // Use SHA-256 instead of SHA-1 for stronger security
-                if (provider == null) {
-                    sig = Signature.getInstance("SHA256withRSA");
-                } else {
-                    sig = Signature.getInstance("SHA256withRSA", provider);
-                }
-                sig.initVerify(signCert.getPublicKey());
-            } catch (Exception e) {
-                throw new ExceptionConverter(e);
-            }
-        crls = List.of();
+            // Use SHA-256 for stronger security
+            sig = Signature.getInstance("SHA256withRSA", this.provider);
+            sig.initVerify(signCert.getPublicKey());
+        } catch (Exception e) {
+            throw new ExceptionConverter(e);
+        }
+        crls = List.of(); // Ensure CRLs are initialized if needed
     }
 
     /**
