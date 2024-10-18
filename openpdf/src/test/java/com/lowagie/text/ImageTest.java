@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +15,8 @@ class ImageTest {
 
     // For performance testing, set this to something > 100
     private static final int PERFORMANCE_ITERATIONS = 1;
+
+    static final Logger logger = Logger.getLogger(ImageTest.class.getName());
 
     @Test
     void shouldReturnImageWithUrlForUrlPass(){
@@ -88,7 +91,7 @@ class ImageTest {
         }
         long deltaMillis = (System.nanoTime() - start) / 1_000_000 / PERFORMANCE_ITERATIONS;
         if (PERFORMANCE_ITERATIONS > 1) {
-            System.out.format("Load JPG ~time after %d iterations %d ms%n", PERFORMANCE_ITERATIONS, deltaMillis);
+            logger.info(String.format("Load JPG ~time after %d iterations %d ms", PERFORMANCE_ITERATIONS, deltaMillis));
         }
         assertNotNull(image.getUrl());
         assertThat(image.getRawData()).isNotEmpty();
@@ -107,7 +110,8 @@ class ImageTest {
         }
         long deltaMillis = (System.nanoTime() - start) / 1_000_000 / PERFORMANCE_ITERATIONS;
         if (PERFORMANCE_ITERATIONS > 1) {
-            System.out.format("Load GIF ~time after %d iterations %d ms%n", PERFORMANCE_ITERATIONS, deltaMillis);
+            logger.info(String.format("Load GIF ~time after %d iterations %d ms%n", PERFORMANCE_ITERATIONS,
+                    deltaMillis));
         }
         assertThat(deltaMillis).isLessThan(200);
         assertNotNull(image.getUrl());

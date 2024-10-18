@@ -65,7 +65,7 @@ public class Jpeg2000 extends Image {
 
     // public static final membervariables
 
-    Logger logger = Logger.getLogger(Jpeg2000.class.getName());
+    static final Logger logger = Logger.getLogger(Jpeg2000.class.getName());
 
     public static final int JP2_JP = 0x6a502020;
     public static final int JP2_IHDR = 0x69686472;

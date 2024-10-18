@@ -87,7 +87,7 @@ public class AcroFields {
 
     public static final String BGCOLOR = "bgcolor";
     public static final String THIS_ACROFIELDS_INSTANCE_IS_READ_ONLY = "this.acrofields.instance.is.read.only";
-    static Logger logger = Logger.getLogger(AcroFields.class.getName());
+    static final Logger logger = Logger.getLogger(AcroFields.class.getName());
 
     public static final int DA_FONT = 0;
     public static final int DA_SIZE = 1;

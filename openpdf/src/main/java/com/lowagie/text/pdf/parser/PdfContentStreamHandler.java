@@ -79,7 +79,7 @@ import java.util.logging.Logger;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class PdfContentStreamHandler {
 
-    Logger logger = Logger.getLogger(PdfContentStreamHandler.class.getName());
+    static final Logger logger = Logger.getLogger(PdfContentStreamHandler.class.getName());
 
     private final Deque<List<TextAssemblyBuffer>> textFragmentStreams = new ArrayDeque<>();
     private final Deque<String> contextNames = new ArrayDeque<>();

@@ -93,10 +93,10 @@ class PdfFont implements Comparable<Object> {
 
     // methods
 
-    static PdfFont getDefaultFont() {
+    static com.lowagie.text.pdf.PdfFont getDefaultFont() {
         try {
             BaseFont bf = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, false);
-            return new PdfFont(bf, 12);
+            return new com.lowagie.text.pdf.PdfFont(bf, 12);
         } catch (Exception ee) {
             throw new ExceptionConverter(ee);
         }
@@ -116,9 +116,9 @@ class PdfFont implements Comparable<Object> {
         if (object == null) {
             return -1;
         }
-        PdfFont pdfFont;
+        com.lowagie.text.pdf.PdfFont pdfFont;
         try {
-            pdfFont = (PdfFont) object;
+            pdfFont = (com.lowagie.text.pdf.PdfFont) object;
             if (font != pdfFont.font) {
                 return 1;
             }

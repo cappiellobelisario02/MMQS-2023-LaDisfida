@@ -30,7 +30,7 @@ import javax.swing.ImageIcon;
  */
 public class IconFetcher {
 
-    static Logger logger = Logger.getLogger(IconFetcher.class.getName());
+    static final Logger logger = Logger.getLogger(IconFetcher.class.getName());
 
     private IconFetcher(){
         //empty on purpose

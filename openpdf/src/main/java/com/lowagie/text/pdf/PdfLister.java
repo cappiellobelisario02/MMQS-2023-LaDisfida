@@ -64,7 +64,7 @@ import java.util.logging.Logger;
 
 public class PdfLister {
 
-    static Logger logger = Logger.getLogger(PdfLister.class.getName());
+    static final Logger logger = Logger.getLogger(PdfLister.class.getName());
 
     /**
      * the printStream you want to write the output to.

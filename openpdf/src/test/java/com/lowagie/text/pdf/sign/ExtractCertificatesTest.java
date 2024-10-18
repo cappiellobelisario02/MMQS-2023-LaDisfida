@@ -13,10 +13,13 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.List;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ExtractCertificatesTest {
+
+    static final Logger logger = Logger.getLogger(ExtractCertificatesTest.class.getName());
 
     ExtractCertificatesTest() {
         super();
@@ -54,7 +57,7 @@ class ExtractCertificatesTest {
 
     private void extract(String pdf, boolean isExpectedValidTimeStamp) throws Exception {
 
-        System.out.println("pdf getName: " + pdf);
+        logger.info("pdf getName: " + pdf);
 
         KeyStore kall = PdfPKCS7.loadCacertsKeyStore();
 
