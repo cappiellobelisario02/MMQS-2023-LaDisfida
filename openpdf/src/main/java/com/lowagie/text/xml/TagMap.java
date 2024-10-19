@@ -81,10 +81,10 @@ public class TagMap extends HashMap<String, XmlPeer> {
         try {
             inputStream = TagMap.class.getClassLoader().getResourceAsStream(tagfile);
             if (inputStream != null) {
-                init(inputStream);
+                initialize(inputStream);
             } else {
                 inputStream = new FileInputStream(tagfile);
-                init(inputStream);
+                initialize(inputStream);
             }
         } catch (FileNotFoundException fnfe) {
             throw new ExceptionConverter(fnfe);
@@ -109,12 +109,15 @@ public class TagMap extends HashMap<String, XmlPeer> {
      * @param in An InputStream with the tagmap xml
      */
     public TagMap(InputStream in) {
-        init(in);
+        // Call the private initialization method to set up the parser
+        initialize(in);
     }
 
-    protected void init(InputStream in) {
+    // Make the init method private to prevent overriding
+    private void initialize(InputStream in) {
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
+            // Disable external entities to prevent XXE attacks
             factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             SAXParser parser = factory.newSAXParser();

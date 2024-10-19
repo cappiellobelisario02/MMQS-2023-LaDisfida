@@ -945,7 +945,7 @@ public abstract class BaseFont {
                 is = contextClassLoader.getResourceAsStream(key);
             }
         }  catch (Exception e) {
-                throw new DocumentException(e);
+            throw new DocumentException(e);
         }
 
         if (is == null) {
@@ -1843,13 +1843,22 @@ public abstract class BaseFont {
             try {
                 bytes = contents;
                 put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
-                if (subType != null) {
+
+                // Ensure subType is valid before using it
+                if (subType != null && !subType.isEmpty()) {
                     put(PdfName.SUBTYPE, new PdfName(subType));
+                } else {
+                    // Handle the case where subType is null or empty if necessary
+                    // For example, log a warning or assign a default value
+                    // logger.warning("subType is null or empty, defaulting to 'unknown'");
+                    put(PdfName.SUBTYPE, new PdfName("unknown")); // Optional default value
                 }
+
                 flateCompress(compressionLevel);
             } catch (Exception e) {
                 throw new DocumentException(e);
             }
         }
+
     }
 }

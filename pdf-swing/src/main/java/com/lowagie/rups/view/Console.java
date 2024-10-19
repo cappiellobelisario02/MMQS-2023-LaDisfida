@@ -30,6 +30,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextPane;
 import javax.swing.text.AttributeSet;
@@ -228,8 +229,8 @@ public class Console implements Observer {
                     printStream.print(snippet);
                     textArea.setCaretPosition(textArea.getDocument().getLength());
                 } catch (BadLocationException | IOException e) {
-                    // Handle exceptions appropriately
-                    e.printStackTrace(); // Or use your logging framework
+                    // Use logging framework to handle exceptions appropriately
+                    logger.log(Level.SEVERE, "Error while reading input: " + e.getMessage(), e);
                 }
             }
         }

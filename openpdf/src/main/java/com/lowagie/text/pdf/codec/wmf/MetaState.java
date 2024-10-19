@@ -111,7 +111,7 @@ public class MetaState {
         setMetaState(state);
     }
 
-    public void setMetaState(MetaState state) {
+    public final void setMetaState(MetaState state) {
         savedStates = state.savedStates;
         MetaObjects = state.MetaObjects;
         currentPoint = state.currentPoint;
@@ -131,6 +131,7 @@ public class MetaState {
         scalingX = state.scalingX;
         scalingY = state.scalingY;
     }
+
 
     public void addMetaObject(MetaObject object) {
         for (int k = 0; k < MetaObjects.size(); ++k) {

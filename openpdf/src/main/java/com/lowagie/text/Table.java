@@ -67,6 +67,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 
+import static com.lowagie.text.Image.logger;
+
 
 /**
  * A <CODE>Table</CODE> is a <CODE>Rectangle</CODE> that contains <CODE>Cell</CODE>s, ordered in some kind of matrix.
@@ -764,11 +766,15 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
         try {
             addCell(cell, curPosition);
         } catch (BadElementException bee) {
-            // don't add the cell
+            // Log a warning message to inform that the cell was not added
+            logger.warning("Failed to add cell: " + bee.getMessage());
+            // Optionally, you could throw a specific exception or handle it as needed
         } catch (AddCellException e) {
-            throw new IOException(e);
+            // Rethrow AddCellException as IOException for further handling
+            throw new IOException("Error adding cell to table: " + e.getMessage(), e);
         }
     }
+
 
     /**
      * Adds a <CODE>Cell</CODE> to the <CODE>Table</CODE>.

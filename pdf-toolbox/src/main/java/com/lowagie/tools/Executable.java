@@ -85,47 +85,62 @@ public class Executable {
         Process process = null;
         String sanitizedFileName = sanitizeInput(fileName);
         String sanitizedParameters = sanitizeInput(parameters.trim());
-        String commandEnv;
-        String commandDisk;
-        String commandStart = "start";
-        String commandProgramStart = "acrord32";
+        String[] command;
 
+        // Validate the sanitized inputs to prevent command injection
+        if (!isValidFileName(sanitizedFileName) || !isValidParameters(sanitizedParameters)) {
+            throw new IllegalArgumentException("Invalid input detected.");
+        }
 
         if (acroread != null) {
-            process = Runtime.getRuntime().exec(new String[]{
-                    acroread, sanitizedParameters, sanitizedFileName});
+            command = new String[]{acroread, sanitizedParameters, sanitizedFileName};
         } else if (isWindows()) {
-            if (isWindows9X()) {
-                commandEnv = "command.com";
-                commandDisk = "/C";
-                String[] command = {commandEnv, commandDisk, commandStart, commandProgramStart, sanitizedParameters,
-                        sanitizedFileName};
-                process = Runtime.getRuntime().exec(command);
-            } else {
-                commandEnv = "cmd";
-                commandDisk = "/c";
-                String[] command = {commandEnv, commandDisk, commandStart, commandProgramStart, sanitizedParameters,
-                        sanitizedFileName};
-                process = Runtime.getRuntime().exec(command);
-            }
+            String commandEnv = isWindows9X() ? "command.com" : "cmd";
+            String commandDisk = isWindows9X() ? "/C" : "/c";
+            String commandStart = "start";
+            String commandProgramStart = "acrord32";
+
+            command = new String[]{commandEnv, commandDisk, commandStart, commandProgramStart, sanitizedParameters, sanitizedFileName};
         } else if (isMac()) {
             if (sanitizedParameters.isEmpty()) {
-                process = Runtime.getRuntime().exec(new String[]{"/usr/bin/open", sanitizedFileName});
+                command = new String[]{"/usr/bin/open", sanitizedFileName};
             } else {
-                process = Runtime.getRuntime().exec(new String[]{"/usr/bin/open", sanitizedParameters, sanitizedFileName});
+                command = new String[]{"/usr/bin/open", sanitizedParameters, sanitizedFileName};
             }
+        } else {
+            throw new UnsupportedOperationException("Unsupported operating system.");
         }
+
+        // Execute the command safely
+        process = new ProcessBuilder(command).start();
+
         try {
             if (process != null && waitForTermination) {
                 process.waitFor();
             }
         } catch (ThreadDeath | InterruptedException e) {
-            process.destroy();
+            if (process != null) {
+                process.destroy();
+            }
             logger.log(Level.SEVERE, "Interrupted.", e);
             throw new ThreadDeath();
         }
+
         return process;
     }
+
+    // Validate the file name to prevent command injection
+    private static boolean isValidFileName(String fileName) {
+        // Implement validation logic (e.g., regex) for file names
+        return fileName.matches("^[\\w\\-./]+$"); // Example regex for valid characters
+    }
+
+    // Validate the parameters to prevent command injection
+    private static boolean isValidParameters(String parameters) {
+        // Implement validation logic (e.g., regex) for parameters
+        return parameters.matches("^[\\w\\-./\\s]*$"); // Example regex for valid characters
+    }
+
 
     private static String sanitizeInput(String input) {
         // Example of a simple sanitization. Customize this to your needs.

@@ -89,6 +89,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.InflaterInputStream;
 
@@ -2898,11 +2899,15 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             try {
                 rf.close();
             } catch (IOException exc) {
-                String msg = "Random Access File or Array ERROR: " + exc.getMessage();
-                logger.severe(msg);
+                // Log a generic error message without exposing sensitive information
+                logger.warning("Failed to close Random Access File or Array. Please check the system logs for details.");
+
+                // Optionally log the exception details for internal tracking (if needed)
+                logger.log(Level.FINE, "Exception details: ", exc);
             }
         }
     }
+
 
     protected void killXref(PdfObject obj) {
         if (obj == null) {

@@ -69,6 +69,7 @@ import com.lowagie.text.utils.NumberUtilities;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -80,7 +81,7 @@ public class FactoryProperties {
     private static final String ALIGN_KEY = "align";
     private static final String LEADING_KEY = "getLeading";
 
-    public static Map<String, String> followTags = new HashMap<>();
+    public static final Map<String, String> followTags = new HashMap<>();
 
     static {
         followTags.put("i", "i");
@@ -108,17 +109,22 @@ public class FactoryProperties {
             StringTokenizer tokenizer = new StringTokenizer(leading, " ,");
             String v = tokenizer.nextToken();
             float v1 = Float.parseFloat(v);
+
+            // Check if there's a second token for the leading
             if (!tokenizer.hasMoreTokens()) {
                 paragraph.setLeading(v1, 0);
                 return;
             }
+
             v = tokenizer.nextToken();
             float v2 = Float.parseFloat(v);
             paragraph.setLeading(v1, v2);
-        } catch (Exception e) {
+        } catch (NumberFormatException | NoSuchElementException e) {
+            // Handle specific exceptions with a fallback
             paragraph.setLeading(0, 1.5f);
         }
     }
+
 
     public static void createParagraph(Paragraph paragraph, ChainedProperties props) {
         props.findProperty(ALIGN_KEY)

@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * Reads an FDF form and makes the fields available
@@ -116,11 +117,11 @@ public class FdfReader extends PdfReader {
             try {
                 tokens.close();
             } catch (IOException e) {
-                // Handle IOException specifically
-                logger.info("IOException while closing tokens: " + e.getMessage());
+                // Use Level.WARNING for java.util.logging
+                logger.log(Level.WARNING, "Error occurred while closing tokens. Please check the system logs for more details.", e);
             } catch (Exception e) {
-                // Handle any other unexpected exceptions
-                logger.info("Unexpected exception while closing tokens: " + e.getMessage());
+                // Use Level.WARNING for unexpected exceptions
+                logger.log(Level.WARNING, "Unexpected error occurred while closing tokens.", e);
             }
         }
         readFields();

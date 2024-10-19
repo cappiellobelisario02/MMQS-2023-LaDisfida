@@ -75,12 +75,11 @@ public class PdfTree extends JTree implements Observer {
      * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
      */
     public void update(Observable observable, Object obj) {
-        if (obj == null) {
-            root = new PdfTrailerTreeNode();
-        }
+        root = new PdfTrailerTreeNode(); // Always create a new PdfTrailerTreeNode
         setModel(new DefaultTreeModel(root));
         repaint();
     }
+
 
     /**
      * Select a specific node in the tree. Typically this method will be called from a different tree, such as the

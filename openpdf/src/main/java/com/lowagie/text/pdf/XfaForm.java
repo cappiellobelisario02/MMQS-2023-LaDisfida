@@ -122,6 +122,7 @@ public class XfaForm {
             return;
         }
         xfaPresent = true;
+
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         if (xfa.isArray()) {
             PdfArray ar = (PdfArray) xfa;
@@ -137,13 +138,27 @@ public class XfaForm {
             bout.write(b);
         }
         bout.close();
+
+        // Create a secure DocumentBuilderFactory
         DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
         fact.setNamespaceAware(true);
+
+        // Prevent DTD processing
+        fact.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+
         DocumentBuilder db = fact.newDocumentBuilder();
+
+        // Custom entity resolver to prevent external entity processing
         db.setEntityResolver((publicId, systemId) -> new InputSource(new StringReader("")));
-        domDocument = db.parse(new ByteArrayInputStream(bout.toByteArray()));
+
+        // Parse XML safely
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bout.toByteArray())) {
+            domDocument = db.parse(inputStream);
+        }
+
         extractNodes();
     }
+
 
     /**
      * Return the XFA Object, could be an array, could be a Stream. Returns null f no XFA Object is present.

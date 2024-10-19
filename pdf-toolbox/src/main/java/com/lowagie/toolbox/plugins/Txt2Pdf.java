@@ -104,7 +104,6 @@ public class Txt2Pdf extends AbstractTool {
         Document document = null;
         Font f;
 
-        // Using try-with-resources for automatic resource management
         try (BufferedReader in = new BufferedReader(new FileReader((File) getValue(SRCFILE)));
                 FileOutputStream fos = new FileOutputStream((File) getValue(DESTFILE))) {
 
@@ -129,12 +128,14 @@ public class Txt2Pdf extends AbstractTool {
             }
 
         } catch (Exception e) {
-            // Show error message in a dialog box and log the error
+            // Show error message in a dialog box without revealing system info
             JOptionPane.showMessageDialog(internalFrame,
-                    e.getMessage(),
-                    e.getClass().getName(),
+                    "An error occurred while processing the file. Please contact support.",
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
-            logger.log(Level.SEVERE, "An unexpected error occurred during execution.", e);
+
+            // Log only a generic error message for audit purposes, without sensitive details
+            logger.log(Level.SEVERE, "A file processing error occurred.");
 
         } finally {
             // Close document only if it was opened

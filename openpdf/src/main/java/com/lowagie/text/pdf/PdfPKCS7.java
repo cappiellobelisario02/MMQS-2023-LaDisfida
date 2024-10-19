@@ -322,33 +322,39 @@ public class PdfPKCS7 {
      * @param provider    the provider or <code>null</code> for the default provider
      */
     @SuppressWarnings("unchecked")
-
-
     public PdfPKCS7(byte[] contentsKey, byte[] certsKey, String provider) {
         try {
             this.provider = provider;
             CertificateFactory certificateFactory = new CertificateFactory();
+
+            // Generate certificates from the provided certsKey
             Collection<Certificate> certificates = certificateFactory.engineGenerateCertificates(
                     new ByteArrayInputStream(certsKey));
             certs = new ArrayList<>(certificates);
+
+            // Validate that at least one certificate was generated
+            if (certs.isEmpty()) {
+                throw new IllegalArgumentException("No certificates found in certsKey.");
+            }
+
+            // Set signing certificates
             signCerts = certs;
             signCert = (X509Certificate) certs.iterator().next();
-            // Initialize CRLs as needed
-            // crls = new ArrayList<>(); // Uncomment if you need to handle CRLs
 
-            ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(contentsKey));
-            digest = ((DEROctetString) in.readObject()).getOctets();
+            // Read and extract digest from contentsKey
+            try (ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(contentsKey))) {
+                digest = ((DEROctetString) in.readObject()).getOctets();
+            }
 
             // Use SHA-256 instead of SHA-1 for stronger security
-            if (provider == null) {
-                sig = Signature.getInstance("SHA256withRSA");
-            } else {
-                sig = Signature.getInstance("SHA256withRSA", provider);
-            }
+            sig = (provider == null) ? Signature.getInstance("SHA256withRSA") : Signature.getInstance("SHA256withRSA", provider);
             sig.initVerify(signCert.getPublicKey());
+
         } catch (Exception e) {
             throw new ExceptionConverter(e);
         }
+
+        // Initialize CRLs to an empty list
         crls = List.of();
     }
 

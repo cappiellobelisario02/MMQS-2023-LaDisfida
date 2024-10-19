@@ -63,6 +63,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -692,11 +693,15 @@ public class FontFactoryImp implements FontProvider {
                 count += processFile(file, scanSubdirectories);
             }
         } catch (SecurityException e) {
-            String msg = "Exception threw: " + e;
-            logger.severe(msg);
+            // Log a generic error message without exposing sensitive information
+            logger.warning("Security exception encountered while registering directory.");
+
+            // Optionally log the exception details for internal tracking (if needed)
+            logger.log(Level.FINE, "Exception details: ", e);
         }
         return count;
     }
+
 
     private int processFile(File file, boolean scanSubdirectories) {
         int count = 0;

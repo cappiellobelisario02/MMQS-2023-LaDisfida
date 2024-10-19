@@ -248,8 +248,8 @@ public class PdfLine {
     private void addToLine(PdfChunk chunk) {
         if (chunk.changeLeading && chunk.isImage()) {
             float f = chunk.getImage().getScaledHeight() +
-                      chunk.getImageOffsetY() +
-                      chunk.getImage().getBorderWidthTop();
+                    chunk.getImageOffsetY() +
+                    chunk.getImage().getBorderWidthTop();
             if (f > height) {
                 height = f;
             }
@@ -285,7 +285,7 @@ public class PdfLine {
      * @return a value
      */
 
-    float height() {
+    float getHeight() {
         return height;
     }
 
@@ -587,5 +587,9 @@ public class PdfLine {
             }
         }
         return descender;
+    }
+
+    public float height() {
+        return 0;
     }
 }

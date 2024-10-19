@@ -153,32 +153,53 @@ public class BarcodeInter25 extends Barcode {
      * @return the barcode
      */
     public static byte[] getBarsInter25(String text) {
+        // Keep only numbers from the input text
         text = keepNumbers(text);
+
+        // Validate that the length of the text is even
         if ((text.length() & 1) != 0) {
             throw new IllegalArgumentException(MessageLocalization.getComposedMessage("the.text.length.must.be.even"));
         }
-        byte[] bars = new byte[text.length() * 5 + 7];
-        int pb = 0;
-        bars[pb++] = 0;
-        bars[pb++] = 0;
-        bars[pb++] = 0;
-        bars[pb++] = 0;
+
+        // Calculate the length of the bars array
+        int totalBarsLength = text.length() * 5 + 7;
+        byte[] bars = new byte[totalBarsLength];
+
+        // Initialize the starting position for writing to bars
+        int position = 0;
+
+        // Start with the beginning sequence of bars
+        bars[position++] = 0; // Start
+        bars[position++] = 0; // Start
+        bars[position++] = 0; // Start
+        bars[position++] = 0; // Start
+
+        // Process each pair of digits in the input text
         int len = text.length() / 2;
         for (int k = 0; k < len; ++k) {
+            // Get the two characters, convert to numbers
             int c1 = text.charAt(k * 2) - '0';
             int c2 = text.charAt(k * 2 + 1) - '0';
+
+            // Retrieve the corresponding byte arrays for the characters
             byte[] b1 = BARS[c1];
             byte[] b2 = BARS[c2];
+
+            // Append the bar representations for both characters
             for (int j = 0; j < 5; ++j) {
-                bars[pb++] = b1[j];
-                bars[pb++] = b2[j];
+                bars[position++] = b1[j];
+                bars[position++] = b2[j];
             }
         }
-        bars[pb++] = 1;
-        bars[pb++] = 0;
-        bars[pb++] = 0;
-        return bars;
+
+        // End with the termination sequence of bars
+        bars[position++] = 1; // End
+        bars[position++] = 0; // End
+        bars[position++] = 0; // End
+
+        return bars; // Return the completed bar array
     }
+
 
     /**
      * Gets the maximum area that the barcode and the text, if any, will occupy. The lower left corner is always (0,

@@ -222,10 +222,11 @@ public class PdfPTable implements LargeElement {
             relativeWidths[k] = 1;
         }
         absoluteWidths = new float[relativeWidths.length];
-        calculateWidths();
+        calculateWidths();  // Call the private method to calculate widths
         currentRow = new PdfPCell[absoluteWidths.length];
         keepTogether = false;
     }
+
 
     /**
      * Constructs a copy of a <CODE>PdfPTable</CODE>.

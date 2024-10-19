@@ -93,8 +93,13 @@ public class PdfPageLabels {
      */
     public PdfPageLabels() {
         map = new HashMap<>();
-        addPageLabel(1, PdfPageLabels.DECIMAL_ARABIC_NUMERALS, null, 1);
+        initializePageLabels();
     }
+
+    private void initializePageLabels() {
+        addPageLabel(1, PdfPageLabels.DECIMAL_ARABIC_NUMERALS, null, 1); // Method is called after object initialization
+    }
+
 
     /**
      * Retrieves the page labels from a PDF as an array of String objects.

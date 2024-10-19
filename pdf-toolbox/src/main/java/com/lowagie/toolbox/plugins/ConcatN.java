@@ -158,8 +158,8 @@ public class ConcatN extends AbstractTool {
                 try {
                     fos.close();
                 } catch (IOException e) {
-                    // Handle exception while closing fos
-                    logger.warning("Failed to close FileOutputStream: " + e.getMessage());
+                    // Log a general message without revealing specifics
+                    logger.warning("An error occurred while closing resources.");
                 }
             }
             if (document != null) {
@@ -167,6 +167,7 @@ public class ConcatN extends AbstractTool {
             }
         }
     }
+
 
 
     private File[] validateInputFiles() throws InstantiationException {
@@ -193,13 +194,6 @@ public class ConcatN extends AbstractTool {
             }
             bookmarks.addAll(sourceBookmarks);
         }
-    }
-
-    private PdfCopy initializeDocument(PdfReader reader, File destinationFile) throws IOException {
-        Document document = new Document(reader.getPageSizeWithRotation(1));
-        FileOutputStream fos = new FileOutputStream(destinationFile);
-        document.open();
-        return new PdfCopy(document, fos);
     }
 
     private void addPages(PdfReader reader, int numberOfPages, PdfCopy writer) throws IOException {

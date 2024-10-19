@@ -2527,7 +2527,7 @@ public class PdfDocument extends Document {
         }
     }
 
-    private void adjustIndentationForNonTextWrapped(Image image, int alignment, float startPosition) {
+    private float adjustIndentationForNonTextWrapped(Image image, int alignment, float startPosition) {
         if ((alignment & Image.RIGHT) == Image.RIGHT) {
             startPosition -= image.getIndentationRight();
         } else if ((alignment & Image.MIDDLE) == Image.MIDDLE) {
@@ -2535,7 +2535,9 @@ public class PdfDocument extends Document {
         } else {
             startPosition += image.getIndentationLeft();
         }
+        return startPosition; // Return the adjusted startPosition
     }
+
 
     private void updateCurrentHeight(Image image, float diff) {
         currentHeight += image.getScaledHeight() + diff;
