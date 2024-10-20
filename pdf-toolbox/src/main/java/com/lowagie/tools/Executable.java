@@ -50,10 +50,13 @@
 package com.lowagie.tools;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -307,29 +310,39 @@ public class Executable {
             if (isMac()) {
                 launchMacBrowser(url);
             } else if (isWindows()) {
-                Runtime.getRuntime().exec(createCommand("rundll32 url.dll,FileProtocolHandler ", url));
-            } else { //assume Unix or Linux
-                String[] browsers = {
-                        "firefox", "opera", "konqueror", "mozilla", "netscape"};
+                // Use Desktop API for safer browser launching on Windows
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().browse(new URI(url));
+                } else {
+                    throw new UnsupportedOperationException("Desktop browsing is not supported on this system.");
+                }
+            } else { // Assume Unix or Linux
+                String[] browsers = {"firefox", "opera", "konqueror", "mozilla", "netscape"};
                 String browser = null;
                 String which = "which";
-                for (int count = 0; count < browsers.length && browser == null; count++) {
-                    if (Runtime.getRuntime().exec(new String[]{which, browsers[count]}).waitFor() == 0) {
-                        browser = browsers[count];
+                for (String b : browsers) {
+                    Process process = Runtime.getRuntime().exec(new String[]{which, b});
+                    if (process.waitFor() == 0) {
+                        browser = b;
+                        break;
                     }
                 }
                 if (browser == null) {
                     throw new IOException(MessageLocalization.getComposedMessage("could.not.find.web.browser"));
                 } else {
+                    // Use exec in a safer way by passing the arguments separately
                     Runtime.getRuntime().exec(new String[]{browser, url});
                 }
             }
         } catch (InterruptedException e) {
             throw new InterruptedException(MessageLocalization.getComposedMessage("error.attempting.to.launch.web.browser"));
+        } catch (URISyntaxException e) {
+            throw new IOException("Invalid URL: " + url, e);
         } catch (ReflectiveOperationException e) {
-            throw new ReflectiveOperationException("Error >> ", e);
+            throw new ReflectiveOperationException("Error while launching browser", e);
         }
     }
+
 
     private static void launchMacBrowser(String url) throws ReflectiveOperationException {
         try{

@@ -58,14 +58,17 @@ public class CustomDialog {
     private JTextField textField = new JTextField(10);
     private JOptionPane optionPane;
 
+    private String msgString;
+
+
     public CustomDialog(String msgstring, PlainDocument plainDocument) {
         super();
-        this.setMsgString1(msgstring);
+        this.msgString = msgstring; // Directly assign the value to the field
         this.plainDocument = plainDocument;
         try {
             jbInit();
         } catch (Exception ex) {
-//da vedere come effettuare il log
+            // TODO: Add proper logging mechanism
         }
     }
 

@@ -99,6 +99,7 @@ public class HtmlParser extends XmlParser {
         parser.go(document, new InputSource(is));
     }
 
+
     /**
      * Parses a given file that validates with the iText DTD and writes the content to a document.
      *

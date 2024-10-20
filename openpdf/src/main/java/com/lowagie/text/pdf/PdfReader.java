@@ -2929,22 +2929,21 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 break;
             }
             case PdfObject.ARRAY: {
-                PdfArray t = null;
-                if (obj instanceof PdfArray objPdfArray) {
-                    t = objPdfArray;
-                }
-                for (int i = 0; i < Objects.requireNonNull(t).size(); ++i) {
-                    killXref(t.getPdfObject(i));
+                PdfArray t = (obj instanceof PdfArray objPdfArray) ? objPdfArray : null;
+                if (t != null) {
+                    for (int i = 0; i < t.size(); ++i) {
+                        killXref(t.getPdfObject(i));
+                    }
                 }
                 break;
             }
-            case PdfObject.STREAM, PdfObject.DICTIONARY: {
-                PdfDictionary dic = null;
-                if (obj instanceof PdfDictionary objPdfDictionary) {
-                    dic = objPdfDictionary;
-                }
-                for (PdfName o : dic.getKeys()) {
-                    killXref(dic.get(o));
+            case PdfObject.STREAM:
+            case PdfObject.DICTIONARY: {
+                PdfDictionary dic = (obj instanceof PdfDictionary objPdfDictionary) ? objPdfDictionary : null;
+                if (dic != null) {
+                    for (PdfName o : dic.getKeys()) {
+                        killXref(dic.get(o));
+                    }
                 }
                 break;
             }

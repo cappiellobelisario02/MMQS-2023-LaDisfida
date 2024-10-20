@@ -513,15 +513,24 @@ public class PdfEncodings {
     }
 
     static void encodeStream(InputStream in, ArrayList<char[]> planes) throws IOException {
+        // Define a maximum line length to guard against excessive input
+        final int MAX_LINE_LENGTH = 10000;
+
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, StandardCharsets.ISO_8859_1))) {
             String line;
             int state = CIDNONE;
             byte[] seqs = new byte[7];
 
             while ((line = rd.readLine()) != null) {
+                // Validate the line length to prevent excessively large input
+                if (line.length() > MAX_LINE_LENGTH) {
+                    throw new IOException("Line exceeds maximum allowed length");
+                }
+
                 if (line.length() < 6) {
                     continue;
                 }
+
                 state = switch (state) {
                     case CIDNONE -> handleCidNoneState(line, state, planes);
                     case CIDRANGE -> handleCidRangeState(line, seqs, planes);
@@ -531,6 +540,7 @@ public class PdfEncodings {
             }
         }
     }
+
 
     private static int handleCidNoneState(String line, int currentState, ArrayList<char[]> planes) throws IOException {
         if (line.contains("begincidrange")) {

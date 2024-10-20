@@ -839,21 +839,29 @@ public abstract class BaseFont {
      * @throws DocumentException on error
      * @throws IOException       on error
      */
-    public static Object[] getAllFontNames(String name, String encoding,
-            byte[] ttfAfm) throws DocumentException, IOException {
+    public static Object[] getAllFontNames(String name, String encoding, byte[] ttfAfm)
+            throws DocumentException, IOException {
         String nameBase = getBaseName(name);
         BaseFont fontBuilt = null;
-        if (nameBase.toLowerCase().endsWith(".ttf")
-                || nameBase.toLowerCase().endsWith(".otf")
-                || nameBase.toLowerCase().indexOf(TTC_KEY) >= 1) {
-            fontBuilt = new TrueTypeFont(name, CP1252, false, ttfAfm, true,
-                    false);
+
+        // Use Locale.ROOT to ensure consistency across platforms
+        String lowerCaseNameBase = nameBase.toLowerCase(Locale.ROOT);
+
+        if (lowerCaseNameBase.endsWith(".ttf")
+                || lowerCaseNameBase.endsWith(".otf")
+                || lowerCaseNameBase.indexOf(TTC_KEY) >= 1) {
+            fontBuilt = new TrueTypeFont(name, CP1252, false, ttfAfm, true, false);
         } else {
             fontBuilt = createFont(name, encoding, false, false, ttfAfm, null);
         }
-        return new Object[]{fontBuilt.getPostscriptFontName(),
-                fontBuilt.getFamilyFontName(), fontBuilt.getFullFontName()};
+
+        return new Object[]{
+                fontBuilt.getPostscriptFontName(),
+                fontBuilt.getFamilyFontName(),
+                fontBuilt.getFullFontName()
+        };
     }
+
 
     /**
      * Gets all the entries of the namestable from the font. Only the required tables are read.

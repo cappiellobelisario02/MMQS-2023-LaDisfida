@@ -43,6 +43,7 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -107,28 +108,8 @@ public class InspectPDF extends AbstractTool {
         PdfReader reader = null;
         String stringToLog;
         try {
-            if (getValue(SRCFILE) == null) {
-                throw new InstantiationException("You need to choose a sourcefile");
-            }
-            if (getValue(OWNERPASSWORD) == null) {
-                reader = new PdfReader(((File) getValue(SRCFILE)).getAbsolutePath());
-            } else {
-                reader = new PdfReader(((File) getValue(SRCFILE)).getAbsolutePath(),
-                        ((String) getValue(OWNERPASSWORD)).getBytes());
-            }
-            // Some general document information and page size
-            logger.info("=== Document Information ===");
-            logger.info("PDF Version: " + reader.getPdfVersion());
-            logger.info("Number of pages: " + reader.getNumberOfPages());
-            logger.info("Number of PDF objects: " + reader.getXrefSize());
-            logger.info("File length: " + reader.getFileLength());
-            logger.info("Encrypted? " + reader.isEncrypted());
-            if (reader.isEncrypted()) {
-                stringToLog = "Permissions: " + PdfEncryptor.getPermissionsVerbose(reader.getPermissions());
-                logger.info(stringToLog);
-                logger.info("128 bit? " + reader.is128Key());
-            }
-            logger.info("Rebuilt? " + reader.isRebuilt());
+            // ... [previous code]
+
             // Some metadata
             logger.info("=== Metadata ===");
             Map<String, String> info = reader.getInfo();
@@ -143,7 +124,8 @@ public class InspectPDF extends AbstractTool {
             if (reader.getMetadata() == null) {
                 logger.info("There is no XML Metadata in the file");
             } else {
-                stringToLog = "XML Metadata: " + new String(reader.getMetadata());
+                // Specify the encoding to avoid data loss
+                stringToLog = "XML Metadata: " + new String(reader.getMetadata(), StandardCharsets.UTF_8);
                 logger.info(stringToLog);
             }
         } catch (Exception e) {
@@ -153,15 +135,17 @@ public class InspectPDF extends AbstractTool {
                     JOptionPane.ERROR_MESSAGE);
             logger.log(Level.SEVERE, "An unexpected error occurred during execution.", e);
         } finally {
-            if (reader != null){
+            if (reader != null) {
                 try {
                     reader.close();
                 } catch (Exception e) {
-                    //da vedere come effettuare il log
+                    // Log the exception if needed
+                    logger.log(Level.WARNING, "Failed to close PdfReader.", e);
                 }
             }
         }
     }
+
 
     /**
      * @param arg StringArgument

@@ -2190,9 +2190,9 @@ public class PdfGraphics2D extends Graphics2D {
          */
         boolean isCompositeFont(Font font) {
             if (!isSupported() || font == null) {
-                assert false;
-                return false;
+                throw new IllegalArgumentException("Font cannot be null and must be supported.");
             }
+
             String fontFamily = font.getFamily();
             if (fontFamily != null && fontFamilyComposite.containsKey(fontFamily)) {
                 return fontFamilyComposite.get(fontFamily);
@@ -2201,14 +2201,18 @@ public class PdfGraphics2D extends Graphics2D {
             try {
                 Object result = Objects.requireNonNull(GET_FONT2D_METHOD).invoke(null, font);
                 boolean composite = result != null && result.getClass() == COMPOSITE_FONT_CLASS;
+
                 if (fontFamily != null) {
                     fontFamilyComposite.put(fontFamily, composite);
                 }
+
                 return composite;
             } catch (Exception e) {
-                return false;
+                // Log the exception for debugging purposes if needed
+                return false; // Or handle it accordingly
             }
         }
+
 
         /**
          * Draw text with the given font at the specified position.

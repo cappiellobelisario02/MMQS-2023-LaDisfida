@@ -375,8 +375,10 @@ public class BarcodeEAN extends Barcode {
             code[k] = sCode.charAt(k) - '0';
         }
         byte[] bars = new byte[TOTALBARS_UPCE];
-        if(code.length > 0){
+
+        if (code.length > 0) {
             flip = (code[0] != 0);
+            sequence = PARITYE[code[code.length - 1]];
         } else {
             logger.info(MSG_EMPTY_ARR);
         }
@@ -385,35 +387,39 @@ public class BarcodeEAN extends Barcode {
         bars[pb++] = 1;
         bars[pb++] = 1;
         bars[pb++] = 1;
-        if(code.length > 0){
-            sequence = PARITYE[code[code.length - 1]];
+
+        // Proceed only if code is valid
+        if (code.length > 1) {
+            for (int k = 1; k < code.length - 1; ++k) {
+                int c = code[k];
+                byte[] stripes = BARS[c];
+                if (sequence[k - 1] == (flip ? EVEN : ODD)) {
+                    bars[pb++] = stripes[0];
+                    bars[pb++] = stripes[1];
+                    bars[pb++] = stripes[2];
+                    bars[pb++] = stripes[3];
+                } else {
+                    bars[pb++] = stripes[3];
+                    bars[pb++] = stripes[2];
+                    bars[pb++] = stripes[1];
+                    bars[pb++] = stripes[0];
+                }
+            }
         } else {
             logger.info(MSG_EMPTY_ARR);
         }
 
-        for (int k = 1; k < code.length - 1; ++k) {
-            int c = code[k];
-            byte[] stripes = BARS[c];
-            if (sequence[k - 1] == (flip ? EVEN : ODD)) {
-                bars[pb++] = stripes[0];
-                bars[pb++] = stripes[1];
-                bars[pb++] = stripes[2];
-                bars[pb++] = stripes[3];
-            } else {
-                bars[pb++] = stripes[3];
-                bars[pb++] = stripes[2];
-                bars[pb++] = stripes[1];
-                bars[pb++] = stripes[0];
-            }
-        }
+        // Set remaining bars
         bars[pb++] = 1;
         bars[pb++] = 1;
         bars[pb++] = 1;
         bars[pb++] = 1;
         bars[pb++] = 1;
         bars[pb++] = 1;
+
         return bars;
     }
+
 
     /**
      * Creates the bars for the barcode supplemental 2.

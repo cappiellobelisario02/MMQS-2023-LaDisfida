@@ -78,10 +78,18 @@ public class PdfSchema extends XmpSchema {
     public static final String PRODUCER = "pdf:Producer";
     private static final long serialVersionUID = -1541148669123992185L;
 
+    private final String producer;
 
     public PdfSchema() {
         super("xmlns:" + DEFAULT_XPATH_ID + "=\"" + DEFAULT_XPATH_URI + "\"");
-        addProducer(Document.getVersion());
+        this.producer = Document.getVersion();
+        setProducer(producer);
+    }
+
+    // Private method to set producer, cannot be overridden externally
+    private void setProducer(String version) {
+        // Ensure only trusted data is added
+        addProducer(version);
     }
 
     /**

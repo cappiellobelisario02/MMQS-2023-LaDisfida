@@ -575,7 +575,7 @@ public class PdfChunk {
      * @return a <CODE>PdfFont</CODE>
      */
 
-    PdfFont font() {
+    PdfFont getFont() { // Renamed method for clarity
         return font;
     }
 

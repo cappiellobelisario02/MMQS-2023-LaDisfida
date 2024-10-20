@@ -209,17 +209,19 @@ public class PdfContentStreamHandler {
      * @param operands  a list with operands
      * @param resources Pdf Resources found in the file containing the stream.
      */
-    public void invokeOperator(PdfLiteral operator, List<PdfObject> operands, PdfDictionary resources){
+    public void invokeOperator(PdfLiteral operator, List<PdfObject> operands, PdfDictionary resources) {
         String operatorName = operator.toString();
         lookupOperator(operatorName)
                 .ifPresent(contentOperator -> {
                     try {
                         contentOperator.invoke(operands, this, resources);
                     } catch (ToUnicodeMapProcessingException | PDFFilterException e) {
-                        logger.info("invoke operator " + operatorName + " failed: " + e);
+                        // Log with a warning level and avoid printing stack traces or sensitive data
+                        logger.warning("Failed to invoke operator: " + operatorName + ". Error: " + e.getMessage());
                     }
                 });
     }
+
 
     void popContext() {
         String contextName = contextNames.pop();
