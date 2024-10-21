@@ -101,7 +101,6 @@ public abstract class AbstractTool implements ActionListener {
      * awtdesktop
      */
     private Desktop awtdesktop = null;
-    private JMenuBar menubar;
 
     /**
      * AbstractTool
@@ -200,7 +199,7 @@ public abstract class AbstractTool implements ActionListener {
      * @return a menubar for this tool
      */
     public JMenuBar getMenubar() {
-        menubar = new JMenuBar();
+        JMenuBar menubar = new JMenuBar();
         JMenu tool = new JMenu(ToolMenuItems.TOOL);
         tool.setMnemonic(KeyEvent.VK_F);
         JMenuItem usage = new JMenuItem(ToolMenuItems.USAGE);
@@ -250,10 +249,6 @@ public abstract class AbstractTool implements ActionListener {
             menubar.add(params);
         }
         return menubar;
-    }
-
-    public void setMenubar(JMenuBar menubar) {
-        this.menubar = menubar;
     }
 
     /**
@@ -321,7 +316,7 @@ public abstract class AbstractTool implements ActionListener {
                     this.execute();
                     try {
                         openDocument();
-                    } catch (Exception e) {
+                    } catch (IOException | InstantiationException | InterruptedException e) {
                         throw new DocumentException(e);
                     }
                 });
@@ -331,7 +326,7 @@ public abstract class AbstractTool implements ActionListener {
                     this.execute();
                     try {
                         printDocument();
-                    } catch (Exception e) {
+                    } catch (IOException | InstantiationException | InterruptedException e) {
                         throw new DocumentException(e);
                     }
                 });
@@ -340,7 +335,7 @@ public abstract class AbstractTool implements ActionListener {
                 executeAndHandleException(() -> {
                     try {
                         Executable.printDocumentSilent(getDestPathPDF());
-                    } catch (IOException | InstantiationException e) {
+                    } catch (IOException | InstantiationException | InterruptedException e) {
                         throw new DocumentPrintingException(e);
                     }
                 });
@@ -373,7 +368,7 @@ public abstract class AbstractTool implements ActionListener {
         }
     }
 
-    private void openDocument() throws IOException, InstantiationException {
+    private void openDocument() throws IOException, InstantiationException, InterruptedException {
         if (awtdesktop != null && awtdesktop.isSupported(Desktop.Action.OPEN)) {
             awtdesktop.open(getDestPathPDF());
         } else {
@@ -381,7 +376,7 @@ public abstract class AbstractTool implements ActionListener {
         }
     }
 
-    private void printDocument() throws IOException, InstantiationException {
+    private void printDocument() throws IOException, InstantiationException, InterruptedException {
         if (awtdesktop != null && awtdesktop.isSupported(Desktop.Action.PRINT)) {
             awtdesktop.print(getDestPathPDF());
         } else {

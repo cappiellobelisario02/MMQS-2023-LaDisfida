@@ -84,8 +84,8 @@ public class Executable {
      * @throws IOException exception thrown by the method body
      */
     private static Process action(final String fileName,
-            String parameters, boolean waitForTermination) throws IOException {
-        Process process = null;
+            String parameters, boolean waitForTermination) throws IOException, InterruptedException {
+        Process process;
         String sanitizedFileName = sanitizeInput(fileName);
         String sanitizedParameters = sanitizeInput(parameters.trim());
         String[] command;
@@ -118,15 +118,13 @@ public class Executable {
         process = new ProcessBuilder(command).start();
 
         try {
-            if (process != null && waitForTermination) {
+            if (waitForTermination) {
                 process.waitFor();
             }
-        } catch (ThreadDeath | InterruptedException e) {
-            if (process != null) {
-                process.destroy();
-            }
+        } catch (InterruptedException e) {
+            process.destroy();
             logger.log(Level.SEVERE, "Interrupted.", e);
-            throw new ThreadDeath();
+            throw new InterruptedException();
         }
 
         return process;
@@ -152,16 +150,6 @@ public class Executable {
 
 
     /**
-     * Creates a command string array from the string arguments.
-     *
-     * @param arguments list of arguments for the command
-     * @return String[] of commands
-     */
-    private static String[] createCommand(String... arguments) {
-        return arguments;
-    }
-
-    /**
      * Opens a PDF document.
      *
      * @param fileName           the getName of the file to open
@@ -170,7 +158,7 @@ public class Executable {
      * @throws IOException on error
      */
     public static Process openDocument(String fileName,
-            boolean waitForTermination) throws IOException {
+            boolean waitForTermination) throws IOException, InterruptedException {
         return action(fileName, "", waitForTermination);
     }
 
@@ -182,7 +170,7 @@ public class Executable {
      * @throws IOException on error
      */
     public static void openDocument(File file,
-            boolean waitForTermination) throws IOException {
+            boolean waitForTermination) throws IOException, InterruptedException {
         openDocument(file.getAbsolutePath(), waitForTermination);
     }
 
@@ -193,7 +181,7 @@ public class Executable {
      * @return a process
      * @throws IOException on error
      */
-    public static Process openDocument(String fileName) throws IOException {
+    public static Process openDocument(String fileName) throws IOException, InterruptedException {
         return openDocument(fileName, false);
     }
 
@@ -203,7 +191,7 @@ public class Executable {
      * @param file the file to open
      * @throws IOException on error
      */
-    public static void openDocument(File file) throws IOException {
+    public static void openDocument(File file) throws IOException, InterruptedException {
         openDocument(file, false);
     }
 
@@ -216,7 +204,7 @@ public class Executable {
      * @throws IOException on error
      */
     public static Process printDocument(String fileName,
-            boolean waitForTermination) throws IOException {
+            boolean waitForTermination) throws IOException, InterruptedException {
         return action(fileName, "/p", waitForTermination);
     }
 
@@ -228,19 +216,8 @@ public class Executable {
      * @throws IOException on error
      */
     public static void printDocument(File file,
-            boolean waitForTermination) throws IOException {
+            boolean waitForTermination) throws IOException, InterruptedException {
         printDocument(file.getAbsolutePath(), waitForTermination);
-    }
-
-    /**
-     * Prints a PDF document.
-     *
-     * @param fileName the getName of the file to print
-     * @return a process
-     * @throws IOException on error
-     */
-    public static Process printDocument(String fileName) throws IOException {
-        return printDocument(fileName, false);
     }
 
     /**
@@ -249,7 +226,7 @@ public class Executable {
      * @param file the File to print
      * @throws IOException on error
      */
-    public static void printDocument(File file) throws IOException {
+    public static void printDocument(File file) throws IOException, InterruptedException {
         printDocument(file, false);
     }
 
@@ -262,7 +239,7 @@ public class Executable {
      * @throws IOException on error
      */
     public static Process printDocumentSilent(String fileName,
-            boolean waitForTermination) throws IOException {
+            boolean waitForTermination) throws IOException, InterruptedException {
         return action(fileName, "/p /h", waitForTermination);
     }
 
@@ -274,19 +251,8 @@ public class Executable {
      * @throws IOException on error
      */
     public static void printDocumentSilent(File file,
-            boolean waitForTermination) throws IOException {
+            boolean waitForTermination) throws IOException, InterruptedException {
         printDocumentSilent(file.getAbsolutePath(), waitForTermination);
-    }
-
-    /**
-     * Prints a PDF document without opening a Dialog box.
-     *
-     * @param fileName the getName of the file to print
-     * @return a process
-     * @throws IOException on error
-     */
-    public static Process printDocumentSilent(String fileName) throws IOException {
-        return printDocumentSilent(fileName, false);
     }
 
     /**
@@ -295,12 +261,12 @@ public class Executable {
      * @param file the File to print
      * @throws IOException on error
      */
-    public static void printDocumentSilent(File file) throws IOException {
+    public static void printDocumentSilent(File file) throws IOException, InterruptedException {
         printDocumentSilent(file, false);
     }
 
     /**
-     * Launches a browser opening an URL.
+     * Launches a browser opening a URL.
      *
      * @param url the URL you want to open in the browser
      * @throws IOException on error

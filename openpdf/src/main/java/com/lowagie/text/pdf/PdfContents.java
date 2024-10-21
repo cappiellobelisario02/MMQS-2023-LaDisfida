@@ -133,11 +133,11 @@ class PdfContents extends PdfStream {
                 content.getInternalBuffer().writeTo(out);
                 out.write(RESTORESTATE);
             }
-            if (text != null) {
-                out.write(SAVESTATE);
-                text.getInternalBuffer().writeTo(out);
-                out.write(RESTORESTATE);
-            }
+
+            out.write(SAVESTATE);
+            text.getInternalBuffer().writeTo(out);
+            out.write(RESTORESTATE);
+
             if (secondContent.size() > 0) {
                 secondContent.getInternalBuffer().writeTo(out);
             }
