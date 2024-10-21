@@ -65,6 +65,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 /**
  * Bookmark processing in a simple way. It has some limitations, mainly the only action types supported are GoTo, GoToR,
@@ -582,17 +583,21 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
         return outline;
     }
 
+    private static final Logger logger = Logger.getLogger(SimpleBookmark.class.getName());
+
     private static void addColor(PdfDictionary outline, Map<String, Object> map) {
         String color = (String) map.get("Color");
         if (color != null) {
             try {
                 PdfArray arr = parseColor(color);
                 outline.put(PdfName.C, arr);
-            } catch (Exception ignored) {
-                // In case it's malformed
+            } catch (Exception e) {
+                // Log the exception with an error level
+                logger.severe("Failed to parse color: " + color + " - " + e.getMessage());
             }
         }
     }
+
 
     private static PdfArray parseColor(String color) {
         PdfArray arr = new PdfArray();

@@ -126,7 +126,11 @@ public class PRStream extends PdfStream {
         } else {
             bytes = conts;
         }
-        setLength(bytes.length);
+        setLengths(bytes.length);
+    }
+
+    void setLengths (int lenghts){
+        setLength(length);
     }
 
     /**

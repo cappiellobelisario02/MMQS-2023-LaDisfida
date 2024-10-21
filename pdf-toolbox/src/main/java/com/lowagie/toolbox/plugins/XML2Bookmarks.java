@@ -48,6 +48,7 @@
  */
 package com.lowagie.toolbox.plugins;
 
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.pdf.PdfWriter;
@@ -58,7 +59,10 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -121,37 +125,54 @@ public class XML2Bookmarks extends AbstractTool {
             }
 
             List<Map<String, Object>> bookmarks = SimpleBookmark.importFromXML(bmReader);
-
             reader.consolidateNamedDestinations();
 
             fouts = new FileOutputStream((File) getValue(DESTFILE));
-
             stamper = new PdfStamper(reader, fouts);
             stamper.setOutlines(bookmarks);
             stamper.setViewerPreferences(reader.getSimpleViewerPreferences() | PdfWriter.PAGE_MODE_USE_OUTLINES);
+        } catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(internalFrame, "File not found: " + e.getMessage(),
+                    e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
+            logger.severe("File not found: " + e.getMessage());
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(internalFrame, "I/O error: " + e.getMessage(),
+                    e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
+            logger.severe("I/O error: " + e.getMessage());
+        } catch (DocumentException e) {
+            JOptionPane.showMessageDialog(internalFrame, "Document error: " + e.getMessage(),
+                    e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
+            logger.severe("Document error: " + e.getMessage());
+        } catch (InstantiationException e) {
+            JOptionPane.showMessageDialog(internalFrame, "Instantiation error: " + e.getMessage(),
+                    e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
+            logger.severe("Instantiation error: " + e.getMessage());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(internalFrame,
-                    e.getMessage(),
+                    "Unexpected error: " + e.getMessage(),
                     e.getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);
-            logger.severe(e.getMessage());
+            logger.severe("Unexpected error: " + e.getMessage());
         } finally {
             if (fouts != null) {
                 try {
                     fouts.close();
-                } catch (Exception e) {
-                    //da vedere come effettuare il log
+                } catch (IOException e) {
+                    logger.severe("Failed to close FileOutputStream: " + e.getMessage());
                 }
             }
             if (stamper != null) {
                 try {
                     stamper.close();
-                } catch (Exception e) {
-                    //da vedere come effettuare il log
+                } catch (IOException e) {
+                    logger.severe("Failed to close PdfStamper: " + e.getMessage());
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
     }
+
 
 
     /**

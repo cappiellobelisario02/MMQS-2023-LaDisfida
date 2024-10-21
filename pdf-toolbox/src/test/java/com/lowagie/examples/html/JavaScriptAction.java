@@ -22,6 +22,8 @@ import com.lowagie.text.html.HtmlTags;
 import com.lowagie.text.html.HtmlWriter;
 import java.io.FileOutputStream;
 
+import static com.lowagie.tools.SplitPdf.logger;
+
 /**
  * Creates a documents with different named actions.
  *
@@ -43,12 +45,10 @@ public class JavaScriptAction {
         Document document = new Document();
 
         try {
-
             // step 2:
-            HtmlWriter.getInstance(document, new FileOutputStream(
-                    "JavaScriptAction.html"));
-            // step 3: we add Javascript as Metadata and we open the document
+            HtmlWriter.getInstance(document, new FileOutputStream("JavaScriptAction.html"));
 
+            // step 3: we add Javascript as Metadata and we open the document
             StringBuilder javaScriptSection = new StringBuilder();
             javaScriptSection.append("\t\tfunction load() {\n");
             javaScriptSection.append("\t\t  alert('Page has been loaded.');\n");
@@ -67,6 +67,7 @@ public class JavaScriptAction {
             document.setJavaScript_onUnLoad("unload()");
 
             document.open();
+
             // step 4: we add some content
             Phrase phrase1 = new Phrase("""
                     There are 3 JavaScript functions in the HTML page, load(), unload() and sayHi().
@@ -82,11 +83,13 @@ public class JavaScriptAction {
             document.add(anchor);
 
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Error occurred while creating JavaScriptAction document: " + de.getMessage());
+        } finally {
+            // step 5: we close the document
+            if (document != null) {
+                document.close();
+            }
         }
-
-        // step 5: we close the document
-        document.close();
-
     }
 }
+

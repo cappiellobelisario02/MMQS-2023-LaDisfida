@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.lowagie.text.pdf.PdfWriter.logger;
+
 class BarcodeMacroPDF417Test {
 
     private static final Path OUTPUT_DIR = Paths.get(".", "target", "test-classes");
@@ -23,9 +25,14 @@ class BarcodeMacroPDF417Test {
 
     @BeforeAll
     static void setup() {
-        OUTPUT_DIR.toFile().mkdirs();
-        COMP_DIR.toFile().mkdirs();
+        if (!OUTPUT_DIR.toFile().mkdirs()) {
+            logger.warning("Output directory already exists or failed to create: " + OUTPUT_DIR);
+        }
+        if (!COMP_DIR.toFile().mkdirs()) {
+            logger.warning("Component directory already exists or failed to create: " + COMP_DIR);
+        }
     }
+
 
     @Test
     void testBarcodePass(){

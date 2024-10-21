@@ -1508,6 +1508,10 @@ public class PdfPKCS7 {
                     signerInfo.add(new DERTaggedObject(false, 1, new DERSet(unauthAttributes)));
                 }
             }
+        } else {
+            // Optional: Handle the case when tsaClient is null
+            // This could include logging or throwing a specific exception if required
+            logger.warning("TSAClient is null. Timestamp will not be added.");
         }
 
         return new DERSet(new DERSequence(signerInfo));

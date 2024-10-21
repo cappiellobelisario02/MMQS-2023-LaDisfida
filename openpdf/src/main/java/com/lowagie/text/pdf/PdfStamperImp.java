@@ -492,9 +492,11 @@ public class PdfStamperImp extends PdfWriter {
         try {
             file.close();
         } catch (Exception e) {
-            // empty on purpose
+            logger.severe("Failed to close file: " + e.getMessage());
+            // Optionally rethrow the exception or handle it further if needed
         }
     }
+
 
     private PdfIndirectReference getEncryptionRef() throws IOException, NoSuchAlgorithmException {
         if (crypto != null) {
@@ -747,12 +749,13 @@ public class PdfStamperImp extends PdfWriter {
         try {
             raf.close();
         } catch (IOException e) {
-            logger.info("Error closing RandomAccessFileOrArray for reader: {}");
-        } catch (Exception e) {
-            // Handle any unexpected exceptions that should not occur
-            logger.info("Unexpected exception occurred while closing reader: {}");
+            logger.info("Error closing RandomAccessFileOrArray for reader: {}" + e.getMessage());
+        } catch (RuntimeException e) {
+            logger.info("Runtime exception occurred while closing reader: {}" + e.getMessage());
+            throw e; // Rethrow runtime exceptions to allow higher-level handling
         }
     }
+
 
     public void addComments(FdfReader fdf) throws IOException {
         if (readers2intrefs.containsKey(fdf)) {

@@ -22,6 +22,8 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import static com.lowagie.tools.SplitPdf.logger;
+
 /**
  * Testing Image getAlignment.
  */
@@ -34,18 +36,17 @@ public class ImagesAlignment {
      */
     public static void main(java.lang.String[] args) {
         System.out.println("Image getAlignment");
-        // step 1: creation of a document-object
+        // Step 1: creation of a document-object
         Document document = new Document();
         try {
-            // step 2:
-            // we create a writer that listens to the document
+            // Step 2: create a writer that listens to the document
             // and directs a PDF-stream to a file
             PdfWriter.getInstance(document, new FileOutputStream("imagesAlignment.pdf"));
 
-            // step 3: we open the document
+            // Step 3: open the document
             document.open();
 
-            // step 4: content
+            // Step 4: content
             Image gif = Image.getInstance("vonnegut.gif");
             gif.setAlignment(Image.RIGHT | Image.TEXTWRAP);
             Image jpeg = Image.getInstance("otsoe.jpg");
@@ -83,9 +84,11 @@ public class ImagesAlignment {
                 document.add(new Phrase("Who is this? "));
             }
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            // Log the error instead of printing it to the console
+            logger.severe("Error occurred: " + de.getMessage());
         }
-        // step 5: we close the document
+        // Step 5: close the document
         document.close();
     }
+
 } 

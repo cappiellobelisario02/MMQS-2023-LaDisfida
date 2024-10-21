@@ -370,9 +370,10 @@ public class Executable {
      * @return true if the current os is Windows
      */
     public static boolean isWindows9X() {
-        String os = System.getProperty(OS).toLowerCase();
-        return os.equals("windows 95") || os.equals("windows 98");
+        String os = System.getProperty(OS);
+        return os != null && (os.equalsIgnoreCase("windows 95") || os.equalsIgnoreCase("windows 98"));
     }
+
 
     /**
      * Checks the Operating System.

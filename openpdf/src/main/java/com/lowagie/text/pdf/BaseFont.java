@@ -722,6 +722,10 @@ public abstract class BaseFont {
         return fontBuilt;
     }
 
+    private static void cacheFont(String key, BaseFont fontBuilt, boolean cached) {
+
+    }
+
     private static boolean shouldEmbedFont(FontOptions options, String name, String encoding) {
         String nameBase = getBaseName(name);
         boolean isBuiltinFonts14 = BuiltinFonts14.containsKey(name);
@@ -756,11 +760,13 @@ public abstract class BaseFont {
         byte[] pfb = options.getPfb();
         boolean noThrow = options.isNoThrow();
 
-        if (BuiltinFonts14.containsKey(name) || name.toLowerCase().endsWith(".afm") || name.toLowerCase().endsWith(".pfm")) {
+        String nameBaseLowerCase = nameBase.toLowerCase(Locale.ENGLISH); // Use English locale for consistent behavior
+
+        if (BuiltinFonts14.containsKey(name) || nameBaseLowerCase.endsWith(".afm") || nameBaseLowerCase.endsWith(".pfm")) {
             Type1Font type1Font = new Type1Font(name, encoding, embedded, ttfAfm, pfb, noThrow);
             type1Font.fastWinansi = encoding.equals(CP1252);
             return type1Font;
-        } else if (nameBase.toLowerCase().endsWith(".ttf") || nameBase.toLowerCase().endsWith(".otf") || nameBase.toLowerCase().indexOf(TTC_KEY) >= 1) {
+        } else if (nameBaseLowerCase.endsWith(".ttf") || nameBaseLowerCase.endsWith(".otf") || nameBaseLowerCase.indexOf(TTC_KEY) >= 1) {
             if (encoding.equals(IDENTITY_H) || encoding.equals(IDENTITY_V)) {
                 TrueTypeFontUnicode trueTypeFontUnicode = new TrueTypeFontUnicode(name, encoding, embedded, ttfAfm, noThrow);
                 LayoutProcessor.loadFont(trueTypeFontUnicode, name);
@@ -776,11 +782,6 @@ public abstract class BaseFont {
         return null;
     }
 
-    private static void cacheFont(String key, BaseFont fontBuilt, boolean cached) {
-        if (cached) {
-            fontCache.putIfAbsent(key, fontBuilt);
-        }
-    }
 
 
 
@@ -874,20 +875,21 @@ public abstract class BaseFont {
      * @throws IOException       on error
      * @since 2.0.8
      */
-    public static String[][] getAllNameEntries(String name, String encoding,
-            byte[] ttfAfm) throws DocumentException, IOException {
+    public static String[][] getAllNameEntries(String name, String encoding, byte[] ttfAfm) throws DocumentException, IOException {
         String nameBase = getBaseName(name);
         BaseFont fontBuilt = null;
-        if (nameBase.toLowerCase().endsWith(".ttf")
-                || nameBase.toLowerCase().endsWith(".otf")
-                || nameBase.toLowerCase().indexOf(TTC_KEY) >= 1) {
-            fontBuilt = new TrueTypeFont(name, CP1252, false, ttfAfm, true,
-                    false);
+        String lowerNameBase = nameBase.toLowerCase(Locale.ROOT); // Use Locale.ROOT for consistent results
+
+        if (lowerNameBase.endsWith(".ttf")
+                || lowerNameBase.endsWith(".otf")
+                || lowerNameBase.indexOf(TTC_KEY) >= 1) {
+            fontBuilt = new TrueTypeFont(name, CP1252, false, ttfAfm, true, false);
         } else {
             fontBuilt = createFont(name, encoding, false, false, ttfAfm, null);
         }
         return fontBuilt.getAllNameEntries();
     }
+
 
     /**
      * Enumerates the postscript font names present inside a True Type Collection.
