@@ -172,9 +172,12 @@ public class PdfShading {
         sp.shading.put(PdfName.SHADINGTYPE, new PdfNumber(sp.shadingType));
         sp.setColorSpace(colorSpace);
         sp.shading.put(PdfName.COORDS, new PdfArray(coords));
-        if (domain != null) {
+
+        // The condition checks if domain is non-null before adding it to the shading dictionary.
+        if (domain != null && domain.length > 0) {
             sp.shading.put(PdfName.DOMAIN, new PdfArray(domain));
         }
+
         sp.shading.put(PdfName.FUNCTION, function.getReference());
         if (extend != null && (extend[0] || extend[1])) {
             PdfArray array = new PdfArray(extend[0] ? PdfBoolean.PDFTRUE : PdfBoolean.PDFFALSE);
@@ -183,6 +186,7 @@ public class PdfShading {
         }
         return sp;
     }
+
 
     public static PdfShading type3(PdfWriter writer, Color colorSpace, float[] coords, float[] domain,
             PdfFunction function, boolean[] extend) {

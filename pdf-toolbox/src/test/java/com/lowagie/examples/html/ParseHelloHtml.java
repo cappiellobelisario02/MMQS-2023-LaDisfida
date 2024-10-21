@@ -20,6 +20,9 @@ import com.lowagie.text.html.HtmlParser;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+
+import static com.lowagie.tools.SplitPdf.logger;
 
 /**
  * Generates a simple 'Hello World' HTML page.
@@ -32,23 +35,30 @@ public class ParseHelloHtml {
     /**
      * Generates an HTML page with the text 'Hello World'
      *
-     * @param args no arguments needed here
      */
-    public static void main(String[] args) {
-        System.out.println("Parse Hello World");
-
+    public static void parseHtmlToPdf() {
         try (Document document = new Document()) {
             PdfWriter.getInstance(document, new FileOutputStream("parseHelloWorld.pdf"));
 
             // Step 2: we open the document
             document.open();
 
-            // Step 3: parsing the HTML document to convert it in PDF
-            HtmlParser.parse(document, ParseHelloHtml.class.getClassLoader()
-                    .getResourceAsStream("com/lowagie/examples/html/parseHelloWorld.html"));
+            // Retrieve the class loader and check for null
+            ClassLoader classLoader = ParseHelloHtml.class.getClassLoader();
+            if (classLoader == null) {
+                throw new IllegalStateException("ClassLoader is null.");
+            }
+
+            // Step 3: parsing the HTML document to convert it into PDF
+            InputStream htmlStream = classLoader.getResourceAsStream("com/lowagie/examples/html/parseHelloWorld.html");
+            if (htmlStream == null) {
+                throw new IOException("Resource not found: com/lowagie/examples/html/parseHelloWorld.html");
+            }
+            HtmlParser.parse(document, htmlStream);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.info("Error parsing HTML to PDF: " + de);
         }
     }
+
 
 }

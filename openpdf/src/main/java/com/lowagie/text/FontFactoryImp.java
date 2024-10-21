@@ -707,7 +707,7 @@ public class FontFactoryImp implements FontProvider {
         int count = 0;
         try {
             if (file.isDirectory() && scanSubdirectories) {
-                    count += registerDirectory(file.getAbsolutePath(), true);
+                count += registerDirectory(file.getAbsolutePath(), true);
             } else {
                 String name = file.getPath();
                 String suffix = name.length() < 4 ? null : name.substring(name.length() - 4).toLowerCase();
@@ -726,12 +726,16 @@ public class FontFactoryImp implements FontProvider {
                     ++count;
                 }
             }
+        } catch (IOException e) {
+            logger.severe("IOException while processing file: " + e.getMessage());
+        } catch (SecurityException e) {
+            logger.severe("SecurityException while processing file: " + e.getMessage());
         } catch (Exception e) {
-            String msg = "Exception threw: " + e;
-            logger.severe(msg);
+            logger.severe("Unexpected exception while processing file: " + e.getMessage());
         }
         return count;
     }
+
 
 
     /**

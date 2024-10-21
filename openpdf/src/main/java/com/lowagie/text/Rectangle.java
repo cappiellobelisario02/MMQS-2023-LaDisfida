@@ -263,7 +263,7 @@ public class Rectangle implements Element {
      */
     public Rectangle(Rectangle rect) {
         this(rect.llx, rect.lly, rect.urx, rect.ury);
-        cloneNonPositionParameters(rect);
+        cloneNonPositionParameter(rect);
     }
 
     // ******************************************************************************
@@ -924,7 +924,7 @@ public class Rectangle implements Element {
      *
      * @param rect <CODE>Rectangle</CODE> to copy from
      */
-    public void cloneNonPositionParameters(Rectangle rect) {
+    public void cloneNonPositionParameter(Rectangle rect) {
         this.rotation = rect.rotation;
         this.backgroundColor = rect.backgroundColor;
         this.border = rect.border;

@@ -193,7 +193,7 @@ public class CFFFont {
 
     public CFFFont(RandomAccessFileOrArray inputbuffer) {
         buf = inputbuffer;
-        seek(0);
+        seekInfo(0);
         initCFFFont();
     }
 
@@ -220,7 +220,7 @@ public class CFFFont {
     private void extractFontNames() {
         for (int j = 0; j < nameOffsets.length - 1; j++) {
             fonts[j] = new Font();
-            seek(nameOffsets[j]);
+            seekInfo(nameOffsets[j]);
             fonts[j].name = "";
             StringBuilder sb;
             for (int k = nameOffsets[j]; k < nameOffsets[j + 1]; k++) {
@@ -233,7 +233,7 @@ public class CFFFont {
 
     private void parseTopDicts() {
         for (int j = 0; j < topdictOffsets.length - 1; j++) {
-            seek(topdictOffsets[j]);
+            seekInfo(topdictOffsets[j]);
             parseTopDictItems(j);
             parsePrivateDict(j);
             parseFdArrayIndex(j);
@@ -278,12 +278,12 @@ public class CFFFont {
     private void handleCharStrings(int fontIndex) {
         int p = getPosition();
         fonts[fontIndex].charstringsOffsets = getIndex(fonts[fontIndex].charstringsOffset);
-        seek(p);
+        seekInfo(p);
     }
 
     private void parsePrivateDict(int fontIndex) {
         if (fonts[fontIndex].privateOffset >= 0) {
-            seek(fonts[fontIndex].privateOffset);
+            seekInfo(fonts[fontIndex].privateOffset);
             while (getPosition() < fonts[fontIndex].privateOffset + fonts[fontIndex].privateLength) {
                 getDictItem();
                 if ("Subrs".equals(key)) {
@@ -300,7 +300,7 @@ public class CFFFont {
             fonts[fontIndex].fdprivateLengths = new int[fdarrayOffsets.length - 1];
 
             for (int k = 0; k < fdarrayOffsets.length - 1; k++) {
-                seek(fdarrayOffsets[k]);
+                seekInfo(fdarrayOffsets[k]);
                 parseFdArrayItems(fontIndex, k, fdarrayOffsets[k + 1]);
             }
         }
@@ -326,12 +326,12 @@ public class CFFFont {
         }
         int j = sid - standardStrings.length;
         int p = getPosition();
-        seek(stringOffsets[j]);
+        seekInfo(stringOffsets[j]);
         StringBuilder s = new StringBuilder();
         for (int k = stringOffsets[j]; k < stringOffsets[j + 1]; k++) {
             s.append(getCard8());
         }
-        seek(p);
+        seekInfo(p);
         return s.toString();
     }
 
@@ -361,7 +361,7 @@ public class CFFFont {
         return offset;
     }
 
-    void seek(int offset) {
+    void seekInfo(int offset) {
         try {
             buf.seek(offset);
         } catch (Exception e) {
@@ -401,7 +401,7 @@ public class CFFFont {
         int count;
         int indexOffSize;
 
-        seek(nextIndexOffset);
+        seekInfo(nextIndexOffset);
         count = getCard16();
         int[] offsets = new int[count + 1];
 
@@ -494,13 +494,18 @@ public class CFFFont {
         while (!done) {
             nibble = getNextNibble(buffer, avail);
             avail = (byte) ((avail == 1) ? 0 : 1);
-            buffer = (avail == 2) ? getCard8() : buffer;
+
+            // Corrected condition to check if avail is 1 to get a new card
+            if (avail == 1) {
+                buffer = getCard8();
+            }
 
             done = appendNibbleToString(item, nibble);
         }
 
         args[argCount++] = item.toString();
     }
+
 
     private int getNextNibble(char buffer, byte avail) {
         return (avail == 1) ? (buffer / 16) : (buffer % 16);
@@ -551,13 +556,13 @@ public class CFFFont {
      */
 
     protected RangeItem getEntireIndexRange(int indexOffset) {
-        seek(indexOffset);
+        seekInfo(indexOffset);
         int count = getCard16();
         if (count == 0) {
             return new RangeItem(buf, indexOffset, 2);
         } else {
             int indexOffSize = getCard8();
-            seek(indexOffset + 2 + 1 + count * indexOffSize);
+            seekInfo(indexOffset + 2 + 1 + count * indexOffSize);
             int size = getOffset(indexOffSize) - 1;
             return new RangeItem(buf, indexOffset,
                     2 + 1 + (count + 1) * indexOffSize + size);

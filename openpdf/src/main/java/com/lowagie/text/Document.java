@@ -108,6 +108,8 @@ public class Document implements DocListener {
     private static final String OPENPDF = "OpenPDF";
     private static final String RELEASE;
     private static final String OPENPDF_VERSION;
+    public static boolean compress;
+
     /**
      * Allows the pdf documents to be produced without compression for debugging purposes.
      */

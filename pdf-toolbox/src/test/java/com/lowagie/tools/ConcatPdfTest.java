@@ -32,7 +32,6 @@ class ConcatPdfTest {
 
     @Test
     void testConcat2() throws IOException {
-
         List<File> sources = new ArrayList<>();
         sources.add(new File("src/test/resources/groups.pdf"));
         sources.add(new File("src/test/resources/pattern.pdf"));
@@ -40,11 +39,17 @@ class ConcatPdfTest {
         sources.add(new File("src/test/resources/layers.pdf"));
 
         File target = new File("target/test-pdfs/concat2.pdf");
-        target.getParentFile().mkdirs();
-        ConcatPdf.concat(sources, target);
 
+        // Check if the directory was created successfully
+        boolean dirsCreated = target.getParentFile().mkdirs();
+        if (!dirsCreated && !target.getParentFile().exists()) {
+            throw new IOException("Failed to create directory: " + target.getParentFile());
+        }
+
+        ConcatPdf.concat(sources, target);
         Assertions.assertEquals(0, countPages(target));
     }
+
 
 
     private int countPages(File file) {

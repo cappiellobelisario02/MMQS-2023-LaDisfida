@@ -143,7 +143,7 @@ public class PdfWriter extends DocWriter implements
     private static int directionR2L;
     private static int printScalingNone;
 
-    static Logger logger = Logger.getLogger(PdfWriter.class.getName());
+    private static Logger logger = Logger.getLogger(PdfWriter.class.getName());
 
     /**
      * The highest generation number possible.
@@ -3517,7 +3517,7 @@ public class PdfWriter extends DocWriter implements
 
         private void writeNewXrefFormat(int refNumber, PdfTrailer trailer, List<Integer> sections) {
             int mid = 8 - (Long.numberOfLeadingZeros(position) >> 3);
-            try (ByteBuffer buf = new ByteBuffer()){
+            try (ByteBuffer buf = new ByteBuffer()) {
                 for (PdfCrossReference xref : xrefs) {
                     xref.toPdf(mid, buf);
                 }
@@ -3533,10 +3533,17 @@ public class PdfWriter extends DocWriter implements
                 PdfIndirectObject indirect = new PdfIndirectObject(refNumber, xr, writer);
                 indirect.writeTo(writer.getOs());
                 writer.crypto = enc;
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "An error occurred while writing new xRef format.", e);
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "I/O error occurred while writing new xRef format.", e);
+            } catch (DocumentException e) {
+                logger.log(Level.SEVERE, "Document error occurred while writing new xRef format.", e);
+            } catch (NullPointerException e) {
+                logger.log(Level.SEVERE, "A null pointer error occurred while writing new xRef format.", e);
+            } catch (RuntimeException e) {
+                logger.log(Level.SEVERE, "A runtime error occurred while writing new xRef format.", e);
             }
         }
+
 
         private PdfArray createIndexArray(List<Integer> sections) {
             PdfArray idx = new PdfArray();

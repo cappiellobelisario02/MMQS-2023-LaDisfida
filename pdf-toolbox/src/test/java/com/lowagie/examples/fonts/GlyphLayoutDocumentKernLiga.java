@@ -28,7 +28,7 @@ import java.nio.file.Paths;
  */
 public class GlyphLayoutDocumentKernLiga {
 
-    public static String INTRO_TEXT = """
+    public static final String INTRO_TEXT = """
             Test of text attributes for kerning and ligatures
             Using LayoutProcessor for glyph layout with Java built-in routines.
 

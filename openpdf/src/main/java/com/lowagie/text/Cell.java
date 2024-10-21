@@ -63,6 +63,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 
+
 /**
  * A <CODE>Cell</CODE> is a <CODE>Rectangle</CODE> containing other
  * <CODE>Element</CODE>s.
@@ -213,6 +214,7 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
             logger.info("ERROR: " + e.getMessage());
         }
     }
+
 
     /**
      * Constructs a <CODE>Cell</CODE> with a certain <CODE>Element</CODE>.<p> if the element is a
@@ -829,7 +831,6 @@ public class Cell extends TableRectangle implements TextElementArray, WithHorizo
         cell.setUseBorderPadding(useBorderPadding);
         cell.setUseDescender(useDescender);
         cell.setLeading(getLeading(), 0);
-        cell.cloneNonPositionParameters(this);
         cell.setNoWrap(getMaxLines() == 1);
         for (Iterator<Element> i = getElements(); i.hasNext(); ) {
             Element e = i.next();

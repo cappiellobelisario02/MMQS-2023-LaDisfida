@@ -9,14 +9,11 @@ import com.lowagie.text.pdf.PdfPKCS7.X509Name;
 import com.lowagie.text.pdf.PdfReader;
 import java.io.IOException;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Logger;
-import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +30,7 @@ class ExtractCertificatesTest {
     void testSha1Pass(){
         Assertions.assertThrows(IOException.class, this::testSha1);
     }
-    void testSha1() throws PDFFilterException, IOException {
+    void testSha1() throws Exception {
         extract("src/test/resources/sample_signed-sha1.pdf", false);
     }
 
@@ -41,7 +38,7 @@ class ExtractCertificatesTest {
     void testSha512Pass(){
         Assertions.assertThrows(IOException.class, this::testSha512);
     }
-    void testSha512() throws PDFFilterException, IOException {
+    void testSha512() throws Exception {
         extract("src/test/resources/sample_signed-sha512.pdf", false);
     }
 
@@ -54,11 +51,11 @@ class ExtractCertificatesTest {
     void testSha256TimeStampPass(){
         Assertions.assertThrows(IOException.class, this::testSha256TimeStamp);
     }
-    void testSha256TimeStamp() throws PDFFilterException, IOException {
+    void testSha256TimeStamp() throws Exception {
         extract("src/test/resources/pdf_digital_signature_timestamp.pdf", true);
     }
 
-    private void extract(String pdf, boolean isExpectedValidTimeStamp) throws PDFFilterException, IOException {
+    private void extract(String pdf, boolean isExpectedValidTimeStamp) throws Exception {
 
         logger.info("pdf getName: " + pdf);
 
@@ -97,10 +94,6 @@ class ExtractCertificatesTest {
                 }
 
             }
-        } catch (SignatureException e) {
-            logger.info("SignatureException: " + e.getMessage());
-        } catch (NoSuchAlgorithmException e) {
-            logger.info("NoSuchAlgorithmException: " + e.getMessage());
         }
 
     }

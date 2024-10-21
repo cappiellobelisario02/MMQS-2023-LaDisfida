@@ -447,14 +447,19 @@ public class PdfAnnotation extends PdfDictionary {
      */
     public static com.lowagie.text.pdf.PdfAnnotation createSquareCircle(PdfWriter writer, Rectangle rect, String contents, boolean square) {
         com.lowagie.text.pdf.PdfAnnotation annot = new com.lowagie.text.pdf.PdfAnnotation(writer, rect);
+
+        // Ensure square can be properly evaluated
         if (square) {
             annot.put(PdfName.SUBTYPE, PdfName.SQUARE);
         } else {
             annot.put(PdfName.SUBTYPE, PdfName.CIRCLE);
         }
+
+        // Set the contents for the annotation with proper encoding
         annot.put(PdfName.CONTENTS, new PdfString(contents, PdfObject.TEXT_UNICODE));
         return annot;
     }
+
 
     public static com.lowagie.text.pdf.PdfAnnotation createMarkup(PdfWriter writer, Rectangle rect, String contents, int type,
             float[] quadPoints) {

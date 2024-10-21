@@ -123,7 +123,7 @@ public class PdfArray extends PdfObject {
      */
     public PdfArray(int[] values) {
         this();
-        add(values);
+        addInternal(values);
     }
 
     /**
@@ -313,7 +313,7 @@ public class PdfArray extends PdfObject {
      * @param values An array of <CODE>int</CODE> values to add
      * @return always <CODE>true</CODE>
      */
-    public boolean add(int[] values) {
+    public boolean addInternal(int[] values) {
         for (int value : values) {
             arrayList.add(new PdfNumber(value));
         }

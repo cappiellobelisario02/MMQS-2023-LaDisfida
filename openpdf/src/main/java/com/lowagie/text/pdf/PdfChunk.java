@@ -944,4 +944,7 @@ public class PdfChunk {
         return font.width(c);
     }
 
+    public PdfFont font() {
+        return null;
+    }
 }

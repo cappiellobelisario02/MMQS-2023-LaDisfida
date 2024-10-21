@@ -599,7 +599,10 @@ public class Barcode128 extends Barcode {
     }
 
     private static char processStartCCommon(String text, StringBuilder out, int index) {
-        int c = text.charAt(index++);
+        // Read the character at the specified index and increment the index
+        char c = text.charAt(index);
+        index++; // Increment the index after accessing the character
+
         if (c == FNC1) {
             out.append(FNC1_INDEX);
         } else if (c < ' ') {
@@ -611,8 +614,10 @@ public class Barcode128 extends Barcode {
             out.append((char) (c - ' '));
             return START_B;
         }
-        return 0;
+
+        return 0; // Return 0 in case of FNC1
     }
+
 
 
     /**

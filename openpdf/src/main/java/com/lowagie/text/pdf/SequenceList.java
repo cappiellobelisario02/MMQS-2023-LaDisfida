@@ -164,16 +164,26 @@ public class SequenceList {
     }
 
     private static void addDescendingRange(List<Integer> list, SequenceList parse, int inc) {
-        inc = inc > 0 ? -1 : inc - 1;
-        if (parse.even) {
-            parse.low &= ~1;
+        // Ensure 'inc' is valid for descending order
+        if (inc >= 0) {
+            inc = -1; // Set to -1 for descending
         } else {
-            parse.low -= (parse.low & 1) == 1 ? 0 : 1;
+            inc--; // Decrement inc to ensure it is negative
         }
+
+        // Adjust parse.low based on its even or odd state
+        if (parse.even) {
+            parse.low &= ~1; // Set low to the nearest even number
+        } else {
+            parse.low -= (parse.low & 1) == 1 ? 0 : 1; // Make low odd if it's not already
+        }
+
+        // Add numbers to the list in descending order
         for (int k = parse.low; k <= parse.high; k += inc) {
             list.add(k);
         }
     }
+
 
     private static void addAscendingRange(List<Integer> list, SequenceList parse, int inc) {
         for (int k = parse.low; k <= parse.high; k += inc) {

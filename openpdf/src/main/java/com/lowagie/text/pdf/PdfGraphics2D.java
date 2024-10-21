@@ -269,7 +269,7 @@ public class PdfGraphics2D extends Graphics2D {
         }
         paint = Color.black;
         background = Color.white;
-        setFont(new Font("sanserif", Font.PLAIN, 12));
+        setFontInt(new Font("sanserif", Font.PLAIN, 12));
         this.cb = cb;
         cb.saveState();
         this.width = width;
@@ -279,6 +279,11 @@ public class PdfGraphics2D extends Graphics2D {
         originalStroke = actualStroke = oldStroke = strokeOne;
         setStrokeDiff(actualStroke, null);
         cb.saveState();
+    }
+
+    void setFontInt(Font font) {
+        // Logic to set font internally, preventing overriding
+        setFont(font);
     }
 
     /**

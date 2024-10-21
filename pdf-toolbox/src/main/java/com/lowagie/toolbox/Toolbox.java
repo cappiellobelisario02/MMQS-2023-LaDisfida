@@ -233,26 +233,32 @@ public class Toolbox extends JFrame implements ActionListener {
     private JMenuBar getMenubar() {
         Properties p = new Properties();
 
-        try (InputStream resourceStream = com.lowagie.toolbox.Toolbox.class.getClassLoader().getResourceAsStream("tools.txt")) {
-            if (resourceStream != null) {
-                p.load(resourceStream);
-            } else {
-                logger.warning("Resource 'tools.txt' not found in classpath.");
-            }
-
-            String userToolsTxtPath = System.getProperty("user.home") + FileSystems.getDefault().getSeparator() + "tools.txt";
-            String usersToolsPathCured = FilenameUtils.normalize(userToolsTxtPath);
-            File userToolsFile = new File(usersToolsPathCured);
-
-            if (userToolsFile.isFile() && userToolsFile.exists()) {
-                try (FileInputStream fis = new FileInputStream(userToolsFile)) {
-                    p.load(fis);
+        ClassLoader classLoader = com.lowagie.toolbox.Toolbox.class.getClassLoader();
+        if (classLoader != null) {
+            try (InputStream resourceStream = classLoader.getResourceAsStream("tools.txt")) {
+                if (resourceStream != null) {
+                    p.load(resourceStream);
+                } else {
+                    logger.warning("Resource 'tools.txt' not found in classpath.");
                 }
+            } catch (IOException e) {
+                logger.severe("Error loading tools properties: " + e.getMessage());
             }
-        } catch (IOException e) {
-            logger.severe("Error loading tools properties: " + e.getMessage());
+        } else {
+            logger.severe("ClassLoader is null, unable to load 'tools.txt'.");
         }
 
+        String userToolsTxtPath = System.getProperty("user.home") + FileSystems.getDefault().getSeparator() + "tools.txt";
+        String usersToolsPathCured = FilenameUtils.normalize(userToolsTxtPath);
+        File userToolsFile = new File(usersToolsPathCured);
+
+        if (userToolsFile.isFile() && userToolsFile.exists()) {
+            try (FileInputStream fis = new FileInputStream(userToolsFile)) {
+                p.load(fis);
+            } catch (IOException e) {
+                logger.severe("Error loading user tools properties: " + e.getMessage());
+            }
+        }
 
         toolmap = new Properties();
         JMenuBar menubar = new JMenuBar();

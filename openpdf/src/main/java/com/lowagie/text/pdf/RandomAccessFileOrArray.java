@@ -62,6 +62,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
@@ -163,13 +164,30 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
 
     private void handleUnreadableFile(String filename) throws IOException {
         if (isRemoteResource(filename)) {
-            try (InputStream is = new URL(filename).openStream()) {
-                this.arrayIn = inputStreamToArray(is);
+            // Validate the URL to prevent unsafe resource access
+            if (isValidUrl(filename)) {
+                try (InputStream is = new URL(filename).openStream()) {
+                    this.arrayIn = inputStreamToArray(is);
+                }
+            } else {
+                throw new MalformedURLException("Invalid URL: " + filename);
             }
         } else {
             readFromInputStream(filename);
         }
     }
+
+    // Helper method to validate the URL
+    private boolean isValidUrl(String url) {
+        try {
+            URL u = new URL(url);
+            // Check the protocol to ensure it's a safe one
+            return "http".equalsIgnoreCase(u.getProtocol()) || "https".equalsIgnoreCase(u.getProtocol());
+        } catch (MalformedURLException e) {
+            return false;
+        }
+    }
+
 
     private boolean isRemoteResource(String filename) {
         // Convalida se il percorso è assoluto

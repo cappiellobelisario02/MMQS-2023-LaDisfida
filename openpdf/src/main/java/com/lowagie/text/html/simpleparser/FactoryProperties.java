@@ -283,11 +283,13 @@ public class FactoryProperties {
     }
 
     private static void handleFontWeight(Map<String, String> h, String value) {
-        String ss = value.trim().toLowerCase();
-        if (ss.equals("bold") || ss.equals("700") || ss.equals("800") || ss.equals("900")) {
+        String ss = value.trim();
+        if (ss.equalsIgnoreCase("bold") || ss.equals("700") || ss.equals("800") || ss.equals("900")) {
             h.put("b", null);
         }
     }
+
+
 
     private static void handleTextDecoration(Map<String, String> h, String value) {
         if (value.trim().toLowerCase().equals(Markup.CSS_VALUE_UNDERLINE)) {

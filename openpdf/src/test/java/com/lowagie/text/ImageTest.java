@@ -72,11 +72,12 @@ class ImageTest {
         }
         long deltaMillis = (System.nanoTime() - start) / 1_000_000 / PERFORMANCE_ITERATIONS;
         if (PERFORMANCE_ITERATIONS > 1) {
-            System.out.format("Load PNG ~time after %d iterations %d ms%n", PERFORMANCE_ITERATIONS, deltaMillis);
+            logger.info(String.format("Load PNG ~time after %d iterations %d ms", PERFORMANCE_ITERATIONS, deltaMillis));
         }
         assertNotNull(image);
         assertThat(image.getRawData()).isNotEmpty();
     }
+
 
     @Test
     void performanceTestJpgWithFilenamePass(){

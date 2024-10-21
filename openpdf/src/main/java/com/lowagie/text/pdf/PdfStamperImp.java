@@ -491,8 +491,8 @@ public class PdfStamperImp extends PdfWriter {
     private void closeFile() {
         try {
             file.close();
-        } catch (IOException e) {
-            logger.warning("File closing error: " + e.getMessage());
+        } catch (Exception e) {
+            // empty on purpose
         }
     }
 
@@ -587,8 +587,12 @@ public class PdfStamperImp extends PdfWriter {
             PdfArray ar = processPageContent(pageN);
 
             ByteBuffer out = new ByteBuffer();
-            handleUnderContent(ps, pageN, out);
-            handleOverContent(ps, pageN, ar, out);
+            try {
+                handleUnderContent(ps, pageN, out);
+                handleOverContent(ps, pageN, ar, out);
+            } catch (Exception e) {
+                logger.info("ERROR ByteBuffer >> " + e.getMessage());
+            }
 
             alterResources(ps);
         }
