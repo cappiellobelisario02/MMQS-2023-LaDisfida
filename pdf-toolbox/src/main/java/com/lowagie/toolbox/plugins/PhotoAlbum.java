@@ -205,9 +205,11 @@ public class PhotoAlbum extends AbstractTool {
 
             logger.info("Added image: " + image.getName());
         } catch (Exception e) {
-            logger.severe(e.getMessage());
+            // Log a generic error without revealing specific details
+            logger.severe("An error occurred while processing the image: " + image.getName());
         }
     }
+
 
     /**
      * @param arg StringArgument

@@ -1315,12 +1315,10 @@ public class PdfSignatureAppearance {
 
     private ByteBuffer createByteBuffer() {
         try {
-            return new ByteBuffer();
-        } catch (Exception e) {
-            // Log a general error without revealing specific details
-            logger.warning("Failed to create ByteBuffer due to an unexpected error.");
-            // You may choose to log the exception at a different level if needed, but avoid exposing details
-            return null; // Return null or handle as appropriate
+            return new ByteBuffer(); // Ensure ByteBuffer has a valid public constructor
+        } catch (RuntimeException e) {
+            logger.warning("Failed to create ByteBuffer due to a runtime error: " + e.getMessage());
+            return null; // Handle as appropriate
         }
     }
 

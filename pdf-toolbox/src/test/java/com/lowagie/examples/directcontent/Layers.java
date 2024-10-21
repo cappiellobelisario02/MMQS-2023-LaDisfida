@@ -22,6 +22,8 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Explains the concept concerning PdfContentByte layers.
@@ -33,15 +35,17 @@ public class Layers {
      *
      * @param args no arguments needed
      */
+
+
     public static void main(String[] args) {
 
-        System.out.println("Layers");
+        Logger logger = Logger.getLogger(Layers.class.getName());
+        logger.info("Layers generation process started");
 
         // step 1: creation of a document-object
         Document document = new Document();
 
         try {
-
             // step 2: creation of the writer
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("layers.pdf"));
 
@@ -49,13 +53,14 @@ public class Layers {
             document.open();
 
             // step 4:
-
             // high level
             Paragraph p = new Paragraph();
             for (int i = 0; i < 100; i++) {
                 p.add(new Chunk("Blah blah blah blah blah. "));
             }
             document.add(p);
+
+            // Add image
             Image img = Image.getInstance("hitchcock.png");
             img.setAbsolutePosition(100, 500);
             document.add(img);
@@ -74,11 +79,15 @@ public class Layers {
             cbu.sanityCheck();
 
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            logger.log(Level.SEVERE, "An error occurred while creating the PDF layers.", de);
+        } finally {
+            // step 5: we close the document
+            if (document.isOpen()) {
+                document.close();
+                logger.info("Document closed successfully.");
+            }
         }
-
-        // step 5: we close the document
-        document.close();
     }
+
 
 }

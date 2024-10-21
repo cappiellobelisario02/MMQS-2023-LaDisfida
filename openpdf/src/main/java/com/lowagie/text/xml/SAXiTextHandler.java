@@ -85,8 +85,11 @@ import java.util.Deque;
 import java.util.EmptyStackException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
+
+import static com.lowagie.text.pdf.PdfReader.logger;
 
 /**
  * This class is a Handler that controls the iText XML to PDF conversion. Subclass it, if you want to change the way
@@ -836,18 +839,22 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
         }
     }
 
-    private float calculateTotalAndUpdateCellNulls(float total, String width, float[] cellWidths,
-            boolean[] cellNulls, int j){
+    private float calculateTotalAndUpdateCellNulls(float total, String width, float[] cellWidths, boolean[] cellNulls, int j) {
         try {
+            // Attempt to parse the width and update cell widths
             cellWidths[j] = Float.parseFloat(width.substring(0, width.length() - 1) + "f");
             total += cellWidths[j];
             cellNulls[j] = false;
-            return total;
-        } catch (Exception e) {
-            return total;
-            // empty on purpose
+        } catch (NumberFormatException nfe) {
+            // Log specific error for invalid float format
+            logger.log(Level.WARNING, "Failed to parse cell width: " + width, nfe);
+        } catch (IndexOutOfBoundsException ioe) {
+            // Log specific error for index out of bounds
+            logger.log(Level.WARNING, "Index out of bounds when updating cell: " + j, ioe);
         }
+        return total;
     }
+
 
     private void updateStackWithTextElementArraysAndElements(){
         try {

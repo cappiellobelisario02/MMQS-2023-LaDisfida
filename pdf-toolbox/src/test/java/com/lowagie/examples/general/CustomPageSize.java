@@ -22,6 +22,8 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of PageSize.
@@ -35,42 +37,47 @@ public class CustomPageSize {
      *
      * @param args no arguments needed here
      */
-    public static void main(String[] args) {
 
-        System.out.println("Custom PageSize and backgroundcolor");
 
-        // step 1: creation of a document-object
-        Rectangle pageSize = new Rectangle(216, 720);
-        pageSize.setBackgroundColor(new java.awt.Color(0xFF, 0xFF, 0xDE));
-        Document document = new Document(pageSize);
+        private static final Logger logger = Logger.getLogger(CustomPageSize.class.getName());
 
-        try {
+        public static void main(String[] args) {
 
-            // step 2:
-            // we create a writer that listens to the document
-            // and directs a PDF-stream to a file
+            logger.info("Custom PageSize and background color");
 
-            PdfWriter.getInstance(document, new FileOutputStream("CustomPageSize.pdf"));
+            // step 1: creation of a document-object
+            Rectangle pageSize = new Rectangle(216, 720);
+            pageSize.setBackgroundColor(new java.awt.Color(0xFF, 0xFF, 0xDE)); // #FFFFDE background color
+            Document document = new Document(pageSize);
 
-            // step 3: we open the document
-            document.open();
+            try {
+                // step 2:
+                // we create a writer that listens to the document
+                // and directs a PDF-stream to a file
+                PdfWriter.getInstance(document, new FileOutputStream("CustomPageSize.pdf"));
 
-            // step 4: we add some paragraphs to the document
-            document.add(new Paragraph("The size of this page is 216x720 points."));
-            document.add(new Paragraph("216pt / 72 points per inch = 3 inch"));
-            document.add(new Paragraph("720pt / 72 points per inch = 10 inch"));
-            document.add(new Paragraph("The size of this page is 3x10 inch."));
-            document.add(new Paragraph("3 inch x 2.54 = 7.62 cm"));
-            document.add(new Paragraph("10 inch x 2.54 = 25.4 cm"));
-            document.add(new Paragraph("The size of this page is 7.62x25.4 cm."));
-            document.add(new Paragraph("The backgroundcolor of the Rectangle used for this PageSize, is #FFFFDE."));
-            document.add(new Paragraph("That's why the background of this document is yellowish..."));
+                // step 3: we open the document
+                document.open();
 
-        } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+                // step 4: we add some paragraphs to the document
+                document.add(new Paragraph("The size of this page is 216x720 points."));
+                document.add(new Paragraph("216pt / 72 points per inch = 3 inch"));
+                document.add(new Paragraph("720pt / 72 points per inch = 10 inch"));
+                document.add(new Paragraph("The size of this page is 3x10 inch."));
+                document.add(new Paragraph("3 inch x 2.54 = 7.62 cm"));
+                document.add(new Paragraph("10 inch x 2.54 = 25.4 cm"));
+                document.add(new Paragraph("The size of this page is 7.62x25.4 cm."));
+                document.add(new Paragraph("The background color of the Rectangle used for this PageSize, is #FFFFDE."));
+                document.add(new Paragraph("That's why the background of this document is yellowish..."));
+
+            } catch (DocumentException | IOException de) {
+                logger.log(Level.SEVERE, "Error occurred while generating PDF: {0}", de.getMessage());
+            } finally {
+                // step 5: we close the document
+                if (document.isOpen()) {
+                    document.close();
+                }
+            }
         }
-
-        // step 5: we close the document
-        document.close();
     }
-}
+

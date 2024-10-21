@@ -14,13 +14,19 @@ package com.lowagie.examples.fonts;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.LayoutProcessor;
 import com.lowagie.text.pdf.PdfWriter;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+
+import static com.lowagie.tools.SplitPdf.logger;
 
 /**
  * Prints bidirectional text with correct glyph layout, kerning and ligatures globally enabled Direction can be chosen
@@ -63,14 +69,13 @@ public class GlyphLayoutDocumentBidiPerFont {
      * @param fileName Name of output file
      * @throws Exception if an error occurs
      */
-    public static void test(String fileName) throws Exception {
-
+    public static void test(String fileName) {
         // Enable the LayoutProcessor with kerning and ligatures
         LayoutProcessor.enableKernLiga();
 
         float fontSize = 12.0f;
 
-        // The  OpenType fonts loaded with FontFactory.register() are
+        // The OpenType fonts loaded with FontFactory.register() are
         // available for glyph layout.
         String fontDir = "com/lowagie/examples/fonts/";
 
@@ -87,7 +92,15 @@ public class GlyphLayoutDocumentBidiPerFont {
             document.add(new Chunk("Guten Tag ", notoSans));
             document.add(new Chunk("السلام عليكم", notoSansArabic));
             document.add(new Chunk(" Good afternoon", notoSans));
+        } catch (FileNotFoundException fnfe) {
+            logger.log(Level.SEVERE, "File not found: {0}", fnfe.getMessage());
+        } catch (DocumentException de) {
+            logger.log(Level.SEVERE, "Error occurred while creating the document: {0}", de.getMessage());
+        } catch (IOException ioe) {
+            logger.log(Level.SEVERE, "I/O error occurred: {0}", ioe.getMessage());
+        } finally {
+            LayoutProcessor.disable();
         }
-        LayoutProcessor.disable();
     }
+
 }

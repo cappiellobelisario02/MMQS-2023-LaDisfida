@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class PageLoader extends BackgroundTask {
 
-    static Logger logger = Logger.getLogger(PageLoader.class.getName());
+    static final Logger logger = Logger.getLogger(PageLoader.class.getName());
 
     /**
      * The PDFFile (SUN's PDF Renderer class)

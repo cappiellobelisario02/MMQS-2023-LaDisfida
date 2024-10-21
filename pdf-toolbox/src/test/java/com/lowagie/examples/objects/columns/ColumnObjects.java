@@ -51,7 +51,7 @@ public class ColumnObjects {
     /**
      * Some text we want to output.
      */
-    public static String[] texts = {
+    public final static String[] texts = {
             "Ideally, choose one title (2-3 if absolutely necessary) that this book should perform like. Include full "
                     + "title, ISBN, author, and any sell through numbers if possible.",
             "One line description about the sales.",

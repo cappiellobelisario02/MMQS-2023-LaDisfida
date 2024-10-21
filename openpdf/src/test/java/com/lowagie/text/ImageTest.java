@@ -41,11 +41,12 @@ class ImageTest {
     void shouldReturnImageWithUrlFromClasspathPass(){
         Assertions.assertThrows(ExceptionConverter.class, this::shouldReturnImageWithUrlFromClasspath);
     }
-    void shouldReturnImageWithUrlFromClasspath() throws Exception {
+    void shouldReturnImageWithUrlFromClasspath() throws IOException, BadElementException {
         String fileName = "H.gif";
         final Image image = Image.getInstanceFromClasspath(fileName);
         assertNotNull(image.getUrl());
     }
+
 
     @Test
     void shouldReturnImageWithoutUrlPass(){

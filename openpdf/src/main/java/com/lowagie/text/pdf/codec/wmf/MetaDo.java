@@ -63,6 +63,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -181,20 +182,24 @@ public class MetaDo {
         if (image.getOriginalType() != Image.ORIGINAL_BMP) {
             throw new IOException(MessageLocalization.getComposedMessage("only.bmp.can.be.wrapped.in.wmf"));
         }
+
         InputStream imgIn = null;
         byte[] data = null;
+
         if (image.getOriginalData() == null) {
-            try{
+            try {
                 imgIn = image.getUrl().openStream();
-            } catch(Exception e){
-                logger.warning("ERROR image.getUrl().openStream() >> ");
+            } catch (MalformedURLException e) {
+                logger.warning("Malformed URL when trying to open image stream: " + e.getMessage());
+                throw new IOException("Failed to open image URL.", e);
+            } catch (IOException e) {
+                logger.warning("IOException occurred while opening image stream: " + e.getMessage());
+                throw new IOException("Failed to open image stream.", e);
             }
+
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            int b = 0;
-            while (true) {
-                assert imgIn != null;
-                if ((b = imgIn.read()) == -1)
-                    break;
+            int b;
+            while ((b = imgIn.read()) != -1) {
                 out.write(b);
             }
             imgIn.close();
@@ -202,8 +207,10 @@ public class MetaDo {
         } else {
             data = image.getOriginalData();
         }
+
         int sizeBmpWords = (data.length - 14 + 1) >>> 1;
         ByteArrayOutputStream os = new ByteArrayOutputStream();
+
         // write metafile header
         writeWord(os, 1);
         writeWord(os, 9);
@@ -212,6 +219,7 @@ public class MetaDo {
         writeWord(os, 1);
         writeDWord(os, 14 + sizeBmpWords); // max record size
         writeWord(os, 0);
+
         // write records
         writeDWord(os, 4);
         writeWord(os, META_SETMAPMODE);
@@ -239,6 +247,7 @@ public class MetaDo {
         writeWord(os, 0);
         writeWord(os, 0);
         os.write(data, 14, data.length - 14);
+
         if ((data.length & 1) == 1) {
             os.write(0);
         }
@@ -248,6 +257,7 @@ public class MetaDo {
         os.close();
         return os.toByteArray();
     }
+
 
     public static void writeWord(OutputStream os, int v) throws IOException {
         os.write(v & 0xff);

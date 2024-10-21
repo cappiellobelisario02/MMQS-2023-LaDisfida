@@ -38,9 +38,10 @@ class FontTest {
 
     private static final float DEFAULT_FONT_SIZE = 16.0f;
 
-    private static Set<Integer> getStyles() {
+    public static Set<Integer> getStyles() {
         return STYLES_TO_TEST_METHOD.keySet();
     }
+
 
     /**
      * Checks if style property value is preserved during font construction through

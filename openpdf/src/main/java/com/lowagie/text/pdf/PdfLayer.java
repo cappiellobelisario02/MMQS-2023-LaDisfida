@@ -104,13 +104,11 @@ public class PdfLayer extends PdfDictionary implements PdfOCG {
      * @return the title layer
      */
     public static PdfLayer createTitle(String title, PdfWriter writer) {
-        if (title == null) {
-            throw new NullPointerException(MessageLocalization.getComposedMessage("title.cannot.be.null"));
-        }
         PdfLayer layer = new PdfLayer(title);
         writer.registerLayer(layer);
         return layer;
     }
+
 
     String getTitle() {
         return title;

@@ -76,6 +76,8 @@ import org.bouncycastle.tsp.TimeStampTokenInfo;
 
 import com.lowagie.text.error_messages.MessageLocalization;
 
+import static com.lowagie.text.pdf.ColumnText.logger;
+
 /**
  * Time Stamp Authority Client interface implementation using Bouncy Castle org.bouncycastle.tsp package.
  * <p>
@@ -211,6 +213,9 @@ public class TSAClientBouncyCastle implements TSAClient {
             // Call the communications layer
             respBytes = getTSAResponse(requestBytes);
 
+            // Log the response bytes (optional)
+            logger.info("Received TSA response bytes: " + Arrays.toString(respBytes));
+
             // Handle the TSA response
             TimeStampResponse response = new TimeStampResponse(respBytes);
 
@@ -224,6 +229,7 @@ public class TSAClientBouncyCastle implements TSAClient {
                 throw new InvalidTokenException(MessageLocalization.getComposedMessage(
                         "invalid.tsa.1.response.code.2", tsaURL, String.valueOf(value)));
             }
+
             // @todo: validate the time stap certificate chain (if we want
             // assure we do not sign using an invalid timestamp).
 
@@ -248,6 +254,7 @@ public class TSAClientBouncyCastle implements TSAClient {
                     "failed.to.get.tsa.response.from.1", tsaURL));
         }
     }
+
 
     /**
      * Get timestamp token - communications layer

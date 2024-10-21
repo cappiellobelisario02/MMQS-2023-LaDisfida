@@ -52,9 +52,11 @@ public class Alignment {
             document.add(jpeg);
             document.add(png);
         } catch (DocumentException | IOException de) {
-            System.err.println(de.getMessage());
+            // Log a generic error without revealing specific details
+            System.err.println("An error occurred while creating the PDF document. Please check the input files.");
         }
         // step 5: we close the document
         document.close();
     }
+
 }

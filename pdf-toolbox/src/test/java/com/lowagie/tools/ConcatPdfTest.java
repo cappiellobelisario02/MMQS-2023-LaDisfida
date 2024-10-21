@@ -18,13 +18,16 @@ class ConcatPdfTest {
 
     @Test
     void testConcat1() throws IOException {
-
         List<File> sources = new ArrayList<>();
         sources.add(new File("src/test/resources/groups.pdf"));
         sources.add(new File("src/test/resources/layers.pdf"));
 
         File target = new File("target/test-pdfs/concat1.pdf");
-        target.getParentFile().mkdirs();
+        boolean dirsCreated = target.getParentFile().mkdirs();
+        if (!dirsCreated && !target.getParentFile().exists()) {
+            throw new IOException("Failed to create target directory: " + target.getParentFile());
+        }
+
         ConcatPdf.concat(sources, target);
 
         Assertions.assertEquals(0, countPages(target));

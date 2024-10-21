@@ -227,8 +227,7 @@ public class ImageXRefViewer extends AbstractTool {
         totalNumberOfPictures = 0;
         try {
             if (getValue(SRCFILE) == null) {
-                throw new InstantiationException(
-                        "You need to choose a sourcefile");
+                throw new InstantiationException("You need to choose a source file");
             }
             EventDispatchingThread task = new EventDispatchingThread() {
                 public Object construct() {
@@ -237,45 +236,30 @@ public class ImageXRefViewer extends AbstractTool {
                         for (int i = 0; i < reader.getXrefSize(); i++) {
                             PdfObject pdfobj = reader.getPdfObject(i);
                             if (pdfobj != null && pdfobj.isStream()) {
-
                                 PdfStream pdfdict = (PdfStream) pdfobj;
-                                PdfObject pdfsubtype = pdfdict
-                                        .get(PdfName.SUBTYPE);
-                                if (pdfsubtype == null) {
+                                PdfObject pdfsubtype = pdfdict.get(PdfName.SUBTYPE);
+                                if (pdfsubtype == null || !pdfsubtype.toString().equals(PdfName.IMAGE.toString())) {
                                     continue;
                                 }
-                                if (!pdfsubtype.toString().equals(
-                                        PdfName.IMAGE.toString())) {
-                                    continue;
-                                }
-                                stringToLog = "total_number_of_pictures: "
-                                        + totalNumberOfPictures;
-                                logger.info(stringToLog);
-                                stringToLog = "height:"
-                                        + pdfdict.get(PdfName.HEIGHT);
-                                logger.info(stringToLog);
-                                stringToLog = "width:"
-                                        + pdfdict.get(PdfName.WIDTH);
-                                logger.info(stringToLog);
-                                stringToLog = "bitspercomponent:"
-                                        + pdfdict.get(PdfName.BITSPERCOMPONENT);
-                                logger.info(stringToLog);
-                                byte[] barr = PdfReader
-                                        .getStreamBytesRaw((PRStream) pdfdict);
-                                java.awt.Image im = Toolkit
-                                        .getDefaultToolkit().createImage(barr);
+
+                                // Logging without revealing sensitive information
+                                logger.fine("Processing image " + totalNumberOfPictures);
+                                logger.fine("Height: " + pdfdict.get(PdfName.HEIGHT));
+                                logger.fine("Width: " + pdfdict.get(PdfName.WIDTH));
+                                logger.fine("Bits per component: " + pdfdict.get(PdfName.BITSPERCOMPONENT));
+
+                                byte[] barr = PdfReader.getStreamBytesRaw((PRStream) pdfdict);
+                                java.awt.Image im = Toolkit.getDefaultToolkit().createImage(barr);
                                 javax.swing.ImageIcon ii = new javax.swing.ImageIcon(im);
 
                                 JLabel label = new JLabel();
                                 label.setIcon(ii);
                                 imagePanel.add(label, String.valueOf(totalNumberOfPictures++));
-
                             }
                         }
                     } catch (InstantiationException | IOException | PDFFilterException ex) {
                         throw new ExceptionConverter(ex);
                     }
-                    //da vedere come effettuare il log
                     internalFrame.setCursor(Cursor.getDefaultCursor());
                     return null;
                 }
@@ -283,11 +267,13 @@ public class ImageXRefViewer extends AbstractTool {
             internalFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             task.start();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e
-                    .getClass().getName(), JOptionPane.ERROR_MESSAGE);
-            logger.info(e.getMessage());
+            // Use SEVERE level for exceptions and avoid exposing message details
+            logger.severe("An error occurred during execution: " + e.getClass().getName());
+            JOptionPane.showMessageDialog(internalFrame, "An error occurred. Please check logs for more details.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     static class SpinnerListener implements ChangeListener {
 

@@ -58,7 +58,7 @@ import javax.swing.JOptionPane;
  */
 public class Encrypt extends AbstractTool {
 
-    static Logger logger = Logger.getLogger(com.lowagie.toolbox.plugins.Encrypt.class.getName());
+    static final Logger logger = Logger.getLogger(com.lowagie.toolbox.plugins.Encrypt.class.getName());
 
     private final static int[] PERMISSIONS = {
             PdfWriter.ALLOW_PRINTING,

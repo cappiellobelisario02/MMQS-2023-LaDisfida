@@ -48,7 +48,7 @@ public class RightToLeft {
     /**
      * arabic text
      */
-    public static String ar3 = """
+    public final static String ar3 = """
         \u062a\u0633\u062c\u0651\u0644 \u0627\u0644\u0622\u0646 \u0644\u062d\u0636\u0648\u0631 \
         \u0627\u0644\u0645\u0624\u062a\u0645\u0631 \u0627\u0644\u062f\u0648\u0644\u064a \
         \u0627\u0644\u0639\u0627\u0634\u0631 \u0644\u064a\u0648\u0646\u064a\u0643\u0648\u062f, \

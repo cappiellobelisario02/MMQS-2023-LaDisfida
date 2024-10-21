@@ -23,7 +23,8 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
 import java.net.URL;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  * Creates 2 documents with links to eachother.
  *
@@ -37,105 +38,108 @@ public class RemoteGoto {
      *
      * @param args no arguments needed here
      */
-    public static void main(String[] args) {
 
-        System.out.println("Remote goto (URLs and local destinations in another document)");
 
-        // step 1: creation of a document-object
-        Document document = new Document();
 
-        try {
+        private static final Logger logger = Logger.getLogger(RemoteGoto.class.getName());
 
-            // step 2:
-            PdfWriter writerA = PdfWriter.getInstance(document, new FileOutputStream("DocumentA.pdf"));
-            PdfWriter writerB = PdfWriter.getInstance(document, new FileOutputStream("DocumentB.pdf"));
+        public static void main(String[] args) {
+            System.out.println("Remote goto (URLs and local destinations in another document)");
 
-            // step 3: we open the document
-            document.open();
+            // Step 1: creation of a document-object
+            Document document = new Document();
 
-            // step 4:
+            try {
+                // Step 2:
+                PdfWriter writerA = PdfWriter.getInstance(document, new FileOutputStream("DocumentA.pdf"));
+                PdfWriter writerB = PdfWriter.getInstance(document, new FileOutputStream("DocumentB.pdf"));
 
-            // we create some content
+                // Step 3: we open the document
+                document.open();
 
-            // a paragraph with a link to an external url
-            Paragraph p1 = new Paragraph("You can turn a Chunk into an ",
-                    FontFactory.getFont(FontFactory.HELVETICA, 12));
-            p1.add(new Chunk("anchor",
-                    FontFactory.getFont(FontFactory.HELVETICA, 12, Font.UNDERLINE, new Color(0, 0, 255))).setAnchor(
-                    new URL("https://github.com/LibrePDF/OpenPDF")));
-            p1.add(", for instance to the iText site.");
+                // Step 4:
 
-            // some paragraph
-            Paragraph p2 = new Paragraph("blah, blah, blah");
+                // We create some content
+                // A paragraph with a link to an external URL
+                Paragraph p1 = new Paragraph("You can turn a Chunk into an ",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12));
+                p1.add(new Chunk("anchor",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12, Font.UNDERLINE, new Color(0, 0, 255))).setAnchor(
+                        new URL("https://github.com/LibrePDF/OpenPDF")));
+                p1.add(", for instance to the iText site.");
 
-            // two paragraphs with a local destination
-            Paragraph p3a = new Paragraph("This paragraph contains a ");
-            p3a.add(new Chunk("local destination in document A",
-                    FontFactory.getFont(FontFactory.HELVETICA, 12, Font.NORMAL,
-                            new Color(0, 255, 0))).setLocalDestination("test"));
-            Paragraph p3b = new Paragraph("This paragraph contains a ");
-            p3b.add(new Chunk("local destination in document B",
-                    FontFactory.getFont(FontFactory.HELVETICA, 12, Font.NORMAL,
-                            new Color(0, 255, 0))).setLocalDestination("test"));
+                // Some paragraph
+                Paragraph p2 = new Paragraph("blah, blah, blah");
 
-            // two paragraphs with a remote goto
-            Paragraph p4a = new Paragraph(
-                    new Chunk("Click this paragraph to go to a certain destination on document B").setRemoteGoto(
-                            "DocumentB.pdf", "test"));
-            Paragraph p4b = new Paragraph(
-                    new Chunk("Click this paragraph to go to a certain destination on document A").setRemoteGoto(
-                            "DocumentA.pdf", "test"));
+                // Two paragraphs with a local destination
+                Paragraph p3a = new Paragraph("This paragraph contains a ");
+                p3a.add(new Chunk("local destination in document A",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12, Font.NORMAL,
+                                new Color(0, 255, 0))).setLocalDestination("test"));
+                Paragraph p3b = new Paragraph("This paragraph contains a ");
+                p3b.add(new Chunk("local destination in document B",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12, Font.NORMAL,
+                                new Color(0, 255, 0))).setLocalDestination("test"));
 
-            // a special remote goto
-            Paragraph p5a = new Paragraph("you can also jump to a ");
-            p5a.add(new Chunk("specific page on another document",
-                    FontFactory.getFont(FontFactory.HELVETICA, 12, Font.ITALIC)).setRemoteGoto("DocumentB.pdf", 3));
+                // Two paragraphs with a remote goto
+                Paragraph p4a = new Paragraph(
+                        new Chunk("Click this paragraph to go to a certain destination on document B").setRemoteGoto(
+                                "DocumentB.pdf", "test"));
+                Paragraph p4b = new Paragraph(
+                        new Chunk("Click this paragraph to go to a certain destination on document A").setRemoteGoto(
+                                "DocumentA.pdf", "test"));
 
-            // we add all the content
-            document.add(p1);
-            document.add(p2);
-            document.add(p2);
-            document.add(p2);
-            document.add(p2);
-            document.add(p2);
-            document.add(p2);
-            document.add(p2);
-            // only for DocumentB.pdf:
-            writerA.pause();
-            document.add(p4b);
-            writerA.resume();
-            // only for DocumentA.pdf:
-            writerB.pause();
-            document.add(p4a);
-            document.add(p5a);
-            writerB.resume();
-            // for both documents:
-            document.add(p2);
-            document.add(p2);
-            document.add(p2);
-            document.add(p2);
-            // only for DocumentB.pdf:
-            writerA.pause();
-            document.add(p3b);
-            document.add(p2);
-            document.add(p2);
-            document.newPage();
-            document.add(p2);
-            document.add(p2);
-            document.newPage();
-            writerA.resume();
-            // only for documentA.pdf
-            writerB.pause();
-            document.add(p3a);
-            writerB.resume();
-            // for both documents
-            document.add(p2);
-            document.add(p2);
-        } catch (Exception ioe) {
-            System.err.println(ioe.getMessage());
+                // A special remote goto
+                Paragraph p5a = new Paragraph("you can also jump to a ");
+                p5a.add(new Chunk("specific page on another document",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12, Font.ITALIC)).setRemoteGoto("DocumentB.pdf", 3));
+
+                // We add all the content
+                document.add(p1);
+                document.add(p2);
+                document.add(p2);
+                document.add(p2);
+                document.add(p2);
+                document.add(p2);
+                document.add(p2);
+                document.add(p2);
+                // Only for DocumentB.pdf:
+                writerA.pause();
+                document.add(p4b);
+                writerA.resume();
+                // Only for DocumentA.pdf:
+                writerB.pause();
+                document.add(p4a);
+                document.add(p5a);
+                writerB.resume();
+                // For both documents:
+                document.add(p2);
+                document.add(p2);
+                document.add(p2);
+                document.add(p2);
+                // Only for DocumentB.pdf:
+                writerA.pause();
+                document.add(p3b);
+                document.add(p2);
+                document.add(p2);
+                document.newPage();
+                document.add(p2);
+                document.add(p2);
+                document.newPage();
+                writerA.resume();
+                // Only for DocumentA.pdf
+                writerB.pause();
+                document.add(p3a);
+                writerB.resume();
+                // For both documents
+                document.add(p2);
+                document.add(p2);
+            } catch (Exception ioe) {
+                logger.log(Level.SEVERE, "Error occurred: {0}", ioe.getMessage());
+            } finally {
+                // Ensure the document is closed in the end
+                document.close();
+            }
         }
-
-        // step 5: we close the document
-        document.close();
     }
-}
+

@@ -474,20 +474,26 @@ public abstract class Image extends Rectangle {
      * @throws MalformedURLException if bad url
      * @throws IOException           if image is not recognized
      */
+
+
     public static com.lowagie.text.Image getInstance(URL url) throws BadElementException, IOException {
         InputStream is = null;
         com.lowagie.text.Image img = null;
+        Logger logger = Logger.getLogger(Image.class.getName());
+
         try {
             is = url.openStream();
             byte[] headerBytes = new byte[8]; // Read 8 bytes for identification
             if (is.read(headerBytes) != 8) {
-                throw new IOException("Failed to read image header from URL: " + url);
+                logger.log(Level.SEVERE, "Failed to read image header from the URL: {0}", url);
+                throw new IOException("Failed to read image header. Invalid image format.");
             }
 
             img = identifyAndLoadImage(headerBytes, url);
 
             if (img == null) {
-                throw new IOException(url.toString() + " is not a recognized image format.");
+                logger.log(Level.SEVERE, "Unrecognized image format for URL: {0}", url);
+                throw new IOException("Image format is not recognized.");
             }
 
             return img;
@@ -498,7 +504,6 @@ public abstract class Image extends Rectangle {
                     is.close();
                 }
             } catch (IOException e) {
-                // Log the error but don't rethrow, to not override previous exceptions
                 logger.warning("Error closing InputStream for URL: " + url + " >> " + e.getMessage());
             }
 
@@ -507,7 +512,6 @@ public abstract class Image extends Rectangle {
                     img.setUrl(url);
                 }
             } catch (Exception e) {
-                // Log this error as well without throwing it
                 logger.warning("Error setting URL for image: " + url + " >> " + e.getMessage());
             }
         }

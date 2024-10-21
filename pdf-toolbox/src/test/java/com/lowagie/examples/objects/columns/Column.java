@@ -33,7 +33,7 @@ public class Column {
     /**
      * a string array we want to output.
      */
-    public static String[] uni = new String[27];
+    public final static String[] uni = new String[27];
     /**
      * a string array we want to output.
      */
@@ -41,7 +41,7 @@ public class Column {
     /**
      * a string array we want to output.
      */
-    public static String[] name = new String[27];
+    public static final String[] name = new String[27];
 
     static {
         uni[0] = "\\u0152";

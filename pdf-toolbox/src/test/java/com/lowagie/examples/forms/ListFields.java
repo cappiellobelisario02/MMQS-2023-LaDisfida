@@ -31,7 +31,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  * Demonstrates the use of PageSize.
  *
@@ -44,8 +45,11 @@ public class ListFields {
      *
      * @param args no arguments needed here
      */
+
+
     public static void main(String[] args) {
-        System.out.println("Listfields");
+        Logger logger = Logger.getLogger(ListFields.class.getName());
+        logger.info("Listfields");
 
         try (PrintStream stream = new PrintStream(new FileOutputStream("listfields.txt"))) {
             stream.println("ListFields output file");
@@ -123,8 +127,9 @@ public class ListFields {
 
             stream.flush(); // Ensure all data is written before closing the stream
         } catch (IOException ioe) {
-            System.err.println(ioe.getMessage());
+            logger.log(Level.SEVERE, "Error occurred while processing the file: {0}", ioe.getMessage());
         }
     }
+
 
 }
