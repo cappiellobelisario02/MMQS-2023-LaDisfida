@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.lowagie.text.exceptions.InvalidPdfException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import java.io.IOException;
 
 class TablePdfTest {
 
@@ -43,7 +44,7 @@ class TablePdfTest {
     void testTableArrayOutOfBoundsSpanPass(){
         Assertions.assertThrows(NullPointerException.class, this::testTableArrayOutOfBoundsSpan);
     }
-    void testTableArrayOutOfBoundsSpan() throws Exception {
+    void testTableArrayOutOfBoundsSpan() throws IOException {
         Document document = PdfTestBase
                 .createTempPdf("testTableArrayOutOfBoundsSpan.pdf");
         document.open();

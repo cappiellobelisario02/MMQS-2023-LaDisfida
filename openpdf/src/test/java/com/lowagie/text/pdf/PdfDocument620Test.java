@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -56,6 +57,8 @@ class PdfDocument620Test {
     }
 
     private void createPdf(String baseFileName, String lineToTest, boolean keepTogether) throws IOException {
+        Logger logger = Logger.getLogger(PdfDocument620Test.class.getName());
+
         String pathname = baseFileName + "KeepTogether" + Boolean.toString(keepTogether).toUpperCase() + ".pdf";
         OutputStream outputStream = Files.newOutputStream(Paths.get("target", pathname));
         try (Document document = new Document()) {
@@ -69,8 +72,8 @@ class PdfDocument620Test {
             Paragraph par3 = new Paragraph("Paragraph 3", FontFactory.getFont(BaseFont.COURIER, 10));
             par3.setLeading(12);
             document.add(par3);
-        } catch (DocumentException ignored) {
-            //eccezione ignorata, non sta da fare niente
+        } catch (DocumentException e) {
+            logger.info("DocumentException: " + e.getMessage());
         }
     }
 }

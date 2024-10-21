@@ -113,7 +113,7 @@ class StylesTest {
     void testNamedFontSizePass(){
         Assertions.assertThrows(IOException.class, this::testNamedFontSize);
     }
-    void testNamedFontSize() throws Exception {
+    void testNamedFontSize() throws IOException {
         List<Element> elements = htmlToPdf("stylesTest/fontSizeNamed.html", "target/Font Size Named.pdf");
         Paragraph paragraph = (Paragraph) elements.get(0);
         Chunk chunk1 = (Chunk) paragraph.get(0);

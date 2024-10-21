@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public class ChainedProperties {
 
@@ -71,6 +72,8 @@ public class ChainedProperties {
     public ChainedProperties() {
         // Empty constructor
     }
+
+    static final Logger logger = Logger.getLogger(ChainedProperties.class.getName());
 
     public String getProperty(String key) {
         return findProperty(key).orElse(null);
@@ -132,8 +135,7 @@ public class ChainedProperties {
             int fontSizeIndex = calculateFontSizeIndex(sizeValue);
             prop.put(ElementTags.SIZE, Integer.toString(fontSizes[fontSizeIndex]));
         } catch (NumberFormatException e) {
-            // Handle invalid size value
-            // For example: log a warning or set a default size
+            logger.warning("Could not parse font size: " + sizeValue);
         }
     }
 

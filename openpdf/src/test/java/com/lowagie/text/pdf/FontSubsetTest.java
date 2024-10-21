@@ -11,11 +11,15 @@ import com.lowagie.text.Paragraph;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class FontSubsetTest {
+
+    Logger logger = Logger.getLogger(FontSubsetTest.class.getName());
 
     /*
      * See : https://github.com/LibrePDF/OpenPDF/issues/623
@@ -40,12 +44,12 @@ class FontSubsetTest {
         Assertions.assertThrows(NullPointerException.class, this::includeCidSetTest);
     }
 
-    void includeCidSetTest() throws Exception {
+    void includeCidSetTest() throws IOException {
         assertCidSetPresence(true);
         assertCidSetPresence(false);
     }
 
-    private void assertCidSetPresence(boolean includeCidSet) throws Exception {
+    private void assertCidSetPresence(boolean includeCidSet) throws IOException {
         byte[] documentBytes;
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             Document document = new Document();
@@ -82,6 +86,8 @@ class FontSubsetTest {
                     break;
                 }
             }
+        } catch (PDFFilterException e) {
+            logger.info("PDFFilterException: " + e.getMessage());
         }
         assertTrue(fontFound);
     }

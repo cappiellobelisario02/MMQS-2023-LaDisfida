@@ -19,6 +19,7 @@ import com.lowagie.text.FontFactory;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.LayoutProcessor;
 import com.lowagie.text.pdf.PdfWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -67,7 +68,7 @@ public class GlyphLayoutDocumentKernLigaPerFont {
      * @param fileName Name of output file
      * @throws Exception if an error occurs
      */
-    public static void test(String fileName) throws Exception {
+    public static void test(String fileName) throws IOException {
 
         // Enable the LayoutProcessor
         LayoutProcessor.enable();

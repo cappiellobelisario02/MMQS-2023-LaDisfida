@@ -27,7 +27,7 @@ public class CrossReferenceTableEncodingTest {
     // -Dfile.encoding=IBM273 from the IDE. Maven won't accept this property.
     @Disabled("This test runs ok, if it is run alone. It fails when run with other tests in the IDE. Probably it is because some 'static' state in another class.")
     @Test
-    void testCrossReferenceTableEncoding() throws Exception {
+    void testCrossReferenceTableEncoding() throws IOException {
         final String actualPDF = generateSimplePdf();
         final String expectedPDF = readExpectedFile();
         String actual = filterPdf(actualPDF);

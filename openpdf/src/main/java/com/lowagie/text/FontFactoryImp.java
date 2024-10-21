@@ -540,7 +540,7 @@ public class FontFactoryImp implements FontProvider {
      * @param path the path to a ttf- or ttc-file
      */
 
-    public void register(String path) throws Exception {
+    public void register(String path) throws IOException {
         register(path, null);
     }
 
@@ -551,7 +551,7 @@ public class FontFactoryImp implements FontProvider {
      * @param alias the alias you want to use for the font
      */
 
-    public void register(String path, String alias) throws Exception {
+    public void register(String path, String alias) throws IOException {
         String lowerCasePath = path.toLowerCase();
 
         if (isTtfOrOtf(lowerCasePath)) {
@@ -642,7 +642,7 @@ public class FontFactoryImp implements FontProvider {
         }
     }
 
-    private void registerTrueTypeCollection(String path) throws Exception {
+    private void registerTrueTypeCollection(String path) throws IOException {
         String[] names = BaseFont.enumerateTTCNames(path);
         for (int i = 0; i < names.length; i++) {
             register(path + "," + i, null);

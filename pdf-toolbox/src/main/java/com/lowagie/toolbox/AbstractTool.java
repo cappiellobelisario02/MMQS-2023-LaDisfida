@@ -36,6 +36,7 @@
 package com.lowagie.toolbox;
 
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.exceptions.ActionException;
 import com.lowagie.text.exceptions.DocumentPrintingException;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.tools.Executable;
@@ -62,7 +63,7 @@ import javax.swing.JOptionPane;
  */
 public abstract class AbstractTool implements ActionListener {
 
-    static Logger logger = Logger.getLogger(com.lowagie.toolbox.AbstractTool.class.getName());
+    static final Logger logger = Logger.getLogger(com.lowagie.toolbox.AbstractTool.class.getName());
 
     /**
      * a menu option
@@ -367,7 +368,7 @@ public abstract class AbstractTool implements ActionListener {
     private void executeAndHandleException(Runnable action) {
         try {
             action.run();
-        } catch (Exception e) {
+        } catch (ActionException e) {
             logger.info(e.getMessage());
         }
     }

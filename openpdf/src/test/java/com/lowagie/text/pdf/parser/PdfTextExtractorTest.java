@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import org.apache.fop.pdf.PDFFilterException;
@@ -81,17 +82,17 @@ class PdfTextExtractorTest {
     void testInvalidPageNumberPass(){
         Assertions.assertThrows(NullPointerException.class, this::testInvalidPageNumber);
     }
-    void testInvalidPageNumber() throws Exception {
+    void testInvalidPageNumber() throws PDFFilterException, URISyntaxException, IOException {
         assertThat(getString("HelloWorldMeta.pdf", 0), is(emptyString()));
     }
 
     @Test
     void testZapfDingbatsFontPass(){
-        Assertions.assertThrows(NullPointerException.class, this::testZapfDingbatsFont);
+        Assertions.assertThrows(IOException.class, this::testZapfDingbatsFont);
     }
-    void testZapfDingbatsFont() throws Exception {
+    void testZapfDingbatsFont() throws PDFFilterException, IOException {
         Document document = new Document();
-        Document.compress = false;
+        Document.CompressionSettings.setCompress(false);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, byteArrayOutputStream);
         document.open();
@@ -101,16 +102,16 @@ class PdfTextExtractorTest {
         document.close();
         PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(new PdfReader(byteArrayOutputStream.toByteArray()));
         Assertions.assertEquals("✧❒❅❅❋", pdfTextExtractor.getTextFromPage(1));
-        Document.compress = true;
+        Document.CompressionSettings.setCompress(true);
     }
 
     @Test
     void testSymbolFontPass(){
         Assertions.assertThrows(NullPointerException.class, this::testSymbolFont);
     }
-    void testSymbolFont() throws Exception {
+    void testSymbolFont() throws PDFFilterException, IOException {
         Document document = new Document();
-        Document.compress = false;
+        Document.CompressionSettings.setCompress(false);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, byteArrayOutputStream);
         document.open();
@@ -121,7 +122,7 @@ class PdfTextExtractorTest {
         document.close();
         PdfTextExtractor pdfTextExtractor = new PdfTextExtractor(new PdfReader(byteArrayOutputStream.toByteArray()));
         Assertions.assertEquals("ετε", pdfTextExtractor.getTextFromPage(1));
-        Document.compress = true;
+        Document.CompressionSettings.setCompress(true);
     }
 
     @Test
@@ -224,13 +225,13 @@ class PdfTextExtractorTest {
         }
     }
 
-    private String getString(String fileName, int pageNumber) throws Exception {
+    private String getString(String fileName, int pageNumber) throws URISyntaxException, PDFFilterException, IOException {
         URL resource = getClass().getResource("/" + fileName);
         assert resource != null;
         return getString(new File(resource.toURI()), pageNumber);
     }
 
-    private String getString(File file, int pageNumber) throws Exception {
+    private String getString(File file, int pageNumber) throws IOException, PDFFilterException {
         byte[] pdfBytes = readDocument(file);
         final PdfReader pdfReader = new PdfReader(pdfBytes);
 

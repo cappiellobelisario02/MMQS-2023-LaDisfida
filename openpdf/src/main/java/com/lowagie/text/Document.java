@@ -113,7 +113,11 @@ public class Document implements DocListener {
      */
     public class CompressionSettings {
         // Make the field private to encapsulate it
-        private static final boolean COMPRESS = true;
+        private static boolean COMPRESS = true;
+
+        public static void setCompress(boolean compress){
+            COMPRESS = compress;
+        }
 
         // Provide a public getter to access the value
         public static boolean isCompressEnabled() {

@@ -22,7 +22,9 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,7 +36,9 @@ class AwtImage {
      * Uses a java.awt.Image object to construct a com.lowagie.text.Image object.
      */
     @Test
-    void testAwtImage() throws Exception {
+    void testAwtImage() throws IOException {
+        Logger logger = Logger.getLogger(AwtImage.class.getName());
+
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             // step 1: creation of a document-object
             Document document = new Document();
@@ -72,6 +76,8 @@ class AwtImage {
 
             // Files.write(Paths.get("AwtImage.pdf"), outputStream.toByteArray()); // Use to write the PDF to file
             assertNotEquals(0, outputStream.size());
+        } catch (InterruptedException e) {
+            logger.info("getInstance() interrupted!!");
         }
     }
 }

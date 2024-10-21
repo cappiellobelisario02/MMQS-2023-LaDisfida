@@ -50,7 +50,9 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.InitializationException;
 import com.lowagie.text.exceptions.InvalidPdfException;
+import com.lowagie.text.exceptions.NewClassException;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -59,7 +61,7 @@ import java.util.logging.Logger;
  */
 public class PRTokeniser implements AutoCloseable {
 
-    static Logger logger = Logger.getLogger(PRTokeniser.class.getName());
+    static final Logger logger = Logger.getLogger(PRTokeniser.class.getName());
 
     public static final int TK_NUMBER = 1;
     public static final int TK_STRING = 2;
@@ -182,7 +184,7 @@ public class PRTokeniser implements AutoCloseable {
     private static PRTokeniser initializeTokeniser(byte[] line) {
         try {
             return new PRTokeniser(line);
-        } catch (InstantiationError e) {
+        } catch (NewClassException e) {
             logger.info("ERROR >> PRTokeniser");
             return null;
         }

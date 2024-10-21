@@ -46,6 +46,7 @@
  */
 package com.lowagie.text.pdf;
 
+import com.lowagie.text.BadElementException;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.ExceptionConverter;
@@ -55,6 +56,7 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.AnnotationException;
 import com.lowagie.text.exceptions.ColorParseException;
 import com.lowagie.text.exceptions.InvalidColorValueException;
+import com.lowagie.text.exceptions.NewClassException;
 import com.lowagie.text.exceptions.ReadOnlyException;
 import java.awt.Color;
 import java.io.IOException;
@@ -280,7 +282,7 @@ public class AcroFields {
         PRTokeniser tk = null;
         try {
             tk = new PRTokeniser(PdfEncodings.convertToBytes(Arrays.toString(da), null));
-        } catch (NullPointerException e) {
+        } catch (NewClassException e) {
             logger.info("PRTokeniser error: " + e.getMessage());
         } finally {
             closePRTokeniser(tk);
@@ -1706,7 +1708,7 @@ public class AcroFields {
         Image img;
         try {
             img = Image.getInstance(Base64.getDecoder().decode(value));
-        } catch (InstantiationError e) {
+        } catch (BadElementException e) {
             return;
         }
         PushbuttonField pb = getNewPushbuttonFromField(name);

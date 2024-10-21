@@ -634,7 +634,12 @@ class TrueTypeFont extends BaseFont {
             readTables();
             processFontDetails();
         } finally {
-            closeRandomAccessFileOrArray();
+            try {
+                closeRandomAccessFileOrArray();
+            } catch (IOException e) {
+                // Gestione dell'eccezione durante la chiusura
+                logger.warning("Failed to close RandomAccessFileOrArray: " + e.getMessage());
+            }
         }
     }
 

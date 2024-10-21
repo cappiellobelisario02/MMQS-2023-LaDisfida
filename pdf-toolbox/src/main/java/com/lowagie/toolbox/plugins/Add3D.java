@@ -137,8 +137,8 @@ public class Add3D extends AbstractTool {
             PdfAction ac = PdfAction.javaScript(js, wr);
             ff.setAction(ac);
             wr.addAnnotation(ff);
-        } catch (IOException | DocumentException ignored) {
-            // ignored
+        } catch (IOException | DocumentException e) {
+            logger.warning("An unexpected error occurred during execution. >> " + e.getMessage());
         }
     }
 

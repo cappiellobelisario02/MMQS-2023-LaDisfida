@@ -48,7 +48,7 @@ class AdvanceTypographyTest {
     void testSubstitutionWithMergePass(){
         org.junit.jupiter.api.Assertions.assertThrows(IOException.class, this::testSubstitutionWithMerge);
     }
-    void testSubstitutionWithMerge() throws Exception {
+    void testSubstitutionWithMerge() throws IOException {
         char[] expectedOutput = {254, 278, 390, 314, 331, 376, 254, 285, 278};
         byte[] processedContent = FopGlyphProcessor.convertToBytesWithGlyphs(
                 BaseFont.createFont("fonts/Viaoda_Libre/ViaodaLibre-Regular.ttf", BaseFont.IDENTITY_H, false),
@@ -61,7 +61,7 @@ class AdvanceTypographyTest {
     void testSubstitutionWithMergeWithLayoutProcessorEnabledPass(){
         org.junit.jupiter.api.Assertions.assertThrows(IOException.class, this::testSubstitutionWithMergeWithLayoutProcessorEnabled);
     }
-    void testSubstitutionWithMergeWithLayoutProcessorEnabled() throws Exception {
+    void testSubstitutionWithMergeWithLayoutProcessorEnabled() throws IOException {
         LayoutProcessor.enable();
         char[] expectedOutput = {254, 278, 390, 314, 331, 376, 254, 285, 278};
         byte[] processedContent = FopGlyphProcessor.convertToBytesWithGlyphs(
