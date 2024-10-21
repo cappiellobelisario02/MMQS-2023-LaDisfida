@@ -22,6 +22,7 @@ import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -36,7 +37,7 @@ class ExtraStyles {
      * Underline or strike through text.
      */
     @Test
-    void testUnderlineAndStrikeThrough() throws Exception {
+    void testUnderlineAndStrikeThrough() throws IOException {
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             // step 1: creation of a document-object

@@ -67,7 +67,7 @@ public class Handouts extends AbstractTool {
         addVersion("$Id: Handouts.java 3271 2008-04-18 20:39:42Z xlv $");
     }
 
-    static Logger logger = Logger.getLogger(Handouts.class.getName());
+    static final Logger logger = Logger.getLogger(Handouts.class.getName());
 
     /**
      * Constructs a Handouts object.
@@ -113,7 +113,7 @@ public class Handouts extends AbstractTool {
             float[] y2 = calculateY2Values(pages, y1);
 
             processDocument(src, dest, pages, y1, y2);
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException | InstantiationException e) {
             showError(e);
         }
     }
@@ -260,11 +260,11 @@ public class Handouts extends AbstractTool {
         return (File) getValue(DESTFILE);
     }
 
-    private int tryParsingPagesNumber() {
+    private int tryParsingPagesNumber() throws InstantiationException {
         int pagesToParse;
         try {
             pagesToParse = Integer.parseInt((String) getValue("pages"));
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             pagesToParse = 4;
         }
         return pagesToParse;

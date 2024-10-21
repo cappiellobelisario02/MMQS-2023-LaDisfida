@@ -37,6 +37,7 @@ import java.io.Serial;
 import java.util.EmptyStackException;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -170,13 +171,14 @@ public class Events {
          */
         @Override
         public void onOpenDocument(PdfWriter writer, Document document) {
+            Logger logger = Logger.getLogger(Events.class.getName());
             try {
                 bf = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252,
                         BaseFont.NOT_EMBEDDED);
                 cb = writer.getDirectContent();
                 template = cb.createTemplate(50, 50);
-            } catch (DocumentException | IOException ignored) {
-                //eccezioni ignorate, non sta da fare niente
+            } catch (DocumentException | IOException e) {
+                logger.warning("Error: " + e.getMessage());
             }
         }
 

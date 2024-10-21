@@ -706,7 +706,7 @@ public class PdfCopy extends PdfWriter {
                 }
 
                 pageN.put(PdfName.RESOURCES, pageResources.getResources());
-            } catch (Exception e) {
+            } catch (IOException | PdfException e) {
                 String msg = "Error altering PDF contents: " + e.getClass().getSimpleName();
                 logger.warning(msg);
             }

@@ -59,7 +59,7 @@ import java.util.logging.Logger;
  */
 public class PRTokeniser implements AutoCloseable {
 
-    private static final Logger logger = Logger.getLogger(PRTokeniser.class.getName());
+    static Logger logger = Logger.getLogger(PRTokeniser.class.getName());
 
     public static final int TK_NUMBER = 1;
     public static final int TK_STRING = 2;

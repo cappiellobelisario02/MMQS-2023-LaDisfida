@@ -156,7 +156,7 @@ import java.util.logging.Logger;
  */
 public final class Pfm2afm {
 
-    static Logger logger = Logger.getLogger(com.lowagie.text.pdf.Pfm2afm.class.getName());
+    static final Logger logger = Logger.getLogger(com.lowagie.text.pdf.Pfm2afm.class.getName());
 
     private RandomAccessFileOrArray in;
     private PrintWriter out;
@@ -555,7 +555,7 @@ public final class Pfm2afm {
     private static RandomAccessFileOrArray createRandomAccessFileOrArray(String fileName) {
         try {
             return new RandomAccessFileOrArray(fileName);
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.warning("Failed to create RandomAccessFileOrArray for file: " + fileName);
             return null;
         }

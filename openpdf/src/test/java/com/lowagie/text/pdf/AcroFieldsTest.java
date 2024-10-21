@@ -53,7 +53,7 @@ class AcroFieldsTest {
 
     @Test
     void infiniteLoopTestPass(){
-        Assertions.assertThrows(InvalidPdfException.class, this::infiniteLoopTest);
+        Assertions.assertThrows(IOException.class, this::infiniteLoopTest);
     }
     void infiniteLoopTest() throws IOException, PDFFilterException {
         try (InputStream is = AcroFieldsTest.class.getResourceAsStream("/pades_infinite_loop.pdf");

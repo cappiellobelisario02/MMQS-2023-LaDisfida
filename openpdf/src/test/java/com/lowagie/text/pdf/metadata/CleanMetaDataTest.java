@@ -13,8 +13,10 @@ import com.lowagie.text.xml.xmp.XmpWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -58,9 +60,9 @@ class CleanMetaDataTest {
 
     @Test
     void testAddedMetadataPass(){
-        Assertions.assertThrows(NullPointerException.class, this::testAddedMetadata);
+        Assertions.assertThrows(IOException.class, this::testAddedMetadata);
     }
-    void testAddedMetadata() throws Exception {
+    void testAddedMetadata() throws PDFFilterException, IOException {
         String authorname = "Mr Bean";
         String title = "The title";
 
@@ -108,7 +110,7 @@ class CleanMetaDataTest {
     void testStamperEncryptMetadataPass(){
         Assertions.assertThrows(IOException.class, this::testStamperEncryptMetadata);
     }
-    void testStamperEncryptMetadata() throws Exception {
+    void testStamperEncryptMetadata() throws PDFFilterException, IOException, NoSuchAlgorithmException {
         byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), true, createCleanerMoreInfo());
         PdfReader r = new PdfReader(data);
         Assertions.assertNull(r.getInfo().get("Producer"));
@@ -142,7 +144,7 @@ class CleanMetaDataTest {
     void testCleanMetadataMethodInStamperPass(){
         Assertions.assertThrows(IOException.class, this::testCleanMetadataMethodInStamper);
     }
-    void testCleanMetadataMethodInStamper() throws Exception {
+    void testCleanMetadataMethodInStamper() throws IOException, PDFFilterException, NoSuchAlgorithmException {
         byte[] data = cleanMetadata(new File("src/test/resources/HelloWorldMeta.pdf"));
         PdfReader r = new PdfReader(data);
         Assertions.assertNull(r.getInfo().get("Producer"));
@@ -174,7 +176,8 @@ class CleanMetaDataTest {
     void skipMetaDataUpdateFirstRevisionTestPass(){
         Assertions.assertThrows(IOException.class, this::skipMetaDataUpdateFirstRevisionTest);
     }
-    void skipMetaDataUpdateFirstRevisionTest() throws Exception {
+    void skipMetaDataUpdateFirstRevisionTest()
+            throws IOException, NoSuchAlgorithmException, PDFFilterException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
         PdfStamper stamp = new PdfStamper(reader, baos, '\0', false);
@@ -217,7 +220,7 @@ class CleanMetaDataTest {
     void skipInfoUpdateFirstRevisionTestPass(){
         Assertions.assertThrows(IOException.class, this::skipInfoUpdateFirstRevisionTest);
     }
-    void skipInfoUpdateFirstRevisionTest() throws Exception {
+    void skipInfoUpdateFirstRevisionTest() throws PDFFilterException, IOException, NoSuchAlgorithmException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
         PdfStamper stamp = new PdfStamper(reader, baos, '\0', false);
@@ -244,7 +247,7 @@ class CleanMetaDataTest {
     void testXMPMetadataPass(){
         Assertions.assertThrows(IOException.class, this::testXMPMetadata);
     }
-    void testXMPMetadata() throws Exception {
+    void testXMPMetadata() throws PDFFilterException, IOException, NoSuchAlgorithmException {
         File file = new File("src/test/resources/HelloWorldMeta.pdf");
         PdfReader reader = new PdfReader(file.getAbsolutePath());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -279,7 +282,7 @@ class CleanMetaDataTest {
         }
     }
 
-    private byte[] cleanMetadata(File origin) throws Exception {
+    private byte[] cleanMetadata(File origin) throws PDFFilterException, IOException, NoSuchAlgorithmException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfReader reader = new PdfReader(origin.getAbsolutePath());
         PdfStamper stamp = new PdfStamper(reader, baos);
@@ -288,7 +291,8 @@ class CleanMetaDataTest {
         return baos.toByteArray();
     }
 
-    private byte[] addWatermark(File origin, boolean encrypt, HashMap<String, String> moreInfo) throws Exception {
+    private byte[] addWatermark(File origin, boolean encrypt, HashMap<String, String> moreInfo)
+            throws PDFFilterException, IOException, NoSuchAlgorithmException {
         int textAngle = 45;
         int text1PosX = 300;
         int text1PosY = 430;

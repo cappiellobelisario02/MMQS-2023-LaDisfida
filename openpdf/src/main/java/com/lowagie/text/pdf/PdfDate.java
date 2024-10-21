@@ -219,7 +219,7 @@ public class PdfDate extends PdfString {
             parseDateComponents(s, slen, calendar);
 
             return calendar;
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             return null;
         }
     }

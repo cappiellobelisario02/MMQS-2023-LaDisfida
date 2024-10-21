@@ -1,9 +1,7 @@
 package com.lowagie.text.pdf.sign;
 
-import static com.ibm.icu.impl.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.lowagie.text.DocumentException;
 import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.AcroFields;
 import com.lowagie.text.pdf.PdfPKCS7;
@@ -53,21 +51,9 @@ class ExtractCertificatesTest {
     void testSha256TimeStampPass(){
         Assertions.assertThrows(IOException.class, this::testSha256TimeStamp);
     }
-    void testSha256TimeStamp() {
-        try {
-            extract("src/test/resources/pdf_digital_signature_timestamp.pdf", true);
-        } catch (IOException e) {
-            // Handle IOException specifically, providing a meaningful message
-            fail("IOException occurred while extracting timestamps: " + e.getMessage());
-        } catch (DocumentException e) {
-            // Handle DocumentException specifically
-            fail("DocumentException occurred while extracting timestamps: " + e.getMessage());
-        } catch (Exception e) {
-            // Catch any other unexpected exceptions
-            fail("An unexpected error occurred: " + e.getMessage());
-        }
+    void testSha256TimeStamp() throws Exception {
+        extract("src/test/resources/pdf_digital_signature_timestamp.pdf", true);
     }
-
 
     private void extract(String pdf, boolean isExpectedValidTimeStamp) throws Exception {
 

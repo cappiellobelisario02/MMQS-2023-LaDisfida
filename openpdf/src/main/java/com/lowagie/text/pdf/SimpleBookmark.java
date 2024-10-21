@@ -48,6 +48,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.error_messages.MessageLocalization;
+import com.lowagie.text.exceptions.ActionException;
 import com.lowagie.text.exceptions.TagException;
 import com.lowagie.text.xml.XMLUtil;
 import com.lowagie.text.xml.simpleparser.IanaEncodings;
@@ -106,6 +107,8 @@ import java.util.logging.Logger;
  * @author Paulo Soares (psoares@consiste.pt)
  */
 public final class SimpleBookmark implements SimpleXMLDocHandler {
+
+    static final Logger logger = Logger.getLogger(SimpleBookmark.class.getName());
 
     public static final String TITLE = "Title";
     public static final String FALSE = "false";
@@ -182,8 +185,8 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
                     processAction(action, map, pages);
                 }
             }
-        } catch (Exception e) {
-            // Log or handle exception if necessary
+        } catch (ActionException e){
+            logger.info("ActionException: " + e.getMessage());
         }
     }
 
@@ -434,7 +437,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
                     // Handle unknown actions or do nothing
                     break;
             }
-        } catch (Exception e) {
+        } catch (ClassCastException | NullPointerException e) {
             // empty on purpose
         }
     }

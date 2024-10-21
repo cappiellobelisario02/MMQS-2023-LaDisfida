@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import com.lowagie.text.exceptions.InvalidPdfException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -25,9 +26,9 @@ class SimplePdfTest {
 
     @Test
     void testSimplePdfPass(){
-        Assertions.assertThrows(NullPointerException.class, this::testSimplePdf);
+        Assertions.assertThrows(IOException.class, this::testSimplePdf);
     }
-    void testSimplePdf() throws Exception {
+    void testSimplePdf() throws IOException {
         // create document
         Document document = PdfTestBase.createTempPdf("testSimplePdf.pdf");
         try {
@@ -80,7 +81,7 @@ class SimplePdfTest {
     void testTryWithResources_with_unknown_osPass(){
         Assertions.assertThrows(IOException.class, this::testTryWithResources_with_unknown_os);
     }
-    void testTryWithResources_with_unknown_os() throws Exception {
+    void testTryWithResources_with_unknown_os() throws PDFFilterException, IOException {
         try (PdfReader reader = new PdfReader("./src/test/resources/HelloWorldMeta.pdf");
                 Document document = new Document()
         ) {

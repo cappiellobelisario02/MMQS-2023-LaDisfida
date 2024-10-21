@@ -9,6 +9,7 @@ import com.lowagie.text.html.simpleparser.StyleSheet;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,7 +25,7 @@ class EmbeddedImageTest {
     void processHtmlWithEmbeddedImagePass(){
         Assertions.assertThrows(IOException.class, this::processHtmlWithEmbeddedImage);
     }
-    void processHtmlWithEmbeddedImage() throws Exception {
+    void processHtmlWithEmbeddedImage() throws IOException, URISyntaxException {
         URI resourceUri = ClassLoader.getSystemResource("base64-image.html").toURI();
         Path resourcePath = Paths.get(resourceUri);
         String html = String.join("", Files.readAllLines(resourcePath));
