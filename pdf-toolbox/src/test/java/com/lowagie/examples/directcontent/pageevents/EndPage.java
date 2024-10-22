@@ -22,11 +22,14 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of PageEvents.
  */
 public class EndPage extends PdfPageEventHelper {
+
+    private static final Logger logger = Logger.getLogger(EndPage.class.getName());
 
     /**
      * Demonstrates the use of PageEvents.

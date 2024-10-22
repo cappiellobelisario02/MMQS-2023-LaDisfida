@@ -25,11 +25,14 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPatternPainter;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Painting patterns
  */
 public class Patterns {
+
+    private static final Logger logger = Logger.getLogger(Patterns.class.getName());
 
     /**
      * Painting patterns.

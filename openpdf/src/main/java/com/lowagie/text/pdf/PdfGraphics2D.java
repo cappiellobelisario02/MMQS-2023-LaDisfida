@@ -108,7 +108,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.regex.PatternSyntaxException;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -1020,8 +1019,8 @@ public class PdfGraphics2D extends Graphics2D {
     }
 
     @Override
-    public void transform(AffineTransform Tx) {
-
+    public void transform(AffineTransform tx) {
+        //empty for now
     }
 
     /**

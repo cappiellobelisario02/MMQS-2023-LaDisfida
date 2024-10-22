@@ -59,12 +59,11 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.lowagie.text.pdf.PdfWriter.logger;
+import java.util.logging.Logger;
 
 /**
  * Supports text, combo and list fields generating the correct appearances. All the option in the Acrobat GUI are
- * supported in an easy to use API.
+ * supported in an easy-to-use API.
  *
  * @author Paulo Soares (psoares@consiste.pt)
  */
@@ -106,6 +105,8 @@ public class TextField extends BaseField {
      */
     private BaseFont extensionFont;
 
+    private static final Logger logger = Logger.getLogger(TextField.class.getName());
+
     /**
      * Creates a new <CODE>TextField</CODE>.
      *
@@ -136,7 +137,7 @@ public class TextField extends BaseField {
     }
 
     /**
-     * Chose the run direction of a text field by it's content
+     * Chose the run direction of a text field by its content
      *
      * @param ptext text field content
      * @return int run direction (PdfWriter.RUN_DIRECTION_LTR or PdfWriter.RUN_DIRECTION_RTL or

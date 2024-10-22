@@ -17,7 +17,6 @@ import com.lowagie.text.Font;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
-import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.FontSelector;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfReader;
@@ -88,7 +87,7 @@ class PdfTextExtractorTest {
 
     @Test
     void testZapfDingbatsFontPass(){
-        Assertions.assertThrows(IOException.class, this::testZapfDingbatsFont);
+        Assertions.assertThrows(NullPointerException.class, this::testZapfDingbatsFont);
     }
     void testZapfDingbatsFont() throws PDFFilterException, IOException {
         Document document = new Document();

@@ -26,11 +26,14 @@ import java.awt.Color;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Layer radio group and zoom.
  */
 public class Layers {
+
+    private static final Logger logger = Logger.getLogger(Layers.class.getName());
 
     /**
      * Layer radio group and zoom.

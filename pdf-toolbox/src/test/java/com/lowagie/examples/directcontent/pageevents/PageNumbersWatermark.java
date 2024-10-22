@@ -32,11 +32,14 @@ import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of templates to add Watermarks and Pagenumbers.
  */
 public class PageNumbersWatermark extends PdfPageEventHelper {
+
+    private static final Logger logger = Logger.getLogger(PageNumbersWatermark.class.getName());
 
     /**
      * An Image that goes in the header.

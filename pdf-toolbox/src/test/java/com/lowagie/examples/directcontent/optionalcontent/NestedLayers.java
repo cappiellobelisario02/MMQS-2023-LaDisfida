@@ -28,11 +28,14 @@ import com.lowagie.text.pdf.PdfOCProperties;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of nested layers.
  */
 public class NestedLayers {
+
+    private static final Logger logger = Logger.getLogger(NestedLayers.class.getName());
 
     /**
      * Demonstrates the use of nested layers

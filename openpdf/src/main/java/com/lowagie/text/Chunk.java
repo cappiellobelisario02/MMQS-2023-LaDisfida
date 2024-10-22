@@ -400,8 +400,8 @@ public class Chunk implements Element {
      */
     private StringBuilder content = new StringBuilder();
 
-    public void append(String string) {
-        content.append(string);
+    public StringBuilder append(String string) {
+        return content.append(string);
     }
 
     /**

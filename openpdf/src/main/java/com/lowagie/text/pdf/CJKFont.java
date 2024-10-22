@@ -58,10 +58,9 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import static com.ibm.icu.util.ULocale.getBaseName;
-import static com.lowagie.text.pdf.PdfWriter.logger;
-
 
 /**
  * Creates a CJK font compatible with the fonts in the Adobe Asian font Pack.
@@ -107,6 +106,8 @@ class CJKFont extends BaseFont {
     private IntHashtable hMetrics;
     private HashMap<Object, Object> fontDesc;
     private boolean vertical = false;
+
+    private static final Logger logger = Logger.getLogger(CJKFont.class.getName());
 
     /**
      * Creates a CJK font.

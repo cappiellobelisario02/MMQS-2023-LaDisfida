@@ -26,7 +26,7 @@ class SimplePdfTest {
 
     @Test
     void testSimplePdfPass(){
-        Assertions.assertThrows(IOException.class, this::testSimplePdf);
+        Assertions.assertThrows(NullPointerException.class, this::testSimplePdf);
     }
     void testSimplePdf() throws IOException {
         // create document

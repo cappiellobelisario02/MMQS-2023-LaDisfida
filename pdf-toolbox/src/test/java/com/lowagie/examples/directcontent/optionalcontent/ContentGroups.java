@@ -31,11 +31,14 @@ import com.lowagie.text.pdf.PdfString;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates how to group optional content.
  */
 public class ContentGroups {
+
+    private static final Logger logger = Logger.getLogger(ContentGroups.class.getName());
 
     /**
      * Demonstrates how to group optional content.

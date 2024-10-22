@@ -150,7 +150,7 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
     /**
      * indicates if these are the attributes of a single Cell (false) or a group of Cells (true).
      */
-    private boolean cellgroup = false;
+    private boolean cellgroup;
 
     /**
      * A CellAttributes object is always constructed without any dimensions. Dimensions are defined after creation.
@@ -212,7 +212,6 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
      */
     public Cell createCell(SimpleCell rowAttributes) throws BadElementException {
         Cell cell = new Cell();
-        cell.cloneNonPositionParameters(rowAttributes);
         cell.softCloneNonPositionParameters(this);
         cell.setColspan(colspan);
         Optional<HorizontalAlignment> hAlignment = HorizontalAlignment.of(horizontalAlignment);
@@ -244,7 +243,6 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
         tmp.setSpacingRight(spacingRight);
         tmp.setSpacingTop(spacingTop);
         tmp.setSpacingBottom(spacingBottom);
-        tmp.cloneNonPositionParameters(rowAttributes);
         tmp.softCloneNonPositionParameters(this);
         cell.setCellEvent(tmp);
         cell.setHorizontalAlignment(rowAttributes.horizontalAlignment);
@@ -260,13 +258,13 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
             cell.setVerticalAlignment(verticalAlignment);
         }
         if (useAscender) {
-            cell.setUseAscender(useAscender);
+            cell.setUseAscender(true);
         }
         if (useBorderPadding) {
-            cell.setUseBorderPadding(useBorderPadding);
+            cell.setUseBorderPadding(true);
         }
         if (useDescender) {
-            cell.setUseDescender(useDescender);
+            cell.setUseDescender(true);
         }
         float p;
         float spLeft = spacingLeft;
@@ -341,7 +339,6 @@ public class SimpleCell extends Rectangle implements PdfPCellEvent, TextElementA
         }
         Rectangle rect = new Rectangle(position.getLeft(spLeft), position.getBottom(spBottom),
                 position.getRight(spRight), position.getTop(spTop));
-        rect.cloneNonPositionParameters(this);
         canvases[PdfPTable.BACKGROUNDCANVAS].rectangle(rect.llx(), rect.lly(), rect.urx(), rect.ury());
         rect.setBackgroundColor(null);
         canvases[PdfPTable.LINECANVAS].rectangle(rect.llx(), rect.lly(), rect.urx(), rect.ury());

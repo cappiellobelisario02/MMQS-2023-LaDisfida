@@ -11,10 +11,13 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LiberationTest {
+
+    private static final Logger logger = Logger.getLogger(LiberationTest.class.getName());
 
     @Test
     void createDocumentAllFontsPass(){

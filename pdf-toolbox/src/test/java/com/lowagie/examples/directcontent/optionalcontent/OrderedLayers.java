@@ -29,11 +29,14 @@ import com.lowagie.text.pdf.PdfOCProperties;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates how to order optional content groups.
  */
 public class OrderedLayers {
+
+    private static final Logger logger = Logger.getLogger(OrderedLayers.class.getName());
 
     /**
      * Demonstrates how to order optional content groups.

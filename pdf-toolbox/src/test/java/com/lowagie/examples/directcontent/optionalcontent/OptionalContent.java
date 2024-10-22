@@ -35,11 +35,14 @@ import java.awt.Color;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of layers.
  */
 public class OptionalContent {
+
+    private static final Logger logger = Logger.getLogger(OptionalContent.class.getName());
 
     /**
      * Demonstrates the use of layers.

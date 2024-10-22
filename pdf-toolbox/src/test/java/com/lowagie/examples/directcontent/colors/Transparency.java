@@ -25,11 +25,14 @@ import com.lowagie.text.pdf.PdfTransparencyGroup;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates transparency and images.
  */
 public class Transparency {
+
+    private static final Logger logger = Logger.getLogger(Transparency.class.getName());
 
     /**
      * Prints a square and fills half of it with a gray rectangle.

@@ -9,12 +9,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import static com.lowagie.text.pdf.PdfWriter.logger;
 
 class BarcodeMacroPDF417Test {
 
@@ -22,6 +21,7 @@ class BarcodeMacroPDF417Test {
     private static final Path COMP_DIR = Paths.get(".", "src", "test", "resources");
     private static final String FILENAME = "barcode_macro_pdf_417.pdf";
     private static final int SEGMENT_COUNT = 2;
+    private static final Logger logger = Logger.getLogger(BarcodeMacroPDF417Test.class.getName());
 
     @BeforeAll
     static void setup() {
@@ -68,7 +68,7 @@ class BarcodeMacroPDF417Test {
         document.close();
     }
 
-    private boolean comparePdf() throws IOException, PDFFilterException {
+    private boolean comparePdf() throws PDFFilterException {
         try(PdfReader outReader = new PdfReader(OUTPUT_DIR.resolve(FILENAME).toString());
                 PdfReader cmpReader = new PdfReader(COMP_DIR.resolve(FILENAME).toString())) {
 

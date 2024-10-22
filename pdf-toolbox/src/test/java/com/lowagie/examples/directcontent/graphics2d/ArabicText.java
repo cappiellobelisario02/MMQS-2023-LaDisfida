@@ -19,11 +19,14 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Font;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Draws arabic text using java.awt.Graphics2D
  */
 public class ArabicText {
+
+    private static final Logger logger = Logger.getLogger(ArabicText.class.getName());
 
     /**
      * Draws arabic text using java.awt.Graphics2D.

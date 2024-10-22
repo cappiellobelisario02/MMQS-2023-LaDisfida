@@ -296,7 +296,6 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
      */
     public Table(Table t) {
         super(0, 0, 0, 0);
-        this.cloneNonPositionParameters(t);
         this.columns = t.columns;
         this.rows = t.rows;
         this.curPosition = t.curPosition;
@@ -1070,8 +1069,8 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
 
     private float[] calculateColumnWidths(int columnIndex) {
         float[] tmpWidths = null;
-        for (int i = 0; i < rows.size(); i++) {
-            if (rows.get(i).getCell(columnIndex) instanceof Table lDummyTable) {
+        for (Row row : rows) {
+            if (row.getCell(columnIndex) instanceof Table lDummyTable) {
                 tmpWidths = mergeTableWidths(tmpWidths, lDummyTable.widths);
             }
         }
@@ -1093,7 +1092,7 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
         int totI = 0;
 
         tpW += tmpWidths[0];
-        btW += newWidths[0];
+        btW += (int) newWidths[0];
 
         while (tpI < tmpWidths.length && btI < cols) {
             if (btW > tpW) {
@@ -1112,10 +1111,10 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
                     }
                 }
                 if (btI < cols) {
-                    btW += newWidths[btI];
+                    btW += (int) newWidths[btI];
                 }
             }
-            totW += mergedWidths[totI];
+            totW += (int) mergedWidths[totI];
             totI++;
         }
 
@@ -1248,9 +1247,9 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
     }
 
     private boolean containsTable() {
-        for (int i = 0; i < rows.size(); i++) {
+        for (Row row : rows) {
             for (int j = 0; j < columns; j++) {
-                if (rows.get(i).getCell(j) instanceof Table) {
+                if (row.getCell(j) instanceof Table) {
                     return true;
                 }
             }
@@ -1499,7 +1498,6 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
 
     private void configureTableProperties(PdfPTable pdfptable) {
         SimpleTable tEvt = new SimpleTable();
-        tEvt.cloneNonPositionParameters(this);
         tEvt.setCellspacing(cellspacing);
         pdfptable.setTableEvent(tEvt);
         pdfptable.setHeaderRows(lastHeaderRow + 1);
@@ -1543,7 +1541,6 @@ public class Table extends TableRectangle implements LargeElement, WithHorizonta
             PdfPCell pcell = instanceCell.createPdfPCell();
             pcell.setPadding(cellpadding + cellspacing / 2f);
             SimpleCell cEvt = new SimpleCell(SimpleCell.CELL);
-            cEvt.cloneNonPositionParameters((Cell) cell);
             cEvt.setSpacing(cellspacing * 2f);
             pcell.setCellEvent(cEvt);
             return pcell;

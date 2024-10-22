@@ -179,7 +179,6 @@ public class TableBorders {
         cell.setLeading(leading, 0);
         cell.setVerticalAlignment(vAlignment);
         cell.setHorizontalAlignment(hAlignment);
-        cell.cloneNonPositionParameters(borders);
         cell.setUseAscender(ascender);
         cell.setUseDescender(descender);
         cell.setUseBorderPadding(true);
