@@ -49,6 +49,7 @@
 package com.lowagie.text.pdf.crypto;
 
 import org.bouncycastle.crypto.BlockCipher;
+import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
@@ -96,7 +97,7 @@ public class AESCipher {
         int n;
         try {
             n = bp.doFinal(outp, 0);
-        } catch (Exception ex) {
+        } catch (InvalidCipherTextException ex) {
             return outp;
         }
         if (n != outp.length) {

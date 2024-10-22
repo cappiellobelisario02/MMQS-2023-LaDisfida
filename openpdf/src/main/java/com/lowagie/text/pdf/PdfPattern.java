@@ -46,9 +46,6 @@
  */
 package com.lowagie.text.pdf;
 
-
-import com.lowagie.text.ExceptionConverter;
-
 /**
  * A <CODE>PdfPattern</CODE> defines a ColorSpace
  *
@@ -94,10 +91,6 @@ public class PdfPattern extends PdfStream {
         put(PdfName.YSTEP, new PdfNumber(painter.getYStep()));
         bytes = painter.toPdf(null);
         put(PdfName.PDF_NAME_LENGTH, new PdfNumber(bytes.length));
-        try {
-            flateCompress(compressionLevel);
-        } catch (Exception e) {
-            throw new ExceptionConverter(e);
-        }
+        flateCompress(compressionLevel);
     }
 }

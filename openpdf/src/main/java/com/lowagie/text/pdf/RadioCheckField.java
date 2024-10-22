@@ -404,7 +404,7 @@ public class RadioCheckField extends BaseField {
         setText(typeChars[checkType - 1]);
         try {
             setFont(BaseFont.createFont(BaseFont.ZAPFDINGBATS, BaseFont.WINANSI, false));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }

@@ -1441,7 +1441,7 @@ public class PdfContentByte {
 
             handleAnnotation(image, matrix);
 
-        } catch (Exception ee) {
+        } catch (IOException ee) {
             throw new DocumentException(ee);
         }
     }

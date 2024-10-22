@@ -190,7 +190,7 @@ public class FieldPositioningEvents extends PdfPageEventHelper implements PdfPCe
             tf.setFontSize(14);
             try {
                 field = tf.getTextField();
-            } catch (Exception e) {
+            } catch (IOException | DocumentException e) {
                 throw new ExceptionConverter(e);
             }
         } else {

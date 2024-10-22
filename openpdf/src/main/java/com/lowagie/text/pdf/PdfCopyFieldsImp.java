@@ -61,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 /**
  * @author psoares
@@ -71,6 +72,8 @@ class PdfCopyFieldsImp extends PdfWriter {
     protected static final Map<PdfName, Integer> fieldKeys = new HashMap<>();
     private static final PdfName iTextTag = new PdfName("_iTextTag_");
     private static final Integer ZERO = 0;
+    private static final Logger logger = Logger.getLogger(PdfCopyFieldsImp.class.getName());
+
 
     static {
         Integer one = 1;
@@ -459,7 +462,7 @@ class PdfCopyFieldsImp extends PdfWriter {
         closing = true;
         try {
             closeIt();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -501,9 +504,7 @@ class PdfCopyFieldsImp extends PdfWriter {
                 }
             } catch (IOException ioe) {
                 logger.severe("IOException while processing file: " + ioe.getMessage());
-                throw ioe; // Re-throw if needed to alert the calling method
-            } catch (Exception e) {
-                logger.warning("Unexpected exception: " + e.getMessage());
+                throw new ExceptionConverter(ioe); // Re-throw if needed to alert the calling method
             } finally {
                 try {
                     if (file != null) {

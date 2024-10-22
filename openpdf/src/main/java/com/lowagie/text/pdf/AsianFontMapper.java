@@ -47,6 +47,7 @@
 package com.lowagie.text.pdf;
 
 import java.awt.Font;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 public class AsianFontMapper extends DefaultFontMapper {
@@ -92,7 +93,7 @@ public class AsianFontMapper extends DefaultFontMapper {
             } else {
                 return BaseFont.createFont(defaultFont, encoding, true);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.severe("Exception occured");
         }
         return null;

@@ -214,7 +214,7 @@ public class PdfFileSpecification extends PdfDictionary {
             if (in != null) {
                 try {
                     in.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                     // Log exception (could use a logging framework)
                     logger.severe("Exception occured");
                 }

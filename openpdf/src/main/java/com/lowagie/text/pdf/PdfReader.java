@@ -1519,7 +1519,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             rebuilt = true;
             rebuildXref();
             lastXref = -1;
-        } catch (Exception ne) {
+        } catch (IOException ne) {
             throw new InvalidPdfException(MessageLocalization.getComposedMessage(
                     "rebuild.failed.1.original.message.2", ne.getMessage(),
                     e.getMessage()));

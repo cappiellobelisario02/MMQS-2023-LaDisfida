@@ -56,6 +56,7 @@ import com.lowagie.text.pdf.fonts.FontsResourceAnchor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -583,7 +584,7 @@ class Type1Font extends BaseFont {
             byte[] fontData = readFontData(rf);
             int[] lengths = extractSegmentLengths(rf);
             return new StreamFont(fontData, lengths, compressionLevel);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new DocumentException(e);
         }
     }
@@ -800,13 +801,11 @@ class Type1Font extends BaseFont {
         if (!subsetp) {
             firstChar = 0;
             lastChar = shortTag.length - 1;
-            for (int k = 0; k < shortTag.length; ++k) {
-                shortTag[k] = 1;
-            }
+            Arrays.fill(shortTag, (byte) 1);
         }
         PdfIndirectReference indFont = null;
-        PdfObject pobj = null;
-        PdfIndirectObject obj = null;
+        PdfObject pobj;
+        PdfIndirectObject obj;
         pobj = getFullFontStream();
         if (pobj != null) {
             obj = writer.addToBody(pobj);

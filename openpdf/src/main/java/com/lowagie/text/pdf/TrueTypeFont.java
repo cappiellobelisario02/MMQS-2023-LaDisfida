@@ -55,6 +55,7 @@ import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -744,7 +745,7 @@ class TrueTypeFont extends BaseFont {
         rf.readFully(buf);
         try {
             return new String(buf, WINANSI);
-        } catch (Exception e) {
+        } catch (UnsupportedEncodingException e) {
             throw new ExceptionConverter(e);
         }
     }

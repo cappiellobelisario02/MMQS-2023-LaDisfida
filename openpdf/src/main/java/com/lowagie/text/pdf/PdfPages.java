@@ -92,7 +92,7 @@ public class PdfPages {
             PdfIndirectReference current = writer.getCurrentPage();
             writer.addToBody(page, current);
             pages.add(current);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -104,7 +104,7 @@ public class PdfPages {
             }
             pages.add(pageRef);
             return parents.get(parents.size() - 1);
-        } catch (Exception e) {
+        } catch (IndexOutOfBoundsException e) {
             throw new ExceptionConverter(e);
         }
     }

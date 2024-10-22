@@ -80,7 +80,7 @@ public class OutputStreamEncryption extends OutputStream {
             this.out = out;
             aes = (revision == AES_128) || (revision == AES_256_V3);
             initializeEncryption(key, off, len);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new ExceptionConverter(ex);
         }
     }
@@ -213,10 +213,10 @@ public class OutputStreamEncryption extends OutputStream {
                 byte[] b;
                 try {
                     b = cipher.doFinal();
-                } catch (Exception ex) {
+                    out.write(b, 0, b.length);
+                } catch (IOException ex) {
                     throw new ExceptionConverter(ex);
                 }
-                out.write(b, 0, b.length);
             }
         }
     }

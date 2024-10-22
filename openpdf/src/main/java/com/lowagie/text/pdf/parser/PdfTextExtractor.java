@@ -222,7 +222,7 @@ public class PdfTextExtractor {
                 PdfLiteral operator = (PdfLiteral) operands.get(operands.size() - 1);
                 handler.invokeOperator(operator, operands, resources);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
         handler.popContext();

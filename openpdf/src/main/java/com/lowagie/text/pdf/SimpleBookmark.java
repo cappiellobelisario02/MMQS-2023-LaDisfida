@@ -594,7 +594,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
             try {
                 PdfArray arr = parseColor(color);
                 outline.put(PdfName.C, arr);
-            } catch (Exception e) {
+            } catch (ClassCastException e) {
                 // Log the exception with an error level
                 logger.severe("Failed to parse color: " + color + " - " + e.getMessage());
             }

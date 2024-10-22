@@ -56,8 +56,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.List;
-
-import static com.lowagie.text.pdf.PdfWriter.logger;
+import java.util.logging.Logger;
 
 /**
  * A <CODE>PdfAction</CODE> defines an action that can be triggered from a PDF file.
@@ -66,6 +65,8 @@ import static com.lowagie.text.pdf.PdfWriter.logger;
  */
 
 public class PdfAction extends PdfDictionary {
+
+    private static final Logger logger = Logger.getLogger(PdfAction.class.getName());
 
     /**
      * A named action to go to the first page.
@@ -364,10 +365,6 @@ public class PdfAction extends PdfDictionary {
                 // Handle IO exceptions specifically
                 js.put(PdfName.JS, new PdfString(code));
                 logger.info("IO error while processing JavaScript code: " + e.getMessage());
-            } catch (Exception e) {
-                // Catch all other exceptions, if necessary
-                js.put(PdfName.JS, new PdfString(code));
-                logger.info("An unexpected error occurred while creating JavaScript: " + e.getMessage());
             }
         }
 
@@ -429,10 +426,10 @@ public class PdfAction extends PdfDictionary {
     static PdfArray buildArray(Object[] names) {
         PdfArray array = new PdfArray();
         for (Object obj : names) {
-            if (obj instanceof String) {
-                array.add(new PdfString((String) obj));
-            } else if (obj instanceof PdfAnnotation) {
-                array.add(((PdfAnnotation) obj).getIndirectReference());
+            if (obj instanceof String stringObj) {
+                array.add(new PdfString(stringObj));
+            } else if (obj instanceof PdfAnnotation objPdfAnnotation) {
+                array.add(objPdfAnnotation.getIndirectReference());
             } else {
                 throw new ActionException(
                         MessageLocalization.getComposedMessage("the.array.must.contain.string.or.pdfannotation"));
@@ -657,14 +654,14 @@ public class PdfAction extends PdfDictionary {
         if (o == null) {
             return;
         }
-        if (o instanceof PdfIndirectReference) {
-            a.add((PdfIndirectReference) o);
-        } else if (o instanceof PdfLayer) {
-            a.add(((PdfLayer) o).getRef());
-        } else if (o instanceof PdfName) {
-            a.add((PdfName) o);
-        } else if (o instanceof String) {
-            a.add(getPdfNameForString((String) o));
+        if (o instanceof PdfIndirectReference pdfIndirectReference) {
+            a.add(pdfIndirectReference);
+        } else if (o instanceof PdfLayer pdfLayer) {
+            a.add(pdfLayer.getRef());
+        } else if (o instanceof PdfName pdfName) {
+            a.add(pdfName);
+        } else if (o instanceof String string) {
+            a.add(getPdfNameForString(string));
         } else {
             throw new IllegalArgumentException(
                     MessageLocalization.getComposedMessage("invalid.getTypeImpl.was.passed.in.state.1", o.getClass().getName()));
@@ -672,17 +669,13 @@ public class PdfAction extends PdfDictionary {
     }
 
     private static PdfName getPdfNameForString(String s) {
-        switch (s.toLowerCase()) {
-            case "on":
-                return PdfName.ON;
-            case "off":
-                return PdfName.OFF;
-            case "toggle":
-                return PdfName.TOGGLE;
-            default:
-                throw new IllegalArgumentException(MessageLocalization.getComposedMessage(
-                        "a.string.1.was.passed.in.state.only.on.off.and.toggle.are.allowed", s));
-        }
+        return switch (s.toLowerCase()) {
+            case "on" -> PdfName.ON;
+            case "off" -> PdfName.OFF;
+            case "toggle" -> PdfName.TOGGLE;
+            default -> throw new IllegalArgumentException(MessageLocalization.getComposedMessage(
+                    "a.string.1.was.passed.in.state.only.on.off.and.toggle.are.allowed", s));
+        };
     }
 
 

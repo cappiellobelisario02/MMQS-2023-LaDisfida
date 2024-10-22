@@ -56,6 +56,7 @@ import com.lowagie.text.ExceptionConverter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -158,7 +159,7 @@ public class PdfSmartCopy extends PdfCopy {
         ByteStore(PRStream str) throws IOException {
             try {
                 sha256 = MessageDigest.getInstance("SHA-256");
-            } catch (Exception e) {
+            } catch (NoSuchAlgorithmException e) {
                 throw new ExceptionConverter(e);
             }
             ByteBuffer bb = new ByteBuffer();

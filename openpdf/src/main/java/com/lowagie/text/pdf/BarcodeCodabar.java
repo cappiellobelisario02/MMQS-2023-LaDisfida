@@ -54,8 +54,8 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Image;
 import java.awt.image.MemoryImageSource;
+import java.io.IOException;
 
 /**
  * Implements the code codabar. The default parameters are:
@@ -126,7 +126,7 @@ public class BarcodeCodabar extends Barcode {
             checksumText = false;
             startStopText = false;
             codeType = CODABAR;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -368,9 +368,7 @@ public class BarcodeCodabar extends Barcode {
             System.arraycopy(pix, 0, pix, k, fullWidth);
         }
 
-        Image img = canvas.createImage(new MemoryImageSource(fullWidth, height, pix, 0, fullWidth));
-
-        return img;
+        return canvas.createImage(new MemoryImageSource(fullWidth, height, pix, 0, fullWidth));
     }
 
 }

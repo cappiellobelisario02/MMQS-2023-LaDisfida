@@ -46,98 +46,7 @@
  * you aren't using an obsolete version:
  * https://github.com/LibrePDF/OpenPDF
  */
-/********************************************************************
- *                                                                  *
- *  Title:  pfm2afm - Convert Windows .pfm files to .afm files      *
- *                                                                  *
- *  Author: Ken Borgendale   10/9/91  Version 1.0                   *
- *                                                                  *
- *  Function:                                                       *
- *      Convert a Windows .pfm (Printer Font Metrics) file to a     *
- *      .afm (Adobe Font Metrics) file.  The purpose of this is     *
- *      to allow fonts put out for Windows to be used with OS/2.    *
- *                                                                  *
- *  Syntax:                                                         *
- *      pfm2afm  infile  [outfile] -a                               *
- *                                                                  *
- *  Copyright:                                                      *
- *      pfm2afm - Copyright (C) IBM Corp., 1991                     *
- *                                                                  *
- *      This code is released for public use as long as the         *
- *      copyright remains intact.  This code is provided asis       *
- *      without any warrenties, express or implied.                 *
- *                                                                  *
- *  Notes:                                                          *
- *      1. Much of the information in the original .afm file is     *
- *         lost when the .pfm file is created, and thus cannot be   *
- *         reconstructed by this utility.  This is especially true  *
- *         of data for characters not in the Windows character set. *
- *                                                                  *
- *      2. This module is coded to be compiled by the MSC 6.0.      *
- *         For other compilers, be careful of the packing of the    *
- *         PFM structure.                                           *
- *                                                                  *
- ********************************************************************/
 
-/********************************************************************
- *                                                                  *
- *  Modifications by Rod Smith, 5/22/96                             *
- *                                                                  *
- *  These changes look for the strings "italic", "bold", "black",   *
- *  and "light" in the font's getName and set the weight accordingly   *
- *  and adds an ItalicAngle line with a value of "0" or "-12.00".   *
- *  This allows OS/2 programs such as DeScribe to handle the bold   *
- *  and italic attributes appropriately, which was not the case     *
- *  when I used the original version on fonts from the KeyFonts     *
- *  Pro 2002 font CD.                                               *
- *                                                                  *
- *  I've also increased the size of the buffer used to load the     *
- *  .PFM file; the old size was inadequate for most of the fonts    *
- *  from the SoftKey collection.                                    *
- *                                                                  *
- *  Compiled with Watcom C 10.6                                     *
- *                                                                  *
- ********************************************************************/
-
-/********************************************************************
- *                                                                  *
- *  Further modifications, 4/21/98, by Rod Smith                    *
- *                                                                  *
- *  Minor changes to get the program to compile with gcc under      *
- *  Linux (Red Hat 5.0, to be precise).  I had to add an itoa       *
- *  function from the net (the function was buggy, so I had to fix  *
- *  it, too!).  I also made the program more friendly towards       *
- *  files with mixed-case filenames.                                *
- *                                                                  *
- ********************************************************************/
-
-/********************************************************************
- *                                                                  *
- *  1/31/2005, by Paulo Soares                                      *
- *                                                                  *
- *  This code was integrated into iText.                            *
- *  Note that the itoa function mentioned in the comment by Rod     *
- *  Smith is no longer in the code because Java has native support  *
- *  in PrintWriter to convert integers to strings                   *
- *                                                                  *
- ********************************************************************/
-
-/********************************************************************
- *                                                                  *
- *  7/16/2005, by Bruno Lowagie                                     *
- *                                                                  *
- *  I solved an Eclipse Warning.                                    *
- *                                                                  *
- ********************************************************************/
-
-/********************************************************************
- *                                                                  *
- *  9/14/2006, by Xavier Le Vourch                                  *
- *                                                                  *
- *  expand import clauses (import java.io.*)                        *
- *  the removal of an exception in readString was restored on 9/16  *
- *                                                                  *
- ********************************************************************/
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.error_messages.MessageLocalization;
@@ -546,8 +455,6 @@ public final class Pfm2afm {
             convert(in, out);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "I/O error occurred: {0}", e.getMessage());
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "An unexpected error occurred: {0}", e.getMessage());
         }
     }
 

@@ -45,7 +45,6 @@ package com.lowagie.text.pdf;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.FontCreationException;
-import com.lowagie.text.pdf.LayoutProcessor.Version;
 import java.awt.FontFormatException;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
@@ -293,7 +292,7 @@ public class LayoutProcessor {
                     }
                     awtFontMap.put(baseFont, awtFont);
                 }
-            } catch (Exception e) {
+            } catch (IOException | FontFormatException e) {
                 throw new FontCreationException(String.format("Font creation failed for %s.", filename), e);
             }
         }
@@ -477,7 +476,6 @@ public class LayoutProcessor {
     private static void adjustAndShowText(PdfContentByte cb, final float fontSize, final GlyphVector glyphVector) {
 
         final float deltaY = 1e-5f;
-        final float deltaX = deltaY;
         final float factorX = 1000f / fontSize;
 
         float lastX = 0f;
@@ -497,7 +495,7 @@ public class LayoutProcessor {
                 }
                 cb.setTextRise(-py);
             }
-            if (Math.abs(dx) >= deltaX) {
+            if (Math.abs(dx) >= deltaY) {
                 ga.add(-dx * factorX);
             }
             ga.add(glyphVector.getGlyphCode(i));
@@ -511,7 +509,7 @@ public class LayoutProcessor {
         Point2D p = glyphVector.getGlyphPosition(glyphVector.getNumGlyphs());
         float ax = (glyphVector.getNumGlyphs() == 0) ? 0.0f : glyphVector.getGlyphMetrics(glyphVector.getNumGlyphs() - 1).getAdvanceX();
         float dx = (float) p.getX() - lastX - ax;
-        if (Math.abs(dx) >= deltaX) {
+        if (Math.abs(dx) >= deltaY) {
             ga.add(-dx * factorX);
         }
         cb.showText(ga);

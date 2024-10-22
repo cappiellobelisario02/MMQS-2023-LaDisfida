@@ -155,7 +155,7 @@ public class MetaFont extends MetaObject {
         String fontName = resolveFontName();
         try {
             return BaseFont.createFont(fontName, "Cp1252", false);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }

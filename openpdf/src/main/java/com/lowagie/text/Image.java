@@ -73,11 +73,9 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static com.lowagie.text.pdf.PdfStamperImp.logger;
-
 
 /**
  * An <CODE>Image</CODE> is the representation of a graphic element (JPEG, PNG or GIF) that has to be inserted into the
@@ -511,7 +509,7 @@ public abstract class Image extends Rectangle {
                 if (img != null) {
                     img.setUrl(url);
                 }
-            } catch (Exception e) {
+            } catch (BadElementException e) {
                 logger.warning("Error setting URL for image: " + url + " >> " + e.getMessage());
             }
         }
@@ -552,8 +550,7 @@ public abstract class Image extends Rectangle {
     }
 
     private static boolean isJpeg2000Header(byte[] header) {
-        return (header[0] == 0x00 && header[1] == 0x00 && header[2] == 0x00 && header[3] == 0x0c) ||
-                (header[0] == 0xff && header[1] == 0x4f && header[2] == 0xff && header[3] == 0x51);
+        return header[0] == 0x00 && header[1] == 0x00 && header[2] == 0x00 && header[3] == 0x0c;
     }
 
     private static boolean isPngHeader(byte[] header) {
@@ -600,7 +597,7 @@ public abstract class Image extends Rectangle {
     public static com.lowagie.text.Image getInstanceFromClasspath(String filename)
             throws BadElementException, IOException {
         URL url = com.lowagie.text.Image.class.getResource("/" + filename);
-        return getInstance(url);
+        return getInstance(Objects.requireNonNull(url));
     }
 
     /**
@@ -940,7 +937,6 @@ public abstract class Image extends Rectangle {
         int red = color != null ? color.getRed() : 255;
         int green = color != null ? color.getGreen() : 255;
         int blue = color != null ? color.getBlue() : 255;
-        int[] transparency = null;
 
         for (int j = 0; j < size; j++) {
             int alpha = (pixels[j] >> 24) & 0xff;
@@ -963,7 +959,7 @@ public abstract class Image extends Rectangle {
             }
         }
 
-        com.lowagie.text.Image img = com.lowagie.text.Image.getInstance(width, height, 3, 8, pixelsByte, transparency);
+        com.lowagie.text.Image img = com.lowagie.text.Image.getInstance(width, height, 3, 8, pixelsByte, null);
         if (smask != null) {
             com.lowagie.text.Image sm = com.lowagie.text.Image.getInstance(width, height, 1, 8, smask);
             try {
@@ -1438,7 +1434,7 @@ public abstract class Image extends Rectangle {
         scalePercent(100);
         float percentX = (fitWidth * 100) / getScaledWidth();
         float percentY = (fitHeight * 100) / getScaledHeight();
-        scalePercent(percentX < percentY ? percentX : percentY);
+        scalePercent(Math.min(percentX, percentY));
         setWidthPercentage(0);
     }
 

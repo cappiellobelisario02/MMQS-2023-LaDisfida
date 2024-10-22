@@ -48,9 +48,14 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.ExceptionConverter;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 
 
 /**
@@ -119,7 +124,7 @@ public abstract class PdfSigGenericPKCS extends PdfSignature {
             pkcs = new PdfPKCS7(privKey, certChain, crlList, hashAlgorithm, provider,
                     PdfName.ADBE_PKCS7_SHA1.equals(get(PdfName.SUBFILTER)));
             pkcs.setExternalDigest(externalDigest, externalRSAdata, digestEncryptionAlgorithm);
-        } catch (Exception e) {
+        } catch (InvalidKeyException | NoSuchProviderException | NoSuchAlgorithmException | CertificateEncodingException | IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -128,15 +133,15 @@ public abstract class PdfSigGenericPKCS extends PdfSignature {
      * Sets the digest/signature to an external calculated value.
      *
      * @param digest                    the digest. This is the actual signature
-     * @param RSAdata                   the extra data that goes into the data tag in PKCS#7
-     * @param digestEncryptionAlgorithm the encryption algorithm. It may must be <CODE>null</CODE> if the
+     * @param rsaData                   the extra data that goes into the data tag in PKCS#7
+     * @param digestEncryptionAlgorithm the encryption algorithm. It may be <CODE>null</CODE> if the
      *                                  <CODE>digest</CODE> is also <CODE>null</CODE>. If the <CODE>digest</CODE> is
      *                                  not
      *                                  <CODE>null</CODE> then it may be "RSA" or "DSA"
      */
-    public void setExternalDigest(byte[] digest, byte[] RSAdata, String digestEncryptionAlgorithm) {
+    public void setExternalDigest(byte[] digest, byte[] rsaData, String digestEncryptionAlgorithm) {
         externalDigest = digest;
-        externalRSAdata = RSAdata;
+        externalRSAdata = rsaData;
         this.digestEncryptionAlgorithm = digestEncryptionAlgorithm;
     }
 
@@ -197,7 +202,7 @@ public abstract class PdfSigGenericPKCS extends PdfSignature {
     }
 
     /**
-     * Creates a standard filter of the getTypeImpl self signed.
+     * Creates a standard filter of the getTypeImpl self-signed.
      */
     public static class PPKLite extends PdfSigGenericPKCS {
 

@@ -154,10 +154,7 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
             }
         } catch (IOException e) {
             // Improved logging
-            System.err.println("Error processing file: " + e.getMessage());
-        } catch (Exception e) {
-            // Catch-all for other exceptions
-            System.err.println("An unexpected error occurred: " + e.getMessage());
+            logger.warning("Error processing file: " + e.getMessage());
         }
     }
 

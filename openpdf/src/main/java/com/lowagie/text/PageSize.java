@@ -356,7 +356,7 @@ public class PageSize {
                 try {
                     Field field = PageSize.class.getDeclaredField(name.toUpperCase());
                     return (Rectangle) field.get(null);
-                } catch (Exception e) {
+                } catch (IllegalAccessException | NoSuchFieldException e) {
                     throw new PageSizeException(MessageLocalization.getComposedMessage("can.t.find.page.size.1", name), e);
                 }
             } else {

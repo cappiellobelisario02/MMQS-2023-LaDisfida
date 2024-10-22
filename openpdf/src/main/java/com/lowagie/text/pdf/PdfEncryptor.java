@@ -1,4 +1,4 @@
-/*
+
 /*
  * Copyright 2002 Paulo Soares
  *
@@ -33,7 +33,7 @@
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the MPL as stated above or under the terms of the GNU
- * Library General Public License as published by the Free Software Foundation;
+ * Library General Public License as published by the Free Software Foundation
  * either version 2 of the License, or any later version.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
@@ -49,6 +49,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.ExceptionConverter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.NoSuchAlgorithmException;
@@ -61,6 +62,9 @@ import java.util.logging.Logger;
  * It is also possible to change the info dictionary.
  */
 public final class PdfEncryptor {
+
+    private static final Logger logger = Logger.getLogger(PdfEncryptor.class.getName());
+    public static final String ERROR_DURING_PDF_ENCRYPTION = "Error during PDF encryption";
 
     private PdfEncryptor() {
     }
@@ -105,7 +109,7 @@ public final class PdfEncryptor {
      * @param userPassword    the user password. Can be null or empty
      * @param ownerPassword   the owner password. Can be null or empty
      * @param permissions     the user permissions
-     * @param strength128Bits <code>true</code> for 128 bit key length, <code>false</code> for 40 bit key length
+     * @param strength128Bits <code>true</code> for 128-bit key length, <code>false</code> for 40 bit key length
      * @param newInfo         an optional <CODE>String</CODE> map to add or change the info dictionary. Entries with
      *                        <CODE>null</CODE> values delete the key in the original info dictionary
      * @throws DocumentException on error
@@ -132,7 +136,7 @@ public final class PdfEncryptor {
      *
      * @param reader        the read PDF
      * @param os            the output destination
-     * @param strength      <code>true</code> for 128 bit key length, <code>false</code> for 40 bit key length
+     * @param strength      <code>true</code> for 128-bit key length, <code>false</code> for 40 bit key length
      * @param userPassword  the user password. Can be null or empty
      * @param ownerPassword the owner password. Can be null or empty
      * @param permissions   the user permissions
@@ -141,21 +145,14 @@ public final class PdfEncryptor {
      */
     public static void encrypt(PdfReader reader, OutputStream os, boolean strength, String userPassword,
             String ownerPassword, int permissions) throws DocumentException, IOException {
-        Logger logger = Logger.getLogger(PdfEncryptor.class.getName()); // Initialize the logger
         try (PdfStamper stamper = new PdfStamper(reader, os)) {
             stamper.setEncryption(strength, userPassword, ownerPassword, permissions);
-        } catch (DocumentException | IOException e) {
+        } catch (DocumentException | IOException | NoSuchAlgorithmException e) {
             // Log the exception with a message and severity level
-            logger.log(Level.SEVERE, "Error during PDF encryption", e);
+            logger.log(Level.SEVERE, ERROR_DURING_PDF_ENCRYPTION, e);
 
             // Optionally rethrow the exception if you want to propagate it
-            throw e;
-        } catch (Exception e) {
-            // Catch-all for any other exceptions that may occur
-            logger.log(Level.SEVERE, "Unexpected error during PDF encryption", e);
-
-            // Optionally rethrow the exception to indicate failure
-            throw new RuntimeException("Unexpected error during PDF encryption", e);
+            throw new ExceptionConverter(e);
         }
     }
 
@@ -185,8 +182,8 @@ public final class PdfEncryptor {
         try (PdfStamper stamper = new PdfStamper(reader, os)){
             stamper.setEncryption(strength, userPassword, ownerPassword, permissions);
             stamper.setInfoDictionary(newInfo);
-        } catch (Exception e) {
-            //may need some logging or some other operation
+        } catch (NoSuchAlgorithmException e) {
+            throw new ExceptionConverter(e);
         }
     }
 
@@ -217,8 +214,8 @@ public final class PdfEncryptor {
         try (PdfStamper stamper = new PdfStamper(reader, os)){
             stamper.setEncryption(type, userPassword, ownerPassword, permissions);
             stamper.setInfoDictionary(newInfo);
-        } catch (Exception e) {
-            //may need some logging or some other operation
+        } catch (NoSuchAlgorithmException e) {
+            logger.log(Level.SEVERE, ERROR_DURING_PDF_ENCRYPTION, e);
         }
     }
 
@@ -246,8 +243,8 @@ public final class PdfEncryptor {
 
         try (PdfStamper stamper = new PdfStamper(reader, os)){
             stamper.setEncryption(type, userPassword, ownerPassword, permissions);
-        } catch (Exception e) {
-            //may need some logging or some other operation
+        } catch (NoSuchAlgorithmException e) {
+            logger.severe(ERROR_DURING_PDF_ENCRYPTION);
         }
     }
 
