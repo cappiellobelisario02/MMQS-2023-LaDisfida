@@ -136,7 +136,7 @@ public class SelectedPages extends AbstractTool {
 
             document.close();
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         } finally {
             if (reader != null && document != null && fouts != null && copy != null) {
                 try {
@@ -145,7 +145,7 @@ public class SelectedPages extends AbstractTool {
                     fouts.close();
                     copy.close();
                 } catch (Exception e) {
-                    //da vedere come effettuare il log
+                    logger.severe("Exception occured");
                 }
             }
         }

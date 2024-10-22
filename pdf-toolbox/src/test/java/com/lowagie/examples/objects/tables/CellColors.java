@@ -22,11 +22,14 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * The Cell is derived from the Rectangle object, so we can do all kinds of things with the borders and colors.
  */
 public class CellColors {
+
+    private static final Logger logger = Logger.getLogger(CellColors.class.getName());
 
     /**
      * Rectangle operations.
@@ -82,7 +85,7 @@ public class CellColors {
             table.addCell(cell);
             document.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

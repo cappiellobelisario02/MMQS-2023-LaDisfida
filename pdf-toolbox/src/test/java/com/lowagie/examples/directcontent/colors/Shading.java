@@ -21,11 +21,14 @@ import com.lowagie.text.pdf.PdfFunction;
 import com.lowagie.text.pdf.PdfShading;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Shading example
  */
 public class Shading {
+
+    private static final Logger logger = Logger.getLogger(Shading.class.getName());
 
     /**
      * Shading example.
@@ -65,7 +68,7 @@ public class Shading {
 
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

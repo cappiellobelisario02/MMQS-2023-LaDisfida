@@ -247,7 +247,7 @@ public class Normalize
                     fouts.close();
                     stp.close();
                 } catch (Exception e) {
-                    //da vedere come effettuare il log
+                    logger.severe("Exception occured");
                 }
             }
         }

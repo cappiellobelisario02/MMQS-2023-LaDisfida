@@ -58,7 +58,7 @@ public class FileArrayArgument extends AbstractArgument {
         try {
             jbInit();
         } catch (Exception ex) {
-//da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 
@@ -67,7 +67,7 @@ public class FileArrayArgument extends AbstractArgument {
         try {
             jbInit();
         } catch (Exception ex) {
-//da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 
@@ -80,11 +80,6 @@ public class FileArrayArgument extends AbstractArgument {
         } catch (PropertyVetoException ex1) {
             logger.info(ex1.getMessage());
         }
-
-//        try
-//            setValue fileList1.getFilevector().toArray()
-//         catch NullPointerException npe
-//
     }
 
     @Override

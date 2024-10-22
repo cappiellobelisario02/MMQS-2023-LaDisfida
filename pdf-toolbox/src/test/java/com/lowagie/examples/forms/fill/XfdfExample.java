@@ -18,11 +18,14 @@ import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.pdf.XfdfReader;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * How to merge an XFDF file with a PDF form.
  */
 public class XfdfExample {
+
+    private static final Logger logger = Logger.getLogger(XfdfExample.class.getName());
 
     /**
      * Merges an XFDF file with a PDF form.
@@ -39,7 +42,7 @@ public class XfdfExample {
             form.setFields(fdfreader);
             stamp.close();
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
     }

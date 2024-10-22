@@ -15,11 +15,14 @@ package com.lowagie.examples.general.copystamp;
 import com.lowagie.text.pdf.PdfCopyFields;
 import com.lowagie.text.pdf.PdfReader;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Concatenates 2 PDF files with forms. The resulting PDF has 1 merged AcroForm.
  */
 public class ConcatenateForms {
+
+    private static final Logger logger = Logger.getLogger(ConcatenateForms.class.getName());
 
     /**
      * Concatenates 2 PDF files with forms. The resulting PDF has 1 merged AcroForm.
@@ -35,7 +38,7 @@ public class ConcatenateForms {
             copy.addDocument(reader2);
             copy.close();
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

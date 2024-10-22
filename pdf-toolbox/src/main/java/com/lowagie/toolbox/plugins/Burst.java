@@ -161,14 +161,14 @@ public class Burst extends AbstractTool {
                 try{
                     reader.close();
                 } catch (Exception e){
-                    //da vedere come effettuare il log
+                    logger.severe("Exception occured");
                 }
             }
             if (document != null) {
                 try {
                     document.close();
                 } catch (Exception e) {
-                    //da vedere come effettuare il log
+                    logger.severe("Exception occured");
                 }
             }
         }

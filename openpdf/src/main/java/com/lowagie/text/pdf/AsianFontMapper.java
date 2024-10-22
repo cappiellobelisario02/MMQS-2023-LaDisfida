@@ -47,6 +47,7 @@
 package com.lowagie.text.pdf;
 
 import java.awt.Font;
+import java.util.logging.Logger;
 
 public class AsianFontMapper extends DefaultFontMapper {
 
@@ -73,6 +74,7 @@ public class AsianFontMapper extends DefaultFontMapper {
 
     private final String defaultFont;
     private final String encoding;
+    private static final Logger logger = Logger.getLogger(AsianFontMapper.class.getName());
 
     public AsianFontMapper(String font, String encoding) {
         super();
@@ -91,7 +93,7 @@ public class AsianFontMapper extends DefaultFontMapper {
                 return BaseFont.createFont(defaultFont, encoding, true);
             }
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         return null;
 

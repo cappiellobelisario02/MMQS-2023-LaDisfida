@@ -42,7 +42,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -56,9 +58,12 @@ import javax.swing.SwingConstants;
  */
 public class PdfInformationPanel extends JPanel implements PropertyChangeListener {
 
+    private static final Logger logger = Logger.getLogger(PdfInformationPanel.class.getName());
+
     /**
      * A serial version id
      */
+    @Serial
     private static final long serialVersionUID = -4171577284617028707L;
 
     /**
@@ -94,7 +99,7 @@ public class PdfInformationPanel extends JPanel implements PropertyChangeListene
             panel.add(scrollpane, BorderLayout.CENTER);
             scrollpane.setViewportView(label);
         } catch (Exception ex) {
-//da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 

@@ -39,7 +39,7 @@ class LiberationTest {
                         "quick brown fox jumps over the lazy dog. <= " + liberationFont, font));
             }
         } catch (DocumentException | IOException de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // Assertion: Check if the PDF file is created and is not empty
@@ -64,7 +64,7 @@ class LiberationTest {
                         + liberationFont, font));
             }
         } catch (DocumentException | IOException de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         File pdfFile = new File(filePath);

@@ -158,7 +158,7 @@ public class JTable2Pdf extends JFrame {
             cb.restoreState();
 
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
             logger.log(Level.SEVERE, "An error occurred while printing.", e);
         }
 

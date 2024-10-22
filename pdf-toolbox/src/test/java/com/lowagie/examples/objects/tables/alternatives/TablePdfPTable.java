@@ -22,11 +22,14 @@ import com.lowagie.text.SimpleTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Example that is used to test the TableAttributes class.
  */
 public class TablePdfPTable {
+
+    private static final Logger logger = Logger.getLogger(TablePdfPTable.class.getName());
 
     /**
      * Example that is used to test the TableAttributes class.
@@ -112,7 +115,7 @@ public class TablePdfPTable {
             }
             document.add(table);
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // we close the document

@@ -20,11 +20,14 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Changing the padding and the getLeading of the content of a PdfPCell.
  */
 public class CellPaddingLeading {
+
+    private static final Logger logger = Logger.getLogger(CellPaddingLeading.class.getName());
 
     /**
      * Changing padding and getLeading.
@@ -80,7 +83,7 @@ public class CellPaddingLeading {
                     "blah blah\nblah blah blah\nblah blah\nblah blah blah\nblah blah\nblah blah blah\nblah blah\nblah blah blah\n");
             document.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

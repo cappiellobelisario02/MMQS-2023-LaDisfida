@@ -492,7 +492,8 @@ public class PdfStamperImp extends PdfWriter {
         try {
             file.close();
         } catch (Exception e) {
-            // empty on purpose
+            String msg = "Error closing file: " + e;
+            logger.severe(msg);
         }
     }
 
@@ -1116,7 +1117,8 @@ public class PdfStamperImp extends PdfWriter {
             try {
                 this.acroFields.regenerateField(name);
             } catch (Exception e) {
-                // ignore any exception
+                String msg = "Error regenerating field: " + e.getMessage();
+                logger.severe(msg);
             }
         }
     }

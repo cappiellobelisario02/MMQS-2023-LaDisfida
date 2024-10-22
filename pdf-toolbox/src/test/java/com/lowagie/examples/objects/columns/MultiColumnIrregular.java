@@ -24,12 +24,15 @@ import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 import org.librepdf.openpdf.examples.content.Constants;
 
 /**
  * An example using MultiColumnText with irregular columns.
  */
 public class MultiColumnIrregular {
+
+    private static final Logger logger = Logger.getLogger(MultiColumnIrregular.class.getName());
 
     /**
      * An example using MultiColumnText with irregular columns.
@@ -104,7 +107,7 @@ public class MultiColumnIrregular {
             } while (mct.isOverflow());
             document.close();
         } catch (DocumentException | FileNotFoundException e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
     }

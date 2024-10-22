@@ -20,11 +20,14 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Change the height of a cell (fixed height), disable text wrapping, set a minimum height.
  */
 public class CellHeights {
+
+    private static final Logger logger = Logger.getLogger(CellHeights.class.getName());
 
     /**
      * Height manipulations of cells.
@@ -74,7 +77,7 @@ public class CellHeights {
             table.addCell(cell);
             document.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

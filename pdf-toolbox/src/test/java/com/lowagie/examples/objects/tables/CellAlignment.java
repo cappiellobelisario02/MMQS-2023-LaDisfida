@@ -21,11 +21,14 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Change the getAlignment of the contents of a PdfPCell.
  */
 public class CellAlignment {
+
+    private static final Logger logger = Logger.getLogger(CellAlignment.class.getName());
 
     /**
      * Changing the getAlignment
@@ -77,7 +80,7 @@ public class CellAlignment {
             table.addCell("top");
             document.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

@@ -19,11 +19,14 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Break a large table up into different smaller tables in order to save memory.
  */
 public class SplitTable {
+
+    private static final Logger logger = Logger.getLogger(SplitTable.class.getName());
 
     /**
      * Break a large table up into several smaller tables for memory management purposes.
@@ -54,7 +57,7 @@ public class SplitTable {
             table.writeSelectedRows(5, -1, 0, -1, 50, 650, cb);
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

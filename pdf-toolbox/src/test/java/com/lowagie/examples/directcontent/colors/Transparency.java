@@ -140,7 +140,7 @@ public class Transparency {
 
             cb.sanityCheck();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step 5: we close the document
         document.close();

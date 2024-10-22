@@ -158,7 +158,6 @@ public class ProgressServlet extends HttpServlet {
                 }
             } catch (DocumentException e) {
                 p = -1;
-                //da vedere come effettuare il log
             }
             // step 5
             doc.close();

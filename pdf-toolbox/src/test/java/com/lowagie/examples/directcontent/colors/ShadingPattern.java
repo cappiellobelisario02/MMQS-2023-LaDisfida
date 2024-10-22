@@ -25,11 +25,14 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.RadialCoordinates;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Shading example
  */
 public class ShadingPattern {
+
+    private static final Logger logger = Logger.getLogger(ShadingPattern.class.getName());
 
     /**
      * Shading example.
@@ -62,7 +65,7 @@ public class ShadingPattern {
             cb.sanityCheck();
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

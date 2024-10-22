@@ -2150,7 +2150,7 @@ public class PdfGraphics2D extends Graphics2D {
                     }
                 }
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                logger.severe("Exception occured");
             }
         }
 

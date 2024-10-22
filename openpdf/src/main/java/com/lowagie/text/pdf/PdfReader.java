@@ -1001,9 +1001,10 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             rf.reOpen();
             return getStreamBytes(stream, rf);
         } catch (PDFFilterException e) {
+            logger.severe("Exception occured");
             throw new PDFFilterException(e.getMessage());
         }
-        //da vedere come effettuare il log
+
     }
 
     /**
@@ -1069,7 +1070,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             rf.reOpen();
             return getStreamBytesRaw(stream, rf);
         }
-        //da vedere come effettuare il log
     }
 
     private static boolean equalsn(byte[] a1, byte[] a2) {

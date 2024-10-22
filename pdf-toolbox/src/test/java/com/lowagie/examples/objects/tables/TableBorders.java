@@ -26,11 +26,14 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates different borderstyles.
  */
 public class TableBorders {
+
+    private static final Logger logger = Logger.getLogger(TableBorders.class.getName());
 
     /**
      * Demonstrates different borderstyles.
@@ -126,7 +129,7 @@ public class TableBorders {
             p = new Paragraph("\nuseBorderPadding=true, useAscender=true, useDescender=false", font);
             document.add(p);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

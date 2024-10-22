@@ -23,11 +23,14 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Break a large table up into different smaller tables in order to save memory.
  */
 public class FragmentTable {
+
+    private static final Logger logger = Logger.getLogger(FragmentTable.class.getName());
 
     /**
      * Break a large table up into several smaller tables for memory management purposes.
@@ -75,7 +78,7 @@ public class FragmentTable {
             }
             document.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

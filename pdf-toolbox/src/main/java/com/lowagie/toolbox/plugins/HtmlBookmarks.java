@@ -303,7 +303,7 @@ public class HtmlBookmarks extends AbstractTool {
             try {
                 reader.close();
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                logger.severe("Exception occured");
             }
         }
     }

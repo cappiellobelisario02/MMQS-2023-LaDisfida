@@ -228,7 +228,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
                 is.close();
             }
         } catch (IOException ioe) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 

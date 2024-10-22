@@ -21,6 +21,7 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfAction;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Creates a documents with different named actions.
@@ -29,6 +30,8 @@ import java.io.FileOutputStream;
  */
 
 public class OpenApplication {
+
+    private static final Logger logger = Logger.getLogger(OpenApplication.class.getName());
 
     /**
      * Creates a document with Named Actions.
@@ -56,7 +59,7 @@ public class OpenApplication {
                     null, null)));
             document.add(p);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document

@@ -89,7 +89,7 @@ public class OrderedLayers {
             // step 5
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 

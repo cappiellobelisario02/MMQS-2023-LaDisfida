@@ -21,11 +21,14 @@ import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Reads the pages of an existing PDF file and puts 2 pages from the existing doc into one of the new doc.
  */
 public class TwoOnOne {
+
+    private static final Logger logger = Logger.getLogger(TwoOnOne.class.getName());
 
     /**
      * Reads the pages of an existing PDF file and puts 2 pages from the existing doc into one of the new doc.
@@ -75,7 +78,7 @@ public class TwoOnOne {
             // step 5: we close the document
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

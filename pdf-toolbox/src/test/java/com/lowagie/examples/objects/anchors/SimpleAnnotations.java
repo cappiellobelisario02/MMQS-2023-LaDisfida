@@ -25,6 +25,7 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.net.URL;
+import java.util.logging.Logger;
 
 /**
  * Creates two documents with different types of Annotations.
@@ -33,6 +34,8 @@ import java.net.URL;
  */
 
 public class SimpleAnnotations {
+
+    private static final Logger logger = Logger.getLogger(SimpleAnnotations.class.getName());
 
     /**
      * Creates documents with some simple annotations.
@@ -117,7 +120,7 @@ public class SimpleAnnotations {
             cb2.rectangle(100, 250, 100, 100);
             cb2.stroke();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document

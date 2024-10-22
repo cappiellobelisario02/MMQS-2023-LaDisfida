@@ -23,11 +23,14 @@ import com.lowagie.text.pdf.PdfPCellEvent;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * General example using CellEvents.
  */
 public class CellEvents implements PdfPCellEvent {
+
+    private static final Logger logger = Logger.getLogger(CellEvents.class.getName());
 
     /**
      * General example using cell events.
@@ -63,7 +66,7 @@ public class CellEvents implements PdfPCellEvent {
             table.setHeaderRows(3);
             document.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

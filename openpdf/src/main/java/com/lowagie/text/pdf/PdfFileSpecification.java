@@ -54,9 +54,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.logging.Logger;
 
 /**
- * Specifies a file or an URL. The file can be extern or embedded.
+ * Specifies a file or a URL. The file can be extern or embedded.
  *
  * @author Paulo Soares (psoares@consiste.pt)
  */
@@ -64,6 +65,8 @@ public class PdfFileSpecification extends PdfDictionary {
 
     protected PdfWriter writer;
     protected PdfIndirectReference ref;
+
+    private static final Logger logger = Logger.getLogger(PdfFileSpecification.class.getName());
 
     /**
      * Creates a new instance of PdfFileSpecification. The static methods are preferred.
@@ -213,7 +216,7 @@ public class PdfFileSpecification extends PdfDictionary {
                     in.close();
                 } catch (Exception e) {
                     // Log exception (could use a logging framework)
-                    //da vedere come effettuare il log
+                    logger.severe("Exception occured");
                 }
             }
         }

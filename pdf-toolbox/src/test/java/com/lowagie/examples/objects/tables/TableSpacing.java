@@ -21,11 +21,14 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Defining the spacing between the table and other content.
  */
 public class TableSpacing {
+
+    private static final Logger logger = Logger.getLogger(TableSpacing.class.getName());
 
     /**
      * Defining the spacing between the table and other content.
@@ -78,7 +81,7 @@ public class TableSpacing {
             document.add(table);
             document.add(new Paragraph("This is much better, don't you think so?"));
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

@@ -19,11 +19,14 @@ import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Space Word Ratio.
  */
 public class SpaceWordRatio {
+
+    private static final Logger logger = Logger.getLogger(SpaceWordRatio.class.getName());
 
     /**
      * Space Word Ratio.
@@ -48,7 +51,7 @@ public class SpaceWordRatio {
             writer.setSpaceCharRatio(PdfWriter.NO_SPACE_CHAR_RATIO);
             document.add(p);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step 5
         document.close();

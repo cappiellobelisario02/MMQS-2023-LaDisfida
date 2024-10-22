@@ -22,11 +22,14 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Changing the width and getAlignment of the complete table.
  */
 public class TableWidthAlignment {
+
+    private static final Logger logger = Logger.getLogger(TableWidthAlignment.class.getName());
 
     /**
      * Changing the width and getAlignment of the complete table.
@@ -71,7 +74,7 @@ public class TableWidthAlignment {
             table.setHorizontalAlignment(Element.ALIGN_LEFT);
             document.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

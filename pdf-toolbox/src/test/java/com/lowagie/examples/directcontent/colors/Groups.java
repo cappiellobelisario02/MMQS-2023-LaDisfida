@@ -22,11 +22,14 @@ import com.lowagie.text.pdf.PdfTransparencyGroup;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates transparency and images.
  */
 public class Groups {
+
+    private static final Logger logger = Logger.getLogger(Groups.class.getName());
 
     /**
      * Prints a square and fills half of it with a gray rectangle.
@@ -130,7 +133,7 @@ public class Groups {
 
             cb.sanityCheck();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step 5: we close the document
         document.close();

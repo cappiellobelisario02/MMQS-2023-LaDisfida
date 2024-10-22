@@ -79,7 +79,7 @@ public class JFreeChartExample {
             cb.addTemplate(tp, 0, 0);
             cb.sanityCheck();
         } catch (DocumentException | FileNotFoundException de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step 5
         document.close();

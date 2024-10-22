@@ -66,7 +66,7 @@ public class Bookmarks extends PdfPageEventHelper {
             document.add(new Paragraph(Constants.HIS_REBUS, new Font(Font.HELVETICA, 12)));
             document.add(new Paragraph(Constants.EA_RES, new Font(Font.HELVETICA, 12)));
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document

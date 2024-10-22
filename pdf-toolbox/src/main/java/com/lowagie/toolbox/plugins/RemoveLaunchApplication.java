@@ -138,7 +138,7 @@ public class RemoveLaunchApplication
             validateFiles();
             processPdf();
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 

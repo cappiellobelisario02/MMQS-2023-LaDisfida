@@ -20,11 +20,14 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Using an Open Type Font (CFF only).
  */
 public class OpenTypeFont {
+
+    private static final Logger logger = Logger.getLogger(OpenTypeFont.class.getName());
 
     /**
      * Using oth
@@ -44,7 +47,7 @@ public class OpenTypeFont {
             String text = "Some text with the otf font LIZ.";
             document.add(new Paragraph(text, new Font(bf, 14)));
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step 5
         document.close();

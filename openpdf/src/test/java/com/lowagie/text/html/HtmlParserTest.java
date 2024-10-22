@@ -1,7 +1,6 @@
 package com.lowagie.text.html;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.TextElementArray;
@@ -146,15 +145,10 @@ class HtmlParserTest {
     }
 
     void testParse(String html) {
-        try {
-            Document doc1 = new Document();
-            doc1.open();
-            HtmlParser.parse(doc1, new StringReader(html));
-            assertNotNull(doc1, () -> html + " was not parsed successfully");
-        } catch (Exception e) {
-            //da vedere come effettuare il log
-            assertTrue(true);
-        }
+        Document doc1 = new Document();
+        doc1.open();
+        HtmlParser.parse(doc1, new StringReader(html));
+        assertNotNull(doc1, () -> html + " was not parsed successfully");
     }
 
 }

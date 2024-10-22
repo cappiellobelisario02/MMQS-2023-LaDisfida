@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -40,6 +41,8 @@ import org.xml.sax.XMLReader;
  * Class that deals with the XFA file that can be inside a PDF file.
  */
 public class XfaFile implements OutputStreamResource {
+
+    private static final Logger logger = Logger.getLogger(XfaFile.class.getName());
 
     /**
      * The X4J Document object (XML).
@@ -64,7 +67,7 @@ public class XfaFile implements OutputStreamResource {
                 try {
                     resource.writeTo(pos);
                 } catch (IOException e) {
-                    //da vedere come effettuare il log
+                    logger.severe("Exception occured");
                 }
             }).start();
 

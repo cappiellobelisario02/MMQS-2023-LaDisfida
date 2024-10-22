@@ -249,7 +249,7 @@ public class FdfReader extends PdfReader {
                 return new String(b, "Big5");
             }
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         return null;
     }

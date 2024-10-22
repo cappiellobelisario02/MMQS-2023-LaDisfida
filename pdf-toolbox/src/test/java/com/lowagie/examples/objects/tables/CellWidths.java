@@ -20,11 +20,14 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Define the widths of the columns of a PdfPTable.
  */
 public class CellWidths {
+
+    private static final Logger logger = Logger.getLogger(CellWidths.class.getName());
 
     /**
      * Width manipulations of cells.
@@ -82,7 +85,7 @@ public class CellWidths {
             table.setLockedWidth(true);
             document.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

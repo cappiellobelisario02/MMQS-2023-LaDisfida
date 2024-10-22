@@ -162,14 +162,14 @@ public class NUp extends AbstractTool {
             // step 5: we close the document
             document.close();
         } catch (IOException | InstantiationException | PDFFilterException e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         } finally {
             if (reader != null && document != null){
                 try {
                     reader.close();
                     document.close();
                 } catch (Exception e){
-                    //da vedere come effettuare il log
+                    logger.severe("Exception occured");
                 }
             }
         }

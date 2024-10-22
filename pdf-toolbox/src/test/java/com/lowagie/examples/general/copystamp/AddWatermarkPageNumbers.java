@@ -23,11 +23,14 @@ import com.lowagie.text.pdf.PdfStamper;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Reads the pages of an existing PDF file, adds pagenumbers and a watermark.
  */
 public class AddWatermarkPageNumbers {
+
+    private static final Logger logger = Logger.getLogger(AddWatermarkPageNumbers.class.getName());
 
     /**
      * Reads the pages of an existing PDF file, adds pagenumbers and a watermark.
@@ -82,7 +85,7 @@ public class AddWatermarkPageNumbers {
             // closing PdfStamper will generate the new PDF file
             stamp.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

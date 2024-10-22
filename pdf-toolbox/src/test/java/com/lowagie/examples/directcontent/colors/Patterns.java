@@ -217,7 +217,7 @@ public class Patterns {
 
             cb.sanityCheck();
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // finally, we close the document

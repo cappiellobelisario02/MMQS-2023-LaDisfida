@@ -19,11 +19,14 @@ import com.lowagie.text.pdf.FdfWriter;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * How to create an FDF file. How to merge an FDF file with a PDF form.
  */
 public class FdfExample {
+
+    private static final Logger logger = Logger.getLogger(FdfExample.class.getName());
 
     /**
      * Writes an FDF file and merges it with a PDF form.
@@ -49,7 +52,7 @@ public class FdfExample {
             form.setFields(fdfreader);
             stamp.close();
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
     }

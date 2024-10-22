@@ -26,11 +26,14 @@ import com.lowagie.text.pdf.PdfPTableEvent;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.security.SecureRandom;
+import java.util.logging.Logger;
 
 /**
  * General example using TableEvents.
  */
 public class TableEvents1 implements PdfPTableEvent {
+
+    private static final Logger logger = Logger.getLogger(TableEvents1.class.getName());
 
     /**
      * General example using table events.
@@ -84,7 +87,7 @@ public class TableEvents1 implements PdfPTableEvent {
             table.setHeaderRows(3);
             document.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

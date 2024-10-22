@@ -26,11 +26,14 @@ import com.lowagie.text.alignment.HorizontalAlignment;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Shows how a table is split if it doesn't fit the page.
  */
 public class RepeatingTable {
+
+    private static final Logger logger = Logger.getLogger(RepeatingTable.class.getName());
 
     /**
      * Shows how a table is split if it doesn't fit the page.
@@ -124,7 +127,7 @@ public class RepeatingTable {
             datatable.setConvert2pdfptable(true);
             document.add(datatable);
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // we close the document

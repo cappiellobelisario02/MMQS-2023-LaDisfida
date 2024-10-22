@@ -17,11 +17,14 @@ import com.lowagie.text.pdf.AcroFields;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Fill in a simple registration form.
  */
 public class Register {
+
+    private static final Logger logger = Logger.getLogger(Register.class.getName());
 
     /**
      * Reads a form and fills in the fields.
@@ -52,7 +55,7 @@ public class Register {
             stamp2.setFormFlattening(true);
             stamp2.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

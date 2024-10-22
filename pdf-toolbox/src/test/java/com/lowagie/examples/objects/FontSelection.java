@@ -20,11 +20,14 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.FontSelector;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Selects the appropriate fonts that contain the glyphs needed to render text correctly.
  */
 public class FontSelection {
+
+    private static final Logger logger = Logger.getLogger(FontSelection.class.getName());
 
     /**
      * Using FontSelector.
@@ -57,7 +60,7 @@ public class FontSelection {
             // step 5
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

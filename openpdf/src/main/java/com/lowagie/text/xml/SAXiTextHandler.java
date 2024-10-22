@@ -736,7 +736,8 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             try {
                 table.addCell(cell);
             } catch (IOException e) {
-                //may need some logging or some other operation
+                String msg = "Problem adding cell " + cell;
+                logger.severe(msg);
             }
         }
 
@@ -835,11 +836,10 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             return total;
         } catch (Exception e) {
             return total;
-            // empty on purpose
         }
     }
 
-    private float calculateTotalAndUpdateCellNulls(float total, String width, float[] cellWidths, boolean[] cellNulls, int j) {
+    private void calculateTotalAndUpdateCellNulls(float total, String width, float[] cellWidths, boolean[] cellNulls, int j) {
         try {
             // Attempt to parse the width and update cell widths
             cellWidths[j] = Float.parseFloat(width.substring(0, width.length() - 1) + "f");
@@ -847,24 +847,22 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             cellNulls[j] = false;
         } catch (NumberFormatException nfe) {
             // Log specific error for invalid float format
-            logger.log(Level.WARNING, "Failed to parse cell width: " + width, nfe);
+            String msg = "Failed to parse cell width: " + width;
+            logger.log(Level.WARNING, msg, nfe);
         } catch (IndexOutOfBoundsException ioe) {
             // Log specific error for index out of bounds
-            logger.log(Level.WARNING, "Index out of bounds when updating cell: " + j, ioe);
+            String msg = "Index out of bounds when updating cell: " + j;
+            logger.log(Level.WARNING, msg, ioe);
         }
-        return total;
     }
 
 
     private void updateStackWithTextElementArraysAndElements(){
         try {
-            while (true) {
-                Element element = stack.pop();
-                addTextElementArrayWithElementIntoStack(element);
-                return;
-            }
+            Element element = stack.pop();
+            addTextElementArrayWithElementIntoStack(element);
         } catch (EmptyStackException ese) {
-            // empty on purpose
+            logger.severe("Empty stack when updating text element");
         }
     }
 
@@ -885,13 +883,13 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             ((TextElementArray) current).add(new Chunk(img, 0, 0));
             stack.push(current);
         } else {
-            // ...if not, we need to to a lot of stuff
+            // ...if not, we need to a lot of stuff
             Deque<Element> newStack = new ArrayDeque<>();
             while (!(current instanceof Section || current instanceof Cell)) {
                 newStack.push(current);
-                if (current instanceof Anchor) {
+                if (current instanceof Anchor anchorCurrent) {
                     img.setAnnotation(new Annotation(0, 0, 0,
-                            0, ((Anchor) current).getReference()));
+                            0, anchorCurrent.getReference()));
                 }
                 current = stack.pop();
             }

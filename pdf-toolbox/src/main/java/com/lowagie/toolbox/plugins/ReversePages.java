@@ -198,7 +198,7 @@ public class ReversePages
             document.close();
 
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         } finally {
             closeReader(reader);
 
@@ -214,7 +214,7 @@ public class ReversePages
         try {
             return new PdfReader(src.getAbsolutePath());
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
             return null;
         }
     }
@@ -223,7 +223,7 @@ public class ReversePages
         try {
             return new Document(reader.getPageSizeWithRotation(1));
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
             return null;
         }
     }
@@ -232,7 +232,7 @@ public class ReversePages
         try {
             return new FileOutputStream(dest.getAbsolutePath());
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
             return null;
         }
     }
@@ -241,7 +241,7 @@ public class ReversePages
         try {
             return new PdfCopy(document, fos);
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
             return null;
         }
     }
@@ -251,7 +251,7 @@ public class ReversePages
             try {
                 reader.close();
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                logger.severe("Exception occured");
             }
         }
     }
@@ -261,7 +261,7 @@ public class ReversePages
             try {
                 document.close();
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                logger.severe("Exception occured");
             }
         }
     }
@@ -271,7 +271,7 @@ public class ReversePages
             try {
                 copy.close();
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                logger.severe("Exception occured");
             }
         }
     }
@@ -281,7 +281,7 @@ public class ReversePages
             try {
                 fos.close();
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                logger.severe("Exception occured");
             }
         }
     }

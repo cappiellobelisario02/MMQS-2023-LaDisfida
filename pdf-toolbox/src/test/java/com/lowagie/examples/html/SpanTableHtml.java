@@ -13,8 +13,11 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 public class SpanTableHtml {
+
+    private static final Logger logger = Logger.getLogger(SpanTableHtml.class.getName());
 
     public static void main(String[] args) {
         testRowspan();
@@ -58,7 +61,7 @@ public class SpanTableHtml {
             worker.parse(new InputStreamReader(Objects.requireNonNull(stream), UTF_8));
             assert (true);
         } catch (IOException e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

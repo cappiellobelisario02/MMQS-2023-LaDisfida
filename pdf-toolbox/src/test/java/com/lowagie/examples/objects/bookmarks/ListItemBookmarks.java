@@ -19,6 +19,7 @@ import com.lowagie.text.pdf.PdfAction;
 import com.lowagie.text.pdf.PdfOutline;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import org.librepdf.openpdf.examples.content.Constants;
 
 /**
@@ -27,6 +28,8 @@ import org.librepdf.openpdf.examples.content.Constants;
  * @author Matthias Luppi
  */
 public class ListItemBookmarks {
+
+    private static final Logger logger = Logger.getLogger(ListItemBookmarks.class.getName());
 
     /**
      * Creates a document with outlines for ListItems.
@@ -67,7 +70,7 @@ public class ListItemBookmarks {
             new PdfOutline(rootOutline, PdfAction.gotoLocalPage("item3", false), "Apud Helvetios longe");
 
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // close document

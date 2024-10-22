@@ -109,6 +109,7 @@ public class CFFFontSubset extends CFFFont {
      */
     static final byte ENDCHAR_OP = 14;
     static final byte RETURN_OP = 11;
+    public static final String ERROR_READING_FONT_FILE = "Error reading font file";
 
     /**
      * A HashMap containing the glyphs used in the text after being converted to glyph number by the CMap
@@ -192,31 +193,37 @@ public class CFFFontSubset extends CFFFont {
         //Put the glyphs into a list
         glyphsInList = new ArrayList<>(glyphsUsed.keySet());
 
-        for (int i = 0; i < fonts.length; ++i) {
-            // Read the number of glyphs in the font
-            seek(fonts[i].charstringsOffset);
-            fonts[i].nglyphs = getCard16();
+        try{
 
-            // Jump to the count field of the String Index
-            seek(stringIndexOffset);
-            fonts[i].nstrings = getCard16() + standardStrings.length;
 
-            // For each font save the offset array of the charstring
-            fonts[i].charstringsOffsets = getIndex(fonts[i].charstringsOffset);
+            for (int i = 0; i < fonts.length; ++i) {
+                // Read the number of glyphs in the font
+                rf.seek(fonts[i].charstringsOffset);
+                fonts[i].nglyphs = getCard16();
 
-            // Process the FDSelect if exist
-            if (fonts[i].fdselectOffset >= 0) {
-                // Process the FDSelect
-                readFDSelect(i);
-                // Build the fdArrayUsed hashmap
-                buildFDArrayUsed(i);
+                // Jump to the count field of the String Index
+                rf.seek(stringIndexOffset);
+                fonts[i].nstrings = getCard16() + standardStrings.length;
+
+                // For each font save the offset array of the charstring
+                fonts[i].charstringsOffsets = getIndex(fonts[i].charstringsOffset);
+
+                // Process the FDSelect if exist
+                if (fonts[i].fdselectOffset >= 0) {
+                    // Process the FDSelect
+                    readFDSelect(i);
+                    // Build the fdArrayUsed hashmap
+                    buildFDArrayUsed(i);
+                }
+                if (fonts[i].isCID) {
+                    // Build the FD Array used Hash Map
+                    readFDArray(i);
+                }
+                // compute the charset length
+                fonts[i].charsetLength = countCharset(fonts[i].charsetOffset, fonts[i].nglyphs);
             }
-            if (fonts[i].isCID) {
-                // Build the FD Array used Hash Map
-                readFDArray(i);
-            }
-            // compute the charset length
-            fonts[i].charsetLength = countCharset(fonts[i].charsetOffset, fonts[i].nglyphs);
+        }catch (IOException e){
+            logger.severe(ERROR_READING_FONT_FILE);
         }
     }
 
@@ -230,22 +237,26 @@ public class CFFFontSubset extends CFFFont {
     int countCharset(int offset, int numofGlyphs) {
         int format;
         int length = 0;
-        seek(offset);
-        // Read the format
-        format = getCard8();
-        // Calc according to format
-        switch (format) {
-            case 0:
-                length = 1 + 2 * numofGlyphs;
-                break;
-            case 1:
-                length = 1 + 3 * countRange(numofGlyphs, 1);
-                break;
-            case 2:
-                length = 1 + 4 * countRange(numofGlyphs, 2);
-                break;
-            default:
-                break;
+        try {
+            buf.seek(offset);
+            // Read the format
+            format = getCard8();
+            // Calc according to format
+            switch (format) {
+                case 0:
+                    length = 1 + 2 * numofGlyphs;
+                    break;
+                case 1:
+                    length = 1 + 3 * countRange(numofGlyphs, 1);
+                    break;
+                case 2:
+                    length = 1 + 4 * countRange(numofGlyphs, 2);
+                    break;
+                default:
+                    break;
+            }
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
         }
         return length;
     }
@@ -284,7 +295,11 @@ public class CFFFontSubset extends CFFFont {
         int numOfGlyphs = fonts[font].nglyphs;
         int[] fdSelect = new int[numOfGlyphs];
         // Go to the beginning of the FDSelect
-        seek(fonts[font].fdselectOffset);
+        try {
+            buf.seek(fonts[font].fdselectOffset);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
         // Read the FDSelect's format
         fonts[font].fdselectformat = getCard8();
 
@@ -354,7 +369,11 @@ public class CFFFontSubset extends CFFFont {
      * @param font font offset
      */
     protected void readFDArray(int font) {
-        seek(fonts[font].fdarrayOffset);
+        try {
+            buf.seek(fonts[font].fdarrayOffset);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
         fonts[font].fdarraycount = getCard16();
         fonts[font].fdarrayoffsize = getCard8();
         // Since we will change values inside the FDArray objects
@@ -402,8 +421,8 @@ public class CFFFontSubset extends CFFFont {
         } finally {
             try {
                 buf.close();
-            } catch (Exception e) {
-                // empty on purpose
+            } catch (IOException e) {
+                logger.severe("Error closing stream");
             }
         }
     }
@@ -416,7 +435,11 @@ public class CFFFontSubset extends CFFFont {
      * @return The calculated Bias
      */
     protected int calcBias(int offset, int font) {
-        seek(offset);
+        try {
+            buf.seek(offset);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
         int nSubrs = getCard16();
         // If getTypeImpl==1 -> bias=0
         if (fonts[font].charstringType == 1) {
@@ -519,7 +542,11 @@ public class CFFFontSubset extends CFFFont {
         // Initiate to -1 to indicate lsubr operator present
         fonts[font].privateSubrsOffset[fd] = -1;
         // Goto beginning of objects
-        seek(fonts[font].fdprivateOffsets[fd]);
+        try {
+            buf.seek(fonts[font].fdprivateOffsets[fd]);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
         // While in the same object:
         while (getPosition() < fonts[font].fdprivateOffsets[fd] + fonts[font].fdprivateLengths[fd]) {
             getDictItem();
@@ -667,8 +694,11 @@ public class CFFFontSubset extends CFFFont {
             int[] lSubrsOffsets) {
         emptyStack();
         numOfHints = 0;
-        seek(begin);
-
+        try {
+            buf.seek(begin);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
         while (getPosition() < end) {
             readCommand();
             int pos = getPosition();
@@ -723,7 +753,11 @@ public class CFFFontSubset extends CFFFont {
             if (lSubrsOffsets != null) {
                 calcHints(lSubrsOffsets[subr], lSubrsOffsets[subr + 1], lBias, gBias, lSubrsOffsets);
             }
-            seek(pos);
+            try {
+                buf.seek(pos);
+            } catch (IOException e) {
+                logger.severe(ERROR_READING_FONT_FILE);
+            }
         }
     }
 
@@ -735,7 +769,11 @@ public class CFFFontSubset extends CFFFont {
                 lGSubrsUsed.add(subr);
             }
             calcHints(gsubrOffsets[subr], gsubrOffsets[subr + 1], lBias, gBias, lSubrsOffsets);
-            seek(pos);
+            try {
+                buf.seek(pos);
+            } catch (IOException e) {
+                logger.severe(ERROR_READING_FONT_FILE);
+            }
         }
     }
 
@@ -913,7 +951,11 @@ public class CFFFontSubset extends CFFFont {
      * @param lSubrsOffsets The Offsets array of the subroutines
      */
     protected void calcHints(int begin, int end, int lBias, int gBias, int[] lSubrsOffsets) {
-        seek(begin);
+        try {
+            buf.seek(begin);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
         while (getPosition() < end) {
             readCommand();
             int pos = getPosition();
@@ -938,7 +980,11 @@ public class CFFFontSubset extends CFFFont {
         if (numOfArgs > 0) {
             int subr = (Integer) topElement + lBias;
             calcHints(lSubrsOffsets[subr], lSubrsOffsets[subr + 1], lBias, gBias, lSubrsOffsets);
-            seek(pos);
+            try {
+                buf.seek(pos);
+            } catch (IOException e) {
+                logger.severe(ERROR_READING_FONT_FILE);
+            }
         }
     }
 
@@ -946,7 +992,11 @@ public class CFFFontSubset extends CFFFont {
         if (numOfArgs > 0) {
             int subr = (Integer) topElement + gBias;
             calcHints(gsubrOffsets[subr], gsubrOffsets[subr + 1], lBias, gBias, lSubrsOffsets);
-            seek(pos);
+            try {
+                buf.seek(pos);
+            } catch (IOException e) {
+                logger.severe(ERROR_READING_FONT_FILE);
+            }
         }
     }
 
@@ -1087,12 +1137,12 @@ public class CFFFontSubset extends CFFFont {
         copyHeader();
 
         // create a getName index
-        buildIndexHeader(1, 1, 1);
+        buildIndexHeader(1, 1);
         outputList.addLast(new UInt8Item((char) (1 + fonts[font].name.length())));
         outputList.addLast(new StringItem(fonts[font].name));
 
         // create the topdict Index
-        buildIndexHeader(1, 2, 1);
+        buildIndexHeader(1, 2);
         OffsetItem topdictIndex1Ref = new IndexOffsetItem(2);
         outputList.addLast(topdictIndex1Ref);
         IndexBaseItem topdictBase = new IndexBaseItem();
@@ -1108,7 +1158,12 @@ public class CFFFontSubset extends CFFFont {
         // If the font is not CID create the following keys
         createKeysIfFontNotCID(font);
         // Go to the TopDict of the font being processed
-        seek(topdictOffsets[font]);
+        try {
+            buf.seek(topdictOffsets[font]);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
+
         // Run until the end of the TopDict
         while (getPosition() < topdictOffsets[font + 1]) {
             int p1 = getPosition();
@@ -1265,11 +1320,12 @@ public class CFFFontSubset extends CFFFont {
      * Function Copies the header from the original fileto the output list
      */
     protected void copyHeader() {
-        seek(0);
-        int major = getCard8();
-        int minor = getCard8();
+        try {
+            buf.seek(0);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
         int hdrSize = getCard8();
-        int offSize = getCard8();
         nextIndexOffset = hdrSize;
         outputList.addLast(new RangeItem(buf, 0, hdrSize));
     }
@@ -1279,9 +1335,8 @@ public class CFFFontSubset extends CFFFont {
      *
      * @param count   the count field of the index
      * @param offsize the offsize field of the index
-     * @param first   the first offset of the index
      */
-    protected void buildIndexHeader(int count, int offsize, int first) {
+    protected void buildIndexHeader(int count, int offsize) {
         // Add the count field
         outputList.addLast(new UInt16Item((char) count)); // count
         // Add the offsize field
@@ -1289,16 +1344,16 @@ public class CFFFontSubset extends CFFFont {
         // Add the first offset according to the offsize
         switch (offsize) {
             case 1:
-                outputList.addLast(new UInt8Item((char) first)); // first offset
+                outputList.addLast(new UInt8Item((char) 1)); // first offset
                 break;
             case 2:
-                outputList.addLast(new UInt16Item((char) first)); // first offset
+                outputList.addLast(new UInt16Item((char) 1)); // first offset
                 break;
             case 3:
-                outputList.addLast(new UInt24Item((char) first)); // first offset
+                outputList.addLast(new UInt24Item((char) 1)); // first offset
                 break;
             case 4:
-                outputList.addLast(new UInt32Item((char) first)); // first offset
+                outputList.addLast(new UInt32Item((char) 1)); // first offset
                 break;
             default:
                 break;
@@ -1419,7 +1474,7 @@ public class CFFFontSubset extends CFFFont {
     protected void createFDArray(OffsetItem fdarrayRef, OffsetItem privateRef, int font) {
         outputList.addLast(new MarkerItem(fdarrayRef));
         // Build the header (count=offsize=first=1)
-        buildIndexHeader(1, 1, 1);
+        buildIndexHeader(1, 1);
 
         // Mark
         OffsetItem privateIndex1Ref = new IndexOffsetItem(1);
@@ -1467,7 +1522,7 @@ public class CFFFontSubset extends CFFFont {
      */
     void reconstructFDArray(int font, OffsetItem[] fdPrivate) {
         // Build the header of the index
-        buildIndexHeader(fonts[font].fdarraycount, fonts[font].fdarrayoffsize, 1);
+        buildIndexHeader(fonts[font].fdarraycount, fonts[font].fdarrayoffsize);
 
         IndexBaseItem fdArrayBase = new IndexBaseItem();
         // Create offset items and declare beginning of the object array
@@ -1497,7 +1552,12 @@ public class CFFFontSubset extends CFFFont {
     }
 
     private void processObject(int font, int k, OffsetItem[] fdPrivate) {
-        seek(fonts[font].fdarrayoffsets[k]);
+        try {
+            buf.seek(fonts[font].fdarrayoffsets[k]);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
+
         while (getPosition() < fonts[font].fdarrayoffsets[k + 1]) {
             int p1 = getPosition();
             getDictItem();
@@ -1564,7 +1624,12 @@ public class CFFFontSubset extends CFFFont {
                 fdPrivateBase[i] = new IndexBaseItem();
                 outputList.addLast(fdPrivateBase[i]);
                 // Goto beginning of objects
-                seek(fonts[font].fdprivateOffsets[i]);
+                try {
+                    buf.seek(fonts[font].fdprivateOffsets[i]);
+                } catch (IOException e) {
+                    logger.severe(ERROR_READING_FONT_FILE);
+                }
+
                 while (getPosition() < fonts[font].fdprivateOffsets[i] + fonts[font].fdprivateLengths[i]) {
                     int p1 = getPosition();
                     getDictItem();
@@ -1617,7 +1682,11 @@ public class CFFFontSubset extends CFFFont {
         // Set the size to 0
         int offsetSize = 0;
         // Go to the beginning of the private dict
-        seek(offset);
+        try {
+            buf.seek(offset);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
         // Go until the end of the private dict
         while (getPosition() < offset + size) {
             int p1 = getPosition();
@@ -1642,7 +1711,11 @@ public class CFFFontSubset extends CFFFont {
      */
     protected int countEntireIndexRange(int indexOffset) {
         // Go to the beginning of the index
-        seek(indexOffset);
+        try {
+            buf.seek(indexOffset);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
         // Read the count field
         int count = getCard16();
         // If count==0 -> size=2
@@ -1652,7 +1725,12 @@ public class CFFFontSubset extends CFFFont {
             // Read the offsize field
             int indexOffSize = getCard8();
             // Go to the last element of the offset array
-            seek(indexOffset + 2 + 1 + count * indexOffSize);
+            try {
+                buf.seek(indexOffset + 2 + 1 + count * indexOffSize);
+            } catch (IOException e) {
+                logger.severe(ERROR_READING_FONT_FILE);
+            }
+
             // The size of the object array is the value of the last element-1
             int size = getOffset(indexOffSize) - 1;
             // Return the size of the entire index
@@ -1669,7 +1747,12 @@ public class CFFFontSubset extends CFFFont {
      */
     void createNonCIDPrivate(int font, OffsetItem subr) {
         // Go to the beginning of the private dict and read until the end
-        seek(fonts[font].privateOffset);
+        try {
+            buf.seek(fonts[font].privateOffset);
+        } catch (IOException e) {
+            logger.severe(ERROR_READING_FONT_FILE);
+        }
+
         while (getPosition() < fonts[font].privateOffset + fonts[font].privateLength) {
             int p1 = getPosition();
             getDictItem();

@@ -24,6 +24,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serial;
+import java.util.logging.Logger;
 
 /**
  * Explains how to print silently via Servlet/Browser.
@@ -40,7 +42,9 @@ public class SilentPrintServlet extends HttpServlet {
      * a possible status
      */
     public static final int ACT_REPORT_1 = 1;
+    @Serial
     private static final long serialVersionUID = -3250788071256174348L;
+    private static final Logger logger = Logger.getLogger(SilentPrintServlet.class.getName());
 
     @Override
     public void doGet(HttpServletRequest requ, HttpServletResponse resp)
@@ -72,7 +76,8 @@ public class SilentPrintServlet extends HttpServlet {
             action = Integer.parseInt(requ.getParameter("action"));
             sub = Integer.parseInt(requ.getParameter("sub"));
         } catch (Exception ignored) {
-            //empty on purpose
+            String msg = "ERROR: Invalid action parameter: " + requ.getParameter("action");
+            logger.severe(msg);
         }
 
         switch (action) {
@@ -95,7 +100,8 @@ public class SilentPrintServlet extends HttpServlet {
                     document.add(new Chunk("Silent Auto Print"));
                     document.close();
                 } catch (DocumentException e) {
-                    //da vedere come effettuare il log
+                    String msg = "Error: " + e.getMessage();
+                    logger.severe(msg);
                 }
                 resp.setContentType("application/pdf");
 

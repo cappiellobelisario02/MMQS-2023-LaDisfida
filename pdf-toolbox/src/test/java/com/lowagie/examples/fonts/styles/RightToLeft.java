@@ -27,11 +27,14 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Writing RTL text such as Arabic or Hebrew.
  */
 public class RightToLeft {
+
+    private static final Logger logger = Logger.getLogger(RightToLeft.class.getName());
 
     /**
      * arabic text
@@ -202,7 +205,7 @@ public class RightToLeft {
             // step 5
             document.close();
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

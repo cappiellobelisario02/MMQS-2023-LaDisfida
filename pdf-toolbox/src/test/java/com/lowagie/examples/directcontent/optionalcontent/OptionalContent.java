@@ -115,7 +115,7 @@ public class OptionalContent {
             // step 5: closing the document
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

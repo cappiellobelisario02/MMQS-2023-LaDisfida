@@ -24,11 +24,14 @@ import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Vertical Text in Cells.
  */
 public class VerticalTextInCells {
+
+    private static final Logger logger = Logger.getLogger(VerticalTextInCells.class.getName());
 
     /**
      * Example with vertical text in Cells.
@@ -83,7 +86,7 @@ public class VerticalTextInCells {
             table.addCell("I see a template on my left");
             document.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

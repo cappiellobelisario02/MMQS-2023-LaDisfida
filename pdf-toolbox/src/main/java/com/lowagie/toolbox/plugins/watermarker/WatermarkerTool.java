@@ -164,8 +164,6 @@ public class WatermarkerTool extends AbstractTool {
         }
     }
 
-
-
     /**
      * Creates the internal frame.
      */

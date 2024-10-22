@@ -101,7 +101,7 @@ public class Bookmarks2XML extends AbstractTool {
             SimpleBookmark.exportToXML(bookmarks, bmWriter, "UTF-8", false);
             bmWriter.close();
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),

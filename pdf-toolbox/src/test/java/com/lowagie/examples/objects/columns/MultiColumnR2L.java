@@ -26,11 +26,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.security.SecureRandom;
+import java.util.logging.Logger;
 
 /**
  * An example using MultiColumnText with irregular columns.
  */
 public class MultiColumnR2L {
+
+    private static final Logger logger = Logger.getLogger(MultiColumnR2L.class.getName());
 
     static SecureRandom rand = new SecureRandom();
     static String[] verb = {"flows", "draws", "renders", "throws exception", "runs",
@@ -91,7 +94,7 @@ public class MultiColumnR2L {
             document.add(mct);
             document.close();
         } catch (DocumentException | FileNotFoundException e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
     }

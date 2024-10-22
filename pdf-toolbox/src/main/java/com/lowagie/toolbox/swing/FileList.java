@@ -88,7 +88,7 @@ public class FileList
         try {
             jbInit();
         } catch (Exception ex) {
-//da vedere come effettuare il log
+logger.severe("Exception occured");
         }
     }
 
@@ -145,7 +145,7 @@ public class FileList
                 logger.info(stringToLog);
             }
         } catch (IOException | UnsupportedFlavorException ex) {
-//da vedere come effettuare il log
+logger.severe("Exception occured");
         }
         dtde.dropComplete(true);
         File[] filar = new File[filevector.size()];

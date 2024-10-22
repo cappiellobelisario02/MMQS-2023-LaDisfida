@@ -20,11 +20,14 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Changing the width of font glyphs.
  */
 public class FixedFontWidth {
+
+    private static final Logger logger = Logger.getLogger(FixedFontWidth.class.getName());
 
     /**
      * Changing the width of font glyphs.
@@ -51,7 +54,7 @@ public class FixedFontWidth {
             bf.setForceWidthsOutput(true);
             document.add(new Paragraph("A big text to show Helvetica with fixed width.", new Font(bf)));
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step 5
         document.close();

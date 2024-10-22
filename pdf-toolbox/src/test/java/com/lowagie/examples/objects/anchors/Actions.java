@@ -21,6 +21,7 @@ import com.lowagie.text.pdf.PdfAction;
 import com.lowagie.text.pdf.PdfDestination;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Creates a document with some goto actions.
@@ -29,6 +30,8 @@ import java.io.FileOutputStream;
  */
 
 public class Actions {
+
+    private static final Logger logger = Logger.getLogger(Actions.class.getName());
 
     /**
      * Creates a document with some goto actions.
@@ -70,7 +73,7 @@ public class Actions {
             p.add(new Chunk("local destination").setLocalDestination("test"));
             remote.add(p);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document

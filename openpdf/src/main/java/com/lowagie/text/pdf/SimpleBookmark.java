@@ -439,7 +439,8 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
                     break;
             }
         } catch (ClassCastException | NullPointerException e) {
-            // empty on purpose
+            String msg = "Exception occurred while creating outline action: " + e.getMessage();
+            logger.severe(msg);
         }
     }
 

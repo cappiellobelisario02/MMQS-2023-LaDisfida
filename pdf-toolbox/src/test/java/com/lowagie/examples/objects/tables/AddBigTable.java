@@ -19,11 +19,14 @@ import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Add a big table to a PDF with document.add().
  */
 public class AddBigTable {
+
+    private static final Logger logger = Logger.getLogger(AddBigTable.class.getName());
 
     /**
      * Big PdfPTable with document.add().
@@ -84,7 +87,7 @@ public class AddBigTable {
             }
             document.add(datatable);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

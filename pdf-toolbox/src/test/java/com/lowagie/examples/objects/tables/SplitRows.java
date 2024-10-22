@@ -20,11 +20,14 @@ import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Add a table to a PDF with document.add() and if the cell doesn't fit, the row is split in two parts.
  */
 public class SplitRows {
+
+    private static final Logger logger = Logger.getLogger(SplitRows.class.getName());
 
     /**
      * Demonstrates how rows are split when the cell is too big.
@@ -76,7 +79,7 @@ public class SplitRows {
             table.setSplitRows(false);
             document3.add(table);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document1.close();

@@ -119,7 +119,7 @@ public class ExtractAttachments extends AbstractTool {
         try (FileOutputStream fout = new FileOutputStream(fullPath)) {
             fout.write(b);
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 

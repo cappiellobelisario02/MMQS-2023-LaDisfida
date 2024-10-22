@@ -89,21 +89,21 @@ public class DvdCover {
             try {
                 cover.setFront(Image.getInstance(args[3]));
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                logger.severe("Exception occured");
             }
         }
         if (args.length > 4) {
             try {
                 cover.setBack(Image.getInstance(args[4]));
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                logger.severe("Exception occured");
             }
         }
         if (args.length > 5) {
             try {
                 cover.setSide(Image.getInstance(args[5]));
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                logger.severe("Exception occured");
             }
         }
         cover.generatePdf();

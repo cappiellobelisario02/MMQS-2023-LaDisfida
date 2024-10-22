@@ -19,11 +19,14 @@ import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Images with an annotation.
  */
 public class AnnotatedImage {
+
+    private static final Logger logger = Logger.getLogger(AnnotatedImage.class.getName());
 
     /**
      * Adds some annotated images to a PDF file.
@@ -52,7 +55,7 @@ public class AnnotatedImage {
             wmf.setAbsolutePosition(100f, 200f);
             document.add(wmf);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document

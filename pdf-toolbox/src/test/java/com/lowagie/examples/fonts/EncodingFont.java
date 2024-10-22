@@ -23,11 +23,14 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Fonts and encoding.
  */
 public class EncodingFont {
+
+    private static final Logger logger = Logger.getLogger(EncodingFont.class.getName());
 
     final static char[] SYMBOL_TABLE = {
             ' ', '!', '\u2200', '#', '\u2203', '%', '&', '\u220b', '(', ')', '*', '+', ',', '-', '.', '/',
@@ -138,7 +141,7 @@ public class EncodingFont {
             // step 5
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 

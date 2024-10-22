@@ -89,6 +89,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * A <CODE>DocWriter</CODE> class for HTML.
@@ -115,6 +116,8 @@ import java.util.Properties;
 public class HtmlWriter extends DocWriter {
 
     // static membervariables (tags)
+
+    private static final Logger logger = Logger.getLogger(HtmlWriter.class.getName());
 
     /**
      * This is a possible HTML-tag.
@@ -229,7 +232,7 @@ public class HtmlWriter extends DocWriter {
     // implementation of the DocListener methods
 
     /**
-     * Signals that an new page has to be started.
+     * Signals that a new page has to be started.
      *
      * @return <CODE>true</CODE> if this action succeeded, <CODE>false</CODE> if not.
      */
@@ -686,7 +689,7 @@ public class HtmlWriter extends DocWriter {
         try {
             add(element);
         } catch (DocumentException e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 

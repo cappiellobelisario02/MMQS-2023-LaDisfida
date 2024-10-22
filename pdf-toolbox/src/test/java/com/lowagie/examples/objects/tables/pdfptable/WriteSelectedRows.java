@@ -20,11 +20,14 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Writing a PdfPTable at an absolute position.
  */
 public class WriteSelectedRows {
+
+    private static final Logger logger = Logger.getLogger(WriteSelectedRows.class.getName());
 
     /**
      * Demonstrates the writeSelectedRows method.
@@ -72,7 +75,7 @@ public class WriteSelectedRows {
             document.add(new Paragraph("row 150 - 200"));
             table.writeSelectedRows(150, -1, 50, 820, writer.getDirectContent());
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

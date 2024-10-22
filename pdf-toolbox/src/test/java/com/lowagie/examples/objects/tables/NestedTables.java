@@ -18,11 +18,14 @@ import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of nested tables.
  */
 public class NestedTables {
+
+    private static final Logger logger = Logger.getLogger(NestedTables.class.getName());
 
     /**
      * Using nested tables.
@@ -61,7 +64,7 @@ public class NestedTables {
             // step 5: we close the document
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step5
         document.close();
