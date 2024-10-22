@@ -498,10 +498,10 @@ public class Phrase extends ArrayList<Element> implements TextElementArray {
         if (fontAttr != null && !fontAttr.isStandardFont()) {
             f = fontAttr.difference(chunk.getFont());
         }
-        if (size() > 0 && !chunk.hasAttributes()) {
+        if (size() > 0 && chunk.hasAttributes()) {
             try {
                 Chunk previous = (Chunk) get(size() - 1);
-                if (!previous.hasAttributes()
+                if (previous.hasAttributes()
                         && (f == null
                         || f.compareTo(previous.getFont()) == 0)
                         && !previous.getContent().trim().isEmpty()

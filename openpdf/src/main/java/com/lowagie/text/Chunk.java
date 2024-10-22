@@ -397,14 +397,11 @@ public class Chunk implements Element {
 
     /**
      * appends some text to this <CODE>Chunk</CODE>.
-     *
-     * @param string <CODE>String</CODE>
-     * @return a <CODE>StringBuffer</CODE>
      */
     private StringBuilder content = new StringBuilder();
 
-    public StringBuilder append(String string) {
-        return content.append(string);
+    public void append(String string) {
+        content.append(string);
     }
 
     /**
@@ -470,7 +467,7 @@ public class Chunk implements Element {
      * space.
      */
     public boolean isEmpty() {
-        return (content.toString().trim().length() == 0)
+        return (content.toString().trim().isEmpty())
                 && (!content.toString().contains("\n"))
                 && (attributes == null);
     }
@@ -496,7 +493,7 @@ public class Chunk implements Element {
      */
 
     public boolean hasAttributes() {
-        return attributes != null;
+        return attributes == null;
     }
 
     /**
@@ -557,28 +554,26 @@ public class Chunk implements Element {
      * width.
      *
      * @param scale the horizontal scaling factor
-     * @return this <CODE>Chunk</CODE>
      */
-    public Chunk setHorizontalScaling(float scale) {
-        return setAttribute(HSCALE, scale);
+    public void setHorizontalScaling(float scale) {
+        setAttribute(HSCALE, scale);
     }
 
     /**
-     * Sets an horizontal line that can be an underline or a strikethrough. Actually, the line can be anywhere
+     * Sets a horizontal line that can be an underline or a strikethrough. Actually, the line can be anywhere
      * vertically and has always the <CODE> Chunk</CODE> width. Multiple call to this method will produce multiple
      * lines.
      *
      * @param thickness the absolute thickness of the line
      * @param yPosition the absolute y position relative to the baseline
-     * @return this <CODE>Chunk</CODE>
      */
-    public Chunk setUnderline(float thickness, float yPosition) {
-        return setUnderline(null, thickness, 0f, yPosition, 0f,
+    public void setUnderline(float thickness, float yPosition) {
+        setUnderline(null, thickness, 0f, yPosition, 0f,
                 PdfContentByte.LINE_CAP_BUTT);
     }
 
     /**
-     * Sets an horizontal line that can be an underline or a strikethrough. Actually, the line can be anywhere
+     * Sets a horizontal line that can be an underline or a strikethrough. Actually, the line can be anywhere
      * vertically and has always the <CODE> Chunk</CODE> width. Multiple call to this method will produce multiple
      * lines.
      *
@@ -589,9 +584,8 @@ public class Chunk implements Element {
      * @param yPositionMul the position multiplication factor with the font size
      * @param cap          the end line cap. Allowed values are PdfContentByte.LINE_CAP_BUTT,
      *                     PdfContentByte.LINE_CAP_ROUND and PdfContentByte.LINE_CAP_PROJECTING_SQUARE
-     * @return this <CODE>Chunk</CODE>
      */
-    public Chunk setUnderline(Color color, float thickness, float thicknessMul,
+    public void setUnderline(Color color, float thickness, float thicknessMul,
             float yPosition, float yPositionMul, int cap) {
         if (attributes == null) {
             attributes = new HashMap<>();
@@ -601,7 +595,7 @@ public class Chunk implements Element {
                 new float[]{thickness, thicknessMul, yPosition, yPositionMul, cap}};
         Object[][] unders = Utilities.addToArray((Object[][]) attributes.get(UNDERLINE),
                 obj);
-        return setAttribute(UNDERLINE, unders);
+        setAttribute(UNDERLINE, unders);
     }
 
     /**
@@ -623,11 +617,10 @@ public class Chunk implements Element {
      * It can be used to implement sub/superscript.
      *
      * @param rise the displacement in points
-     * @return this <CODE>Chunk</CODE>
      */
 
-    public Chunk setTextRise(float rise) {
-        return setAttribute(SUBSUPSCRIPT, rise);
+    public void setTextRise(float rise) {
+        setAttribute(SUBSUPSCRIPT, rise);
     }
 
     /**
@@ -636,12 +629,11 @@ public class Chunk implements Element {
      *
      * @param alpha the first angle in degrees
      * @param beta  the second angle in degrees
-     * @return this <CODE>Chunk</CODE>
      */
-    public Chunk setSkew(float alpha, float beta) {
+    public void setSkew(float alpha, float beta) {
         alpha = (float) Math.tan(alpha * Math.PI / 180);
         beta = (float) Math.tan(beta * Math.PI / 180);
-        return setAttribute(SKEW, new float[]{alpha, beta});
+        setAttribute(SKEW, new float[]{alpha, beta});
     }
 
     /**
@@ -680,11 +672,10 @@ public class Chunk implements Element {
      * @param strokeWidth the stroke line width for the modes <CODE> PdfContentByte.TEXT_RENDER_MODE_STROKE</CODE> and
      *                    <CODE> PdfContentByte.TEXT_RENDER_MODE_FILL_STROKE</CODE>.
      * @param strokeColor the stroke color or <CODE>null</CODE> to follow the text color
-     * @return this <CODE>Chunk</CODE>
      */
-    public Chunk setTextRenderMode(int mode, float strokeWidth,
+    public void setTextRenderMode(int mode, float strokeWidth,
             Color strokeColor) {
-        return setAttribute(TEXTRENDERMODE, new Object[]{mode,
+        setAttribute(TEXTRENDERMODE, new Object[]{mode,
                 strokeWidth, strokeColor});
     }
 
@@ -692,11 +683,10 @@ public class Chunk implements Element {
      * Sets the split characters.
      *
      * @param splitCharacter the <CODE>SplitCharacter</CODE> interface
-     * @return this <CODE>Chunk</CODE>
      */
 
-    public Chunk setSplitCharacter(SplitCharacter splitCharacter) {
-        return setAttribute(SPLITCHARACTER, splitCharacter);
+    public void setSplitCharacter(SplitCharacter splitCharacter) {
+        setAttribute(SPLITCHARACTER, splitCharacter);
     }
 
     /**
@@ -812,13 +802,11 @@ public class Chunk implements Element {
     }
 
     /**
-     * Sets a new page tag..
-     *
-     * @return this <CODE>Chunk</CODE>
+     * Sets a new page tag.
      */
 
-    public Chunk setNewPage() {
-        return setAttribute(NEWPAGE, null);
+    public void setNewPage() {
+        setAttribute(NEWPAGE, null);
     }
 
     /**

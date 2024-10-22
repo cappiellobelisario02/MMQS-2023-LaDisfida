@@ -37,6 +37,7 @@ public class ParseHelloHtml {
      *
      */
     public static void parseHtmlToPdf() {
+        InputStream htmlStream = null;
         try (Document document = new Document()) {
             PdfWriter.getInstance(document, new FileOutputStream("parseHelloWorld.pdf"));
 
@@ -50,13 +51,21 @@ public class ParseHelloHtml {
             }
 
             // Step 3: parsing the HTML document to convert it into PDF
-            InputStream htmlStream = classLoader.getResourceAsStream("com/lowagie/examples/html/parseHelloWorld.html");
+            htmlStream = classLoader.getResourceAsStream("com/lowagie/examples/html/parseHelloWorld.html");
             if (htmlStream == null) {
                 throw new IOException("Resource not found: com/lowagie/examples/html/parseHelloWorld.html");
             }
             HtmlParser.parse(document, htmlStream);
         } catch (DocumentException | IOException de) {
             logger.info("Error parsing HTML to PDF: " + de);
+        } finally {
+            if (htmlStream != null){
+                try{
+                    htmlStream.close();
+                }catch (IOException e){
+                    logger.info("Error closing stream: " + e);
+                }
+            }
         }
     }
 

@@ -45,16 +45,14 @@ package com.lowagie.toolbox;
 import com.lowagie.text.Document;
 import com.lowagie.text.exceptions.InitializationException;
 import java.awt.BorderLayout;
-import java.io.IOException;
 import java.io.Serial;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Logger;
-import javax.naming.ConfigurationException;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -172,7 +170,7 @@ public class Versions
      * @param versionsarray ArrayList
      * @return TableModel
      */
-    public TableModel getVersionTableModel(final ArrayList<String> versionsarray) {
+    public TableModel getVersionTableModel(final List<String> versionsarray) {
         return new AbstractTableModel() {
 
             @Serial

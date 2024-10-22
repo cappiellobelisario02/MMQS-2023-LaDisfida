@@ -53,6 +53,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -147,7 +148,8 @@ public class WatermarkerTool extends AbstractTool {
             }
 
             // Read the input PDF and apply watermark
-            byte[] pdfBytes = Files.readAllBytes(Paths.get(inputPdf));
+            Path pathToFile = Paths.get(inputPdf);
+            byte[] pdfBytes = Files.readAllBytes(pathToFile);
             Watermarker watermarker = new Watermarker(pdfBytes, watermarkText, fontSize, opacity)
                     .withColor(watermarkColor);
 
