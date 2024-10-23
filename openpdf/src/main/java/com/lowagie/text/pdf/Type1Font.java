@@ -262,14 +262,14 @@ class Type1Font extends BaseFont {
     }
 
     private void processAfmFile(String afmFile, byte[] ttfAfm, boolean forceRead) throws DocumentException, IOException {
-        try (RandomAccessFileOrArray rf = ttfAfm == null ? new RandomAccessFileOrArray(afmFile, forceRead, Document.plainRandomAccess)
+        try (RandomAccessFileOrArray rf = ttfAfm == null ? new RandomAccessFileOrArray(afmFile, forceRead, Document.PLAIN_RANDOM_ACCESS)
                 : new RandomAccessFileOrArray(ttfAfm)) {
             process(rf);
         }
     }
 
     private void processPfmFile(String afmFile, byte[] ttfAfm) throws DocumentException, IOException {
-        try (RandomAccessFileOrArray rf = ttfAfm == null ? new RandomAccessFileOrArray(afmFile, false, Document.plainRandomAccess)
+        try (RandomAccessFileOrArray rf = ttfAfm == null ? new RandomAccessFileOrArray(afmFile, false, Document.PLAIN_RANDOM_ACCESS)
                 : new RandomAccessFileOrArray(ttfAfm);
                 ByteArrayOutputStream ba = new ByteArrayOutputStream()) {
             Pfm2afm.convert(rf, ba);
@@ -592,7 +592,7 @@ class Type1Font extends BaseFont {
     private RandomAccessFileOrArray createRandomAccessFileOrArray() throws IOException {
         String filePfb = fileName.substring(0, fileName.length() - 3) + "pfb";
         if (pfb == null) {
-            return new RandomAccessFileOrArray(filePfb, true, Document.plainRandomAccess);
+            return new RandomAccessFileOrArray(filePfb, true, Document.PLAIN_RANDOM_ACCESS);
         } else {
             return new RandomAccessFileOrArray(pfb);
         }

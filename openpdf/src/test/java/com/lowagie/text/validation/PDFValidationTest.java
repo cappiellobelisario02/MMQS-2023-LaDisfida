@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.verapdf.core.EncryptedPdfException;
 import org.verapdf.core.ModelParsingException;
+import org.verapdf.core.ValidationException;
 import org.verapdf.gf.model.GFModelParser;
 import org.verapdf.pdfa.PDFAValidator;
 import org.verapdf.pdfa.flavours.PDFAFlavour;
@@ -55,9 +57,10 @@ class PDFValidationTest {
         // Create a veraPDF validator
         PDFAFlavour flavour = PDFAFlavour.PDFA_1_B;
         try (InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-                GFModelParser parser = GFModelParser.createModelWithFlavour(inputStream, flavour)) {
+                GFModelParser parser = GFModelParser.createModelWithFlavour(inputStream, flavour);
+                PDFAValidator validator = ValidatorFactory.createValidator(flavour, false, 10)
+        ){
 
-            PDFAValidator validator = ValidatorFactory.createValidator(flavour, false, 10);
             ValidationResult result = validator.validate(parser);
 
             // Check the validation result
@@ -71,15 +74,12 @@ class PDFValidationTest {
                 }
             }
             Assertions.assertTrue(result.isCompliant());
-        } catch (IOException e) {
+        } catch (IOException | ValidationException e) {
             // Handle IOException specifically
             fail("IOException occurred during PDF validation: " + e.getMessage());
-        } catch (ModelParsingException e) {
+        } catch (ModelParsingException | EncryptedPdfException e) {
             // Handle ModelParsingException specifically
             fail("ModelParsingException occurred: " + e.getMessage());
-        } catch (Exception e) {
-            // Catch any other unexpected exceptions
-            fail("An unexpected error occurred: " + e.getMessage());
         }
     }
 

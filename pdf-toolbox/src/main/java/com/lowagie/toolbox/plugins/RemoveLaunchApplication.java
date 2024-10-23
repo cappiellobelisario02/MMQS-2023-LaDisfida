@@ -51,7 +51,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
@@ -102,11 +101,7 @@ public class RemoveLaunchApplication
 
         tool.setMainArguments(args);
 
-        try {
-            tool.execute();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
-        }
+        tool.execute();
     }
 
     // Method to validate input arguments
@@ -115,6 +110,7 @@ public class RemoveLaunchApplication
     }
 
     // Placeholder for the usage message
+    @Override
     public String getUsage() {
         return "Usage: java RemoveLaunchApplication <arg1> <arg2>";
     }

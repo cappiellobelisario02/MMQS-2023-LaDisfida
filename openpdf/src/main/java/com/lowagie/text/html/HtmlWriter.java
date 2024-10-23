@@ -88,6 +88,7 @@ import java.util.EmptyStackException;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -385,11 +386,11 @@ public class HtmlWriter extends DocWriter {
             if (pageSize.getBackgroundColor() != null) {
                 write(HtmlTags.BACKGROUNDCOLOR, HtmlEncoder.encode(pageSize.getBackgroundColor()));
             }
-            if (document.getJavaScript_onLoad() != null) {
-                write(HtmlTags.JAVASCRIPT_ONLOAD, HtmlEncoder.encode(document.getJavaScript_onLoad()));
+            if (document.getJavascriptOnload() != null) {
+                write(HtmlTags.JAVASCRIPT_ONLOAD, HtmlEncoder.encode(document.getJavascriptOnload()));
             }
-            if (document.getJavaScript_onUnLoad() != null) {
-                write(HtmlTags.JAVASCRIPT_ONUNLOAD, HtmlEncoder.encode(document.getJavaScript_onUnLoad()));
+            if (document.getJavascriptOnunload() != null) {
+                write(HtmlTags.JAVASCRIPT_ONUNLOAD, HtmlEncoder.encode(document.getJavascriptOnunload()));
             }
             if (document.getHtmlStyleClass() != null) {
                 write(Markup.HTML_ATTR_CSS_CLASS, document.getHtmlStyleClass());
@@ -426,11 +427,7 @@ public class HtmlWriter extends DocWriter {
      */
     protected void initHeader() {
         if (header != null) {
-            try {
-                add(header.getContent());
-            } catch (Exception e) {
-                throw new ExceptionConverter(e);
-            }
+            add(header.getContent());
         }
     }
 
@@ -439,14 +436,10 @@ public class HtmlWriter extends DocWriter {
      */
     protected void initFooter() {
         if (footer != null) {
-            try {
-                // Set the page number. HTML has no notion of a page, so it should always
-                // add up to 1
-                footer.setPageNumber(pageN + 1);
-                add(footer.paragraph());
-            } catch (Exception e) {
-                throw new ExceptionConverter(e);
-            }
+            // Set the page number. HTML has no notion of a page, so it should always
+            // add up to 1
+            footer.setPageNumber(pageN + 1);
+            add(footer.paragraph());
         }
     }
 
@@ -565,7 +558,7 @@ public class HtmlWriter extends DocWriter {
     public boolean isOtherFont(Font font) {
         try {
             Font cFont = currentfont.peek();
-            return cFont.compareTo(font) != 0;
+            return Objects.requireNonNull(cFont).compareTo(font) != 0;
         } catch (EmptyStackException ese) {
             return standardfont.compareTo(font) != 0;
         }

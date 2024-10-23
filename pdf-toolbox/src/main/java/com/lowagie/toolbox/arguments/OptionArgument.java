@@ -86,7 +86,7 @@ public class OptionArgument extends AbstractArgument {
         }
         try {
             return options.get(value).getValue();
-        } catch (Exception e) {
+        } catch (ClassCastException | NullPointerException e) {
             throw new InstantiationException(e.getMessage());
         }
     }

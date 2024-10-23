@@ -647,7 +647,7 @@ class TrueTypeFont extends BaseFont {
 
     private void initializeRandomAccessFileOrArray(byte[] ttfAfm, boolean preload) throws IOException {
         if (ttfAfm == null) {
-            rf = new RandomAccessFileOrArray(fileName, preload, Document.plainRandomAccess);
+            rf = new RandomAccessFileOrArray(fileName, preload, Document.PLAIN_RANDOM_ACCESS);
         } else {
             rf = new RandomAccessFileOrArray(ttfAfm);
         }

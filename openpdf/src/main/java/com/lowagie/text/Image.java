@@ -71,6 +71,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
@@ -533,7 +534,8 @@ public abstract class Image extends Rectangle {
             return ImageLoader.getTiffImage(url);
         } else {
             // Log del messaggio dettagliato per la diagnosi interna
-            logger.log(Level.WARNING, "Unrecognized image format for URL: " + url);
+            String msg = "Unrecognized image format for URL: " + url;
+            logger.log(Level.WARNING, msg);
 
             // Lancia un'eccezione con un messaggio generico
             throw new IOException("The provided file is not a recognized image format.");
@@ -1082,7 +1084,8 @@ public abstract class Image extends Rectangle {
             Constructor<? extends com.lowagie.text.Image> constructor = cs.getDeclaredConstructor(
                     com.lowagie.text.Image.class);
             return constructor.newInstance(image);
-        } catch (Exception e) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                 InvocationTargetException e) {
             throw new ExceptionConverter(e);
         }
     }

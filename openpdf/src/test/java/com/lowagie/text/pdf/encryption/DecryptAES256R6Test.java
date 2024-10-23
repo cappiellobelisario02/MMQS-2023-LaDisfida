@@ -76,7 +76,7 @@ class DecryptAES256R6Test {
             String extractedText;
             try {
                 extractedText = new PdfTextExtractor(pdfReader).getTextFromPage(1);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 throw new IOException("Error extracting text from the PDF.", e);
             }
 
@@ -480,7 +480,7 @@ class DecryptAES256R6Test {
                 String extractedText;
                 try {
                     extractedText = new PdfTextExtractor(pdfReader).getTextFromPage(1);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     throw new IOException("Error extracting text from the PDF.", e);
                 }
 

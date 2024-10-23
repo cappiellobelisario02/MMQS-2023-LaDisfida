@@ -52,6 +52,7 @@ package com.lowagie.text;
 import com.lowagie.text.html.Markup;
 import com.lowagie.text.pdf.BaseFont;
 import java.awt.Color;
+import java.io.IOException;
 import java.util.Locale;
 
 
@@ -153,17 +154,17 @@ public class Font implements Comparable<com.lowagie.text.Font> {
     /**
      * the value of the fontsize.
      */
-    private float size = UNDEFINED;
+    private float size;
 
     /**
      * the value of the style.
      */
-    private int style = UNDEFINED;
+    private int style;
 
     /**
      * the value of the color.
      */
-    private Color color = null;
+    private Color color;
 
     /**
      * the external font
@@ -375,7 +376,7 @@ public class Font implements Comparable<com.lowagie.text.Font> {
     /**
      * Compares this <CODE>Font</CODE> with another
      *
-     * @param //object the other <CODE>Font</CODE>
+     * @param font //object the other <CODE>Font</CODE>
      * @return a value
      */
     public int compareTo(com.lowagie.text.Font font) {
@@ -437,20 +438,14 @@ public class Font implements Comparable<com.lowagie.text.Font> {
      * @return the familyname
      */
     public String getFamilyname() {
-        switch (getFamily()) {
-            case com.lowagie.text.Font.COURIER:
-                return FontFactory.COURIER;
-            case com.lowagie.text.Font.HELVETICA:
-                return FontFactory.HELVETICA;
-            case com.lowagie.text.Font.TIMES_ROMAN:
-                return FontFactory.TIMES_ROMAN;
-            case com.lowagie.text.Font.SYMBOL:
-                return FontFactory.SYMBOL;
-            case com.lowagie.text.Font.ZAPFDINGBATS:
-                return FontFactory.ZAPFDINGBATS;
-            default:
-                return getFamilynameFromBaseFont();
-        }
+        return switch (getFamily()) {
+            case Font.COURIER -> FontFactory.COURIER;
+            case Font.HELVETICA -> FontFactory.HELVETICA;
+            case Font.TIMES_ROMAN -> FontFactory.TIMES_ROMAN;
+            case Font.SYMBOL -> FontFactory.SYMBOL;
+            case Font.ZAPFDINGBATS -> FontFactory.ZAPFDINGBATS;
+            default -> getFamilynameFromBaseFont();
+        };
     }
 
     private String getFamilynameFromBaseFont() {
@@ -552,17 +547,16 @@ public class Font implements Comparable<com.lowagie.text.Font> {
      * </CODE>
      */
     public int getCalculatedStyle() {
-        int Style;
-        if (style == UNDEFINED) {
-            style = NORMAL;
+        if (this.style == UNDEFINED) {
+            this.style = NORMAL;
         }
         if (baseFont != null) {
-            return style;
+            return this.style;
         }
         if (family == SYMBOL || family == ZAPFDINGBATS) {
-            return style;
+            return this.style;
         } else {
-            return style & (~BOLDITALIC);
+            return this.style & (~BOLDITALIC);
         }
     }
 
@@ -579,7 +573,6 @@ public class Font implements Comparable<com.lowagie.text.Font> {
      * @return Font.NORMAL if no style can be detected from the font getName.
      */
     public int getBaseFontStyle() {
-        int Style;
         if (baseFont != null) {
             final String baseFontName = baseFont.getPostscriptFontName();
             style = getFontStyleFromName(baseFontName);
@@ -691,47 +684,31 @@ public class Font implements Comparable<com.lowagie.text.Font> {
         if (baseFont != null) {
             return baseFont;
         }
-        int Style = this.style;
-        if (Style == UNDEFINED) {
-            Style = NORMAL;
+        int styleM = this.style;
+        if (styleM == UNDEFINED) {
+            styleM = NORMAL;
         }
-        String fontName = BaseFont.HELVETICA;
+        String fontName;
         String encoding = BaseFont.WINANSI;
-        BaseFont cfont = null;
+        BaseFont cfont;
         switch (family) {
             case COURIER:
-                switch (Style & BOLDITALIC) {
-                    case BOLD:
-                        fontName = BaseFont.COURIER_BOLD;
-                        break;
-                    case ITALIC:
-                        fontName = BaseFont.COURIER_OBLIQUE;
-                        break;
-                    case BOLDITALIC:
-                        fontName = BaseFont.COURIER_BOLDOBLIQUE;
-                        break;
-                    default:
+                fontName = switch (styleM & BOLDITALIC) {
+                    case BOLD -> BaseFont.COURIER_BOLD;
+                    case ITALIC -> BaseFont.COURIER_OBLIQUE;
+                    case BOLDITALIC -> BaseFont.COURIER_BOLDOBLIQUE;
+                    default ->
                         //case NORMAL:
-                        fontName = BaseFont.COURIER;
-                        break;
-                }
+                            BaseFont.COURIER;
+                };
                 break;
             case TIMES_ROMAN:
-                switch (Style & BOLDITALIC) {
-                    case BOLD:
-                        fontName = BaseFont.TIMES_BOLD;
-                        break;
-                    case ITALIC:
-                        fontName = BaseFont.TIMES_ITALIC;
-                        break;
-                    case BOLDITALIC:
-                        fontName = BaseFont.TIMES_BOLDITALIC;
-                        break;
-                    default:
-                    case NORMAL:
-                        fontName = BaseFont.TIMES_ROMAN;
-                        break;
-                }
+                fontName = switch (styleM & BOLDITALIC) {
+                    case BOLD -> BaseFont.TIMES_BOLD;
+                    case ITALIC -> BaseFont.TIMES_ITALIC;
+                    case BOLDITALIC -> BaseFont.TIMES_BOLDITALIC;
+                    default -> BaseFont.TIMES_ROMAN;
+                };
                 break;
             case SYMBOL:
                 fontName = BaseFont.SYMBOL;
@@ -747,26 +724,17 @@ public class Font implements Comparable<com.lowagie.text.Font> {
                 break;
             default:
             case com.lowagie.text.Font.HELVETICA:
-                switch (Style & BOLDITALIC) {
-                    case BOLD:
-                        fontName = BaseFont.HELVETICA_BOLD;
-                        break;
-                    case ITALIC:
-                        fontName = BaseFont.HELVETICA_OBLIQUE;
-                        break;
-                    case BOLDITALIC:
-                        fontName = BaseFont.HELVETICA_BOLDOBLIQUE;
-                        break;
-                    default:
-                    case NORMAL:
-                        fontName = BaseFont.HELVETICA;
-                        break;
-                }
+                fontName = switch (styleM & BOLDITALIC) {
+                    case BOLD -> BaseFont.HELVETICA_BOLD;
+                    case ITALIC -> BaseFont.HELVETICA_OBLIQUE;
+                    case BOLDITALIC -> BaseFont.HELVETICA_BOLDOBLIQUE;
+                    default -> BaseFont.HELVETICA;
+                };
                 break;
         }
         try {
             cfont = BaseFont.createFont(fontName, encoding, false);
-        } catch (Exception ee) {
+        } catch (IOException ee) {
             throw new ExceptionConverter(ee);
         }
         return cfont;

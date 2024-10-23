@@ -112,7 +112,7 @@ public class FileArgument extends AbstractArgument {
         }
         try {
             return new File(value.toString());
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             throw new InstantiationException(e.getMessage());
         }
     }

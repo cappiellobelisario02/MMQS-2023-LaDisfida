@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -62,7 +63,7 @@ class ConcatPdfTest {
             int count = reader.getNumberOfPages();
             reader.close();
             return count;
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             return 0;
         }
     }

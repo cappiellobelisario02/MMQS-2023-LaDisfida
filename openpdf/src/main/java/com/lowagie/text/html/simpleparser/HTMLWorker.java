@@ -164,14 +164,13 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
         this.document = document;
     }
 
-    public static ArrayList<Element> parseToList(Reader reader, StyleSheet style) throws IOException {
-        Map<String, Object> interfaceProps = null;
-        return parseToList(reader, style, interfaceProps);
+    public static List<Element> parseToList(Reader reader, StyleSheet style) throws IOException {
+        return parseToList(reader, style, null);
     }
 
-    public static ArrayList<Element> parseToList(Reader reader, StyleSheet style, Map<String, Object> interfaceProps)
+    public static List<Element> parseToList(Reader reader, StyleSheet style, Map<String, Object> interfaceProps)
             throws IOException {
-        com.lowagie.text.html.simpleparser.HTMLWorker worker = new com.lowagie.text.html.simpleparser.HTMLWorker(null);
+        HTMLWorker worker = new HTMLWorker(null);
         if (style != null) {
             worker.style = style;
         }
@@ -216,7 +215,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
                 document.add(currentParagraph);
             }
             currentParagraph = null;
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -242,7 +241,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
             endElement("p");
             handleGeneralTags(tag, style);
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -257,26 +256,29 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
     }
 
     private boolean handleSpecialTags(String tag, Map<String, String> style) throws IOException {
-        switch (tag) {
-            case HtmlTags.ANCHOR:
+        return switch (tag) {
+            case HtmlTags.ANCHOR -> {
                 handleAnchorTag(style);
-                return true;
-            case HtmlTags.NEWLINE:
+                yield true;
+            }
+            case HtmlTags.NEWLINE -> {
                 handleNewlineTag();
-                return true;
-            case HtmlTags.HORIZONTALRULE:
+                yield true;
+            }
+            case HtmlTags.HORIZONTALRULE -> {
                 handleHorizontalRuleTag(style);
-                return true;
-            case HtmlTags.CHUNK:
-            case HtmlTags.SPAN:
+                yield true;
+            }
+            case HtmlTags.CHUNK, HtmlTags.SPAN -> {
                 cprops.addToChain(tag, style);
-                return true;
-            case HtmlTags.IMAGE:
+                yield true;
+            }
+            case HtmlTags.IMAGE -> {
                 handleImageTag(style);
-                return true;
-            default:
-                return false;
-        }
+                yield true;
+            }
+            default -> false;
+        };
     }
 
     private void handleAnchorTag(Map<String, String> style) {
@@ -364,9 +366,6 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
         }
         cprops.addToChain(HtmlTags.IMAGE, style);
         Image img = resolveImage(src, style);
-        if (img == null) {
-            return;
-        }
         adjustImageProperties(img, style);
         addImageToDocumentOrParagraph(img, style);
     }
@@ -457,7 +456,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
                 ralign = Image.RIGHT;
             }
             img.setAlignment(ralign);
-            Img i = null;
+            Img i;
             boolean skip = false;
             if (interfaceProps != null) {
                 i = (Img) interfaceProps.get("img_interface");
@@ -480,24 +479,24 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
 
     private void handleGeneralTags(String tag, Map<String, String> style) {
         switch (tag) {
-            case "h1":
-            case "h2":
-            case "h3":
-            case "h4":
-            case "h5":
-            case "h6":
+            case "h1",
+                 "h2",
+                 "h3",
+                 "h4",
+                 "h5",
+                 "h6":
                 handleHeadingTag(tag, style);
                 break;
-            case HtmlTags.UNORDEREDLIST:
-            case HtmlTags.ORDEREDLIST:
+            case HtmlTags.UNORDEREDLIST,
+                 HtmlTags.ORDEREDLIST:
                 handleListTag(tag, style);
                 break;
             case HtmlTags.LISTITEM:
                 handleListItemTag(style);
                 break;
-            case HtmlTags.DIV:
-            case HtmlTags.BODY:
-            case "p":
+            case HtmlTags.DIV,
+                 HtmlTags.BODY,
+                 "p":
                 cprops.addToChain(tag, style);
                 break;
             case HtmlTags.PRE:
@@ -506,8 +505,8 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
             case "tr":
                 handleTableRowTag(style);
                 break;
-            case "td":
-            case "th":
+            case "td",
+                 "th":
                 handleTableCellTag(tag);
                 break;
             case TABLE_KEY:
@@ -613,18 +612,16 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
             }
             handleSimpleTags(tag);
 
-            if (tag.equals(TABLE_KEY)) {
-                handleTableTag();
-                return;
+            switch (tag) {
+                case TABLE_KEY -> handleTableTag();
+                case "tr" -> handleTableRowTag();
+                case "td", "th" -> handleTableCellTag(tag);
+                default -> {
+                    String s = "Unexpected value: " + tag;
+                    throw new IllegalStateException(s);
+                }
             }
-            if (tag.equals("tr")) {
-                handleTableRowTag();
-                return;
-            }
-            if (tag.equals("td") || tag.equals("th")) {
-                handleTableCellTag(tag);
-            }
-        } catch (Exception e) {
+        } catch (DocumentException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -676,8 +673,8 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
             document.add(currentParagraph);
         } else {
             Object obj = stack.pop();
-            if (obj instanceof TextElementArray) {
-                ((TextElementArray) obj).add(currentParagraph);
+            if (obj instanceof TextElementArray textElementArray) {
+                textElementArray.add(currentParagraph);
             }
             stack.push(obj);
         }
@@ -727,8 +724,8 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
         }
 
         Object list = stack.pop();
-        if (list instanceof com.lowagie.text.List) {
-            ((com.lowagie.text.List) list).add((Element) obj);
+        if (list instanceof com.lowagie.text.List listList) {
+            listList.add((Element) obj);
             adjustListSymbol((ListItem) obj);
         }
         stack.push(list);
@@ -779,11 +776,11 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
 
         while (!stack.isEmpty()) {
             Object obj = stack.pop();
-            if (obj instanceof IncCell) {
-                cells.add(((IncCell) obj).getCell());
+            if (obj instanceof IncCell objIncCell) {
+                cells.add(objIncCell.getCell());
             }
-            if (obj instanceof IncTable) {
-                table = (IncTable) obj;
+            if (obj instanceof IncTable objIncTable) {
+                table = objIncTable;
                 break;
             }
         }
@@ -802,8 +799,8 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
             document.add(element);
         } else {
             Object peek = stack.peek();
-            if (peek instanceof com.lowagie.text.List) {
-                ((com.lowagie.text.List) peek).add((com.lowagie.text.List) element);
+            if (peek instanceof com.lowagie.text.List peekList) {
+                peekList.add((com.lowagie.text.List) element);
             } else {
                 ((TextElementArray) peek).add(element);
             }
@@ -832,7 +829,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
     }
 
     private String preprocessText(String str) {
-        if (str.trim().length() == 0 || str.indexOf(' ') < 0) {
+        if (str.trim().isEmpty() || str.indexOf(' ') < 0) {
             return "";
         }
 
@@ -846,13 +843,13 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
                     }
                     break;
                 case '\n':
-                    if (buf.length() > 0) {
+                    if (!buf.isEmpty()) {
                         newline = true;
                         buf.append(' ');
                     }
                     break;
-                case '\r':
-                case '\t':
+                case '\r',
+                     '\t':
                     break;
                 default:
                     newline = false;
@@ -916,7 +913,7 @@ public class HTMLWorker implements SimpleXMLDocHandler, DocListener {
     }
 
     /**
-     * @see com.lowagie.text.DocListener#setMarginMirroring(boolean)
+     * @see DocListener#setMarginMirroring(boolean)
      * @since 2.1.6
      */
     public boolean setMarginMirroringTopBottom(boolean marginMirroring) {

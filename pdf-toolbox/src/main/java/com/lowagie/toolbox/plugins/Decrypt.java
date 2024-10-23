@@ -44,6 +44,8 @@ import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -110,7 +112,7 @@ public class Decrypt extends AbstractTool {
 
             PdfStamper stamper = new PdfStamper(reader, fos);
             stamper.close();
-        } catch (Exception e) {
+        } catch (IOException | InstantiationException | NoSuchAlgorithmException e) {
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),
@@ -121,7 +123,7 @@ public class Decrypt extends AbstractTool {
                 try {
                     reader.close();
                     fos.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                     logger.info("Error1"+ e.getMessage());
                 }
             }

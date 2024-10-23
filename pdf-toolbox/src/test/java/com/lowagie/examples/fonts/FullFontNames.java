@@ -17,11 +17,15 @@ package com.lowagie.examples.fonts;
 import com.lowagie.text.pdf.BaseFont;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Retrieving the full font getName
  */
 public class FullFontNames {
+
+    private static final Logger logger = Logger.getLogger(FullFontNames.class.getName());
 
     /**
      * Retrieving the full font getName
@@ -42,9 +46,11 @@ public class FullFontNames {
                 }
             }
             out.flush(); // Not necessary, since we're using try-with-resources
-        } catch (Exception e) {
+        } catch (IOException e) {
             // Consider using a logging framework or System.err for error logging
             // Simple error logging for demonstration
+            String msg = "Exception: " + e;
+            logger.severe(msg);
         }
     }
 

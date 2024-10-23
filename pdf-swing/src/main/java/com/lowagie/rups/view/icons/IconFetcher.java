@@ -22,6 +22,7 @@ package com.lowagie.rups.view.icons;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -57,7 +58,7 @@ public class IconFetcher {
         if (icon == null) {
             try {
                 // Attempt to load the icon from resources
-                icon = new ImageIcon(IconFetcher.class.getResource(filename));
+                icon = new ImageIcon(Objects.requireNonNull(IconFetcher.class.getResource(filename)));
 
                 // Check if the icon was successfully loaded
                 if (icon.getIconWidth() < 0 || icon.getIconHeight() < 0) {
@@ -73,10 +74,6 @@ public class IconFetcher {
             } catch (IOException e) {
                 // Handle IO exceptions specifically
                 logger.severe("Failed to load icon from file: " + filename + ". " + e.getMessage());
-                return null;
-            } catch (Exception e) {
-                // Log any other unexpected exceptions
-                logger.severe("Unexpected error while loading icon: " + filename + ". " + e.getMessage());
                 return null;
             }
         }

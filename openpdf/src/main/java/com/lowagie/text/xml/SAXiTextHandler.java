@@ -234,15 +234,15 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             case ElementTags.ENTITY:
                 handleEntity(attributes);
                 break;
-            case ElementTags.PHRASE:
-            case ElementTags.ANCHOR:
-            case ElementTags.PARAGRAPH:
-            case ElementTags.TITLE:
-            case ElementTags.LIST:
-            case ElementTags.LISTITEM:
-            case ElementTags.CELL:
-            case ElementTags.SECTION:
-            case ElementTags.CHAPTER:
+            case ElementTags.PHRASE,
+                 ElementTags.ANCHOR,
+                 ElementTags.PARAGRAPH,
+                 ElementTags.TITLE,
+                 ElementTags.LIST,
+                 ElementTags.LISTITEM,
+                 ElementTags.CELL,
+                 ElementTags.SECTION,
+                 ElementTags.CHAPTER:
                 handleTextElement(attributes);
                 break;
             case ElementTags.TABLE:
@@ -324,7 +324,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
         try {
             Image img = ElementFactory.getImage(attributes);
             addingImage(img);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -438,7 +438,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
                 default:
                     break;
             }
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
             throw new ExceptionConverter(ex);
         }
         return false;
@@ -448,7 +448,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
         try {
             Field pageSizeField = PageSize.class.getField(value);
             return (Rectangle) pageSizeField.get(null);
-        } catch (Exception ex) {
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
             throw new ExceptionConverter(ex);
         }
     }
@@ -490,9 +490,9 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
     }
 
     private void addAnnotationToTextElementArray(TextElementArray current, Annotation annotation){
-        try {
+        if(current != null){
             current.add(annotation);
-        } catch (Exception e) {
+        }else{
             document.add(annotation);
         }
     }
@@ -557,8 +557,8 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             case '\n':
                 buf.append(' ');
                 return true;
-            case '\r':
-            case '\t':
+            case '\r',
+                 '\t':
                 break;
             default:
                 buf.append(character);
@@ -730,7 +730,7 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
             if (cell.getWidth() == 0 && cell.getColspan() == 1 && cellWidths[j] == 0) {
                 total = calculateTotalCellWidth(total, cellWidths, j, columns);
             } else if (cell.getColspan() == 1 && width.endsWith("%")) {
-                calculateTotalAndUpdateCellNulls(total, width, cellWidths, cellNulls, j);
+                calculateTotalAndUpdateCellNulls(width, cellWidths, cellNulls, j);
             }
             j += cell.getColspan();
             try {
@@ -830,20 +830,15 @@ public class SAXiTextHandler<T extends XmlPeer> extends DefaultHandler {
     }
 
     private float calculateTotalCellWidth(float total, float[] cellWidths, int j, int columns){
-        try {
-            cellWidths[j] = 100.0f / columns;
-            total += cellWidths[j];
-            return total;
-        } catch (Exception e) {
-            return total;
-        }
+        cellWidths[j] = 100.0f / columns;
+        total += cellWidths[j];
+        return total;
     }
 
-    private void calculateTotalAndUpdateCellNulls(float total, String width, float[] cellWidths, boolean[] cellNulls, int j) {
+    private void calculateTotalAndUpdateCellNulls(String width, float[] cellWidths, boolean[] cellNulls, int j) {
         try {
             // Attempt to parse the width and update cell widths
             cellWidths[j] = Float.parseFloat(width.substring(0, width.length() - 1) + "f");
-            total += cellWidths[j];
             cellNulls[j] = false;
         } catch (NumberFormatException nfe) {
             // Log specific error for invalid float format

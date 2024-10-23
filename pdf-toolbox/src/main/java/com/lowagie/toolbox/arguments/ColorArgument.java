@@ -37,6 +37,7 @@ package com.lowagie.toolbox.arguments;
 import com.lowagie.toolbox.AbstractTool;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import javax.swing.JColorChooser;
 
 /**
@@ -59,7 +60,7 @@ public class ColorArgument extends AbstractArgument {
         }
         try {
             return Color.decode(value.toString());
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             throw new InstantiationException(e.getMessage());
         }
     }

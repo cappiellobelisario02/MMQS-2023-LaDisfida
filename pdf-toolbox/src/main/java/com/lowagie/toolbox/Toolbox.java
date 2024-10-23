@@ -473,7 +473,7 @@ public class Toolbox extends JFrame implements ActionListener {
     private void handleDefault(String actionCommand) {
         try {
             createFrame(actionCommand);
-        } catch (Exception e) {
+        } catch (IllegalAccessException | InstantiationException | ClassNotFoundException | PropertyVetoException e) {
             logger.severe("An error occurred while trying to create the toolbox.");
         }
     }

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.lowagie.text.Document;
 import java.io.IOException;
 import java.io.InputStream;
+import com.lowagie.text.DocumentException;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -60,7 +61,7 @@ class SAXmyHtmlHandlerTest {
             doc1.open();
             HtmlParser.parse(doc1, is);
             assertNotNull(doc1, () -> is + " was not parsed successfully");
-        } catch (Exception e) {
+        } catch (DocumentException e) {
             assertTrue(true);
         }
     }

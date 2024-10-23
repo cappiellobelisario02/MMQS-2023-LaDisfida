@@ -52,6 +52,7 @@ import com.lowagie.toolbox.arguments.StringArgument;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -159,7 +160,7 @@ public class WatermarkerTool extends AbstractTool {
 
             String msg = "Watermarked PDF created successfully: " + outputPdf;
             logger.info(msg);
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.severe("An error occurred");
         }
     }

@@ -51,6 +51,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
@@ -127,7 +128,7 @@ public class Txt2Pdf extends AbstractTool {
                 document.add(new Paragraph(12, line, f));
             }
 
-        } catch (Exception e) {
+        } catch (InstantiationException | IOException e) {
             // Show error message in a dialog box without revealing system info
             JOptionPane.showMessageDialog(internalFrame,
                     "An error occurred while processing the file. Please contact support.",

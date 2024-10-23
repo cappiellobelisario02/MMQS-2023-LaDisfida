@@ -165,12 +165,8 @@ public class NUp extends AbstractTool {
             logger.severe("Exception occured");
         } finally {
             if (reader != null && document != null){
-                try {
-                    reader.close();
-                    document.close();
-                } catch (Exception e){
-                    logger.severe("Exception occured");
-                }
+                reader.close();
+                document.close();
             }
         }
     }
@@ -196,7 +192,7 @@ public class NUp extends AbstractTool {
         int powSquared;
         try {
             powSquared = Integer.parseInt((String) getValue("pow2"));
-        } catch (Exception e) {
+        } catch (NumberFormatException | InstantiationException e) {
             powSquared = 1;
         }
         return powSquared;

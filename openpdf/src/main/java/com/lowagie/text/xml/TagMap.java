@@ -55,12 +55,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -69,6 +72,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class TagMap extends HashMap<String, XmlPeer> {
 
+    @Serial
     private static final long serialVersionUID = -6809383366554350820L;
 
     /**
@@ -88,9 +92,6 @@ public class TagMap extends HashMap<String, XmlPeer> {
             }
         } catch (FileNotFoundException fnfe) {
             throw new ExceptionConverter(fnfe);
-        } catch (Exception e) {
-            // Handle other exceptions if necessary
-            throw e;  // Rethrow or handle the exception appropriately
         } finally {
             if (inputStream != null) {
                 try {
@@ -121,13 +122,13 @@ public class TagMap extends HashMap<String, XmlPeer> {
             factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             SAXParser parser = factory.newSAXParser();
-            parser.parse(new InputSource(in), new AttributeHandler((Map<String, XmlPeer>) this));
-        } catch (Exception e) {
+            parser.parse(new InputSource(in), new AttributeHandler(this));
+        } catch (IOException | SAXException | ParserConfigurationException e) {
             throw new ExceptionConverter(e);
         }
     }
 
-    class AttributeHandler extends DefaultHandler {
+    static class AttributeHandler extends DefaultHandler {
 
         /**
          * This is a tag

@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import com.lowagie.text.ExceptionConverter;
 import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
@@ -37,7 +38,7 @@ class PdfFormFlatteningTest {
                     PdfStamper stamper = new PdfStamper(pdfReader, fos)) {
 
                 stamper.setFormFlattening(true);
-            } catch (Exception e) {
+            } catch (IOException | PDFFilterException | NoSuchAlgorithmException e) {
                 throw new ExceptionConverter(e);
             }
         }
@@ -79,7 +80,7 @@ class PdfFormFlatteningTest {
                     PdfReader pdfReader = new PdfReader(resource);
                     PdfStamper stamper = new PdfStamper(pdfReader, fos)) {
                 stamper.setFormFlattening(true);
-            } catch (Exception e) {
+            } catch (IOException | PDFFilterException | NoSuchAlgorithmException e) {
                 throw new ExceptionConverter(e);
             }
         }
@@ -94,7 +95,7 @@ class PdfFormFlatteningTest {
                 Assertions.assertTrue(
                         acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(
                                 PdfName.FIELDS).isEmpty());
-            } catch (Exception e) {
+            } catch (IOException | PDFFilterException e) {
                 throw new ExceptionConverter(e);
             }
         }
@@ -118,7 +119,7 @@ class PdfFormFlatteningTest {
                     PdfStamper stamper = new PdfStamper(pdfReader, fos)) {
 
                 stamper.setFormFlattening(true);
-            } catch (Exception e) {
+            } catch (IOException | PDFFilterException | NoSuchAlgorithmException e) {
                 throw new ExceptionConverter(e);
             }
         } // All resources are automatically closed here
@@ -134,7 +135,7 @@ class PdfFormFlatteningTest {
             Assertions.assertTrue(
                     acroForm == null || acroForm.getAsArray(PdfName.FIELDS) == null || acroForm.getAsArray(PdfName.FIELDS).isEmpty(),
                     "Form fields should be empty after flattening.");
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -154,7 +155,7 @@ class PdfFormFlatteningTest {
 
             stamper.getAcroFields().setGenerateAppearances(true);
             stamper.setFormFlattening(true);
-        } catch (Exception e) {
+        } catch (IOException | NoSuchAlgorithmException | PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
 
@@ -167,7 +168,7 @@ class PdfFormFlatteningTest {
             Assertions.assertTrue(acroForm == null
                     || acroForm.getAsArray(PdfName.FIELDS) == null
                     || acroForm.getAsArray(PdfName.FIELDS).isEmpty());
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }

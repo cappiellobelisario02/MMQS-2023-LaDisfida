@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.Recipient;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
@@ -56,7 +57,7 @@ public class BouncyCastleHelper {
                     }
 
                 }
-            } catch (Exception f) {
+            } catch (CMSException f) {
                 throw new ExceptionConverter(f);
             }
         }

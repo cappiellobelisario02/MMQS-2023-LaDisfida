@@ -164,10 +164,8 @@ public class XML2Bookmarks extends AbstractTool {
             if (stamper != null) {
                 try {
                     stamper.close();
-                } catch (IOException e) {
+                } catch (IOException | NoSuchAlgorithmException e) {
                     logger.severe("Failed to close PdfStamper: " + e.getMessage());
-                } catch (NoSuchAlgorithmException e) {
-                    throw new RuntimeException(e);
                 }
             }
         }

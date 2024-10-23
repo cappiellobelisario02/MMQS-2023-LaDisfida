@@ -63,8 +63,8 @@ public class JavaScriptAction {
             javaScriptSection.append("\t\t}");
 
             document.add(new Header(HtmlTags.JAVASCRIPT, javaScriptSection.toString()));
-            document.setJavaScript_onLoad("load()");
-            document.setJavaScript_onUnLoad("unload()");
+            document.setJavascriptOnload("load()");
+            document.setJavascriptOnunload("unload()");
 
             document.open();
 

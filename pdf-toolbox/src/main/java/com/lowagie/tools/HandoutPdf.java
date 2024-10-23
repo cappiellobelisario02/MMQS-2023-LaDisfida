@@ -59,8 +59,10 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -90,8 +92,9 @@ public class HandoutPdf {
             float[][] yCoordinates = calculateYCoordinates(pages);
 
             processDocument(args[0], args[1], pages, xCoordinates, yCoordinates);
-        } catch (Exception e) {
-            logger.severe(e.getClass().getName() + ": " + e.getMessage());
+        } catch (DocumentException e) {
+            String msg = e.getClass().getName() + ": " + e.getMessage();
+            logger.severe(msg);
         }
     }
 
@@ -157,8 +160,9 @@ public class HandoutPdf {
                     document.newPage();
                 }
             }
-        } catch (Exception e) {
-            logger.severe("Error processing document: " + e.getMessage());
+        } catch (IOException | PDFFilterException e) {
+            String msg = "Error processing document: " + e.getMessage();
+            logger.severe(msg);
             // Handle exception as needed
         }
     }

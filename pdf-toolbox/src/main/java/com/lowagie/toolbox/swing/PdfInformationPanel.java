@@ -33,6 +33,7 @@
  */
 package com.lowagie.toolbox.swing;
 
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfDate;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.RandomAccessFileOrArray;
@@ -44,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -98,7 +100,7 @@ public class PdfInformationPanel extends JPanel implements PropertyChangeListene
             scrollpane.setPreferredSize(new Dimension(200, 200));
             panel.add(scrollpane, BorderLayout.CENTER);
             scrollpane.setViewportView(label);
-        } catch (Exception ex) {
+        } catch (DocumentException ex) {
             logger.severe("Exception occured");
         }
     }
@@ -111,7 +113,7 @@ public class PdfInformationPanel extends JPanel implements PropertyChangeListene
     public void createTextFromPDF(File file) {
         if (file.exists()) {
             int page = 1;
-            PdfReader reader = null;
+            PdfReader reader;
 
             try (RandomAccessFileOrArray raf = new RandomAccessFileOrArray(file.getAbsolutePath())) {
                 reader = new PdfReader(raf, null);
@@ -139,12 +141,12 @@ public class PdfInformationPanel extends JPanel implements PropertyChangeListene
                     sb.append("Producer= ").append(pdfinfo.get("Producer")).append("<p>");
                 }
                 if (pdfinfo.get("ModDate") != null) {
-                    sb.append("ModDate= ").append(PdfDate.decode(pdfinfo.get("ModDate"))
+                    sb.append("ModDate= ").append(Objects.requireNonNull(PdfDate.decode(pdfinfo.get("ModDate")))
                             .getTime()).append("<p>");
                 }
                 if (pdfinfo.get("CreationDate") != null) {
-                    sb.append("CreationDate= ").append(PdfDate.decode(
-                                    pdfinfo.get("CreationDate"))
+                    sb.append("CreationDate= ").append(Objects.requireNonNull(PdfDate.decode(
+                                    pdfinfo.get("CreationDate")))
                             .getTime()).append("<p>");
                 }
                 sb.append("</html>");

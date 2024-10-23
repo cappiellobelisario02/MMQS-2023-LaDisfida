@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.html.simpleparser.HTMLWorker;
+import java.io.IOException;
 import java.io.StringReader;
 import org.junit.jupiter.api.Test;
 
@@ -49,7 +50,7 @@ class HTMLTableTest {
             // Explicit success message (optional)
             System.out.println(html + " parsed successfully.");
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             // If an error occurs, the test will fail
             assertTrue(true);  // Test passes explicitly
         }

@@ -57,7 +57,7 @@ public class FileArrayArgument extends AbstractArgument {
         super();
         try {
             jbInit();
-        } catch (Exception ex) {
+        } catch (FileListInitializationException ex) {
             logger.severe("Exception occured");
         }
     }
@@ -66,7 +66,7 @@ public class FileArrayArgument extends AbstractArgument {
         super(tool, name, description, null);
         try {
             jbInit();
-        } catch (Exception ex) {
+        } catch (FileListInitializationException ex) {
             logger.severe("Exception occured");
         }
     }

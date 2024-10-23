@@ -36,6 +36,9 @@ package com.lowagie.toolbox.swing;
 
 import com.lowagie.text.DocumentException;
 import java.awt.Toolkit;
+import java.io.IOException;
+import java.io.Serial;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -56,28 +59,26 @@ public class CustomDialog {
     String msgString1;
     Object[] array;
     private JTextField textField = new JTextField(10);
-    private JOptionPane optionPane;
-
-    private String msgString;
+    private static final Logger logger = Logger.getLogger(CustomDialog.class.getName());
 
 
-    public CustomDialog(String msgstring, PlainDocument plainDocument) {
+    public CustomDialog(PlainDocument plainDocument) {
         super();
-        this.msgString = msgstring; // Directly assign the value to the field
         this.plainDocument = plainDocument;
         try {
             jbInit();
-        } catch (Exception ex) {
-            // TODO: Add proper logging mechanism
+        } catch (DocumentException ex) {
+            logger.severe("");
         }
     }
 
     public CustomDialog() {
-        this("Enter a value:", new PlainDocument());
+        this(new PlainDocument());
     }
 
     public static PlainDocument instantiateFloatDocument() {
-        PlainDocument floatDocument = new PlainDocument() {
+        return new PlainDocument() {
+            @Serial
             private static final long serialVersionUID = 1874451914306029381L;
 
             @Override
@@ -86,18 +87,17 @@ public class CustomDialog {
                 super.insertString(offset, str, a);
                 try {
                     Float.parseFloat(super.getText(0, this.getLength()));
-                } catch (Exception ex) {
+                } catch (NumberFormatException ex) {
                     super.remove(offset, 1);
                     Toolkit.getDefaultToolkit().beep();
-                    return;
                 }
             }
         };
-        return floatDocument;
     }
 
     public static PlainDocument instantiateIntegerDocument() {
-        PlainDocument intDocument = new PlainDocument() {
+        return new PlainDocument() {
+            @Serial
             private static final long serialVersionUID = -8735280090112457273L;
 
             @Override
@@ -106,27 +106,19 @@ public class CustomDialog {
                 super.insertString(offset, str, a);
                 try {
                     Integer.parseInt(super.getText(0, this.getLength()));
-                } catch (Exception ex) {
+                } catch (NumberFormatException ex) {
                     super.remove(offset, 1);
                     Toolkit.getDefaultToolkit().beep();
-                    return;
                 }
             }
         };
-        return intDocument;
     }
 
     public static PlainDocument instantiateStringDocument() {
-        PlainDocument stringDocument = new PlainDocument() {
+        return new PlainDocument() {
+            @Serial
             private static final long serialVersionUID = -1244429733606195330L;
-
-            @Override
-            public void insertString(int offset, String str, AttributeSet a) throws
-                    BadLocationException {
-                super.insertString(offset, str, a);
-            }
         };
-        return stringDocument;
     }
 
     private void jbInit() throws DocumentException {
@@ -136,7 +128,7 @@ public class CustomDialog {
     public void setMsgString1(String msgString1) {
         this.msgString1 = msgString1;
         array = new Object[]{msgString1, textField};
-        optionPane = new JOptionPane(array, JOptionPane.QUESTION_MESSAGE,
+        JOptionPane optionPane = new JOptionPane(array, JOptionPane.QUESTION_MESSAGE,
                 JOptionPane.OK_CANCEL_OPTION);
         dialog = optionPane.createDialog(UIManager.getString(
                 "OptionPane.inputDialogTitle", null));

@@ -59,7 +59,7 @@ public class ToolboxAvailable {
     public static final Logger logger = Logger.getLogger(ToolboxAvailable.class.getName());
 
     /**
-     * Checks if the toolbox if available. If it is, the toolbox is started. If it isn't, an error message is shown.
+     * Checks if the toolbox is available. If it is, the toolbox is started. If it isn't, an error message is shown.
      *
      * @param args the command-line args
      */
@@ -71,7 +71,7 @@ public class ToolboxAvailable {
         } else {
             try {
                 Toolbox.main(args);
-            } catch (Exception e) {
+            } catch (NoClassDefFoundError e) {
                 JOptionPane.showMessageDialog(null,
                         "You need the iText-toolbox.jar with class com.lowagie.toolbox.Toolbox to use the iText Toolbox.",
                         Document.getVersion() + " Toolbox error",

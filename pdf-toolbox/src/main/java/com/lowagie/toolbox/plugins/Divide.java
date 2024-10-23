@@ -35,6 +35,7 @@
 package com.lowagie.toolbox.plugins;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
@@ -44,8 +45,11 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
@@ -151,7 +155,7 @@ public class Divide extends AbstractTool {
 
             // Close the document
             document.close();
-        } catch (Exception e) {
+        } catch (FileNotFoundException | InstantiationException e) {
             logger.info(e.getMessage());  // Logging the exception
         }
     }
@@ -161,7 +165,7 @@ public class Divide extends AbstractTool {
         PdfReader reader = null;
         try {
             reader = new PdfReader(src.getAbsolutePath());
-        } catch (Exception e) {
+        } catch (PDFFilterException | IOException e) {
             logger.info("Failed to create PdfReader: " + e.getMessage());
         }
         return reader;
@@ -172,7 +176,7 @@ public class Divide extends AbstractTool {
         Document document = null;
         try {
             document = new Document(newSize, 0, 0, 0, 0);
-        } catch (Exception e) {
+        } catch (DocumentException e) {
             logger.info("Failed to create Document: " + e.getMessage());
         }
         return document;

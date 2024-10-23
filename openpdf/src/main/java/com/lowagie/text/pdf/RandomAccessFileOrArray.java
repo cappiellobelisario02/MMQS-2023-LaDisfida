@@ -94,7 +94,7 @@ public class RandomAccessFileOrArray implements DataInput, Closeable {
     private int startOffset = 0;
 
     public RandomAccessFileOrArray(String filename) throws IOException {
-        this(filename, false, Document.plainRandomAccess);
+        this(filename, false, Document.PLAIN_RANDOM_ACCESS);
     }
 
     public RandomAccessFileOrArray(String filename, boolean forceRead, boolean plainRandomAccess) throws IOException {

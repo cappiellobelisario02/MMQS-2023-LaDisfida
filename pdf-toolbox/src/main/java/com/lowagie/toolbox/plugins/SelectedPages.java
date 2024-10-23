@@ -45,8 +45,10 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
@@ -60,6 +62,7 @@ public class SelectedPages extends AbstractTool {
     public static final Logger logger = Logger.getLogger(com.lowagie.toolbox.plugins.SelectedPages.class.getName());
     public static final String SRCFILE = "srcfile";
     public static final String DESTFILE = "destfile";
+    public static final String EXCEPTION_OCCURED = "Exception occured";
 
     static {
         addVersion("$Id: SelectedPages.java 3271 2008-04-18 20:39:42Z xlv $");
@@ -135,8 +138,8 @@ public class SelectedPages extends AbstractTool {
             }
 
             document.close();
-        } catch (Exception e) {
-            logger.severe("Exception occured");
+        } catch (IOException | InstantiationException e) {
+            logger.severe(EXCEPTION_OCCURED);
         } finally {
             if (reader != null && document != null && fouts != null && copy != null) {
                 try {
@@ -144,8 +147,8 @@ public class SelectedPages extends AbstractTool {
                     document.close();
                     fouts.close();
                     copy.close();
-                } catch (Exception e) {
-                    logger.severe("Exception occured");
+                } catch (IOException e) {
+                    logger.severe(EXCEPTION_OCCURED);
                 }
             }
         }
@@ -155,8 +158,8 @@ public class SelectedPages extends AbstractTool {
         PdfReader reader = null;
         try {
             reader = new PdfReader(src.getAbsolutePath());
-        } catch (Exception e) {
-            // Log error
+        } catch (IOException | PDFFilterException | SecurityException e) {
+            logger.severe(EXCEPTION_OCCURED);
         }
         return reader;
     }
