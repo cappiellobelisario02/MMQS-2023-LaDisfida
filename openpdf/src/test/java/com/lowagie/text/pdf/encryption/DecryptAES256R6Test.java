@@ -81,7 +81,7 @@ class DecryptAES256R6Test {
             String extractedText;
             try {
                 extractedText = new PdfTextExtractor(pdfReader).getTextFromPage(1);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 throw new IOException("Error extracting text from the PDF.", e);
             }
 
@@ -485,7 +485,7 @@ class DecryptAES256R6Test {
                 String extractedText;
                 try {
                     extractedText = new PdfTextExtractor(pdfReader).getTextFromPage(1);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     throw new IOException("Error extracting text from the PDF.", e);
                 }
 
@@ -560,7 +560,7 @@ class DecryptAES256R6Test {
             String extractedText;
             try {
                 extractedText = new PdfTextExtractor(pdfReader).getTextFromPage(1);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 throw new IOException("Error extracting text from the PDF.", e);
             }
 
@@ -618,9 +618,7 @@ class DecryptAES256R6Test {
         Assertions.assertThrows(NullPointerException.class, this::testReadIssue60102PaeoeaaUtf8);
     }
     void testReadIssue60102PaeoeaaUtf8() throws IOException {
-        InputStream resource = null;
-        try {
-            resource = getClass().getResourceAsStream("/issue375/issue6010_2-pw=æøå.pdf");
+        try (InputStream resource = getClass().getResourceAsStream("/issue375/issue6010_2-pw=æøå.pdf")) {
             if (resource == null) {
                 throw new IOException("Resource not found");
             }
@@ -630,19 +628,16 @@ class DecryptAES256R6Test {
                 Assertions.assertEquals(10, pdfReader.getNumberOfPages(),
                         "PdfReader fails to report the correct number of pages");
                 Assertions.assertEquals("""
-                            Sample PDF Document
-                             Robert Maron
-                             Grzegorz Grudzi´ nski
-                             February 20, 1999""", new PdfTextExtractor(pdfReader).getTextFromPage(1),
+                                Sample PDF Document
+                                 Robert Maron
+                                 Grzegorz Grudzi´ nski
+                                 February 20, 1999""", new PdfTextExtractor(pdfReader).getTextFromPage(1),
                         "Wrong text extracted from page 1");
             }
         } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
-        } finally {
-            if (resource != null) {
-                resource.close(); // Ensure the InputStream is closed
-            }
         }
+        // Ensure the InputStream is closed
     }
 
     /**

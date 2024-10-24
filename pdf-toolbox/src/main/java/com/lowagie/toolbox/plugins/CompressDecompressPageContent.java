@@ -42,7 +42,9 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.OptionArgument;
 import com.lowagie.toolbox.swing.PdfInformationPanel;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -125,7 +127,7 @@ public class CompressDecompressPageContent extends AbstractTool {
                 }
                 Document.compress = true;
             }
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException | InstantiationException e) {
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),

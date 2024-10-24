@@ -26,6 +26,7 @@ import com.lowagie.text.Section;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import org.librepdf.openpdf.examples.content.Constants;
 
 /**
@@ -35,6 +36,8 @@ import org.librepdf.openpdf.examples.content.Constants;
  */
 
 public class ChapterSection {
+
+    private static final Logger logger = Logger.getLogger(ChapterSection.class.getName());
 
     /**
      * Creates a document with outlines.
@@ -119,7 +122,7 @@ public class ChapterSection {
                 document.add(chapter);
             }
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step 5: we close the document
         document.close();

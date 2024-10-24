@@ -115,9 +115,6 @@ public class PdfTable extends Rectangle {
         try{
             table.complete();
 
-            // copying the attributes from class Table
-            cloneNonPositionParameters(table);
-
             this.columns = table.getColumns();
             positions = table.getWidths(left, right - left);
 
@@ -164,7 +161,6 @@ public class PdfTable extends Rectangle {
         float[] offsets = initializeOffsets(table.size() + 1);
 
         ArrayList<PdfCell> newCells = new ArrayList<>();
-        int groupNumber = 0;
 
         processRows(prevRows, firstDataRow, offsets, newCells);
 

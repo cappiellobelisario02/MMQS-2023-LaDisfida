@@ -205,7 +205,6 @@ public class PdfRectangle extends PdfArray {
      * @return false.  You can't add anything to a PdfRectangle
      * @since 2.1.5
      */
-    @Override
     public boolean add(int[] values) {
         return false;
     }

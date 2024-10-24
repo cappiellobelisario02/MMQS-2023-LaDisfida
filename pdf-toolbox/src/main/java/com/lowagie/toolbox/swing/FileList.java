@@ -27,6 +27,7 @@
 package com.lowagie.toolbox.swing;
 
 import com.lowagie.text.ExceptionConverter;
+import com.lowagie.text.exceptions.FileListInitializationException;
 import com.lowagie.text.pdf.PdfReader;
 import org.apache.fop.pdf.PDFFilterException;
 import java.awt.BorderLayout;
@@ -85,11 +86,7 @@ public class FileList
 
     public FileList() {
         super("FileList", true, true, true);
-        try {
-            jbInit();
-        } catch (Exception ex) {
-//da vedere come effettuare il log
-        }
+        jbInit();
     }
 
     private void jbInit() {
@@ -145,7 +142,7 @@ public class FileList
                 logger.info(stringToLog);
             }
         } catch (IOException | UnsupportedFlavorException ex) {
-//da vedere come effettuare il log
+logger.severe("Exception occured");
         }
         dtde.dropComplete(true);
         File[] filar = new File[filevector.size()];

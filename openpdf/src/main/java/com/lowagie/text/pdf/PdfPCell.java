@@ -209,13 +209,13 @@ public class PdfPCell extends Rectangle {
 
     // Method to validate image
     private void validateImage(Image image) {
-        if (image == null || !isValidImage(image)) {
+        if (image == null || !isValidImage()) {
             throw new IllegalArgumentException("Invalid image provided");
         }
     }
 
     // Example method to check if the image is valid
-    private boolean isValidImage(Image image) {
+    private boolean isValidImage() {
         // Implement your validation logic here
         return true; // Placeholder: actual validation logic needed
     }
@@ -260,7 +260,6 @@ public class PdfPCell extends Rectangle {
 
     private void applyStyle(com.lowagie.text.pdf.PdfPCell style) {
         if (style != null) {
-            cloneNonPositionParameters(style);
             verticalAlignment = style.verticalAlignment;
             paddingLeft = style.paddingLeft;
             paddingRight = style.paddingRight;
@@ -289,7 +288,6 @@ public class PdfPCell extends Rectangle {
     }
 
     private void initializeFromCell(com.lowagie.text.pdf.PdfPCell cell) {
-        cloneNonPositionParameters(cell);
         verticalAlignment = cell.verticalAlignment;
         paddingLeft = cell.paddingLeft;
         paddingRight = cell.paddingRight;

@@ -25,6 +25,7 @@ import com.lowagie.text.pdf.PdfFileSpecification;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Creates a document with some PdfAnnotations.
@@ -33,6 +34,8 @@ import java.io.FileOutputStream;
  */
 
 public class Annotations {
+
+    private static final Logger logger = Logger.getLogger(Annotations.class.getName());
 
     /**
      * Creates a document with some PdfAnnotations.
@@ -106,7 +109,7 @@ public class Annotations {
             cb.stroke();
 
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document

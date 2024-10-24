@@ -68,7 +68,7 @@ public class StringArgument extends AbstractArgument {
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
     public void actionPerformed(ActionEvent e) {
-        CustomDialog cd = new CustomDialog("Enter a value for " + name + ":",
+        CustomDialog cd = new CustomDialog(
                 CustomDialog.instantiateStringDocument());
         setValue(cd.showInputDialog(this.getValue() == null ? "" : this.getValue().toString()));
     }

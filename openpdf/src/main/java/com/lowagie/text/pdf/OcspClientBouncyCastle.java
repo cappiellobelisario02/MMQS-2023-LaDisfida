@@ -176,8 +176,6 @@ public class OcspClientBouncyCastle implements OcspClient {
      * @param issuerCert   certificate of the issues
      * @param serialNumber serial number
      * @return an OCSP request
-     * @throws OCSPException
-     * @throws IOException
      */
     private static OCSPReq generateOCSPRequest(X509Certificate issuerCert,
             BigInteger serialNumber) throws OCSPException, IOException,
@@ -280,7 +278,7 @@ public class OcspClientBouncyCastle implements OcspClient {
                     }
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException | OCSPException | OperatorCreationException | CertificateEncodingException ex) {
             throw new ExceptionConverter(ex);
         } finally {
             if (con != null) {

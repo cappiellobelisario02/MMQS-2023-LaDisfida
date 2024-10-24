@@ -49,12 +49,6 @@
 
 package com.lowagie.text.pdf;
 
-import com.lowagie.text.pdf.XfaForm.AcroFieldsSearch;
-import com.lowagie.text.pdf.XfaForm.InverseStore;
-import com.lowagie.text.pdf.XfaForm.Stack2;
-import com.lowagie.text.pdf.XfaForm.Xml2Som;
-import com.lowagie.text.pdf.XfaForm.Xml2SomDatasets;
-import com.lowagie.text.pdf.XfaForm.Xml2SomTemplate;
 import com.lowagie.text.xml.XmlDomWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -62,6 +56,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,6 +64,8 @@ import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -78,8 +75,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import static com.lowagie.text.pdf.PdfWriter.logger;
 
 /**
  * Processes XFA forms.
@@ -98,6 +93,7 @@ public class XfaForm {
     private boolean xfaPresent;
     private org.w3c.dom.Document domDocument;
     private boolean changed;
+    private static final Logger logger = Logger.getLogger(XfaForm.class.getName());
 
     /**
      * An empty constructor to build on.
@@ -190,7 +186,7 @@ public class XfaForm {
             return;
         }
         PdfObject xfa = getXfaObject(reader);
-        if (xfa.isArray()) {
+        if (Objects.requireNonNull(xfa).isArray()) {
             PdfArray ar = (PdfArray) xfa;
             int t = -1;
             int d = -1;
@@ -398,8 +394,6 @@ public class XfaForm {
     /**
      * Sets the text of this node. All the child's node are deleted and a new child text node is created.
      *
-     * @param n    the <CODE>Node</CODE> to add the text to
-     * @param text the text to add
      */
     private static final String DATA_NODE_ATTRIBUTE = "dataNode";
 
@@ -603,6 +597,7 @@ public class XfaForm {
      */
     public static class Stack2 extends ArrayList<String> {
 
+        @Serial
         private static final long serialVersionUID = -7451476576174095212L;
 
         /**
@@ -862,8 +857,6 @@ public class XfaForm {
         /**
          * Searches the SOM hierarchy from the bottom.
          *
-         * @param parts the SOM parts
-         * @return the full getName or <CODE>null</CODE> if not found
          */
         // Assuming this is the field declaration
         private Map<String, com.lowagie.text.pdf.XfaForm.InverseStore> inverseStoreMap;
@@ -1011,13 +1004,12 @@ public class XfaForm {
             org.w3c.dom.Document doc = n.getOwnerDocument();
             Node n2 = null;
             n = n.getFirstChild();
-            for (Object o : stack) {
-                String part = (String) o;
-                int idx = part.lastIndexOf('[');
-                String name = part.substring(0, idx);
-                idx = Integer.parseInt(part.substring(idx + 1, part.length() - 1));
+            for (String o : stack) {
+                int idx = o.lastIndexOf('[');
+                String name = o.substring(0, idx);
+                idx = Integer.parseInt(o.substring(idx + 1, o.length() - 1));
                 int found = -1;
-                for (n2 = n.getFirstChild(); n2 != null; n2 = n2.getNextSibling()) {
+                for (n2 = Objects.requireNonNull(n).getFirstChild(); n2 != null; n2 = n2.getNextSibling()) {
                     if (n2.getNodeType() == Node.ELEMENT_NODE) {
                         String s = escapeSom(n2.getLocalName());
                         if (s.equals(name)) {
@@ -1057,11 +1049,11 @@ public class XfaForm {
                     }
                     ss.put(s, i);
                     if (hasChildren(n2)) {
-                        stack.push(s + "[" + i.toString() + "]");
+                        stack.push(s + "[" + i + "]");
                         processDatasetsInternal(n2);
                         stack.pop();
                     } else {
-                        stack.push(s + "[" + i.toString() + "]");
+                        stack.push(s + "[" + i + "]");
                         String unstack = printStack();
                         order.add(unstack);
                         inverseSearchAdd(unstack);
@@ -1141,8 +1133,6 @@ public class XfaForm {
         /**
          * Gets the field getTypeImpl as described in the <CODE>template</CODE> section of the XFA.
          *
-         * @param s the exact template getName
-         * @return the field getTypeImpl or <CODE>null</CODE> if not found
          */
         private static final String EXCL_GROUP = "exclGroup";
         public String getFieldType(String s) {
@@ -1165,8 +1155,7 @@ public class XfaForm {
             }
             Node type = ui.getFirstChild();
             while (type != null) {
-                if (type.getNodeType() == Node.ELEMENT_NODE && !(type.getLocalName().equals("extras")
-                        && type.getLocalName().equals("picture"))) {
+                if (type.getNodeType() == Node.ELEMENT_NODE) {
                     return type.getLocalName();
                 }
                 type = type.getNextSibling();
@@ -1213,7 +1202,7 @@ public class XfaForm {
             String nn = getSubformName(n2);
             Integer i = updateSubformIndex(nn, ss);
 
-            stack.push(nn + "[" + i.toString() + "]");
+            stack.push(nn + "[" + i + "]");
             ++templateLevel;
 
             processTemplate(n2, nn.startsWith("#subform") ? ff : null);
@@ -1248,7 +1237,7 @@ public class XfaForm {
                 Integer i = ff.getOrDefault(nn, 0) + 1;
                 ff.put(nn, i);
 
-                stack.push(nn + "[" + i.toString() + "]");
+                stack.push(nn + "[" + i + "]");
                 String unstack = printStack();
                 order.add(unstack);
                 inverseSearchAdd(unstack);
@@ -1262,25 +1251,26 @@ public class XfaForm {
                 return;
             }
 
-            int initial = getAttributeValueAsInt(n2, "initial", 1);
-            int min = getAttributeValueAsInt(n2, "min", 1);
-            int max = getAttributeValueAsInt(n2, "max", 1);
+            int initial = getAttributeValueAsInt(n2, "initial");
+            int min = getAttributeValueAsInt(n2, "min");
+            int max = getAttributeValueAsInt(n2, "max");
 
             if (initial != min || min != max) {
                 dynamicForm = true;
             }
         }
 
-        private int getAttributeValueAsInt(Node n2, String attributeName, int defaultValue) {
+        private int getAttributeValueAsInt(Node n2, String attributeName) {
             Node attribute = n2.getAttributes().getNamedItem(attributeName);
             if (attribute != null) {
                 try {
                     return Integer.parseInt(attribute.getNodeValue().trim());
                 } catch (NumberFormatException e) {
-                    //da vedere come effettuare il log
+                    String msg = "Error while parsing " + n2.getLocalName();
+                    logger.severe(msg);
                 }
             }
-            return defaultValue;
+            return 1;
         }
 
 

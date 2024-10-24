@@ -69,6 +69,7 @@
 package com.lowagie.text.pdf;
 
 import com.lowagie.text.ExceptionConverter;
+import java.io.IOException;
 
 
 public class CFFFont {
@@ -339,7 +340,7 @@ public class CFFFont {
         try {
             byte i = buf.readByte();
             return (char) (i & 0xff);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -347,7 +348,7 @@ public class CFFFont {
     char getCard16() {
         try {
             return buf.readChar();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -364,7 +365,7 @@ public class CFFFont {
     void seekInfo(int offset) {
         try {
             buf.seek(offset);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -372,7 +373,7 @@ public class CFFFont {
     short getShort() {
         try {
             return buf.readShort();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -380,7 +381,7 @@ public class CFFFont {
     int getInt() {
         try {
             return buf.readInt();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -388,7 +389,7 @@ public class CFFFont {
     int getPosition() {
         try {
             return buf.getFilePointer();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -662,7 +663,7 @@ public class CFFFont {
                 for (int i = myOffset; i < myOffset + length; i++) {
                     buffer[i] = buf.readByte();
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 throw new ExceptionConverter(e);
             }
         }

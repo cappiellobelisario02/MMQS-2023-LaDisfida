@@ -21,6 +21,7 @@ import com.lowagie.text.pdf.PdfOutline;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Creates a document with some goto actions.
@@ -29,6 +30,8 @@ import java.io.FileOutputStream;
  */
 
 public class Destinations {
+
+    private static final Logger logger = Logger.getLogger(Destinations.class.getName());
 
     /**
      * Creates a document with some goto actions.
@@ -81,7 +84,7 @@ public class Destinations {
             new PdfOutline(out2, d4, "sub 2.1");
             new PdfOutline(out2, d5, "sub 2.2");
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document

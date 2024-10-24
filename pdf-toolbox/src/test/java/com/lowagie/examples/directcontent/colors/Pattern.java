@@ -25,11 +25,14 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.SpotColor;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Painting Patterns.
  */
 public class Pattern {
+
+    private static final Logger logger = Logger.getLogger(Pattern.class.getName());
 
     /**
      * Painting Patterns.
@@ -60,8 +63,8 @@ public class Pattern {
             pat.fill();
             pat.sanityCheck();
 
-            PdfSpotColor spc_cmyk = new PdfSpotColor("PANTONE 280 CV", new CMYKColor(0.9f, .2f, .3f, .1f));
-            SpotColor spot = new SpotColor(spc_cmyk, 0.25f);
+            PdfSpotColor spcCmyk = new PdfSpotColor("PANTONE 280 CV", new CMYKColor(0.9f, .2f, .3f, .1f));
+            SpotColor spot = new SpotColor(spcCmyk, 0.25f);
             tp.setPatternFill(pat, spot, .9f);
             tp.rectangle(0, 0, 400, 300);
             tp.fill();
@@ -99,7 +102,7 @@ public class Pattern {
 
             cb.sanityCheck();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step 5: we close the document
         document.close();

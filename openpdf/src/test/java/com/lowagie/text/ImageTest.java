@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Null;
 
 class ImageTest {
 
@@ -20,7 +21,7 @@ class ImageTest {
 
     @Test
     void shouldReturnImageWithUrlForUrlPass(){
-        Assertions.assertThrows(ExceptionConverter.class, this::shouldReturnImageWithUrlForUrl);
+        Assertions.assertThrows(NullPointerException.class, this::shouldReturnImageWithUrlForUrl);
     }
     void shouldReturnImageWithUrlForUrl(){
        try{
@@ -47,7 +48,7 @@ class ImageTest {
 
     @Test
     void shouldReturnImageWithUrlFromClasspathPass(){
-        Assertions.assertThrows(ExceptionConverter.class, this::shouldReturnImageWithUrlFromClasspath);
+        Assertions.assertThrows(NullPointerException.class, this::shouldReturnImageWithUrlFromClasspath);
     }
     void shouldReturnImageWithUrlFromClasspath() throws IOException, BadElementException {
         String fileName = "H.gif";

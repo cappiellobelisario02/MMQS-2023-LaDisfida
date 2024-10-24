@@ -14,17 +14,22 @@
 package com.lowagie.examples.objects.tables;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Define the widths of the columns of a PdfPTable.
  */
 public class CellWidths {
+
+    private static final Logger logger = Logger.getLogger(CellWidths.class.getName());
 
     /**
      * Width manipulations of cells.
@@ -44,23 +49,7 @@ public class CellWidths {
             document.open();
             // step4
             float[] widths = {0.1f, 0.1f, 0.05f, 0.75f};
-            PdfPTable table = new PdfPTable(widths);
-            table.addCell("10%");
-            table.addCell("10%");
-            table.addCell("5%");
-            table.addCell("75%");
-            table.addCell("aa");
-            table.addCell("aa");
-            table.addCell("a");
-            table.addCell("aaaaaaaaaaaaaaa");
-            table.addCell("bb");
-            table.addCell("bb");
-            table.addCell("b");
-            table.addCell("bbbbbbbbbbbbbbb");
-            table.addCell("cc");
-            table.addCell("cc");
-            table.addCell("c");
-            table.addCell("ccccccccccccccc");
+            PdfPTable table = getPdfPTable(widths);
             document.add(table);
             document.add(new Paragraph("We change the percentages:\n\n"));
             widths[0] = 20f;
@@ -81,10 +70,31 @@ public class CellWidths {
             table.setTotalWidth(300);
             table.setLockedWidth(true);
             document.add(table);
-        } catch (Exception de) {
-            //da vedere come effettuare il log
+        } catch (IOException | DocumentException | SecurityException de) {
+            logger.severe("Exception occured");
         }
         // step5
         document.close();
+    }
+
+    private static PdfPTable getPdfPTable(float[] widths) {
+        PdfPTable table = new PdfPTable(widths);
+        table.addCell("10%");
+        table.addCell("10%");
+        table.addCell("5%");
+        table.addCell("75%");
+        table.addCell("aa");
+        table.addCell("aa");
+        table.addCell("a");
+        table.addCell("aaaaaaaaaaaaaaa");
+        table.addCell("bb");
+        table.addCell("bb");
+        table.addCell("b");
+        table.addCell("bbbbbbbbbbbbbbb");
+        table.addCell("cc");
+        table.addCell("cc");
+        table.addCell("c");
+        table.addCell("ccccccccccccccc");
+        return table;
     }
 }

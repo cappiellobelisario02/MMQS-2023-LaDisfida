@@ -98,7 +98,6 @@ public class RectangleReadOnly extends Rectangle {
      */
     public RectangleReadOnly(Rectangle rect) {
         super(rect.llx, rect.lly, rect.urx, rect.ury);
-        super.cloneNonPositionParameters(rect);
     }
 
     /**
@@ -172,7 +171,7 @@ public class RectangleReadOnly extends Rectangle {
     }
 
     /**
-     * Sets the grayscale of the rectangle.
+     * Sets the gray scale of the rectangle.
      *
      * @param value the new value
      */
@@ -338,7 +337,6 @@ public class RectangleReadOnly extends Rectangle {
      *
      * @param rect <CODE>Rectangle</CODE> to copy from
      */
-    @Override
     public void cloneNonPositionParameters(Rectangle rect) {
         throwReadOnlyError();
     }
@@ -360,13 +358,11 @@ public class RectangleReadOnly extends Rectangle {
      */
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder("RectangleReadOnly: ");
-        buf.append(getWidth());
-        buf.append('x');
-        buf.append(getHeight());
-        buf.append(" (rot: ");
-        buf.append(rotation);
-        buf.append(" degrees)");
-        return buf.toString();
+        return "RectangleReadOnly: " + getWidth()
+                + 'x'
+                + getHeight()
+                + " (rot: "
+                + rotation
+                + " degrees)";
     }
 }

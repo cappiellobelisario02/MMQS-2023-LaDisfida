@@ -14,15 +14,20 @@
 package com.lowagie.examples.objects.tables;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of nested tables.
  */
 public class NestedTables {
+
+    private static final Logger logger = Logger.getLogger(NestedTables.class.getName());
 
     /**
      * Using nested tables.
@@ -41,29 +46,34 @@ public class NestedTables {
             // step3
             document.open();
             // step4
-            PdfPTable table = new PdfPTable(4);
-            PdfPTable nested1 = new PdfPTable(2);
-            nested1.addCell("1.1");
-            nested1.addCell("1.2");
-            PdfPTable nested2 = new PdfPTable(1);
-            nested2.addCell("2.1");
-            nested2.addCell("2.2");
-            for (int k = 0; k < 24; ++k) {
-                if (k == 1) {
-                    table.addCell(nested1);
-                } else if (k == 20) {
-                    table.addCell(nested2);
-                } else {
-                    table.addCell("cell " + k);
-                }
-            }
+            PdfPTable table = getPdfPTable();
             document.add(table);
             // step 5: we close the document
             document.close();
-        } catch (Exception de) {
-            //da vedere come effettuare il log
+        } catch (IOException | DocumentException de) {
+            logger.severe("Exception occured");
         }
         // step5
         document.close();
+    }
+
+    private static PdfPTable getPdfPTable() {
+        PdfPTable table = new PdfPTable(4);
+        PdfPTable nested1 = new PdfPTable(2);
+        nested1.addCell("1.1");
+        nested1.addCell("1.2");
+        PdfPTable nested2 = new PdfPTable(1);
+        nested2.addCell("2.1");
+        nested2.addCell("2.2");
+        for (int k = 0; k < 24; ++k) {
+            if (k == 1) {
+                table.addCell(nested1);
+            } else if (k == 20) {
+                table.addCell(nested2);
+            } else {
+                table.addCell("cell " + k);
+            }
+        }
+        return table;
     }
 }

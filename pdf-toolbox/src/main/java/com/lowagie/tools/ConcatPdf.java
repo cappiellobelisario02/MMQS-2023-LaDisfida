@@ -151,8 +151,8 @@ public class ConcatPdf {
             if (!bookmarks.isEmpty()) {
                 writer.setOutlines(bookmarks);
             }
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (IOException | PDFFilterException e) {
+            logger.severe("Exception occured");
         }
     }
 

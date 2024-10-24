@@ -154,7 +154,6 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
         table.setHorizontalAlignment(alignment.orElse(HorizontalAlignment.UNDEFINED));
         table.setSpacing(cellspacing);
         table.setPadding(cellpadding);
-        table.cloneNonPositionParameters(this);
         return table;
     }
 
@@ -314,7 +313,6 @@ public class SimpleTable extends Rectangle implements PdfPTableEvent, TextElemen
             PdfContentByte[] canvases) {
         float[] mWidth = widths[0];
         Rectangle rect = new Rectangle(mWidth[0], heights[heights.length - 1], mWidth[mWidth.length - 1], heights[0]);
-        rect.cloneNonPositionParameters(this);
         int bd = rect.getBorder();
         rect.setBorder(Rectangle.NO_BORDER);
         canvases[PdfPTable.BACKGROUNDCANVAS].rectangle(rect.llx(), rect.lly(), rect.urx(), rect.ury());

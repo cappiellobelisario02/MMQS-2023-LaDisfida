@@ -48,8 +48,10 @@ package com.lowagie.text.pdf;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.ExceptionConverter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 
 /**
@@ -57,6 +59,7 @@ import java.util.HashMap;
  */
 public class DocumentFont extends BaseFont {
 
+    private static final Logger logger = Logger.getLogger(DocumentFont.class.getName());
     private static final String UNI_JIS_UCS2_H = "UniJIS-UCS2-H";
     private static final String UNI_GB_UCS2_H = "UniGB-UCS2-H";
     private static final String UNI_CNS_UCS2_H = "UniCNS-UCS2-H";
@@ -151,7 +154,7 @@ public class DocumentFont extends BaseFont {
                 fontName = cjkName;
                 try {
                     cjkMirror = BaseFont.createFont(fontName, getCJKEncoding(cjkName), false);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     throw new ExceptionConverter(e);
                 }
                 return true;
@@ -189,7 +192,7 @@ public class DocumentFont extends BaseFont {
                 try {
                     int adjustedK = (k > 3) ? k - 4 : k;
                     cjkMirror = BaseFont.createFont(cjkNames2[adjustedK], cjkEncs2[adjustedK], false);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     throw new ExceptionConverter(e);
                 }
                 return true;
@@ -215,7 +218,7 @@ public class DocumentFont extends BaseFont {
                 fillMetrics(PdfReader.getStreamBytes((PRStream) toUniObject), widths, dw);
             }
 
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -274,7 +277,7 @@ public class DocumentFont extends BaseFont {
     private void fillMetrics(byte[] touni, IntHashtable widths, int dw) {
         try {
             PdfContentParser ps = new PdfContentParser(new PRTokeniser(touni));
-            PdfObject ob = null;
+            PdfObject ob;
             PdfObject last = null;
 
             while ((ob = ps.readPRObject()) != null) {
@@ -282,8 +285,8 @@ public class DocumentFont extends BaseFont {
                     String command = ob.toString();
 
                     // Check if last is a PdfNumber before dereferencing it
-                    if (last instanceof PdfNumber) {
-                        int n = ((PdfNumber) last).intValue();
+                    if (last instanceof PdfNumber lastPdfNumber) {
+                        int n = lastPdfNumber.intValue();
 
                         if ("beginbfchar".equals(command)) {
                             handleBeginbfchar(ps, widths, dw, n);
@@ -292,13 +295,14 @@ public class DocumentFont extends BaseFont {
                         }
                     } else {
                         // Optionally log a warning or handle the case where last is not a PdfNumber
-                        // logger.warning("Last object is not a PdfNumber: " + last);
+                        String msg = "Last object is not a PdfNumber: " + last;
+                        logger.warning(msg);
                     }
                 } else {
                     last = ob; // Update last to the current PdfObject
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -310,7 +314,7 @@ public class DocumentFont extends BaseFont {
             String uni = decodeString((PdfString) ps.readPRObject());
             if (uni.length() == 1) {
                 int cidc = cid.charAt(0);
-                int unic = uni.charAt(uni.length() - 1);
+                int unic = uni.charAt(0);
                 int w = getWidthOrDefault(widths, cidc, dw);
                 metrics.put(unic, new int[]{cidc, w});
             }
@@ -346,7 +350,7 @@ public class DocumentFont extends BaseFont {
         for (int j = 0; j < a.size(); ++j, ++cid1c) {
             String uni = decodeString(a.getAsString(j));
             if (uni.length() == 1) {
-                int unic = uni.charAt(uni.length() - 1);
+                int unic = uni.charAt(0);
                 int w = getWidthOrDefault(widths, cid1c, dw);
                 metrics.put(unic, new int[]{cid1c, w});
             }
@@ -440,7 +444,7 @@ public class DocumentFont extends BaseFont {
             applyWidthsFromBaseFont(bf);
             applyDiffmapWidths(bf);
             setFontMetrics(bf);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }

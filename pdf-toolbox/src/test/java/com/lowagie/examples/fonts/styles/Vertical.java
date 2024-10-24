@@ -24,12 +24,15 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.VerticalText;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Writing Vertical Text.
  */
 public class Vertical {
 
+    private static final Logger logger = Logger.getLogger(Vertical.class.getName());
     static String[] texts = {
             "Some very long text to check if it wraps (or not).",
             " In blue.",
@@ -99,8 +102,8 @@ public class Vertical {
                 document.newPage();
             }
             document.close();
-        } catch (Exception de) {
-            //da vedere come effettuare il log
+        } catch (IOException de) {
+            logger.severe("Exception occured");
         }
     }
 

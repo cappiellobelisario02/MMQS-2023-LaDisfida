@@ -183,7 +183,6 @@ public class PdfCell extends Rectangle {
     }
 
     private void initPdfCell(Cell cell, int rownumber, float left, float right, float top, float cellspacing, float cellpadding) {
-        cloneNonPositionParameters(cell);
         this.cellpadding = cellpadding;
         this.cellspacing = cellspacing;
         this.verticalAlignment = cell.getVerticalAlignment();
@@ -624,7 +623,7 @@ public class PdfCell extends Rectangle {
     }
 
     /**
-     * Gets the number of the row this cell is in..
+     * Gets the number of the row this cell is in.
      *
      * @return a number
      */

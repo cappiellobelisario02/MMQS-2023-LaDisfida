@@ -298,7 +298,7 @@ public class HtmlBookmarks extends AbstractTool {
     }
 
     private void handleException(Exception e) {
-        //da vedere come effettuare il log
+        logger.severe("Exception occured");
         JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
         logger.info(e.getMessage());
     }
@@ -308,7 +308,7 @@ public class HtmlBookmarks extends AbstractTool {
             try {
                 reader.close();
             } catch (Exception e) {
-                //da vedere come effettuare il log
+                logger.severe("Exception occured");
             }
         }
     }

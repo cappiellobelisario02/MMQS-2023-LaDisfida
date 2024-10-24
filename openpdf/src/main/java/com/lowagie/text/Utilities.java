@@ -161,7 +161,7 @@ public class Utilities {
 
         try {
             return new URL(sanitizedFilename);
-        } catch (Exception e) {
+        } catch (IOException e) {
             String trulySanitizedFilename = FilenameUtils.normalize(sanitizedFilename);
             File fileToReturn = new File(trulySanitizedFilename);
             return fileToReturn.toURI().toURL();

@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
@@ -94,19 +95,13 @@ public class Concat extends AbstractTool {
         // Check for the correct number of arguments and provide usage instructions if not met
         if (args.length < 2) {
             // Using a standard exit code for indicating improper usage
-            System.err.println("Error: Insufficient arguments provided.");
-            System.err.println(tool.getUsage());
-            System.exit(1); // Exit with an error code
+            logger.severe("Error: Insufficient arguments provided.");
+            String usage = tool.getUsage();
+            logger.severe(usage);
         }
 
-        try {
-            tool.setMainArguments(args);
-            tool.execute();
-        } catch (Exception e) {
-            // Handle any exceptions that occur during execution
-            System.err.println("An error occurred while executing the tool: " + e.getMessage());
-            System.exit(1); // Exit with an error code
-        }
+        tool.setMainArguments(args);
+        tool.execute();
     }
 
 
@@ -183,7 +178,7 @@ public class Concat extends AbstractTool {
                 }
             } catch (IOException e) {
                 // Handle closing exceptions as necessary
-                e.printStackTrace(); // You may want to log this exception instead
+                logger.severe("Error closing resources"); // You may want to log this exception instead
             }
         }
     }

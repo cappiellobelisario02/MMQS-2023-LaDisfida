@@ -20,11 +20,14 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates transparency and images.
  */
 public class SoftMask {
+
+    private static final Logger logger = Logger.getLogger(SoftMask.class.getName());
 
     /**
      * Demonstrates the Transparency functionality.
@@ -64,7 +67,7 @@ public class SoftMask {
             cb.addImage(img);
             cb.sanityCheck();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step 5: we close the document
         document.close();

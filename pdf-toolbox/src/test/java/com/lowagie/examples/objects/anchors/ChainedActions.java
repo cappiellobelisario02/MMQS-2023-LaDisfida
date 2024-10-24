@@ -20,6 +20,7 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfAction;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Creates a documents with chained actions.
@@ -28,6 +29,8 @@ import java.io.FileOutputStream;
  */
 
 public class ChainedActions {
+
+    private static final Logger logger = Logger.getLogger(ChainedActions.class.getName());
 
     /**
      * Creates a document with chained Actions.
@@ -55,7 +58,7 @@ public class ChainedActions {
                     .setAction(action));
             document.add(p);
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document

@@ -215,8 +215,6 @@ public class Jpeg extends Image {
      * <p>
      * TODO: Use Apache Commons Imaging to parse these parameters instead.
      *
-     * @throws BadElementException
-     * @throws IOException
      */
     private void processParameters() throws BadElementException, IOException {
         type = JPEG;
@@ -398,28 +396,11 @@ public class Jpeg extends Image {
             ICC_Profile iccProfile = ICC_Profile.getInstance(ficc);
             tagICC(iccProfile);
         } catch (IllegalArgumentException e) {
-            // ignore ICC profile if it's invalid.
+            String msg = "Error processing ICC profile: " + e.getMessage();
+            logger.severe(msg);
         }
         icc = null;
     }
 
-    @Override
-    public float llx() {
-        return 0;
-    }
 
-    @Override
-    public float lly() {
-        return 0;
-    }
-
-    @Override
-    public float urx() {
-        return 0;
-    }
-
-    @Override
-    public float ury() {
-        return 0;
-    }
 }

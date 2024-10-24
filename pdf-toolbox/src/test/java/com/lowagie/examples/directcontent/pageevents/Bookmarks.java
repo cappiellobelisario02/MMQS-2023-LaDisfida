@@ -24,6 +24,7 @@ import com.lowagie.text.pdf.PdfOutline;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import org.librepdf.openpdf.examples.content.Constants;
 
 /**
@@ -33,6 +34,8 @@ import org.librepdf.openpdf.examples.content.Constants;
  */
 
 public class Bookmarks extends PdfPageEventHelper {
+
+    private static final Logger logger = Logger.getLogger(Bookmarks.class.getName());
 
     /**
      * Keeps the number of the current paragraph.
@@ -66,7 +69,7 @@ public class Bookmarks extends PdfPageEventHelper {
             document.add(new Paragraph(Constants.HIS_REBUS, new Font(Font.HELVETICA, 12)));
             document.add(new Paragraph(Constants.EA_RES, new Font(Font.HELVETICA, 12)));
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document
@@ -80,6 +83,7 @@ public class Bookmarks extends PdfPageEventHelper {
      * @param document The Document to write to
      * @param position An int that specifies the y / x coordinate of the top / left edge of the window
      */
+    @Override
     public void onParagraph(PdfWriter writer, Document document, float position) {
         n++;
         PdfContentByte cb = writer.getDirectContent();

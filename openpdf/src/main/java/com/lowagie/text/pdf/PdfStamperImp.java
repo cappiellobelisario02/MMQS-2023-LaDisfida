@@ -491,8 +491,9 @@ public class PdfStamperImp extends PdfWriter {
     private void closeFile() {
         try {
             file.close();
-        } catch (Exception e) {
-            // empty on purpose
+        } catch (IOException e) {
+            String msg = "Error closing file: " + e;
+            logger.severe(msg);
         }
     }
 
@@ -579,7 +580,7 @@ public class PdfStamperImp extends PdfWriter {
         }
     }
 
-    void alterContents() throws IOException {
+    void alterContents() {
         for (PageStamp ps : pagesToContent.values()) {
             PdfDictionary pageN = ps.pageN;
             markUsed(pageN);
@@ -590,7 +591,7 @@ public class PdfStamperImp extends PdfWriter {
             try {
                 handleUnderContent(ps, pageN, out);
                 handleOverContent(ps, pageN, ar, out);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 logger.info("ERROR ByteBuffer >> " + e.getMessage());
             }
 
@@ -707,7 +708,7 @@ public class PdfStamperImp extends PdfWriter {
     /**
      * Removes the encryption from the document (and also inherently the permissions)
      *
-     * @throws DocumentException
+     * @throws DocumentException exception threw in method body
      */
     public void removeEncryption() throws DocumentException, NoSuchAlgorithmException {
         super.setEncryption(null, null, 0, ENCRYPTION_NONE);
@@ -729,7 +730,7 @@ public class PdfStamperImp extends PdfWriter {
             }
         } else {
             // Optional: Log or handle the case where the reader is already registered
-            System.out.println("Reader is already registered.");
+            logger.info("Reader is already registered.");
         }
     }
 
@@ -748,9 +749,6 @@ public class PdfStamperImp extends PdfWriter {
             raf.close();
         } catch (IOException e) {
             logger.info("Error closing RandomAccessFileOrArray for reader: {}");
-        } catch (Exception e) {
-            // Handle any unexpected exceptions that should not occur
-            logger.info("Unexpected exception occurred while closing reader: {}");
         }
     }
 
@@ -1115,8 +1113,9 @@ public class PdfStamperImp extends PdfWriter {
         if (regenerate) {
             try {
                 this.acroFields.regenerateField(name);
-            } catch (Exception e) {
-                // ignore any exception
+            } catch (IOException | DocumentException e) {
+                String msg = "Error regenerating field: " + e.getMessage();
+                logger.severe(msg);
             }
         }
     }

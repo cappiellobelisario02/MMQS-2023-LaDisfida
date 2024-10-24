@@ -14,17 +14,22 @@
 package com.lowagie.examples.objects.tables;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Change the height of a cell (fixed height), disable text wrapping, set a minimum height.
  */
 public class CellHeights {
+
+    private static final Logger logger = Logger.getLogger(CellHeights.class.getName());
 
     /**
      * Height manipulations of cells.
@@ -73,8 +78,8 @@ public class CellHeights {
             cell = new PdfPCell(new Paragraph("almost no content, but the row is extended"));
             table.addCell(cell);
             document.add(table);
-        } catch (Exception de) {
-            //da vedere come effettuare il log
+        } catch (IOException | DocumentException de) {
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

@@ -274,7 +274,6 @@ public class PdfPRow {
             if (cell.hasBorders()) {
                 Rectangle newRect = new Rectangle(left, bottom, right, top);
                 // Clone non-position parameters except for the background color
-                newRect.cloneNonPositionParameters(cell);
                 newRect.setBackgroundColor(null);
                 // Write the borders on the line canvas
                 PdfContentByte lineCanvas = canvases[PdfPTable.LINECANVAS];

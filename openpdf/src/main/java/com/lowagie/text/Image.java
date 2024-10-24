@@ -71,13 +71,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static com.lowagie.text.pdf.PdfStamperImp.logger;
-
 
 /**
  * An <CODE>Image</CODE> is the representation of a graphic element (JPEG, PNG or GIF) that has to be inserted into the
@@ -511,7 +510,7 @@ public abstract class Image extends Rectangle {
                 if (img != null) {
                     img.setUrl(url);
                 }
-            } catch (Exception e) {
+            } catch (BadElementException e) {
                 logger.warning("Error setting URL for image: " + url + " >> " + e.getMessage());
             }
         }
@@ -535,7 +534,8 @@ public abstract class Image extends Rectangle {
             return ImageLoader.getTiffImage(url);
         } else {
             // Log del messaggio dettagliato per la diagnosi interna
-            logger.log(Level.WARNING, "Unrecognized image format for URL: " + url);
+            String msg = "Unrecognized image format for URL: " + url;
+            logger.log(Level.WARNING, msg);
 
             // Lancia un'eccezione con un messaggio generico
             throw new IOException("The provided file is not a recognized image format.");
@@ -552,8 +552,7 @@ public abstract class Image extends Rectangle {
     }
 
     private static boolean isJpeg2000Header(byte[] header) {
-        return (header[0] == 0x00 && header[1] == 0x00 && header[2] == 0x00 && header[3] == 0x0c) ||
-                (header[0] == 0xff && header[1] == 0x4f && header[2] == 0xff && header[3] == 0x51);
+        return header[0] == 0x00 && header[1] == 0x00 && header[2] == 0x00 && header[3] == 0x0c;
     }
 
     private static boolean isPngHeader(byte[] header) {
@@ -600,7 +599,7 @@ public abstract class Image extends Rectangle {
     public static com.lowagie.text.Image getInstanceFromClasspath(String filename)
             throws BadElementException, IOException {
         URL url = com.lowagie.text.Image.class.getResource("/" + filename);
-        return getInstance(url);
+        return getInstance(Objects.requireNonNull(url));
     }
 
     /**
@@ -940,7 +939,6 @@ public abstract class Image extends Rectangle {
         int red = color != null ? color.getRed() : 255;
         int green = color != null ? color.getGreen() : 255;
         int blue = color != null ? color.getBlue() : 255;
-        int[] transparency = null;
 
         for (int j = 0; j < size; j++) {
             int alpha = (pixels[j] >> 24) & 0xff;
@@ -963,7 +961,7 @@ public abstract class Image extends Rectangle {
             }
         }
 
-        com.lowagie.text.Image img = com.lowagie.text.Image.getInstance(width, height, 3, 8, pixelsByte, transparency);
+        com.lowagie.text.Image img = com.lowagie.text.Image.getInstance(width, height, 3, 8, pixelsByte, null);
         if (smask != null) {
             com.lowagie.text.Image sm = com.lowagie.text.Image.getInstance(width, height, 1, 8, smask);
             try {
@@ -1086,7 +1084,8 @@ public abstract class Image extends Rectangle {
             Constructor<? extends com.lowagie.text.Image> constructor = cs.getDeclaredConstructor(
                     com.lowagie.text.Image.class);
             return constructor.newInstance(image);
-        } catch (Exception e) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                 InvocationTargetException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1438,7 +1437,7 @@ public abstract class Image extends Rectangle {
         scalePercent(100);
         float percentX = (fitWidth * 100) / getScaledWidth();
         float percentY = (fitHeight * 100) / getScaledHeight();
-        scalePercent(percentX < percentY ? percentX : percentY);
+        scalePercent(Math.min(percentX, percentY));
         setWidthPercentage(0);
     }
 

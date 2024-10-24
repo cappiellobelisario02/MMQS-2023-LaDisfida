@@ -48,6 +48,7 @@
  */
 package com.lowagie.text.pdf;
 
+import com.lowagie.text.BadElementException;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
@@ -521,7 +522,7 @@ public abstract class Barcode {
     public Image createImageWithBarcode(PdfContentByte cb, Color barColor, Color textColor) {
         try {
             return Image.getInstance(createTemplateWithBarcode(cb, barColor, textColor));
-        } catch (Exception e) {
+        } catch (BadElementException e) {
             throw new ExceptionConverter(e);
         }
     }

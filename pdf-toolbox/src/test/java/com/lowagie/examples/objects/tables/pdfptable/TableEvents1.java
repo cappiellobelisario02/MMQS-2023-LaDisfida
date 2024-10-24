@@ -14,6 +14,7 @@
 package com.lowagie.examples.objects.tables.pdfptable;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Phrase;
@@ -25,12 +26,16 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPTableEvent;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.logging.Logger;
 
 /**
  * General example using TableEvents.
  */
 public class TableEvents1 implements PdfPTableEvent {
+
+    private static final Logger logger = Logger.getLogger(TableEvents1.class.getName());
 
     /**
      * General example using table events.
@@ -41,8 +46,7 @@ public class TableEvents1 implements PdfPTableEvent {
 
         System.out.println("TableEvents 1");
         // step1
-        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
-        try {
+        try (Document document = new Document(PageSize.A4, 50, 50, 50, 50)){
             // step2
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("TableEvents1.pdf"));
             // step3
@@ -83,11 +87,9 @@ public class TableEvents1 implements PdfPTableEvent {
             table.setTableEvent(event);
             table.setHeaderRows(3);
             document.add(table);
-        } catch (Exception de) {
-            //da vedere come effettuare il log
+        } catch (IOException | DocumentException | SecurityException de) {
+            logger.severe("Exception occured");
         }
-        // step5
-        document.close();
     }
 
     /**
@@ -113,10 +115,6 @@ public class TableEvents1 implements PdfPTableEvent {
 
         // border for the header rows
         if (headerRows > 0) {
-            float headerHeight = heights[0];
-            for (int k = 0; k < headerRows; ++k) {
-                headerHeight += heights[k];
-            }
             cb.setRGBColorStroke(0, 0, 255);
             cb.rectangle(widths[0], heights[headerRows], widths[widths.length - 1] - widths[0],
                     heights[0] - heights[headerRows]);

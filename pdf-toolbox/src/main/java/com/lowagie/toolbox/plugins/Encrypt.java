@@ -45,8 +45,10 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.OptionArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -164,7 +166,7 @@ public class Encrypt extends AbstractTool {
                     permissions,
                     "128".equals(getValue("strength"))
             );
-        } catch (Exception e) {
+        } catch (InstantiationException | IOException | PDFFilterException e) {
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),
@@ -178,10 +180,6 @@ public class Encrypt extends AbstractTool {
      * @see com.lowagie.toolbox.AbstractTool#valueHasChanged(com.lowagie.toolbox.arguments.AbstractArgument)
      */
     public void valueHasChanged(AbstractArgument arg) {
-        if (internalFrame == null) {
-            // if the internal frame is null, the tool was called from the command line
-            return;
-        }
         // represent the changes of the argument in the internal frame
     }
 

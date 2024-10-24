@@ -31,9 +31,11 @@ import com.lowagie.rups.view.itext.treenodes.PdfTrailerTreeNode;
 import com.lowagie.rups.view.itext.treenodes.XfaTreeNode;
 import com.lowagie.text.pdf.PdfName;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Enumeration;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Logger;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -49,7 +51,10 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
     /**
      * A serial version UID.
      */
+    @Serial
     private static final long serialVersionUID = -3584003547303700407L;
+
+    private static final Logger logger = Logger.getLogger(FormTree.class.getName());
     /**
      * Nodes in the FormTree correspond with nodes in the main PdfTree.
      */
@@ -97,8 +102,7 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
             repaint();
             return;
         }
-        if (obj instanceof ObjectLoader) {
-            ObjectLoader loader = (ObjectLoader) obj;
+        if (obj instanceof ObjectLoader loader) {
             TreeNodeFactory factory = loader.getNodes();
             PdfTrailerTreeNode trailer = controller.getPdfTree().getRoot();
             PdfObjectTreeNode catalog = factory.getChildNode(trailer, PdfName.ROOT);
@@ -125,7 +129,8 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
                     xfaTree.load(xfaFile);
                     xfaTextArea.load(xfaFile);
                 } catch (IOException | DocumentException e) {
-                    //da vedere come effettuare il log
+                    String msg = "Error loading xfa file: " + e.getMessage();
+                    logger.severe(msg);
                 }
             }
             setModel(new DefaultTreeModel(root));
@@ -136,25 +141,25 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
      * Method that can be used recursively to load the fields hierarchy into the tree.
      *
      * @param factory     a factory that can produce new PDF object nodes
-     * @param form_node   the getParent node in the form tree
-     * @param object_node the object node that will be used to create a child node
+     * @param formNode   the getParent node in the form tree
+     * @param objectNode the object node that will be used to create a child node
      */
-    private void loadFields(TreeNodeFactory factory, FormTreeNode form_node, PdfObjectTreeNode object_node) {
-        if (object_node == null) {
+    private void loadFields(TreeNodeFactory factory, FormTreeNode formNode, PdfObjectTreeNode objectNode) {
+        if (objectNode == null) {
             return;
         }
-        factory.expandNode(object_node);
-        if (object_node.isIndirectReference()) {
-            loadFields(factory, form_node, (PdfObjectTreeNode) object_node.getFirstChild());
-        } else if (object_node.isArray()) {
-            Enumeration<?> children = object_node.children();
+        factory.expandNode(objectNode);
+        if (objectNode.isIndirectReference()) {
+            loadFields(factory, formNode, (PdfObjectTreeNode) objectNode.getFirstChild());
+        } else if (objectNode.isArray()) {
+            Enumeration<?> children = objectNode.children();
             while (children.hasMoreElements()) {
-                loadFields(factory, form_node, (PdfObjectTreeNode) children.nextElement());
+                loadFields(factory, formNode, (PdfObjectTreeNode) children.nextElement());
             }
-        } else if (object_node.isDictionary()) {
-            FormTreeNode leaf = new FormTreeNode(object_node);
-            form_node.add(leaf);
-            PdfObjectTreeNode kids = factory.getChildNode(object_node, PdfName.KIDS);
+        } else if (objectNode.isDictionary()) {
+            FormTreeNode leaf = new FormTreeNode(objectNode);
+            formNode.add(leaf);
+            PdfObjectTreeNode kids = factory.getChildNode(objectNode, PdfName.KIDS);
             loadFields(factory, leaf, kids);
         }
     }
@@ -162,18 +167,18 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
     /**
      * Method that will load the nodes that refer to XFA streams.
      *
-     * @param form_node   the getParent node in the form tree
-     * @param object_node the object node that will be used to create a child node
+     * @param formNode   the getParent node in the form tree
+     * @param objectNode the object node that will be used to create a child node
      */
-    private void loadXfa(TreeNodeFactory factory, XfaTreeNode form_node, PdfObjectTreeNode object_node) {
-        if (object_node == null) {
+    private void loadXfa(TreeNodeFactory factory, XfaTreeNode formNode, PdfObjectTreeNode objectNode) {
+        if (objectNode == null) {
             return;
         }
-        factory.expandNode(object_node);
-        if (object_node.isIndirectReference()) {
-            loadXfa(factory, form_node, (PdfObjectTreeNode) object_node.getFirstChild());
-        } else if (object_node.isArray()) {
-            Enumeration<?> children = object_node.children();
+        factory.expandNode(objectNode);
+        if (objectNode.isIndirectReference()) {
+            loadXfa(factory, formNode, (PdfObjectTreeNode) objectNode.getFirstChild());
+        } else if (objectNode.isArray()) {
+            Enumeration<?> children = objectNode.children();
             PdfObjectTreeNode key;
             PdfObjectTreeNode value;
             while (children.hasMoreElements()) {
@@ -183,10 +188,10 @@ public class FormTree extends JTree implements TreeSelectionListener, Observer {
                     factory.expandNode(value);
                     value = (PdfObjectTreeNode) value.getFirstChild();
                 }
-                form_node.addPacket(key.getPdfObject().toString(), value);
+                formNode.addPacket(key.getPdfObject().toString(), value);
             }
-        } else if (object_node.isStream()) {
-            form_node.addPacket("xdp", object_node);
+        } else if (objectNode.isStream()) {
+            formNode.addPacket("xdp", objectNode);
         }
     }
 

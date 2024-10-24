@@ -730,8 +730,6 @@ public class FontFactoryImp implements FontProvider {
             logger.severe("IOException while processing file: " + e.getMessage());
         } catch (SecurityException e) {
             logger.severe("SecurityException while processing file: " + e.getMessage());
-        } catch (Exception e) {
-            logger.severe("Unexpected exception while processing file: " + e.getMessage());
         }
         return count;
     }

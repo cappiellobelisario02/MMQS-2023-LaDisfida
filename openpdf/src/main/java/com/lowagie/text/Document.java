@@ -113,17 +113,17 @@ public class Document implements DocListener {
     /**
      * Allows the pdf documents to be produced without compression for debugging purposes.
      */
-    public class CompressionSettings {
+    public static class CompressionSettings {
         // Make the field private to encapsulate it
-        private static boolean COMPRESS = true;
+        private static boolean compress = true;
 
         public static void setCompress(boolean compress){
-            COMPRESS = compress;
+            CompressionSettings.compress = compress;
         }
 
         // Provide a public getter to access the value
         public static boolean isCompressEnabled() {
-            return COMPRESS;
+            return compress;
         }
     }
 
@@ -131,7 +131,7 @@ public class Document implements DocListener {
      * When true the file access is not done through a memory mapped file. Use it if the file is too big to be mapped in
      * your address space.
      */
-    public static final boolean plainRandomAccess = false;
+    public static final boolean PLAIN_RANDOM_ACCESS = false;
     /**
      * Scales the WMF font size. The default value is 0.86.
      */
@@ -163,19 +163,19 @@ public class Document implements DocListener {
     /**
      * margin in x direction starting from the left
      */
-    protected float marginLeft = 0;
+    protected float marginLeft;
     /**
      * margin in x direction starting from the right
      */
-    protected float marginRight = 0;
+    protected float marginRight;
     /**
      * margin in y direction starting from the top
      */
-    protected float marginTop = 0;
+    protected float marginTop;
     /**
      * margin in y direction starting from the bottom
      */
-    protected float marginBottom = 0;
+    protected float marginBottom;
     /**
      * mirroring of the left/right margins
      */
@@ -189,11 +189,11 @@ public class Document implements DocListener {
     /**
      * Content of JavaScript onLoad function
      */
-    protected String javaScript_onLoad = null;
+    protected String javascriptOnload = null;
     /**
      * Content of JavaScript onUnLoad function
      */
-    protected String javaScript_onUnLoad = null;
+    protected String javascriptOnunload = null;
     /**
      * Style class in HTML body tag
      */
@@ -346,8 +346,8 @@ public class Document implements DocListener {
                     "the.document.is.not.open.yet.you.can.only.add.meta.information"));
         }
         boolean success = false;
-        if (element instanceof ChapterAutoNumber) {
-            chapternumber = ((ChapterAutoNumber) element).setAutomaticNumber(chapternumber);
+        if (element instanceof ChapterAutoNumber chapterAutoNumber) {
+            chapternumber = chapterAutoNumber.setAutomaticNumber(chapternumber);
         }
         for (DocListener listener : listeners) {
             success |= listener.add(element);
@@ -904,8 +904,8 @@ public class Document implements DocListener {
      * @return the JavaScript onLoad command
      */
 
-    public String getJavaScript_onLoad() {
-        return this.javaScript_onLoad;
+    public String getJavascriptOnload() {
+        return this.javascriptOnload;
     }
 
     /**
@@ -914,8 +914,8 @@ public class Document implements DocListener {
      * @param code the JavaScript code to be executed on load of the HTML page
      */
 
-    public void setJavaScript_onLoad(String code) {
-        this.javaScript_onLoad = code;
+    public void setJavascriptOnload(String code) {
+        this.javascriptOnload = code;
     }
 
     /**
@@ -924,8 +924,8 @@ public class Document implements DocListener {
      * @return the JavaScript onUnLoad command
      */
 
-    public String getJavaScript_onUnLoad() {
-        return this.javaScript_onUnLoad;
+    public String getJavascriptOnunload() {
+        return this.javascriptOnunload;
     }
 
     /**
@@ -934,8 +934,8 @@ public class Document implements DocListener {
      * @param code the JavaScript code to be executed on unload of the HTML page
      */
 
-    public void setJavaScript_onUnLoad(String code) {
-        this.javaScript_onUnLoad = code;
+    public void setJavascriptOnunload(String code) {
+        this.javascriptOnunload = code;
     }
 
     /**

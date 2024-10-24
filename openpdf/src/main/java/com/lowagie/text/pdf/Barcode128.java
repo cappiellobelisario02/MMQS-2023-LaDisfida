@@ -55,8 +55,8 @@ import com.lowagie.text.error_messages.MessageLocalization;
 import com.lowagie.text.exceptions.IllegalBarcode128CharacterException;
 import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Image;
 import java.awt.image.MemoryImageSource;
+import java.io.IOException;
 
 /**
  * Implements the code 128 and UCC/EAN-128. Other symbologies are allowed in raw mode.<p> The code types allowed
@@ -315,7 +315,7 @@ public class Barcode128 extends Barcode {
             barHeight = size * 3;
             textAlignment = Element.ALIGN_CENTER;
             codeType = CODE128;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -360,7 +360,7 @@ public class Barcode128 extends Barcode {
             }
 
             int n = ais.get(Integer.parseInt(code.substring(0, idlen)));
-            buf.append('(').append(code.substring(0, idlen)).append(')');
+            buf.append('(').append(code, 0, idlen).append(')');
             code = code.substring(idlen);
 
             if (n > 0) {
@@ -368,7 +368,7 @@ public class Barcode128 extends Barcode {
                 code = code.substring(n);
             } else {
                 int idx = code.indexOf(fnc1);
-                buf.append(code.substring(0, idx));
+                buf.append(code, 0, idx);
                 code = code.substring(idx + 1);
             }
         }
@@ -585,7 +585,7 @@ public class Barcode128 extends Barcode {
     }
 
     private static char processStartABCommon(String text, StringBuilder out, int index, char switchCode, char switchCodeAppend) {
-        int c = text.charAt(index++);
+        int c = text.charAt(index);
         if (c == FNC1) {
             out.append(FNC1_INDEX);
         } else if (c < ' ') {
@@ -601,7 +601,6 @@ public class Barcode128 extends Barcode {
     private static char processStartCCommon(String text, StringBuilder out, int index) {
         // Read the character at the specified index and increment the index
         char c = text.charAt(index);
-        index++; // Increment the index after accessing the character
 
         if (c == FNC1) {
             out.append(FNC1_INDEX);
@@ -756,14 +755,11 @@ public class Barcode128 extends Barcode {
     }
 
     private String calculateFullCode() {
-        switch (codeType) {
-            case CODE128_RAW:
-                return getRawFullCode();
-            case CODE128_UCC:
-                return getHumanReadableUCCEAN(code);
-            default:
-                return removeFNC1(code);
-        }
+        return switch (codeType) {
+            case CODE128_RAW -> getRawFullCode();
+            case CODE128_UCC -> getHumanReadableUCCEAN(code);
+            default -> removeFNC1(code);
+        };
     }
 
     private String getRawFullCode() {
@@ -939,7 +935,7 @@ public class Barcode128 extends Barcode {
             idx = code.indexOf('(', end);
             int next = (idx < 0 ? code.length() : idx);
 
-            ret.append(sai).append(code.substring(end + 1, next));
+            ret.append(sai).append(code, end + 1, next);
             validateAiLength(len, sai, next, end);
 
             if (len < 0 && idx >= 0) {

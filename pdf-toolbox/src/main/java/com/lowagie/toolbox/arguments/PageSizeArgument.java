@@ -39,7 +39,9 @@ import com.lowagie.text.PageSize;
 import com.lowagie.toolbox.AbstractTool;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
+import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 
@@ -49,6 +51,8 @@ import javax.swing.JOptionPane;
  * @since 2.1.1 (imported from itexttoolbox project)
  */
 public class PageSizeArgument extends OptionArgument {
+
+    private static final Logger logger = Logger.getLogger(PageSizeArgument.class.getName());
 
     private TreeMap<String, String> options = new TreeMap<>();
 
@@ -68,7 +72,7 @@ public class PageSizeArgument extends OptionArgument {
                 addOption(size.getName(), size.get(null));
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 
@@ -87,7 +91,7 @@ public class PageSizeArgument extends OptionArgument {
      *
      * @return Returns the options.
      */
-    public TreeMap<String, String> getOptions() {
+    public SortedMap<String, String> getOptions() {
         return options;
     }
 
@@ -104,7 +108,7 @@ public class PageSizeArgument extends OptionArgument {
         }
         try {
             return options.get(value);
-        } catch (Exception e) {
+        } catch (ClassCastException | NullPointerException e) {
             throw new InstantiationException(e.getMessage());
         }
     }
@@ -122,8 +126,8 @@ public class PageSizeArgument extends OptionArgument {
         buf.append('\n');
         buf.append("    possible options:\n");
         String s;
-        for (Object o : options.keySet()) {
-            s = (String) o;
+        for (String o : options.keySet()) {
+            s = o;
             buf.append("    - ");
             buf.append(s);
             buf.append('\n');
@@ -157,16 +161,6 @@ public class PageSizeArgument extends OptionArgument {
         if (result == 0) {
             setValue(cb.getSelectedItem());
         }
-    }
-
-    /**
-     * Returns a string representation of the object.
-     *
-     * @return a string representation of the object.
-     */
-    @Override
-    public String toString() {
-        return super.getValue().toString();
     }
 
 }

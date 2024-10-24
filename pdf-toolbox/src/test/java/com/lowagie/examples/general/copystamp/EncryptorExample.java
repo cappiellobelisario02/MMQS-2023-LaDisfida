@@ -16,12 +16,17 @@ package com.lowagie.examples.general.copystamp;
 import com.lowagie.text.pdf.PdfEncryptor;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Encrypts an existing PDF file.
  */
 public class EncryptorExample {
+
+    private static final Logger logger = Logger.getLogger(EncryptorExample.class.getName());
 
     /**
      * Reads and encrypts an existing PDF file.
@@ -38,8 +43,8 @@ public class EncryptorExample {
                     "World".getBytes(),
                     PdfWriter.ALLOW_PRINTING | PdfWriter.ALLOW_COPY,
                     false);
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (IOException | PDFFilterException e) {
+            logger.severe("Exception occured");
         }
     }
 }

@@ -176,12 +176,6 @@ public class HtmlBookmarks extends AbstractTool {
         return s;
     }
 
-    private static String sanitize(String data) {
-        // Implement custom logic to remove or mask sensitive parts of the log
-        return data.replaceAll("/path/to/sensitive", "/path/to/[REDACTED]");
-    }
-
-
     /**
      * @see com.lowagie.toolbox.AbstractTool#createFrame()
      */
@@ -300,11 +294,7 @@ public class HtmlBookmarks extends AbstractTool {
 
     private void closeReader(PdfReader reader) {
         if (reader != null) {
-            try {
-                reader.close();
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
+            reader.close();
         }
     }
 

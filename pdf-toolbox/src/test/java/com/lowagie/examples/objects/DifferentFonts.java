@@ -15,15 +15,20 @@ package com.lowagie.examples.objects;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Selects the appropriate fonts that contain the glyphs needed to render text correctly.
  */
 public class DifferentFonts {
+
+    private static final Logger logger = Logger.getLogger(DifferentFonts.class.getName());
 
     /**
      * Using FontSelector.
@@ -47,8 +52,8 @@ public class DifferentFonts {
             document.add(new Paragraph(p));
             // step 5
             document.close();
-        } catch (Exception de) {
-            //da vedere come effettuare il log
+        } catch (IOException | DocumentException de) {
+            logger.severe("Exception occured");
         }
     }
 }

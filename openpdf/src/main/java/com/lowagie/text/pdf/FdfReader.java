@@ -119,9 +119,6 @@ public class FdfReader extends PdfReader {
             } catch (IOException e) {
                 // Use Level.WARNING for java.util.logging
                 logger.log(Level.WARNING, "Error occurred while closing tokens. Please check the system logs for more details.", e);
-            } catch (Exception e) {
-                // Use Level.WARNING for unexpected exceptions
-                logger.log(Level.WARNING, "Unexpected error occurred while closing tokens.", e);
             }
         }
         readFields();
@@ -248,8 +245,8 @@ public class FdfReader extends PdfReader {
             } else if (encoding.equals(PdfName.BIGFIVE)) {
                 return new String(b, "Big5");
             }
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (IOException e) {
+            logger.severe("Exception occured");
         }
         return null;
     }

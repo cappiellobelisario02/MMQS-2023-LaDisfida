@@ -47,6 +47,7 @@ package com.lowagie.text;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import javax.imageio.ImageIO;
@@ -84,7 +85,7 @@ public class ImageLoader {
             // Re-interrupt the thread and handle the interruption
             Thread.currentThread().interrupt();
             throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -97,7 +98,7 @@ public class ImageLoader {
             // Re-interrupt the thread to preserve the interrupted status
             Thread.currentThread().interrupt();
             throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -111,7 +112,7 @@ public class ImageLoader {
             // Re-interrupt the thread to preserve the interrupted status
             Thread.currentThread().interrupt();
             throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -125,7 +126,7 @@ public class ImageLoader {
             // Re-interrupt the thread to preserve the interrupted status
             Thread.currentThread().interrupt();
             throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -141,7 +142,7 @@ public class ImageLoader {
         try (InputStream is = url.openStream()) {
             byte[] imageBytes = Utilities.toByteArray(is);
             return new Jpeg(imageBytes);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -150,7 +151,7 @@ public class ImageLoader {
         try (InputStream is = url.openStream()) {
             byte[] imageBytes = Utilities.toByteArray(is);
             return new Jpeg2000(imageBytes);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -163,7 +164,7 @@ public class ImageLoader {
             // Re-interrupt the thread to preserve the interrupted status
             Thread.currentThread().interrupt();
             throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -177,7 +178,7 @@ public class ImageLoader {
             // Re-interrupt the thread to preserve the interrupted status
             Thread.currentThread().interrupt();
             throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -191,7 +192,7 @@ public class ImageLoader {
             // Re-interrupt the thread to preserve the interrupted status
             Thread.currentThread().interrupt();
             throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -211,7 +212,7 @@ public class ImageLoader {
             // Re-interrupt the thread to preserve the interrupted status
             Thread.currentThread().interrupt();
             throw new ExceptionConverter(new RuntimeException(THREAD_INTERRUPTED_MESSAGE, e));
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -226,8 +227,7 @@ public class ImageLoader {
     public static Image getJpegImage(byte[] imageData) {
         try {
             return new Jpeg(imageData);
-
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -236,7 +236,7 @@ public class ImageLoader {
         try {
             return new Jpeg2000(imageData);
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }

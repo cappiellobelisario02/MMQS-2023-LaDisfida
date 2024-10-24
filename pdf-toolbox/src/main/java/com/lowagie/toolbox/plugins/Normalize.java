@@ -40,10 +40,12 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.toolbox.plugins.watermarker.WatermarkerTool;
+import org.apache.fop.pdf.PDFFilterException;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -238,7 +240,7 @@ public class Normalize
                     " rotated pages=" +
                     this.getPagecountrotatedpages();
             logger.info(stringToLog);
-        } catch (Exception e) {
+        } catch (IOException | NoSuchAlgorithmException | InstantiationException | PDFFilterException e) {
             logger.log(Level.SEVERE, "An exception occurred ", e);
         } finally {
             if (reader != null && fouts != null && stp != null) {
@@ -246,8 +248,8 @@ public class Normalize
                     reader.close();
                     fouts.close();
                     stp.close();
-                } catch (Exception e) {
-                    //da vedere come effettuare il log
+                } catch (IOException | NoSuchAlgorithmException e) {
+                    logger.severe("Exception occured");
                 }
             }
         }

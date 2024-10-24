@@ -20,6 +20,7 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfDestination;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Creates a document that jumps to a Local Destination upon opening.
@@ -28,6 +29,8 @@ import java.io.FileOutputStream;
  */
 
 public class LocalDestination {
+
+    private static final Logger logger = Logger.getLogger(LocalDestination.class.getName());
 
     /**
      * Creates a document that jumps to a Local Destination upon opening.
@@ -52,7 +55,7 @@ public class LocalDestination {
             cb.localDestination("page2", new PdfDestination(PdfDestination.XYZ, -1, 10000, 0));
             writer.setOpenAction("page2");
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document

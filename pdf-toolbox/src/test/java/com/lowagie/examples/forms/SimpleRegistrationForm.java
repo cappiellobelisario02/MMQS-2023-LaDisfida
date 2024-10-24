@@ -25,11 +25,14 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.TextField;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * General example using TableEvents and CellEvents.
  */
 public class SimpleRegistrationForm implements PdfPCellEvent {
+
+    private static final Logger logger = Logger.getLogger(SimpleRegistrationForm.class.getName());
 
     /**
      * the writer with the acroform
@@ -124,7 +127,7 @@ public class SimpleRegistrationForm implements PdfPCellEvent {
             PdfFormField field = tf.getTextField();
             writer.addAnnotation(field);
         } catch (IOException | DocumentException e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

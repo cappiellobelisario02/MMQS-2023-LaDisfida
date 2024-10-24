@@ -29,11 +29,14 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.RGBColor;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates transparency and images.
  */
 public class TableCellTransparency {
+
+    private static final Logger logger = Logger.getLogger(TableCellTransparency.class.getName());
 
     /**
      * Demonstrates the Table Cell Transparency functionality.
@@ -102,7 +105,7 @@ public class TableCellTransparency {
 
             cb.sanityCheck();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 

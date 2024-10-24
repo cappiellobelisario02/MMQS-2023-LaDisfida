@@ -54,6 +54,7 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.MemoryImageSource;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -214,7 +215,7 @@ public class BarcodeEAN extends Barcode {
             guardBars = true;
             codeType = EAN13;
             code = "";
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -246,18 +247,18 @@ public class BarcodeEAN extends Barcode {
         if (text.length() != 12 || !(text.startsWith("0") || text.startsWith("1"))) {
             return null;
         }
-        if (text.substring(3, 6).equals("000") || text.substring(3, 6).equals("100")
-                || text.substring(3, 6).equals("200")) {
-            if (text.substring(6, 8).equals("00")) {
-                return text.substring(0, 1) + text.substring(1, 3) + text.substring(8, 11) + text.substring(3, 4)
+        if (text.startsWith("000", 3) || text.startsWith("100", 3)
+                || text.startsWith("200", 3)) {
+            if (text.startsWith("00", 6)) {
+                return text.charAt(0) + text.substring(1, 3) + text.substring(8, 11) + text.charAt(3)
                         + text.substring(11);
             }
-        } else if (text.substring(4, 6).equals("00") && text.substring(6, 9).equals("000")) {
-            return text.substring(0, 1) + text.substring(1, 4) + text.substring(9, 11) + "3" + text.substring(11);
-        } else if (text.substring(5, 6).equals("0") && text.substring(6, 10).equals("0000")) {
-            return text.substring(0, 1) + text.substring(1, 5) + text.substring(10, 11) + "4" + text.substring(11);
-        } else if (text.charAt(10) >= '5' && text.substring(6, 10).equals("0000")) {
-            return text.substring(0, 1) + text.substring(1, 6) + text.substring(10, 11) + text.substring(11);
+        } else if (text.startsWith("00", 4) && text.startsWith("000", 6)) {
+            return text.charAt(0) + text.substring(1, 4) + text.substring(9, 11) + "3" + text.substring(11);
+        } else if (text.charAt(5) == '0' && text.startsWith("0000", 6)) {
+            return text.charAt(0) + text.substring(1, 5) + text.charAt(10) + "4" + text.substring(11);
+        } else if (text.charAt(10) >= '5' && text.startsWith("0000", 6)) {
+            return text.charAt(0) + text.substring(1, 6) + text.charAt(10) + text.substring(11);
         }
         return null;
     }
@@ -314,7 +315,7 @@ public class BarcodeEAN extends Barcode {
         }
         bars[pb++] = 1;
         bars[pb++] = 1;
-        bars[pb++] = 1;
+        bars[pb] = 1;
         return bars;
     }
 
@@ -357,7 +358,7 @@ public class BarcodeEAN extends Barcode {
         }
         bars[pb++] = 1;
         bars[pb++] = 1;
-        bars[pb++] = 1;
+        bars[pb] = 1;
         return bars;
     }
 
@@ -415,7 +416,7 @@ public class BarcodeEAN extends Barcode {
         bars[pb++] = 1;
         bars[pb++] = 1;
         bars[pb++] = 1;
-        bars[pb++] = 1;
+        bars[pb] = 1;
 
         return bars;
     }
@@ -508,7 +509,7 @@ public class BarcodeEAN extends Barcode {
      * @return the size the barcode occupies.
      */
     public Rectangle getBarcodeSize() {
-        float width = 0;
+        float width;
         float height = barHeight;
         if (font != null) {
             if (baseline <= 0) {
@@ -598,11 +599,10 @@ public class BarcodeEAN extends Barcode {
         byte[] bars = getBarsForCodeType(codeType);
         int[] guard = getGuardForCodeType(codeType);
 
-        float keepBarX = barStartX;
         float guardBarOffset = calculateGuardBarOffset();
 
         drawBars(cb, barColor, bars, guard, barStartX, barStartY, guardBarOffset);
-        drawText(cb, textColor, keepBarX, textStartY);
+        drawText(cb, textColor, barStartX, textStartY);
 
         return rect;
     }
@@ -635,13 +635,13 @@ public class BarcodeEAN extends Barcode {
     }
 
     private int[] getGuardForCodeType(int codeType) {
-        switch (codeType) {
-            case EAN13: return GUARD_EAN13;
-            case EAN8: return GUARD_EAN8;
-            case UPCA: return GUARD_UPCA;
-            case UPCE: return GUARD_UPCE;
-            default: return GUARD_EMPTY;
-        }
+        return switch (codeType) {
+            case EAN13 -> GUARD_EAN13;
+            case EAN8 -> GUARD_EAN8;
+            case UPCA -> GUARD_UPCA;
+            case UPCE -> GUARD_UPCE;
+            default -> GUARD_EMPTY;
+        };
     }
 
     private float calculateGuardBarOffset() {
@@ -759,36 +759,36 @@ public class BarcodeEAN extends Barcode {
         int g = background.getRGB();
         Canvas canvas = new Canvas();
 
-        int width = 0;
-        byte[] bars = null;
-        switch (codeType) {
-            case EAN13:
+        int width;
+        byte[] bars;
+        width = switch (codeType) {
+            case EAN13 -> {
                 bars = getBarsEAN13(code);
-                width = 11 + 12 * 7;
-                break;
-            case EAN8:
+                yield 11 + 12 * 7;
+            }
+            case EAN8 -> {
                 bars = getBarsEAN8(code);
-                width = 11 + 8 * 7;
-                break;
-            case UPCA:
+                yield 11 + 8 * 7;
+            }
+            case UPCA -> {
                 bars = getBarsEAN13("0" + code);
-                width = 11 + 12 * 7;
-                break;
-            case UPCE:
+                yield 11 + 12 * 7;
+            }
+            case UPCE -> {
                 bars = getBarsUPCE(code);
-                width = 9 + 6 * 7;
-                break;
-            case SUPP2:
+                yield 9 + 6 * 7;
+            }
+            case SUPP2 -> {
                 bars = getBarsSupplemental2(code);
-                width = 6 + 2 * 7;
-                break;
-            case SUPP5:
+                yield 6 + 2 * 7;
+            }
+            case SUPP5 -> {
                 bars = getBarsSupplemental5(code);
-                width = 4 + 5 * 7 + 4 * 2;
-                break;
-            default:
-                throw new InvalidCodeTypeException(MessageLocalization.getComposedMessage("invalid.code.getTypeImpl"));
-        }
+                yield 4 + 5 * 7 + 4 * 2;
+            }
+            default -> throw new InvalidCodeTypeException(
+                    MessageLocalization.getComposedMessage("invalid.code.getTypeImpl"));
+        };
 
         boolean print = true;
         int ptr = 0;

@@ -56,6 +56,7 @@ import com.lowagie.text.ExceptionConverter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -153,18 +154,18 @@ public class PdfSmartCopy extends PdfCopy {
         private static final int MAX_LEVELS = 100;
         private byte[] b;
         private int hash;
-        private MessageDigest md5;
+        private MessageDigest sha256;
 
         ByteStore(PRStream str) throws IOException {
             try {
-                md5 = MessageDigest.getInstance("MD5");
-            } catch (Exception e) {
+                sha256 = MessageDigest.getInstance("SHA-256");
+            } catch (NoSuchAlgorithmException e) {
                 throw new ExceptionConverter(e);
             }
             ByteBuffer bb = new ByteBuffer();
             serObject(str, MAX_LEVELS, bb);
             this.b = bb.toByteArray();
-            md5 = null;
+            sha256 = null;
         }
 
         private void serObject(PdfObject obj, int level, ByteBuffer bb) throws IOException {
@@ -179,8 +180,8 @@ public class PdfSmartCopy extends PdfCopy {
             if (obj.isStream()) {
                 bb.append("$B");
                 serDic((PdfDictionary) obj, level - 1, bb);
-                md5.reset();
-                bb.append(md5.digest(PdfReader.getStreamBytesRaw((PRStream) obj)));
+                sha256.reset();
+                bb.append(sha256.digest(PdfReader.getStreamBytesRaw((PRStream) obj)));
             } else if (obj.isDictionary()) {
                 serDic((PdfDictionary) obj, level - 1, bb);
             } else if (obj.isArray()) {

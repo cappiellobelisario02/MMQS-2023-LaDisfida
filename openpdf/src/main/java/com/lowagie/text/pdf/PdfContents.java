@@ -53,6 +53,7 @@ import com.lowagie.text.DocWriter;
 import com.lowagie.text.Document;
 import com.lowagie.text.Rectangle;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
@@ -86,7 +87,7 @@ class PdfContents extends PdfStream {
             Rectangle page) throws BadPdfFormatException {
         super();
         try {
-            OutputStream out = null;
+            OutputStream out;
             Deflater deflater = null;
             streamBytes = new ByteArrayOutputStream();
             if (Document.compress) {
@@ -133,11 +134,11 @@ class PdfContents extends PdfStream {
                 content.getInternalBuffer().writeTo(out);
                 out.write(RESTORESTATE);
             }
-            if (text != null) {
-                out.write(SAVESTATE);
-                text.getInternalBuffer().writeTo(out);
-                out.write(RESTORESTATE);
-            }
+
+            out.write(SAVESTATE);
+            text.getInternalBuffer().writeTo(out);
+            out.write(RESTORESTATE);
+
             if (secondContent.size() > 0) {
                 secondContent.getInternalBuffer().writeTo(out);
             }
@@ -145,7 +146,7 @@ class PdfContents extends PdfStream {
             if (deflater != null) {
                 deflater.end();
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new BadPdfFormatException(e.getMessage());
         }
         put(PdfName.PDF_NAME_LENGTH, new PdfNumber(streamBytes.size()));

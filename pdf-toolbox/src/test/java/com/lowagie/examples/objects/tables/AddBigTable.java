@@ -14,16 +14,21 @@
 package com.lowagie.examples.objects.tables;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Add a big table to a PDF with document.add().
  */
 public class AddBigTable {
+
+    private static final Logger logger = Logger.getLogger(AddBigTable.class.getName());
 
     /**
      * Big PdfPTable with document.add().
@@ -45,9 +50,9 @@ public class AddBigTable {
             String[] bogusData = {"M0065920", "SL", "FR86000P", "PCGOLD",
                     "119000", "96 06", "2001-08-13", "4350", "6011648299",
                     "FLFLMTGP", "153", "119000.00"};
-            int NumColumns = 12;
+            int numColumns = 12;
 
-            PdfPTable datatable = new PdfPTable(NumColumns);
+            PdfPTable datatable = new PdfPTable(numColumns);
             int[] headerwidths = {9, 4, 8, 10, 8, 11, 9, 7, 9, 10, 4, 10}; // percentage
             datatable.setWidths(headerwidths);
             datatable.setWidthPercentage(100); // percentage
@@ -75,7 +80,7 @@ public class AddBigTable {
                 if (i % 2 == 1) {
                     datatable.getDefaultCell().setGrayFill(0.9f);
                 }
-                for (int x = 0; x < NumColumns; x++) {
+                for (int x = 0; x < numColumns; x++) {
                     datatable.addCell(bogusData[x]);
                 }
                 if (i % 2 == 1) {
@@ -83,8 +88,8 @@ public class AddBigTable {
                 }
             }
             document.add(datatable);
-        } catch (Exception de) {
-            //da vedere come effettuare il log
+        } catch (IOException | DocumentException | SecurityException de) {
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

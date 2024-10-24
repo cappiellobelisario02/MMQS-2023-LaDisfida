@@ -57,8 +57,8 @@ public class FileArrayArgument extends AbstractArgument {
         super();
         try {
             jbInit();
-        } catch (Exception ex) {
-//da vedere come effettuare il log
+        } catch (FileListInitializationException ex) {
+            logger.severe("Exception occured");
         }
     }
 
@@ -66,8 +66,8 @@ public class FileArrayArgument extends AbstractArgument {
         super(tool, name, description, null);
         try {
             jbInit();
-        } catch (Exception ex) {
-//da vedere come effettuare il log
+        } catch (FileListInitializationException ex) {
+            logger.severe("Exception occured");
         }
     }
 
@@ -79,23 +79,6 @@ public class FileArrayArgument extends AbstractArgument {
             fileList1.setSelected(true);
         } catch (PropertyVetoException ex1) {
             logger.info(ex1.getMessage());
-        }
-
-//        try
-//            setValue fileList1.getFilevector().toArray()
-//         catch NullPointerException npe
-//
-    }
-
-    @Override
-    public Object getArgument() throws InstantiationException {
-        if (value == null) {
-            return null;
-        }
-        try {
-            return value;
-        } catch (Exception e) {
-            throw new InstantiationException(e.getMessage());
         }
     }
 

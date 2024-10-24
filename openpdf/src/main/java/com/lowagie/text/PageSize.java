@@ -330,7 +330,7 @@ public class PageSize {
     public static final Rectangle PENGUIN_LARGE_PAPERBACK = new RectangleReadOnly(365, 561);
 
     /**
-     * This method returns a Rectangle based on a String. Possible values are the the names of a constant in this class
+     * This method returns a Rectangle based on a String. Possible values are the names of a constant in this class
      * (for instance "A4", "LETTER",...) or a value like "595 842"
      *
      * @param name getName of the page size, possible values <code>LETTER</code> <code>NOTE</code>
@@ -356,7 +356,7 @@ public class PageSize {
                 try {
                     Field field = PageSize.class.getDeclaredField(name.toUpperCase());
                     return (Rectangle) field.get(null);
-                } catch (Exception e) {
+                } catch (IllegalAccessException | NoSuchFieldException e) {
                     throw new PageSizeException(MessageLocalization.getComposedMessage("can.t.find.page.size.1", name), e);
                 }
             } else {
@@ -364,7 +364,7 @@ public class PageSize {
                     String width = name.substring(0, pos);
                     String height = name.substring(pos + 1);
                     return new Rectangle(Float.parseFloat(width), Float.parseFloat(height));
-                } catch (Exception e) {
+                } catch (IndexOutOfBoundsException e) {
                     throw new PageSizeException(
                             MessageLocalization.getComposedMessage("1.is.not.a.valid.page.size.format.2", name,
                                     e.getMessage()), e);

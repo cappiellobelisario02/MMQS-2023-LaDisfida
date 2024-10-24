@@ -15,6 +15,7 @@ package com.lowagie.examples.objects.columns;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
@@ -27,11 +28,15 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * A more complex example demonstrating the use of ColumnText.
  */
 public class ColumnObjects {
+
+    private static final Logger logger = Logger.getLogger(ColumnObjects.class.getName());
 
     /**
      * Some data we want to output.
@@ -51,7 +56,7 @@ public class ColumnObjects {
     /**
      * Some text we want to output.
      */
-    public final static String[] texts = {
+    public static final String[] texts = {
             "Ideally, choose one title (2-3 if absolutely necessary) that this book should perform like. Include full "
                     + "title, ISBN, author, and any sell through numbers if possible.",
             "One line description about the sales.",
@@ -89,8 +94,8 @@ public class ColumnObjects {
         System.out.println("Columns and objects");
 
         // step 1: creation of a document-object
-        Document document = new Document(PageSize.LETTER, 90, 54, 72, 72);
-        try {
+
+        try(Document document = new Document(PageSize.LETTER, 90, 54, 72, 72)) {
             // step 2: we create a writer that listens to the document
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("columnobjects.pdf"));
 
@@ -210,10 +215,9 @@ public class ColumnObjects {
                         allColumns[currentColumn] + columnWidth, topColumn, 15, Element.ALIGN_JUSTIFIED);
                 ct.setLeading(2, 1);
             }
-            // step 5: we close the document
-            document.close();
-        } catch (Exception de) {
-            System.err.println(de.getMessage());
+        } catch (IOException | DocumentException | SecurityException e) {
+            String msg = "Error occurred in ColumnObjects: " + e.getMessage();
+            logger.severe(msg);
         }
     }
 }

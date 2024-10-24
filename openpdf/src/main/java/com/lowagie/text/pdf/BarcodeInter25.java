@@ -54,11 +54,11 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Image;
 import java.awt.image.MemoryImageSource;
+import java.io.IOException;
 
 /**
- * Implements the code interleaved 2 of 5. The text can include non numeric characters that are printed but do not
+ * Implements the code interleaved 2 of 5. The text can include non-numeric characters that are printed but do not
  * generate bars. The default parameters are:
  * <pre>
  * x = 0.8f;
@@ -107,13 +107,13 @@ public class BarcodeInter25 extends Barcode {
             textAlignment = Element.ALIGN_CENTER;
             generateChecksum = false;
             checksumText = false;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
 
     /**
-     * Deletes all the non numeric characters from <CODE>text</CODE>.
+     * Deletes all the non-numeric characters from <CODE>text</CODE>.
      *
      * @param text the text
      * @return a <CODE>String</CODE> with only numeric characters
@@ -149,7 +149,7 @@ public class BarcodeInter25 extends Barcode {
     /**
      * Creates the bars for the barcode.
      *
-     * @param text the text. It can contain non numeric characters
+     * @param text the text. It can contain non-numeric characters
      * @return the barcode
      */
     public static byte[] getBarsInter25(String text) {
@@ -195,7 +195,7 @@ public class BarcodeInter25 extends Barcode {
         // End with the termination sequence of bars
         bars[position++] = 1; // End
         bars[position++] = 0; // End
-        bars[position++] = 0; // End
+        bars[position] = 0; // End
 
         return bars; // Return the completed bar array
     }
@@ -324,29 +324,21 @@ public class BarcodeInter25 extends Barcode {
     }
 
     private float getBarStartX(float fontX, float fullWidth) {
-        float barStartX = 0;
-        switch (textAlignment) {
-            case Element.ALIGN_RIGHT:
-                barStartX = (fontX > fullWidth) ? fontX - fullWidth : 0;
-                break;
-            case Element.ALIGN_CENTER:
-            default:
-                barStartX = (fontX > fullWidth) ? (fontX - fullWidth) / 2 : 0;
-                break;
+        float barStartX;
+        if (textAlignment == Element.ALIGN_RIGHT) {
+            barStartX = (fontX > fullWidth) ? fontX - fullWidth : 0;
+        } else {
+            barStartX = (fontX > fullWidth) ? (fontX - fullWidth) / 2 : 0;
         }
         return barStartX;
     }
 
     private float getTextStartX(float fontX, float fullWidth) {
-        float textStartX = 0;
-        switch (textAlignment) {
-            case Element.ALIGN_RIGHT:
-                textStartX = (fontX <= fullWidth) ? fullWidth - fontX : 0;
-                break;
-            case Element.ALIGN_CENTER:
-            default:
-                textStartX = (fontX <= fullWidth) ? (fullWidth - fontX) / 2 : 0;
-                break;
+        float textStartX;
+        if (textAlignment == Element.ALIGN_RIGHT) {
+            textStartX = (fontX <= fullWidth) ? fullWidth - fontX : 0;
+        } else {
+            textStartX = (fontX <= fullWidth) ? (fullWidth - fontX) / 2 : 0;
         }
         return textStartX;
     }
@@ -430,8 +422,7 @@ public class BarcodeInter25 extends Barcode {
         for (int k = fullWidth; k < pix.length; k += fullWidth) {
             System.arraycopy(pix, 0, pix, k, fullWidth);
         }
-        Image img = canvas.createImage(new MemoryImageSource(fullWidth, height, pix, 0, fullWidth));
 
-        return img;
+        return canvas.createImage(new MemoryImageSource(fullWidth, height, pix, 0, fullWidth));
     }
 }

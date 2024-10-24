@@ -15,6 +15,7 @@ package com.lowagie.examples.fonts.styles;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.PageSize;
@@ -27,11 +28,15 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Writing RTL text such as Arabic or Hebrew.
  */
 public class RightToLeft {
+
+    private static final Logger logger = Logger.getLogger(RightToLeft.class.getName());
 
     /**
      * arabic text
@@ -48,7 +53,7 @@ public class RightToLeft {
     /**
      * arabic text
      */
-    public final static String ar3 = """
+    public static final String AR_3 = """
         \u062a\u0633\u062c\u0651\u0644 \u0627\u0644\u0622\u0646 \u0644\u062d\u0636\u0648\u0631 \
         \u0627\u0644\u0645\u0624\u062a\u0645\u0631 \u0627\u0644\u062f\u0648\u0644\u064a \
         \u0627\u0644\u0639\u0627\u0634\u0631 \u0644\u064a\u0648\u0646\u064a\u0643\u0648\u062f, \
@@ -115,7 +120,9 @@ public class RightToLeft {
      */
     public static String he4 = """
         \u05db\u05d0\u05e9\u05e8 \u05d4\u05e2\u05d5\u05dc\u05dd \u05e8\u05d5\u05e6\u05d4 \
-        \u05dc\u05d3\u05d1\u05e8, \u05d4\u05d5\u05d0 \u05de\u05d3\u05d1\u05e8 \u05d1\u05beUnicode\n\n""";
+        \u05dc\u05d3\u05d1\u05e8, \u05d4\u05d5\u05d0 \u05de\u05d3\u05d1\u05e8 \u05d1\u05beUnicode
+        
+        """;
 
     /**
      * Writing RTL text such as Arabic or Hebrew.
@@ -123,9 +130,8 @@ public class RightToLeft {
      * @param args no arguments needed
      */
     public static void main(String[] args) {
-        try {
             // step 1
-            Document document = new Document(PageSize.A4, 50, 50, 50, 50);
+        try (Document document = new Document(PageSize.A4, 50, 50, 50, 50)){
             // step 2
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("righttoleft.pdf"));
             // step 3
@@ -148,7 +154,7 @@ public class RightToLeft {
             ct.addText(new Chunk(ar2, new Font(bf, 16, Font.NORMAL, Color.red)));
             ct.go();
             ct.setAlignment(Element.ALIGN_JUSTIFIED);
-            ct.addText(new Chunk(ar3, new Font(bf, 12)));
+            ct.addText(new Chunk(AR_3, new Font(bf, 12)));
             ct.go();
             ct.setAlignment(Element.ALIGN_CENTER);
             ct.addText(new Chunk(ar4, new Font(bf, 14)));
@@ -168,41 +174,44 @@ public class RightToLeft {
             ct.go();
 
             document.newPage();
-            String atext = "\u062a\u0635\u0628\u062d ";
-            PdfPTable table = new PdfPTable(5);
-            table.setWidthPercentage(100);
-            table.setRunDirection(PdfWriter.RUN_DIRECTION_NO_BIDI);
-            for (int k = 0; k < 5; ++k) {
-                PdfPCell cell = new PdfPCell(new Phrase(10, atext + k, f2));
-                if (k == 2) {
-                    cell.setColspan(2);
-                    ++k;
-                }
-                table.addCell(cell);
-            }
-            table.setRunDirection(PdfWriter.RUN_DIRECTION_LTR);
-            for (int k = 0; k < 5; ++k) {
-                PdfPCell cell = new PdfPCell(new Phrase(10, atext + k, f2));
-                if (k == 2) {
-                    cell.setColspan(2);
-                    ++k;
-                }
-                table.addCell(cell);
-            }
-            table.setRunDirection(PdfWriter.RUN_DIRECTION_RTL);
-            for (int k = 0; k < 5; ++k) {
-                PdfPCell cell = new PdfPCell(new Phrase(10, atext + k, f2));
-                if (k == 2) {
-                    cell.setColspan(2);
-                    ++k;
-                }
-                table.addCell(cell);
-            }
+            PdfPTable table = getPdfPTable(f2);
             document.add(table);
-            // step 5
-            document.close();
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (IOException | DocumentException | SecurityException e) {
+            logger.severe("Exception occured");
         }
+    }
+
+    private static PdfPTable getPdfPTable(Font f2) {
+        String atext = "\u062a\u0635\u0628\u062d ";
+        PdfPTable table = new PdfPTable(5);
+        table.setWidthPercentage(100);
+        table.setRunDirection(PdfWriter.RUN_DIRECTION_NO_BIDI);
+        for (int k = 0; k < 5; ++k) {
+            PdfPCell cell = new PdfPCell(new Phrase(10, atext + k, f2));
+            if (k == 2) {
+                cell.setColspan(2);
+                ++k;
+            }
+            table.addCell(cell);
+        }
+        table.setRunDirection(PdfWriter.RUN_DIRECTION_LTR);
+        for (int k = 0; k < 5; ++k) {
+            PdfPCell cell = new PdfPCell(new Phrase(10, atext + k, f2));
+            if (k == 2) {
+                cell.setColspan(2);
+                ++k;
+            }
+            table.addCell(cell);
+        }
+        table.setRunDirection(PdfWriter.RUN_DIRECTION_RTL);
+        for (int k = 0; k < 5; ++k) {
+            PdfPCell cell = new PdfPCell(new Phrase(10, atext + k, f2));
+            if (k == 2) {
+                cell.setColspan(2);
+                ++k;
+            }
+            table.addCell(cell);
+        }
+        return table;
     }
 }

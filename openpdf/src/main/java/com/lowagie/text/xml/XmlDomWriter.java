@@ -99,8 +99,8 @@ public class XmlDomWriter {
      */
     public void setOutput(java.io.Writer writer) {
 
-        fOut = writer instanceof PrintWriter
-                ? (PrintWriter) writer : new PrintWriter(writer);
+        fOut = writer instanceof PrintWriter printWriter
+                ? printWriter : new PrintWriter(writer);
 
     } // setOutput(java.io.Writer)
 
@@ -162,11 +162,7 @@ public class XmlDomWriter {
     private void writeDocumentNode(Document document) {
         fXML11 = false; // "1.1".equals(getVersion(document))
         if (!fCanonical) {
-            if (fXML11) {
-                fOut.println("<?xml version=\"1.1\" encoding=\"UTF-8\"?>");
-            } else {
-                fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            }
+            fOut.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             fOut.flush();
             write(document.getDoctype());
         }
@@ -242,7 +238,7 @@ public class XmlDomWriter {
         fOut.print("<?");
         fOut.print(node.getNodeName());
         String data = node.getNodeValue();
-        if (data != null && data.length() > 0) {
+        if (data != null && !data.isEmpty()) {
             fOut.print(' ');
             fOut.print(data);
         }
@@ -280,7 +276,7 @@ public class XmlDomWriter {
      * Returns a sorted list of attributes.
      *
      * @param attrs the NameNomeMap of attributes
-     * @return a Attr array of sorted attributes
+     * @return an Attr array of sorted attributes
      */
     protected Attr[] sortAttributes(NamedNodeMap attrs) {
 

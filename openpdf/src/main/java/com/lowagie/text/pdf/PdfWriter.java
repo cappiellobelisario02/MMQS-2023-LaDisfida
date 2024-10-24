@@ -1234,7 +1234,7 @@ public class PdfWriter extends DocWriter implements
         if (tagged) {
             try {
                 getStructureTreeRoot().buildTree();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 throw new ExceptionConverter(e);
             }
             catalog.put(PdfName.STRUCTTREEROOT, structureTreeRoot.getReference());
@@ -2028,7 +2028,7 @@ public class PdfWriter extends DocWriter implements
             XmpWriter xmp = new XmpWriter(baos, pdf.getInfo(), pdfxConformance.getPDFXConformance());
             xmp.close();
         } catch (IOException ioe) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         return baos.toByteArray();
     }

@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -96,7 +97,7 @@ import java.util.logging.Logger;
  * </ul>
  * <li>"Action" = "URI" - "URI"
  * <ul>
- * <li>"URI" = "http://sf.net" - URI to jump to
+ * <li>"URI" = "<a href="http://sf.net">...</a>" - URI to jump to
  * </ul>
  * <li>"Action" = "Launch" - "File"
  * <ul>
@@ -416,13 +417,13 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
     }
 
 
-    static void createOutlineAction(PdfDictionary outline, Map<String, Object> map, PdfWriter writer, boolean namedAsNames) {
+    static void createOutlineAction(PdfDictionary outline, Map<String, Object> map, PdfWriter writer) {
         try {
             String action = (String) map.get(ACTION);
 
             switch (action) {
                 case "GoTo":
-                    handleGoToAction(outline, map, writer, namedAsNames);
+                    handleGoToAction(outline, map, writer, false);
                     break;
                 case "GoToR":
                     handleGoToRAction(outline, map, writer);
@@ -438,7 +439,8 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
                     break;
             }
         } catch (ClassCastException | NullPointerException e) {
-            // empty on purpose
+            String msg = "Exception occurred while creating outline action: " + e.getMessage();
+            logger.severe(msg);
         }
     }
 
@@ -582,11 +584,9 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
         outline.put(PdfName.TITLE, new PdfString((String) map.get(TITLE), PdfObject.TEXT_UNICODE));
         addColor(outline, map);
         addStyle(outline, map);
-        createOutlineAction(outline, map, writer, false); // Assuming `namedAsNames` is `false` by default
+        createOutlineAction(outline, map, writer); // Assuming `namedAsNames` is `false` by default
         return outline;
     }
-
-    private static final Logger logger = Logger.getLogger(SimpleBookmark.class.getName());
 
     private static void addColor(PdfDictionary outline, Map<String, Object> map) {
         String color = (String) map.get("Color");
@@ -594,7 +594,7 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
             try {
                 PdfArray arr = parseColor(color);
                 outline.put(PdfName.C, arr);
-            } catch (Exception e) {
+            } catch (ClassCastException e) {
                 // Log the exception with an error level
                 logger.severe("Failed to parse color: " + color + " - " + e.getMessage());
             }
@@ -762,6 +762,23 @@ public final class SimpleBookmark implements SimpleXMLDocHandler {
         exportToXMLNode(list, wrt, 1, onlyASCII); // Now this call will work since list is of getTypeImpl List<Bookmark>
         wrt.write("</Bookmark>\n");
         wrt.flush();
+    }
+
+    // Metodo equals
+    @Override
+    public boolean equals(Object obj) {
+        // Controlla se sono uguali all'oggetto corrente
+        if (this == obj) {
+            return true;
+        }
+        // Controlla se obj è un'istanza di SimpleBookmark
+        return obj instanceof SimpleBookmark;
+    }
+
+    // Metodo hashCode
+    @Override
+    public int hashCode() {
+        return Objects.hash(TITLE, FALSE);
     }
 
 

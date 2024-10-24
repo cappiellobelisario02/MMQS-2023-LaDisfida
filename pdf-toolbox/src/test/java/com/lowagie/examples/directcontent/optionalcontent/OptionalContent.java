@@ -35,11 +35,14 @@ import java.awt.Color;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of layers.
  */
 public class OptionalContent {
+
+    private static final Logger logger = Logger.getLogger(OptionalContent.class.getName());
 
     /**
      * Demonstrates the use of layers.
@@ -115,7 +118,7 @@ public class OptionalContent {
             // step 5: closing the document
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 }

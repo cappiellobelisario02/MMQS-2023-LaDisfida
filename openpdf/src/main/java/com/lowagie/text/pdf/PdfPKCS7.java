@@ -69,9 +69,12 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRL;
+import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -89,8 +92,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import com.lowagie.text.exceptions.InvalidTokenException;
-import com.lowagie.text.pdf.PdfPKCS7.X509Name;
-import com.lowagie.text.pdf.PdfPKCS7.X509NameTokenizer;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -128,8 +129,10 @@ import org.bouncycastle.jce.provider.X509CRLParser;
 import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.tsp.TSPException;
 import org.bouncycastle.tsp.TimeStampToken;
 import org.bouncycastle.tsp.TimeStampTokenInfo;
+import org.bouncycastle.x509.util.StreamParsingException;
 
 /**
  * This class does all the processing related to signing and verifying a PKCS#7 signature.
@@ -350,7 +353,8 @@ public class PdfPKCS7 {
             sig = (provider == null) ? Signature.getInstance("SHA256withRSA") : Signature.getInstance("SHA256withRSA", provider);
             sig.initVerify(signCert.getPublicKey());
 
-        } catch (Exception e) {
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeyException | CertificateException |
+                 NoSuchProviderException e) {
             throw new ExceptionConverter(e);
         }
 
@@ -490,7 +494,8 @@ public class PdfPKCS7 {
             initializeSignature();
 
             sig.initVerify(signCert.getPublicKey());
-        } catch (Exception e) {
+        } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException |
+                 StreamParsingException | CertificateException | TSPException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -686,17 +691,17 @@ public class PdfPKCS7 {
             }
 
             // Optionally validate password length or complexity here
-            // Example: if (password.length < 6) { throw new IllegalArgumentException("Weak password."); }
+            // Example: if password length < 6 IllegalArgumentException Weak password
 
             // Load the keystore with the provided password
             keyStore.load(fin, password);
 
             // Clear the password array after use for security
             java.util.Arrays.fill(password, '\0');
-            password = null; // Nullify the reference
 
             return keyStore;
-        } catch (Exception e) {
+        } catch (IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException |
+                 NoSuchProviderException e) {
             // Wrap the exception for clarity, but be cautious not to expose sensitive info
             throw new ExceptionConverter(e);
         }
@@ -730,7 +735,7 @@ public class PdfPKCS7 {
         }
         try {
             cert.checkValidity(calendar.getTime());
-        } catch (Exception e) {
+        } catch (CertificateExpiredException | CertificateNotYetValidException e) {
             return e.getMessage();
         }
         if (crls != null) {
@@ -844,7 +849,7 @@ public class PdfPKCS7 {
                 return new Object[0];
             }
             return x509CertificateVerification(certificate, certStoreX509);
-        } catch (Exception ignored) {
+        } catch (KeyStoreException ignored) {
             return new Object[0];
         }
     }
@@ -853,7 +858,8 @@ public class PdfPKCS7 {
         try{
             certificate.verify(certStoreX509.getPublicKey());
             return new Object[0];
-        } catch (Exception ignored) {
+        } catch (NoSuchAlgorithmException | CertificateException | InvalidKeyException | NoSuchProviderException |
+                 SignatureException ignored) {
             return new Object[0];
         }
     }
@@ -952,7 +958,7 @@ public class PdfPKCS7 {
     public static com.lowagie.text.pdf.PdfPKCS7.X509Name getIssuerFields(X509Certificate cert) {
         try {
             return new com.lowagie.text.pdf.PdfPKCS7.X509Name((ASN1Sequence) getIssuer(cert.getTBSCertificate()));
-        } catch (Exception e) {
+        } catch (CertificateEncodingException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -966,7 +972,7 @@ public class PdfPKCS7 {
     public static com.lowagie.text.pdf.PdfPKCS7.X509Name getSubjectFields(X509Certificate cert) {
         try {
             return new com.lowagie.text.pdf.PdfPKCS7.X509Name((ASN1Sequence) getSubject(cert.getTBSCertificate()));
-        } catch (Exception e) {
+        } catch (CertificateEncodingException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1310,7 +1316,7 @@ public class PdfPKCS7 {
             dout.close();
 
             return bOut.toByteArray();
-        } catch (Exception e) {
+        } catch (IOException | SignatureException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1394,7 +1400,7 @@ public class PdfPKCS7 {
 
             // Step 6: Assemble the Final PKCS7 Structure
             return buildPKCS7Structure(digestAlgorithms, contentInfo, certificatesSet, signerInfo);
-        } catch (Exception e) {
+        } catch (IOException | GeneralSecurityException | InvalidTokenException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1599,7 +1605,7 @@ public class PdfPKCS7 {
         try {
             return getAuthenticatedAttributeSet(secondDigest, signingTime, ocsp)
                     .getEncoded(ASN1Encoding.DER);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1650,7 +1656,7 @@ public class PdfPKCS7 {
                 attribute.add(new DERSequence(v));
             }
             return new DERSet(attribute);
-        } catch (Exception e) {
+        } catch (IOException | CRLException e) {
             throw new ExceptionConverter(e);
         }
     }

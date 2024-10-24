@@ -20,11 +20,15 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Applying a mask to an Image.
  */
 public class ImageMasks {
+
+    private static final Logger logger = Logger.getLogger(ImageMasks.class.getName());
 
     /**
      * Applying masks to images.
@@ -85,8 +89,8 @@ public class ImageMasks {
             cb.setRGBColorFill(0, 0, 255);
             cb.addImage(mask, mask.getScaledWidth() * 8, 0, 0, mask.getScaledHeight() * 8, 100, 350);
             document.close();
-        } catch (Exception de) {
-            //da vedere come effettuare il log
+        } catch (IOException de) {
+            logger.severe("Exception occured");
         }
     }
 

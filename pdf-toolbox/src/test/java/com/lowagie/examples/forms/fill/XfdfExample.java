@@ -17,12 +17,18 @@ import com.lowagie.text.pdf.AcroFields;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.pdf.XfdfReader;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.logging.Logger;
 
 /**
  * How to merge an XFDF file with a PDF form.
  */
 public class XfdfExample {
+
+    private static final Logger logger = Logger.getLogger(XfdfExample.class.getName());
 
     /**
      * Merges an XFDF file with a PDF form.
@@ -38,8 +44,8 @@ public class XfdfExample {
             AcroFields form = stamp.getAcroFields();
             form.setFields(fdfreader);
             stamp.close();
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (IOException | PDFFilterException | NoSuchAlgorithmException e) {
+            logger.severe("Exception occured");
         }
 
     }

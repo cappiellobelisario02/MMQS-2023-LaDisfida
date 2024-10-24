@@ -43,6 +43,7 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.logging.Level;
@@ -128,7 +129,7 @@ public class InspectPDF extends AbstractTool {
                 stringToLog = "XML Metadata: " + new String(reader.getMetadata(), StandardCharsets.UTF_8);
                 logger.info(stringToLog);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),
@@ -136,12 +137,7 @@ public class InspectPDF extends AbstractTool {
             logger.log(Level.SEVERE, "An unexpected error occurred during execution.", e);
         } finally {
             if (reader != null) {
-                try {
-                    reader.close();
-                } catch (Exception e) {
-                    // Log the exception if needed
-                    logger.log(Level.WARNING, "Failed to close PdfReader.", e);
-                }
+                reader.close();
             }
         }
     }

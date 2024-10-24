@@ -14,16 +14,21 @@
 package com.lowagie.examples.objects.tables.pdfptable;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Break a large table up into different smaller tables in order to save memory.
  */
 public class SplitTable {
+
+    private static final Logger logger = Logger.getLogger(SplitTable.class.getName());
 
     /**
      * Break a large table up into several smaller tables for memory management purposes.
@@ -53,8 +58,8 @@ public class SplitTable {
             document.newPage();
             table.writeSelectedRows(5, -1, 0, -1, 50, 650, cb);
             document.close();
-        } catch (Exception de) {
-            //da vedere come effettuare il log
+        } catch (IOException | DocumentException | SecurityException de) {
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

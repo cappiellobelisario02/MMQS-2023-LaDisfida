@@ -454,7 +454,7 @@ public class PdfDocument extends Document {
             };
             lastElementType = element.getTypeImpl();
             return result;
-        } catch (Exception e) {
+        } catch (IOException | AddCellException e) {
             throw new DocumentException(e);
         }
     }
@@ -732,7 +732,7 @@ public class PdfDocument extends Document {
             writer.addLocalDestinations(destinations);
             calculateOutlineCount();
             writeOutlines();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
 
@@ -1089,7 +1089,7 @@ public class PdfDocument extends Document {
                 add(imageWait);
                 imageWait = null;
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
         leading = oldleading;

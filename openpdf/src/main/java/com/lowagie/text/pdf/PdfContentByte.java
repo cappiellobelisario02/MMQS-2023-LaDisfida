@@ -1441,7 +1441,7 @@ public class PdfContentByte {
 
             handleAnnotation(image, matrix);
 
-        } catch (Exception ee) {
+        } catch (IOException ee) {
             throw new DocumentException(ee);
         }
     }
@@ -3528,7 +3528,7 @@ public class PdfContentByte {
         PdfObject obj = struc.get(PdfName.K);
         int mark = pdf.getMarkPoint();
         if (obj != null) {
-            PdfArray ar = null;
+            PdfArray ar;
             if (obj.isNumber()) {
                 ar = new PdfArray();
                 ar.add(obj);
@@ -3593,7 +3593,7 @@ public class PdfContentByte {
             if (inline) {
                 try {
                     property.toPdf(writer, content);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     throw new ExceptionConverter(e);
                 }
             } else {

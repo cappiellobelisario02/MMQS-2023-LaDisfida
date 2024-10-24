@@ -24,11 +24,14 @@ import com.lowagie.text.pdf.PdfLayer;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Automatic layer grouping and nesting
  */
 public class Automatic {
+
+    private static final Logger logger = Logger.getLogger(Automatic.class.getName());
 
     /**
      * Automatic grouping and nesting.
@@ -82,7 +85,7 @@ public class Automatic {
             // step 5
             document.close();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
     }
 

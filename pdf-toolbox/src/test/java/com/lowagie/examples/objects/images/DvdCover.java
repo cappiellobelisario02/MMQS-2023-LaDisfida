@@ -13,6 +13,7 @@
  */
 package com.lowagie.examples.objects.images;
 
+import com.lowagie.text.BadElementException;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
@@ -65,6 +66,7 @@ public class DvdCover {
      * Creates a DVD Cover object.
      */
     public DvdCover() {
+        //empty on purpose for now
     }
 
     /**
@@ -88,22 +90,22 @@ public class DvdCover {
         if (args.length > 3) {
             try {
                 cover.setFront(Image.getInstance(args[3]));
-            } catch (Exception e) {
-                //da vedere come effettuare il log
+            } catch (IOException | BadElementException e) {
+                logger.severe("Exception occured");
             }
         }
         if (args.length > 4) {
             try {
                 cover.setBack(Image.getInstance(args[4]));
-            } catch (Exception e) {
-                //da vedere come effettuare il log
+            } catch (IOException | BadElementException e) {
+                logger.severe("Exception occured");
             }
         }
         if (args.length > 5) {
             try {
                 cover.setSide(Image.getInstance(args[5]));
-            } catch (Exception e) {
-                //da vedere come effettuare il log
+            } catch (IOException | BadElementException e) {
+                logger.severe("Exception occured");
             }
         }
         cover.generatePdf();

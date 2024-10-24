@@ -24,6 +24,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
@@ -36,6 +37,8 @@ import org.jfree.data.xy.XYSeriesCollection;
  * JFreeChart example.
  */
 public class JFreeChartExample {
+
+    private static final Logger logger = Logger.getLogger(JFreeChartExample.class.getName());
 
     /**
      * Creates some PDFs with JFreeCharts.
@@ -79,7 +82,7 @@ public class JFreeChartExample {
             cb.addTemplate(tp, 0, 0);
             cb.sanityCheck();
         } catch (DocumentException | FileNotFoundException de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
         // step 5
         document.close();

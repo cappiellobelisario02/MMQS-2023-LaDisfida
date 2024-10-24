@@ -49,10 +49,12 @@
 
 package com.lowagie.text.pdf;
 
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.TextRenderingOptions;
 import com.lowagie.text.Utilities;
 import java.awt.font.GlyphVector;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -412,7 +414,6 @@ class FontDetails {
                     }
                     if (firstChar > 255) {
                         firstChar = 255;
-                        lastChar = 255;
                     }
                     baseFont.writeFont(writer, indirectReference, new Object[]{firstChar, lastChar, shortTag, subset});
                     break;
@@ -426,7 +427,7 @@ class FontDetails {
                 default:
                     break;
             }
-        } catch (Exception e) {
+        } catch (IOException | DocumentException e) {
             throw new ExceptionConverter(e);
         }
     }

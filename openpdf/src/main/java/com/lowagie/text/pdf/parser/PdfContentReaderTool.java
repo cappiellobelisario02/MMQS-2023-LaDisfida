@@ -306,7 +306,7 @@ public class PdfContentReaderTool {
                 String stringToLog = "Finished writing content to " + args;
                 logger.info(stringToLog);
             }
-        } catch (Exception e) {
+        } catch (PDFFilterException | IOException e) {
             logger.info(e.getMessage());
         }
     }

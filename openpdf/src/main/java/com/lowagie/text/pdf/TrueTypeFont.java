@@ -55,6 +55,7 @@ import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -62,10 +63,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import static com.ibm.icu.util.ULocale.getBaseName;
-import static com.lowagie.text.pdf.PdfWriter.logger;
-
 
 /**
  * Reads a Truetype font
@@ -246,6 +246,8 @@ class TrueTypeFont extends BaseFont {
     protected int underlinePosition;
 
     protected int underlineThickness;
+
+    private static final Logger logger = Logger.getLogger(TrueTypeFont.class.getName());
 
     /**
      * This constructor is present to allow extending the class.
@@ -645,7 +647,7 @@ class TrueTypeFont extends BaseFont {
 
     private void initializeRandomAccessFileOrArray(byte[] ttfAfm, boolean preload) throws IOException {
         if (ttfAfm == null) {
-            rf = new RandomAccessFileOrArray(fileName, preload, Document.plainRandomAccess);
+            rf = new RandomAccessFileOrArray(fileName, preload, Document.PLAIN_RANDOM_ACCESS);
         } else {
             rf = new RandomAccessFileOrArray(ttfAfm);
         }
@@ -744,7 +746,7 @@ class TrueTypeFont extends BaseFont {
         rf.readFully(buf);
         try {
             return new String(buf, WINANSI);
-        } catch (Exception e) {
+        } catch (UnsupportedEncodingException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -1477,7 +1479,7 @@ class TrueTypeFont extends BaseFont {
      * @return a byte array
      * @since 2.1.3
      */
-    protected byte[] readCffFont() throws IOException {
+    protected byte[] readCffFont() {
         RandomAccessFileOrArray rf2 = new RandomAccessFileOrArray(rf);
         byte[] b = new byte[cffLength];
         try {
@@ -1487,7 +1489,7 @@ class TrueTypeFont extends BaseFont {
         } catch (IOException e) {
             // Log the IOException and rethrow to ensure it is not ignored
             logger.info("IOException occurred while reading CFF font: " + e.getMessage());
-            throw e; // Rethrow the exception to allow upstream handling
+            throw new ExceptionConverter(e); // Rethrow the exception to allow upstream handling
         } finally {
             try {
                 rf2.close();

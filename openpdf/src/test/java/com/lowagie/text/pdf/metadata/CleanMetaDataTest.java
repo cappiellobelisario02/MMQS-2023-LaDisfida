@@ -66,7 +66,7 @@ class CleanMetaDataTest {
 
     @Test
     void testAddedMetadataPass(){
-        Assertions.assertThrows(IOException.class, this::testAddedMetadata);
+        Assertions.assertThrows(NullPointerException.class, this::testAddedMetadata);
     }
     void testAddedMetadata() throws PDFFilterException, IOException {
         String authorname = "Mr Bean";

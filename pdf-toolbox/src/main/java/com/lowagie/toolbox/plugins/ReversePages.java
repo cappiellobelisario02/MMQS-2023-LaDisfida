@@ -36,6 +36,7 @@
 package com.lowagie.toolbox.plugins;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PRAcroForm;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfImportedPage;
@@ -45,11 +46,14 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.toolbox.plugins.watermarker.WatermarkerTool;
+import org.apache.fop.pdf.PDFFilterException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import java.util.Objects;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 
@@ -64,20 +68,21 @@ public class ReversePages
     public static final Logger logger = Logger.getLogger(ReversePages.class.getName());
     public static final String SRCFILE = "srcfile";
     public static final String DESTFILE = "destfile";
+    public static final String EXCEPTION_OCCURED = "Exception occured";
 
     static {
         addVersion(
                 "$Id: ReversePages.java 3271 2008-04-18 20:39:42Z xlv $");
     }
 
-    FileArgument destinationfile = null;
+    FileArgument destinationfile;
 
     /**
      * Constructs a ReversePages object.
      */
     public ReversePages() {
         menuoptions = MENU_EXECUTE | MENU_EXECUTE_SHOW;
-        FileArgument inputfile = null;
+        FileArgument inputfile;
         inputfile = new FileArgument(this, SRCFILE,
                 "The file you want to reorder", false,
                 new PdfFilter());
@@ -106,12 +111,7 @@ public class ReversePages
         }
 
         tool.setMainArguments(args);
-
-        try {
-            tool.execute();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
-        }
+        tool.execute();
     }
 
     // Method to validate input arguments
@@ -120,6 +120,7 @@ public class ReversePages
     }
 
     // Placeholder for the usage message
+    @Override
     public String getUsage() {
         return "Usage: java ReversePages <inputFile> <outputFile>";
     }
@@ -142,7 +143,7 @@ public class ReversePages
         Document document = null;
         PdfCopy copy = null;
         FileOutputStream fouts = null;
-        String stringToLog = null;
+        String stringToLog;
 
         try {
             if (getValue(SRCFILE) == null) {
@@ -179,26 +180,26 @@ public class ReversePages
 
             copy = getCopy(document, fouts);
 
-            document.open();
+            Objects.requireNonNull(document).open();
             PdfImportedPage page;
 
             for (int i = 1; i <= pages; i++) {  // Start loop from 1 to pages inclusive
                 stringToLog = "Processed page " + i;
                 logger.info(stringToLog);
 
-                page = copy.getImportedPage(reader, i);
+                page = Objects.requireNonNull(copy).getImportedPage(reader, i);
                 copy.addPage(page);
             }
 
             PRAcroForm form = reader.getAcroForm();
             if (form != null) {
-                copy.copyAcroForm(reader);
+                Objects.requireNonNull(copy).copyAcroForm(reader);
             }
 
             document.close();
 
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (IOException | InstantiationException e) {
+            logger.severe(EXCEPTION_OCCURED);
         } finally {
             closeReader(reader);
 
@@ -213,8 +214,8 @@ public class ReversePages
     private PdfReader getReader(File src) {
         try {
             return new PdfReader(src.getAbsolutePath());
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (IOException | PDFFilterException | SecurityException e) {
+            logger.severe(EXCEPTION_OCCURED);
             return null;
         }
     }
@@ -222,8 +223,8 @@ public class ReversePages
     private Document getDocument(PdfReader reader) {
         try {
             return new Document(reader.getPageSizeWithRotation(1));
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (DocumentException e) {
+            logger.severe(EXCEPTION_OCCURED);
             return null;
         }
     }
@@ -231,8 +232,8 @@ public class ReversePages
     private FileOutputStream getOutputStream(File dest) {
         try {
             return new FileOutputStream(dest.getAbsolutePath());
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (FileNotFoundException | SecurityException e) {
+            logger.severe(EXCEPTION_OCCURED);
             return null;
         }
     }
@@ -240,39 +241,27 @@ public class ReversePages
     private PdfCopy getCopy(Document document, FileOutputStream fos) {
         try {
             return new PdfCopy(document, fos);
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (DocumentException e) {
+            logger.severe(EXCEPTION_OCCURED);
             return null;
         }
     }
 
     private void closeReader(PdfReader reader) {
         if (reader != null) {
-            try {
-                reader.close();
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
+            reader.close();
         }
     }
 
     private void closeDocument(Document document) {
         if (document != null) {
-            try {
-                document.close();
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
+            document.close();
         }
     }
 
     private void closePdfCopy(PdfCopy copy) {
         if (copy != null) {
-            try {
-                copy.close();
-            } catch (Exception e) {
-                //da vedere come effettuare il log
-            }
+            copy.close();
         }
     }
 
@@ -280,8 +269,8 @@ public class ReversePages
         if (fos != null) {
             try {
                 fos.close();
-            } catch (Exception e) {
-                //da vedere come effettuare il log
+            } catch (IOException e) {
+                logger.severe(EXCEPTION_OCCURED);
             }
         }
     }

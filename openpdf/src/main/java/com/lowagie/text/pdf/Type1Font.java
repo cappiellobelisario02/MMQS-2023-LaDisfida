@@ -56,6 +56,7 @@ import com.lowagie.text.pdf.fonts.FontsResourceAnchor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -261,14 +262,14 @@ class Type1Font extends BaseFont {
     }
 
     private void processAfmFile(String afmFile, byte[] ttfAfm, boolean forceRead) throws DocumentException, IOException {
-        try (RandomAccessFileOrArray rf = ttfAfm == null ? new RandomAccessFileOrArray(afmFile, forceRead, Document.plainRandomAccess)
+        try (RandomAccessFileOrArray rf = ttfAfm == null ? new RandomAccessFileOrArray(afmFile, forceRead, Document.PLAIN_RANDOM_ACCESS)
                 : new RandomAccessFileOrArray(ttfAfm)) {
             process(rf);
         }
     }
 
     private void processPfmFile(String afmFile, byte[] ttfAfm) throws DocumentException, IOException {
-        try (RandomAccessFileOrArray rf = ttfAfm == null ? new RandomAccessFileOrArray(afmFile, false, Document.plainRandomAccess)
+        try (RandomAccessFileOrArray rf = ttfAfm == null ? new RandomAccessFileOrArray(afmFile, false, Document.PLAIN_RANDOM_ACCESS)
                 : new RandomAccessFileOrArray(ttfAfm);
                 ByteArrayOutputStream ba = new ByteArrayOutputStream()) {
             Pfm2afm.convert(rf, ba);
@@ -583,7 +584,7 @@ class Type1Font extends BaseFont {
             byte[] fontData = readFontData(rf);
             int[] lengths = extractSegmentLengths(rf);
             return new StreamFont(fontData, lengths, compressionLevel);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new DocumentException(e);
         }
     }
@@ -591,7 +592,7 @@ class Type1Font extends BaseFont {
     private RandomAccessFileOrArray createRandomAccessFileOrArray() throws IOException {
         String filePfb = fileName.substring(0, fileName.length() - 3) + "pfb";
         if (pfb == null) {
-            return new RandomAccessFileOrArray(filePfb, true, Document.plainRandomAccess);
+            return new RandomAccessFileOrArray(filePfb, true, Document.PLAIN_RANDOM_ACCESS);
         } else {
             return new RandomAccessFileOrArray(pfb);
         }
@@ -800,13 +801,11 @@ class Type1Font extends BaseFont {
         if (!subsetp) {
             firstChar = 0;
             lastChar = shortTag.length - 1;
-            for (int k = 0; k < shortTag.length; ++k) {
-                shortTag[k] = 1;
-            }
+            Arrays.fill(shortTag, (byte) 1);
         }
         PdfIndirectReference indFont = null;
-        PdfObject pobj = null;
-        PdfIndirectObject obj = null;
+        PdfObject pobj;
+        PdfIndirectObject obj;
         pobj = getFullFontStream();
         if (pobj != null) {
             obj = writer.addToBody(pobj);

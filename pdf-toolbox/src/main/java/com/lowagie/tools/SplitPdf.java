@@ -58,8 +58,10 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -82,8 +84,7 @@ public class SplitPdf{
      */
     public static void main(String[] args) {
         if (args.length != 4) {
-            System.err.println("Usage: srcfile destfile1 destfile2 pagenumber");
-            System.exit(1); // Exit with an error code
+            logger.severe("Usage: srcfile destfile1 destfile2 pagenumber");
         }
 
         String srcFile = args[0];
@@ -94,8 +95,7 @@ public class SplitPdf{
         try {
             pageNumber = Integer.parseInt(args[3]);
         } catch (NumberFormatException e) {
-            System.err.println("Invalid page number: " + args[3]);
-            System.exit(1); // Exit with an error code
+            logger.severe("Invalid page number: " + args[3]);
         }
 
         // Validate and normalize file paths
@@ -122,12 +122,8 @@ public class SplitPdf{
                     splitDocument(reader, writer1, writer2, document1, document2, pageNumber);
                 }
             }
-        } catch (InvalidPathException | SecurityException e) {
-            System.err.println("Invalid file path: " + e.getMessage());
-            System.exit(1); // Exit with an error code
-        } catch (Exception e) {
-            System.err.println("An error occurred while processing the PDF: " + e.getMessage());
-            System.exit(1); // Exit with an error code
+        } catch (InvalidPathException | SecurityException | IOException | PDFFilterException e) {
+            logger.severe("Invalid file path: " + e.getMessage());
         }
     }
 

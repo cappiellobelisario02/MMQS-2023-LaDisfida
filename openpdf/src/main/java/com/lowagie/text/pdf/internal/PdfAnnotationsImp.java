@@ -95,7 +95,7 @@ public class PdfAnnotationsImp {
 
     public static PdfAnnotation convertAnnotation(PdfWriter writer, Annotation annot, Rectangle defaultRect)
             throws IOException {
-        switch (annot.annotationType()) {
+        switch (annot.getAnnotationType()) {
             case Annotation.URL_NET:
                 return new PdfAnnotation(writer, annot.llx(), annot.lly(), annot.urx(), annot.ury(),
                         new PdfAction((URL) annot.getAttributes().get(Annotation.URL)));
@@ -204,24 +204,23 @@ public class PdfAnnotationsImp {
         int rotation = pageSize.getRotationPdfPCell() % 360;
         int currentPage = writer.getCurrentPageNumber();
 
-        for (Object annotation : annotations) {
-            PdfAnnotation dic = (PdfAnnotation) annotation;
-            if (shouldDelayAnnotation(dic, currentPage)) {
+        for (PdfAnnotation annotation : annotations) {
+            if (shouldDelayAnnotation(annotation, currentPage)) {
                 continue;
             }
 
-            if (dic.isForm()) {
-                handleFormAnnotation(dic);
+            if (annotation.isForm()) {
+                handleFormAnnotation(annotation);
             }
 
-            if (dic.isAnnotation()) {
-                array.add(dic.getIndirectReference());
-                handleRotation(dic, pageSize, rotation);
+            if (annotation.isAnnotation()) {
+                array.add(annotation.getIndirectReference());
+                handleRotation(annotation, pageSize, rotation);
             }
 
-            if (!dic.isUsed()) {
-                dic.setUsed();
-                addToWriter(writer, dic);
+            if (!annotation.isUsed()) {
+                annotation.setUsed();
+                addToWriter(writer, annotation);
             }
         }
         return array;
@@ -259,28 +258,24 @@ public class PdfAnnotationsImp {
     }
 
     private PdfRectangle rotateRectangle(PdfRectangle rect, Rectangle pageSize, int rotation) {
-        switch (rotation) {
-            case 90:
-                return new PdfRectangle(
-                        pageSize.getTop() - rect.bottom(),
-                        rect.left(),
-                        pageSize.getTop() - rect.top(),
-                        rect.right());
-            case 180:
-                return new PdfRectangle(
-                        pageSize.getRight() - rect.left(),
-                        pageSize.getTop() - rect.bottom(),
-                        pageSize.getRight() - rect.right(),
-                        pageSize.getTop() - rect.top());
-            case 270:
-                return new PdfRectangle(
-                        rect.bottom(),
-                        pageSize.getRight() - rect.left(),
-                        rect.top(),
-                        pageSize.getRight() - rect.right());
-            default:
-                return rect;
-        }
+        return switch (rotation) {
+            case 90 -> new PdfRectangle(
+                    pageSize.getTop() - rect.bottom(),
+                    rect.left(),
+                    pageSize.getTop() - rect.top(),
+                    rect.right());
+            case 180 -> new PdfRectangle(
+                    pageSize.getRight() - rect.left(),
+                    pageSize.getTop() - rect.bottom(),
+                    pageSize.getRight() - rect.right(),
+                    pageSize.getTop() - rect.top());
+            case 270 -> new PdfRectangle(
+                    rect.bottom(),
+                    pageSize.getRight() - rect.left(),
+                    rect.top(),
+                    pageSize.getRight() - rect.right());
+            default -> rect;
+        };
     }
 
     private void addToWriter(PdfWriter writer, PdfAnnotation dic) {

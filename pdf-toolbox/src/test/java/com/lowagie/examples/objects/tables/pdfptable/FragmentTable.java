@@ -14,6 +14,7 @@
 package com.lowagie.examples.objects.tables.pdfptable;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.PageSize;
@@ -23,11 +24,15 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Break a large table up into different smaller tables in order to save memory.
  */
 public class FragmentTable {
+
+    private static final Logger logger = Logger.getLogger(FragmentTable.class.getName());
 
     /**
      * Break a large table up into several smaller tables for memory management purposes.
@@ -74,8 +79,8 @@ public class FragmentTable {
                 table.addCell(cell);
             }
             document.add(table);
-        } catch (Exception de) {
-            //da vedere come effettuare il log
+        } catch (IOException | DocumentException de) {
+            logger.severe("Exception occured");
         }
         // step5
         document.close();

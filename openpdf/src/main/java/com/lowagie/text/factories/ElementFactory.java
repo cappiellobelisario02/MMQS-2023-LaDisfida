@@ -393,7 +393,7 @@ public class ElementFactory {
         Table table;
         try {
             table = new Table(Integer.parseInt(value));
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             table = new Table(1);
         }
         return table;

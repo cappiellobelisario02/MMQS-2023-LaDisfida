@@ -11,10 +11,13 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LiberationTest {
+
+    private static final Logger logger = Logger.getLogger(LiberationTest.class.getName());
 
     @Test
     void createDocumentAllFontsPass(){
@@ -39,7 +42,7 @@ class LiberationTest {
                         "quick brown fox jumps over the lazy dog. <= " + liberationFont, font));
             }
         } catch (DocumentException | IOException de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // Assertion: Check if the PDF file is created and is not empty
@@ -64,7 +67,7 @@ class LiberationTest {
                         + liberationFont, font));
             }
         } catch (DocumentException | IOException de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         File pdfFile = new File(filePath);

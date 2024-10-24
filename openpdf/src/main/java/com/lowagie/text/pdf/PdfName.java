@@ -81,7 +81,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
     public static PdfName pdfNameTYPE;
     static Logger logger = Logger.getLogger(PdfName.class.getName());
 
-    // CLASS CONSTANTS (a variety of standard names used in PDF))
+    // CLASS CONSTANTS (a variety of standard names used in PDF)
     /**
      * A getName.
      *
@@ -3243,7 +3243,7 @@ public class PdfName extends PdfObject implements Comparable<PdfName> {
                     staticNames.put(decodeName(name.toString()), name);
                 }
             }
-        } catch (Exception e) {
+        } catch (IllegalAccessException e) {
             throw new IllegalStateException("The pdfname map could not be initialized!", e);
         }
 

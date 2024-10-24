@@ -12,6 +12,7 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of ColumnText to implement drop caps
@@ -19,6 +20,8 @@ import java.io.FileOutputStream;
  * @author Matthias Luppi
  */
 public class DropCapsWithColumns {
+
+    private static final Logger logger = Logger.getLogger(DropCapsWithColumns.class.getName());
 
     /**
      * Demonstrating the use of ColumnText to implement drop caps
@@ -123,7 +126,7 @@ public class DropCapsWithColumns {
             }
 
         } catch (Exception e) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // close the document

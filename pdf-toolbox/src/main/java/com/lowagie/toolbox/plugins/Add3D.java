@@ -59,19 +59,21 @@ import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
 import com.lowagie.toolbox.arguments.filters.U3DFilter;
 import com.lowagie.toolbox.plugins.watermarker.WatermarkerTool;
+import org.apache.fop.pdf.PDFFilterException;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
 /**
- * This tool lets you add a embedded u3d 3d annotation to the first page of a document. Look for sample files at
- * http://u3d.svn.sourceforge.net/viewvc/u3d/trunk/Source/Samples/Data/
+ * This tool lets you add an embedded u3d 3d annotation to the first page of a document. Look for sample files at
+ * <a href="http://u3d.svn.sourceforge.net/viewvc/u3d/trunk/Source/Samples/Data/">...</a>
  *
  * @since 2.1.1 (imported from itexttoolbox project)
  */
@@ -97,10 +99,10 @@ public class Add3D extends AbstractTool {
         addVersion("$Id: Add3D.java 3373 2008-05-12 16:21:24Z xlv $");
     }
 
-    FileArgument destfile = null;
+    FileArgument destfile;
 
     /**
-     * This tool lets you add a embedded u3d 3d annotation to the first page of a document.
+     * This tool lets you add an embedded u3d 3d annotation to the first page of a document.
      */
     public Add3D() {
         super();
@@ -268,7 +270,7 @@ public class Add3D extends AbstractTool {
             addButton(200, 100, "Zoom",
                     "im = this.getAnnots3D(0)[0].context3D;\rim.runtime.setCurrentTool(\"Zoom\");",
                     "zoom.png", wr);
-        } catch (Exception e) {
+        } catch (IOException | InstantiationException | PDFFilterException | NoSuchAlgorithmException e) {
             JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e
                             .getClass().getName(),
                     JOptionPane.ERROR_MESSAGE);

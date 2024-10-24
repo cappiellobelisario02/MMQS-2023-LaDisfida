@@ -30,6 +30,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.xml.SAXmyHandler;
 import com.lowagie.text.xml.TagMap;
 import com.lowagie.text.xml.XmlPeer;
+import org.xml.sax.SAXException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,6 +39,7 @@ import java.util.EmptyStackException;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -46,6 +48,8 @@ import javax.xml.parsers.SAXParserFactory;
  * footer with page x of y, a page with metadata,...
  */
 public class Events {
+
+    private static final Logger logger = Logger.getLogger(Events.class.getName());
 
     /**
      * Converts a play in XML into PDF.
@@ -88,9 +92,9 @@ public class Events {
             }
             document.close();
 
-        } catch (Exception e) {
-            //da vedere come effettuare il log
-            System.err.println(e.getMessage());
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            String msg = "Exception: " + e;
+            logger.severe(msg);
         }
     }
 
@@ -113,7 +117,8 @@ public class Events {
         try {
             return new MyHandler(document, new RomeoJulietMap());
         } catch (IOException e) {
-            //da vedere come effettuare il log
+            String msg = "Exception: " + e;
+            logger.severe(msg);
         }
         return null;
     }
@@ -123,7 +128,7 @@ public class Events {
      * example in one file. If you want to use a PageEvent, you may want to put the code in a separate class.
      */
 
-    class MyPageEvents extends PdfPageEventHelper {
+    static class MyPageEvents extends PdfPageEventHelper {
 
         /**
          * we will keep a list of speakers
@@ -150,6 +155,8 @@ public class Events {
          */
         String act = "";
 
+        Logger logger = Logger.getLogger(MyPageEvents.class.getName());
+
         /**
          * Every speaker will be tagged, so that he can be added to the list of speakers.
          *
@@ -171,14 +178,15 @@ public class Events {
          */
         @Override
         public void onOpenDocument(PdfWriter writer, Document document) {
-            Logger logger = Logger.getLogger(Events.class.getName());
+
             try {
                 bf = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252,
                         BaseFont.NOT_EMBEDDED);
                 cb = writer.getDirectContent();
                 template = cb.createTemplate(50, 50);
             } catch (DocumentException | IOException e) {
-                logger.warning("Error: " + e.getMessage());
+                String msg = "Error: " + e.getMessage();
+                logger.warning(msg);
             }
         }
 
@@ -293,7 +301,7 @@ public class Events {
                         previous.add(new Paragraph(16));
                         stack.push(previous);
                     } catch (EmptyStackException ignored) {
-                        //eccezioni ignorate, non sta da fare niente
+                        logger.severe("Empty stack");
                     }
                 }
             } else {

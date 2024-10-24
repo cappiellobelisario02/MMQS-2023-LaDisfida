@@ -1019,8 +1019,8 @@ public class PdfGraphics2D extends Graphics2D {
     }
 
     @Override
-    public void transform(AffineTransform Tx) {
-
+    public void transform(AffineTransform tx) {
+        //empty for now
     }
 
     /**
@@ -2149,15 +2149,15 @@ public class PdfGraphics2D extends Graphics2D {
                         addOpensMethod.invoke(targetModule, packageName, callerModule);
                     }
                 }
-            } catch (Exception e) {
-                //da vedere come effettuare il log
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                logger.severe("Exception occured");
             }
         }
 
         private static Class<?> getClassForName(String className) {
             try {
                 return Class.forName(className);
-            } catch (Exception e) {
+            } catch (ClassNotFoundException e) {
                 return null;
             }
         }
@@ -2178,9 +2178,6 @@ public class PdfGraphics2D extends Graphics2D {
                 String msg = "Access to method " + methodName + " in class " + clazz.getName() + " denied due to "
                         + "security restrictions.";
                 logger.info(msg);
-            } catch (Exception e) {
-                // Handle other unexpected exceptions
-                logger.info("Unexpected error while retrieving method " );
             }
             return method;
         }
@@ -2212,7 +2209,7 @@ public class PdfGraphics2D extends Graphics2D {
                 }
 
                 return composite;
-            } catch (Exception e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 // Log the exception for debugging purposes if needed
                 return false; // Or handle it accordingly
             }
@@ -2278,12 +2275,6 @@ public class PdfGraphics2D extends Graphics2D {
             } catch (NullPointerException e) {
                 // Handle potential null pointer exceptions gracefully
                 String msg = "Null pointer exception occurred: " + e.getMessage();
-                logger.severe(msg);
-                BaseFont baseFont = fontConverter.apply(compositeFont);
-                return defaultDrawingFunction.drawString(s, baseFont, x, y);
-            } catch (Exception e) {
-                // Catch-all for unexpected exceptions
-                String msg = "Unexpected error: " + e.getMessage();
                 logger.severe(msg);
                 BaseFont baseFont = fontConverter.apply(compositeFont);
                 return defaultDrawingFunction.drawString(s, baseFont, x, y);

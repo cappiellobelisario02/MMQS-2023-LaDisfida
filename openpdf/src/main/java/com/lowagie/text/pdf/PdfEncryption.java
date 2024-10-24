@@ -162,7 +162,7 @@ public class PdfEncryption {
     public PdfEncryption() {
         try {
             md5 = MessageDigest.getInstance(SHA_256);
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new ExceptionConverter(e);
         }
         publicKeyHandler = new PdfPublicKeySecurityHandler();
@@ -617,7 +617,7 @@ public class PdfEncryption {
     private PdfArray getEncodedRecipients() {
         try {
             return publicKeyHandler.getEncodedRecipients();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -755,7 +755,7 @@ public class PdfEncryption {
             return md.digest();
         } catch (NoSuchAlgorithmException e) {
             throw new NoSuchAlgorithmException("Hash algorithm not found", e);
-        } catch (Exception e) {
+        } catch (IOException | GeneralSecurityException e) {
             throw new ExceptionConverter(e);
         }
     }

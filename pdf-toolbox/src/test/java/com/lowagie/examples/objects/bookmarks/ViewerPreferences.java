@@ -20,6 +20,7 @@ import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 import org.librepdf.openpdf.examples.content.Constants;
 
 /**
@@ -29,6 +30,8 @@ import org.librepdf.openpdf.examples.content.Constants;
  */
 
 public class ViewerPreferences {
+
+    private static final Logger logger = Logger.getLogger(ViewerPreferences.class.getName());
 
     /**
      * Creates documents with different viewerpreferences.
@@ -71,7 +74,7 @@ public class ViewerPreferences {
             document.add(new Paragraph(Constants.HIS_REBUS, new Font(Font.HELVETICA, 12)));
             document.add(new Paragraph(Constants.EA_RES, new Font(Font.HELVETICA, 12)));
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document

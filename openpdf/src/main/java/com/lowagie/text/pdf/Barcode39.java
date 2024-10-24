@@ -54,8 +54,8 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Image;
 import java.awt.image.MemoryImageSource;
+import java.io.IOException;
 
 /**
  * Implements the code 39 and code 39 extended. The default parameters are:
@@ -160,7 +160,7 @@ public class Barcode39 extends Barcode {
             generateChecksum = false;
             checksumText = false;
             startStopText = true;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ExceptionConverter(e);
         }
     }
@@ -193,7 +193,7 @@ public class Barcode39 extends Barcode {
      * @return the escaped text
      */
     public static String getCode39Ex(String text) {
-        String out = "";
+        StringBuilder out = new StringBuilder();
         for (int k = 0; k < text.length(); ++k) {
             char c = text.charAt(k);
             if (c > 127) {
@@ -203,11 +203,11 @@ public class Barcode39 extends Barcode {
             char c1 = EXTENDED_CONST.charAt(c * 2);
             char c2 = EXTENDED_CONST.charAt(c * 2 + 1);
             if (c1 != ' ') {
-                out += c1;
+                out.append(c1);
             }
-            out += c2;
+            out.append(c2);
         }
-        return out;
+        return out.toString();
     }
 
     /**
@@ -474,8 +474,7 @@ public class Barcode39 extends Barcode {
         for (int k = fullWidth; k < pix.length; k += fullWidth) {
             System.arraycopy(pix, 0, pix, k, fullWidth);
         }
-        Image img = canvas.createImage(new MemoryImageSource(fullWidth, height, pix, 0, fullWidth));
 
-        return img;
+        return canvas.createImage(new MemoryImageSource(fullWidth, height, pix, 0, fullWidth));
     }
 }

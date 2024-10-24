@@ -1001,9 +1001,10 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             rf.reOpen();
             return getStreamBytes(stream, rf);
         } catch (PDFFilterException e) {
+            logger.severe("Exception occured");
             throw new PDFFilterException(e.getMessage());
         }
-        //da vedere come effettuare il log
+
     }
 
     /**
@@ -1069,7 +1070,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             rf.reOpen();
             return getStreamBytesRaw(stream, rf);
         }
-        //da vedere come effettuare il log
     }
 
     private static boolean equalsn(byte[] a1, byte[] a2) {
@@ -1080,6 +1080,27 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             }
         }
         return true;
+    }
+
+    // Metodo equals
+    @Override
+    public boolean equals(Object obj) {
+        // Controllo se l'oggetto corrente è uguale a obj
+        if (this == obj) {
+            return true;
+        }
+        // Controllo se obj è un'istanza di PdfReader
+        if (!(obj instanceof PdfReader other)) {
+            return false;
+        }
+        // Confronto le proprietà fileLength
+        return Objects.equals(this.fileLength, other.getFileLength());
+    }
+
+    // Metodo hashCode
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.objNum, fileLength);
     }
 
     private static boolean existsName(PdfDictionary dic, PdfName key, PdfName value) {
@@ -1498,7 +1519,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             rebuilt = true;
             rebuildXref();
             lastXref = -1;
-        } catch (Exception ne) {
+        } catch (IOException ne) {
             throw new InvalidPdfException(MessageLocalization.getComposedMessage(
                     "rebuild.failed.1.original.message.2", ne.getMessage(),
                     e.getMessage()));
@@ -1698,7 +1719,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
         MessageDigest md;
         try {
-            md = MessageDigest.getInstance("SHA-1");
+            md = MessageDigest.getInstance("SHA-256");
             md.update(envelopedData, 0, 20);
             for (int i = 0; i < recipients.size(); i++) {
                 byte[] encodedRecipient = recipients.getPdfObject(i).getBytes();
@@ -1873,13 +1894,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     /**
      *
      */
-    public void resetLastXrefPartial() {
-        lastXrefPartial = -1;
-    }
-
-    /**
-     *
-     */
     public void releaseLastXrefPartial() {
         if (partial && lastXrefPartial != -1) {
             xrefObj.set(lastXrefPartial, null);
@@ -2012,19 +2026,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         } finally {
             tokens = saveTokens;
         }
-    }
-
-    /**
-     * @return the percentage of the cross reference table that has been read
-     */
-    public double dumpPerc() {
-        int total = 0;
-        for (PdfObject aXrefObj : xrefObj) {
-            if (aXrefObj != null) {
-                ++total;
-            }
-        }
-        return (total * 100.0 / xrefObj.size());
     }
 
     protected void readDocObj() throws IOException, PDFFilterException {
@@ -2408,7 +2409,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         PdfObject obj = stm.get(PdfName.INDEX);
         if (obj == null) {
             PdfArray index = new PdfArray();
-            index.add(new int[]{0, size});
+            index.add(new float[]{0, size});
             return index;
         }
         return (PdfArray) obj;
@@ -2712,7 +2713,7 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         return hasNext;
     }
 
-    private PdfObject processStream(PdfDictionary dic) throws IOException {
+    private void processStream(PdfDictionary dic) throws IOException {
         int ch;
         do {
             ch = tokens.read();
@@ -2729,7 +2730,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         stream.putAll(dic);
         stream.setObjNum(objNum, objGen);
 
-        return stream;
     }
 
     private boolean isWhitespace(int ch) {
@@ -2987,63 +2987,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     /**
-     * Eliminates shared streams if they exist.
-     */
-    public void eliminateSharedStreams() {
-        if (!sharedStreams) {
-            return;
-        }
-        sharedStreams = false;
-        if (pageRefs.size() == 1) {
-            return;
-        }
-        List<PdfObject> newRefs = new ArrayList<>();
-        List<PdfObject> newStreams = new ArrayList<>();
-        IntHashtable visited = new IntHashtable();
-        for (int k = 1; k <= pageRefs.size(); ++k) {
-            PdfDictionary page = pageRefs.getPageN(k);
-            if (page == null) {
-                continue;
-            }
-            PdfObject contents = getPdfObject(page.get(PdfName.CONTENTS));
-            if (contents == null) {
-                continue;
-            }
-            if (contents.isStream()) {
-                PRIndirectReference ref = (PRIndirectReference) page
-                        .get(PdfName.CONTENTS);
-                if (visited.containsKey(ref.getNumber())) {
-                    // need to duplicate
-                    newRefs.add(ref);
-                    newStreams.add(new PRStream((PRStream) contents, null));
-                } else {
-                    visited.put(ref.getNumber(), 1);
-                }
-            } else if (contents.isArray()) {
-                PdfArray array = (PdfArray) contents;
-                for (int j = 0; j < array.size(); ++j) {
-                    PRIndirectReference ref = (PRIndirectReference) array.getPdfObject(j);
-                    if (visited.containsKey(ref.getNumber())) {
-                        // need to duplicate
-                        newRefs.add(ref);
-                        newStreams.add(new PRStream((PRStream) getPdfObject(ref), null));
-                    } else {
-                        visited.put(ref.getNumber(), 1);
-                    }
-                }
-            }
-        }
-        if (newStreams.isEmpty()) {
-            return;
-        }
-        for (int k = 0; k < newStreams.size(); ++k) {
-            xrefObj.add(newStreams.get(k));
-            PRIndirectReference ref = (PRIndirectReference) newRefs.get(k);
-            ref.setNumber(xrefObj.size() - 1, 0);
-        }
-    }
-
-    /**
      * Checks if the document was changed.
      *
      * @return <CODE>true</CODE> if the document was changed, <CODE>false</CODE>
@@ -3111,15 +3054,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     /**
-     * Gets the byte address of the %%EOF marker.
-     *
-     * @return the byte address of the %%EOF marker
-     */
-    public int getEofPos() {
-        return eofPos;
-    }
-
-    /**
      * Gets the PDF version. Only the last version char is returned. For example version 1.4 is returned as '4'.
      *
      * @return the PDF version
@@ -3138,15 +3072,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     /**
-     * Returns <CODE>true</CODE> if the owner password has been used to open the document.
-     *
-     * @return <CODE>true</CODE> if the owner password has been used to open the document.
-     */
-    public boolean isOwnerPasswordUsed() {
-        return ownerPasswordUsed;
-    }
-
-    /**
      * Gets the encryption permissions. It can be used directly in
      * <CODE>PdfWriter.setEncryption()</CODE>.
      *
@@ -3158,15 +3083,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     public void setPermissions(int permissionValue) {
         this.pValue = permissionValue;
-    }
-
-    /**
-     * Returns <CODE>true</CODE> if the PDF has a 128 bit key encryption.
-     *
-     * @return <CODE>true</CODE> if the PDF has a 128 bit key encryption
-     */
-    public boolean is128Key() {
-        return rValue == 3;
     }
 
     /**
@@ -3184,10 +3100,8 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
 
     /**
      * Finds all the font subsets and changes the prefixes to some random values.
-     *
-     * @return the number of font subsets altered
      */
-    public int shuffleSubsetNames() {
+    public void shuffleSubsetNames() {
         int total = 0;
         for (int k = 1; k < xrefObj.size(); ++k) {
             PdfObject obj = getPdfObjectRelease(k);
@@ -3196,7 +3110,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
                 total += processFontDictionary(dic, k);
             }
         }
-        return total;
     }
 
     private boolean isFontDictionary(PdfObject obj) {
@@ -3289,65 +3202,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         return s + "+";
     }
 
-
-    /**
-     * Finds all the fonts not subset but embedded and marks them as subset.
-     *
-     * @return the number of fonts altered
-     */
-    public int createFakeFontSubsets() {
-        int total = 0;
-        for (int k = 1; k < xrefObj.size(); ++k) {
-            PdfObject obj = getPdfObjectRelease(k);
-            if (obj == null || !obj.isDictionary()) {
-                continue;
-            }
-            PdfDictionary dic = (PdfDictionary) obj;
-            if (!existsName(dic, PdfName.TYPE_CONST, PdfName.FONT)) {
-                continue;
-            }
-            if (existsName(dic, PdfName.SUBTYPE, PdfName.TYPE1)
-                    || existsName(dic, PdfName.SUBTYPE, PdfName.MMTYPE1)
-                    || existsName(dic, PdfName.SUBTYPE, PdfName.TRUETYPE)) {
-                String s = getSubsetPrefix(dic);
-                if (s != null) {
-                    continue;
-                }
-                s = getFontName(dic);
-                if (s == null) {
-                    continue;
-                }
-                String ns = createRandomSubsetPrefix() + s;
-                PdfDictionary fd = (PdfDictionary) getPdfObjectRelease(dic
-                        .get(PdfName.FONTDESCRIPTOR));
-                if (fd == null) {
-                    continue;
-                }
-                if (fd.get(PdfName.FONTFILE) == null
-                        && fd.get(PdfName.FONTFILE2) == null
-                        && fd.get(PdfName.FONTFILE3) == null) {
-                    continue;
-                }
-                fd = dic.getAsDict(PdfName.FONTDESCRIPTOR);
-                PdfName newName = new PdfName(ns);
-                dic.put(PdfName.BASEFONT, newName);
-                fd.put(PdfName.FONTNAME, newName);
-                setXrefPartialObject(k, dic);
-                ++total;
-            }
-        }
-        return total;
-    }
-
-    /**
-     * Gets all the named destinations as an <CODE>HashMap</CODE>. The key is the getName and the value is the destinations
-     * array.
-     *
-     * @return gets all the named destinations
-     */
-    public Map<Object, PdfObject> getNamedDestination() {
-        return getNamedDestination(false);
-    }
 
     /**
      * Gets all the named destinations as an <CODE>HashMap</CODE>. The key is the getName and the value is the destinations
@@ -3485,23 +3339,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         }
     }
 
-
-    /**
-     * Removes all the annotations and fields from the document.
-     */
-    public void removeAnnotations() {
-        pageRefs.resetReleasePage();
-        for (int k = 1; k <= pageRefs.size(); ++k) {
-            PdfDictionary page = pageRefs.getPageN(k);
-            if (page.get(PdfName.ANNOTS) == null) {
-                pageRefs.releasePage(k);
-            } else {
-                page.remove(PdfName.ANNOTS);
-            }
-        }
-        catalog.remove(PdfName.ACROFORM);
-        pageRefs.resetReleasePage();
-    }
 
     public List<PdfImportedLink> getLinks(int page) {
         pageRefs.resetReleasePage();
@@ -4051,76 +3888,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
     }
 
     /**
-     * Removes any usage rights that this PDF may have. Only Adobe can grant usage rights and any PDF modification with
-     * iText will invalidate them. Invalidated usage rights may confuse Acrobat and it's advisable to remove them
-     * altogether.
-     */
-    public void removeUsageRights() {
-        PdfDictionary perms = catalog.getAsDict(PdfName.PERMS);
-        if (perms == null) {
-            return;
-        }
-        perms.remove(PdfName.UR);
-        perms.remove(PdfName.UR3);
-        if (perms.size() == 0) {
-            catalog.remove(PdfName.PERMS);
-        }
-    }
-
-    /**
-     * Gets the certification level for this document. The return values can be
-     * <code>PdfSignatureAppearance.NOT_CERTIFIED</code>,
-     * <code>PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED</code>,
-     * <code>PdfSignatureAppearance.CERTIFIED_FORM_FILLING</code> and
-     * <code>PdfSignatureAppearance.CERTIFIED_FORM_FILLING_AND_ANNOTATIONS</code>
-     * .
-     * <p>
-     * No signature validation is made, use the methods available for that in
-     * <CODE>AcroFields</CODE>.
-     * </p>
-     *
-     * @return gets the certification level for this document
-     */
-    public int getCertificationLevel() {
-        PdfDictionary dic = catalog.getAsDict(PdfName.PERMS);
-        if (dic == null) {
-            return PdfSignatureAppearance.NOT_CERTIFIED;
-        }
-        dic = dic.getAsDict(PdfName.DOCMDP);
-        if (dic == null) {
-            return PdfSignatureAppearance.NOT_CERTIFIED;
-        }
-        PdfArray arr = dic.getAsArray(PdfName.REFERENCE);
-        if (arr == null || arr.isEmpty()) {
-            return PdfSignatureAppearance.NOT_CERTIFIED;
-        }
-        dic = arr.getAsDict(0);
-        if (dic == null) {
-            return PdfSignatureAppearance.NOT_CERTIFIED;
-        }
-        dic = dic.getAsDict(PdfName.TRANSFORMPARAMS);
-        if (dic == null) {
-            return PdfSignatureAppearance.NOT_CERTIFIED;
-        }
-        PdfNumber p = dic.getAsNumber(PdfName.P);
-        if (p == null) {
-            return PdfSignatureAppearance.NOT_CERTIFIED;
-        }
-        return p.intValue();
-    }
-
-    /**
-     * Checks if an encrypted document may be modified if the owner password was not supplied. If the document is not
-     * encrypted, the setting has no effect.
-     *
-     * @return <CODE>true</CODE> if the document may be modified even if the owner password was not
-     * supplied <CODE>false</CODE> otherwise
-     */
-    public boolean isModificationlowedWithoutOwnerPassword() {
-        return this.modificationAllowedWithoutOwnerPassword;
-    }
-
-    /**
      * Sets whether the document (if encrypted) may be modified even if the owner password was not supplied. If this is
      * set to <CODE>false</CODE> an exception will be thrown when attempting to access the Document if the owner
      * password was not supplied (for encrypted documents.)
@@ -4149,14 +3916,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             return -1;
         } else {
             return decrypt.getCryptoMode();
-        }
-    }
-
-    public boolean isMetadataEncrypted() {
-        if (decrypt == null) {
-            return false;
-        } else {
-            return decrypt.isMetadataEncrypted();
         }
     }
 
@@ -4271,11 +4030,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             reader.rootPages.put(PdfName.COUNT, new PdfNumber(refsn.size()));
         }
 
-        void reReadPages() {
-            refsn = null;
-            readPages();
-        }
-
         /**
          * Gets the page dictionary of the specified page
          *
@@ -4297,18 +4051,6 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
             PdfDictionary page = getPageN(pageNum);
             releasePage(pageNum);
             return page;
-        }
-
-        /**
-         * Releases the page reference to this page.
-         *
-         * @param pageNum the page number.
-         * @return an indirect reference
-         */
-        public PRIndirectReference getPageOrigRefRelease(int pageNum) {
-            PRIndirectReference ref = getPageOrigRef(pageNum);
-            releasePage(pageNum);
-            return ref;
         }
 
         /**

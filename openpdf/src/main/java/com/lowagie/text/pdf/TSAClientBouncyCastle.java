@@ -54,7 +54,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
@@ -68,11 +67,11 @@ import com.lowagie.text.exceptions.InvalidTokenException;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.bouncycastle.tsp.TSPException;
 import org.bouncycastle.tsp.TimeStampRequest;
 import org.bouncycastle.tsp.TimeStampRequestGenerator;
 import org.bouncycastle.tsp.TimeStampResponse;
 import org.bouncycastle.tsp.TimeStampToken;
-import org.bouncycastle.tsp.TimeStampTokenInfo;
 
 import com.lowagie.text.error_messages.MessageLocalization;
 
@@ -112,7 +111,7 @@ public class TSAClientBouncyCastle implements TSAClient {
     /**
      * Creates an instance of a TSAClient that will use BouncyCastle.
      *
-     * @param url String - Time Stamp Authority URL (i.e. "http://tsatest1.digistamp.com/TSA")
+     * @param url String - Time Stamp Authority URL (i.e. "<a href="http://tsatest1.digistamp.com/TSA">...</a>")
      */
     public TSAClientBouncyCastle(String url) {
         this(url, null, null, 4096);
@@ -121,7 +120,7 @@ public class TSAClientBouncyCastle implements TSAClient {
     /**
      * Creates an instance of a TSAClient that will use BouncyCastle.
      *
-     * @param url      String - Time Stamp Authority URL (i.e. "http://tsatest1.digistamp.com/TSA")
+     * @param url      String - Time Stamp Authority URL (i.e. "<a href="http://tsatest1.digistamp.com/TSA">...</a>")
      * @param username String - user(account) getName
      * @param password String - password
      */
@@ -133,7 +132,7 @@ public class TSAClientBouncyCastle implements TSAClient {
      * Constructor. Note the token size estimate is updated by each call, as the token size is not likely to change (as
      * long as we call the same TSA using the same imprint length).
      *
-     * @param url           String - Time Stamp Authority URL (i.e. "http://tsatest1.digistamp.com/TSA")
+     * @param url           String - Time Stamp Authority URL (i.e. "<a href="http://tsatest1.digistamp.com/TSA">...</a>")
      * @param username      String - user(account) getName
      * @param password      String - password
      * @param tokSzEstimate int - estimated size of received time stamp token (DER encoded)
@@ -169,7 +168,7 @@ public class TSAClientBouncyCastle implements TSAClient {
      */
     @Override
     public MessageDigest getMessageDigest() throws GeneralSecurityException {
-        return MessageDigest.getInstance(isNotEmpty(digestName) ? digestName : "SHA-1");
+        return MessageDigest.getInstance(isNotEmpty(digestName) ? digestName : "SHA-256");
     }
 
     /**
@@ -178,7 +177,6 @@ public class TSAClientBouncyCastle implements TSAClient {
      * @param caller  PdfPKCS7 - calling PdfPKCS7 instance (in case caller needs it)
      * @param imprint byte[] - data imprint to be time-stamped
      * @return byte[] - encoded, TSA signed data of the timeStampToken
-     * @throws Exception - TSA request failed
      * @see com.lowagie.text.pdf.TSAClient#getTimeStampToken(com.lowagie.text.pdf.PdfPKCS7, byte[])
      */
     @Override
@@ -191,12 +189,11 @@ public class TSAClientBouncyCastle implements TSAClient {
      *
      * @param imprint a byte array containing the imprint
      * @return the timestamp token
-     * @throws Exception on error
      */
     protected byte[] getTimeStampToken(byte[] imprint) throws InvalidTokenException {
-        byte[] respBytes = null;
+        byte[] respBytes;
         try {
-            // Setup the time stamp request
+            // Set up the time stamp request
             TimeStampRequestGenerator tsqGenerator = new TimeStampRequestGenerator();
             tsqGenerator.setCertReq(true);
             if (isNotEmpty(policy)) {
@@ -214,7 +211,8 @@ public class TSAClientBouncyCastle implements TSAClient {
             respBytes = getTSAResponse(requestBytes);
 
             // Log the response bytes (optional)
-            logger.info("Received TSA response bytes: " + Arrays.toString(respBytes));
+            String msg = "Received TSA response bytes: " + Arrays.toString(respBytes);
+            logger.info(msg);
 
             // Handle the TSA response
             TimeStampResponse response = new TimeStampResponse(respBytes);
@@ -247,9 +245,7 @@ public class TSAClientBouncyCastle implements TSAClient {
             // safe)
             this.tokSzEstimate = encoded.length + 32;
             return encoded;
-        } catch (InvalidTokenException e) {
-            throw e;
-        } catch (Throwable t) {
+        } catch (IOException | TSPException e) {
             throw new InvalidTokenException(MessageLocalization.getComposedMessage(
                     "failed.to.get.tsa.response.from.1", tsaURL));
         }
@@ -261,10 +257,9 @@ public class TSAClientBouncyCastle implements TSAClient {
      *
      * @param requestBytes the request bytes
      * @return - byte[] - TSA response, raw bytes (RFC 3161 encoded)
-     * @throws Exception on error
      */
     protected byte[] getTSAResponse(byte[] requestBytes) throws IOException {
-        // Ensure URL uses HTTPS for secure communication
+        //Ensures URL uses HTTPS for secure communication
         if (!tsaURL.startsWith("https://")) {
             throw new IllegalArgumentException("Only HTTPS connections are allowed.");
         }

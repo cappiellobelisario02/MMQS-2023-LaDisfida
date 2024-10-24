@@ -60,6 +60,7 @@ import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -184,7 +185,7 @@ public class BuildTutorial {
                 // Apply the xsl file to the source file and write the result to the output file
                 xformer.transform(source, result);
             }
-        } catch (Exception e) {
+        } catch (IOException | TransformerException e) {
             // Log the exception for better diagnostics
             logger.severe("Error during transformation: " + e.getMessage());
         }

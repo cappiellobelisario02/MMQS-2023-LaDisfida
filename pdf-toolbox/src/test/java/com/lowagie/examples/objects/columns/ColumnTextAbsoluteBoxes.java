@@ -17,6 +17,8 @@ import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 import org.librepdf.openpdf.examples.content.Constants;
 
 /**
@@ -25,6 +27,8 @@ import org.librepdf.openpdf.examples.content.Constants;
  * @author Matthias Luppi
  */
 public class ColumnTextAbsoluteBoxes {
+
+    private static final Logger logger = Logger.getLogger(ColumnTextAbsoluteBoxes.class.getName());
 
     /**
      * Demonstrating the use of ColumnText to place text boxes at absolute positions
@@ -79,8 +83,8 @@ public class ColumnTextAbsoluteBoxes {
                 // therefore the below statement loops as long as the text overflows
             } while (ct.go() == ColumnText.NO_MORE_COLUMN);
 
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (IOException e) {
+            logger.severe("Exception occured");
         }
 
         // close the document

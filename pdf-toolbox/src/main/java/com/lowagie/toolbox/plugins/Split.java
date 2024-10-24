@@ -107,8 +107,8 @@ public class Split extends AbstractTool {
             File file2 = (File) getValue(DESTFILE_2);
 
             splitPdf(src, file1, file2, pagenumber);
-        } catch (Exception e) {
-            //da vedere come effettuare il log
+        } catch (InstantiationException e) {
+            logger.severe("Exception occured");
         }
     }
 

@@ -26,12 +26,14 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.SpotColor;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.util.logging.Logger;
 
 /**
  * Demonstrates the use of spotcolors.
  */
 public class SpotColors {
 
+    private static final Logger logger = Logger.getLogger(SpotColors.class.getName());
     /**
      * Demonstrates the use of spotcolors.
      *
@@ -60,12 +62,12 @@ public class SpotColors {
             // step 5: we instantiate PdfSpotColor
 
             // Note: I made up these names unless someone give me a PANTONE swatch as gift (phillip@formstar.com)
-            PdfSpotColor spc_cmyk = new PdfSpotColor("PANTONE 280 CV", new CMYKColor(0.9f, .2f, .3f, .1f));
-            PdfSpotColor spc_rgb = new PdfSpotColor("PANTONE 147", new Color(114, 94, 38));
-            PdfSpotColor spc_g = new PdfSpotColor("PANTONE 100 CV", new GrayColor(0.9f));
+            PdfSpotColor spcCmyk = new PdfSpotColor("PANTONE 280 CV", new CMYKColor(0.9f, .2f, .3f, .1f));
+            PdfSpotColor spcRgb = new PdfSpotColor("PANTONE 147", new Color(114, 94, 38));
+            PdfSpotColor spcG = new PdfSpotColor("PANTONE 100 CV", new GrayColor(0.9f));
 
             // Stroke a rectangle with CMYK alternate
-            cb.setColorStroke(spc_cmyk, .5f);
+            cb.setColorStroke(spcCmyk, .5f);
             cb.setLineWidth(10f);
             // draw a rectangle
             cb.rectangle(100, 700, 100, 100);
@@ -76,23 +78,23 @@ public class SpotColors {
             cb.stroke();
 
             // Fill a rectangle with CMYK alternate
-            cb.setColorFill(spc_cmyk, 0.25f);
+            cb.setColorFill(spcCmyk, 0.25f);
             cb.rectangle(250, 700, 100, 100);
             cb.fill();
 
             // Stroke a circle with RGB alternate
-            cb.setColorStroke(spc_rgb, 0.9f);
+            cb.setColorStroke(spcRgb, 0.9f);
             cb.setLineWidth(5f);
             cb.circle(150f, 500f, 100f);
             cb.stroke();
 
             // Fill the circle with RGB alternate
-            cb.setColorFill(spc_rgb, 0.9f);
+            cb.setColorFill(spcRgb, 0.9f);
             cb.circle(150f, 500f, 50f);
             cb.fill();
 
             // example with colorfill
-            cb.setColorFill(spc_g, 0.5f);
+            cb.setColorFill(spcG, 0.5f);
             cb.moveTo(100f, 200f);
             cb.lineTo(200f, 250f);
             cb.lineTo(400f, 150f);
@@ -101,13 +103,13 @@ public class SpotColors {
             document.newPage();
             String text = "Some text to show";
             document.add(
-                    new Paragraph(text, new Font(Font.HELVETICA, 24, Font.NORMAL, new SpotColor(spc_cmyk, 0.25f))));
-            document.add(new Paragraph(text, new Font(Font.HELVETICA, 24, Font.NORMAL, new SpotColor(spc_cmyk, 0.5f))));
+                    new Paragraph(text, new Font(Font.HELVETICA, 24, Font.NORMAL, new SpotColor(spcCmyk, 0.25f))));
+            document.add(new Paragraph(text, new Font(Font.HELVETICA, 24, Font.NORMAL, new SpotColor(spcCmyk, 0.5f))));
 
             // example with template
             PdfTemplate t = cb.createTemplate(500f, 500f);
             // Stroke a rectangle with CMYK alternate
-            t.setColorStroke(new SpotColor(spc_cmyk, .5f));
+            t.setColorStroke(new SpotColor(spcCmyk, .5f));
             t.setLineWidth(10f);
             // draw a rectangle
             t.rectangle(100, 10, 100, 100);
@@ -118,7 +120,7 @@ public class SpotColors {
             t.stroke();
 
             // Fill a rectangle with CMYK alternate
-            t.setColorFill(spc_g, 0.5f);
+            t.setColorFill(spcG, 0.5f);
             t.rectangle(100, 125, 100, 100);
             t.fill();
             t.beginText();
@@ -133,7 +135,7 @@ public class SpotColors {
 
             cb.sanityCheck();
         } catch (Exception de) {
-            //da vedere come effettuare il log
+            logger.severe("Exception occured");
         }
 
         // step 5: we close the document
