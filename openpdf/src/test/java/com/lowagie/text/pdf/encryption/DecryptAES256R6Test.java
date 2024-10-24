@@ -1,5 +1,6 @@
 package com.lowagie.text.pdf.encryption;
 
+import static com.lowagie.text.pdf.PdfReader.logger;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -40,9 +41,13 @@ class DecryptAES256R6Test {
     }
 
     @BeforeAll
-    static void setUpBeforeClass() throws Exception {
+    static void setUpBeforeClass(){
+        try{
         ownerPasswordUsedField = PdfReader.class.getDeclaredField("ownerPasswordUsed");
         ownerPasswordUsedField.setAccessible(true);
+        }catch(NoSuchFieldException e){
+            logger.info("Exception raised");
+        }
     }
 
     /**

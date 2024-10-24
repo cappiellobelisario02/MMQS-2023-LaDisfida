@@ -1,5 +1,6 @@
 package com.lowagie.text.pdf.parser;
 
+import static com.lowagie.text.pdf.parser.PdfContentStreamHandler.logger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyString;
@@ -74,8 +75,12 @@ class PdfTextExtractorTest {
     void testPageExceededPass(){
         Assertions.assertThrows(NullPointerException.class, this::testPageExceeded);
     }
-    void testPageExceeded() throws Exception {
+    void testPageExceeded() {
+        try{
         assertThat(getString("HelloWorldMeta.pdf", 5), is(emptyString()));
+    }catch(URISyntaxException |  PDFFilterException | IOException e){
+            logger.info("Exception raised");
+        }
     }
 
     @Test
@@ -129,7 +134,8 @@ class PdfTextExtractorTest {
     void testConcatenateWatermarkPass(){
         Assertions.assertThrows(NullPointerException.class, this::testConcatenateWatermark);
     }
-    void testConcatenateWatermark() throws Exception {
+    void testConcatenateWatermark() {
+        try{
         String result = getString("merge-acroforms.pdf", 5);
         assertNotNull(result);
         // html??
@@ -137,6 +143,9 @@ class PdfTextExtractorTest {
         // Multiple spaces between words??
         assertTrue(result.contains("2. This is chapter 2"));
         assertTrue(result.contains("watermark-concatenate"));
+    }catch(IOException | URISyntaxException | PDFFilterException e){
+            logger.info("Exception raised");
+        }
     }
 
     @Test

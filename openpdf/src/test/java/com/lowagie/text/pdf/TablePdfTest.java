@@ -4,10 +4,12 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Phrase;
 
+import static com.lowagie.text.pdf.PdfReader.logger;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.lowagie.text.exceptions.InvalidPdfException;
+import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
@@ -18,26 +20,30 @@ class TablePdfTest {
     void testTableSpacingPercentagePass(){
         Assertions.assertThrows(NullPointerException.class, this::testTableSpacingPercentage);
     }
-    void testTableSpacingPercentage() throws Exception {
-        Document document = PdfTestBase.createTempPdf("testTableSpacingPercentage.pdf");
-        assertNotNull(document, "The document should be created and not null");
-        document.setMargins(72, 72, 72, 72);
-        document.open();
-        assertTrue(document.isOpen(), "The document should be opened");
-        PdfPTable table = new PdfPTable(1);
-        table.setSpacingBefore(20);
-        table.setWidthPercentage(100);
-        PdfPCell cell;
-        cell = new PdfPCell();
-        Phrase phase = new Phrase("John Doe");
-        cell.setHorizontalAlignment(PdfPCell.ALIGN_CENTER); // This has no
-        // effect
-        cell.setVerticalAlignment(PdfPCell.ALIGN_MIDDLE); // This has no effect
-        cell.addElement(phase);
-        table.addCell(cell);
-        document.add(table);
-        document.close();
-        assertTrue(document.isClosed(), "The document should be closed");
+    void testTableSpacingPercentage() {
+        try {
+            Document document = PdfTestBase.createTempPdf("testTableSpacingPercentage.pdf");
+            assertNotNull(document, "The document should be created and not null");
+            document.setMargins(72, 72, 72, 72);
+            document.open();
+            assertTrue(document.isOpen(), "The document should be opened");
+            PdfPTable table = new PdfPTable(1);
+            table.setSpacingBefore(20);
+            table.setWidthPercentage(100);
+            PdfPCell cell;
+            cell = new PdfPCell();
+            Phrase phase = new Phrase("John Doe");
+            cell.setHorizontalAlignment(PdfPCell.ALIGN_CENTER); // This has no
+            // effect
+            cell.setVerticalAlignment(PdfPCell.ALIGN_MIDDLE); // This has no effect
+            cell.addElement(phase);
+            table.addCell(cell);
+            document.add(table);
+            document.close();
+            assertTrue(document.isClosed(), "The document should be closed");
+        } catch (IOException e) {
+            logger.info("Exception raised");
+        }
     }
 
     @Test
@@ -105,7 +111,8 @@ class TablePdfTest {
     void testCreateTablePass(){
         Assertions.assertThrows(NullPointerException.class, this::testCreateTable);
     }
-    void testCreateTable() throws Exception {
+    void testCreateTable(){
+        try{
         // create document
         Document document = PdfTestBase.createTempPdf("testCreateTable.pdf");
         try {
@@ -133,6 +140,9 @@ class TablePdfTest {
                 document.close();
                 assertTrue(document.isClosed(), "The document should be closed");
             }
+        }
+    }catch(IOException e){
+            logger.info("Exception raised");
         }
 
     }

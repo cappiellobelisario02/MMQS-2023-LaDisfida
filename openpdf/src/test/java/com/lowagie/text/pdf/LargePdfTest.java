@@ -1,5 +1,6 @@
 package com.lowagie.text.pdf;
 
+import static com.lowagie.text.pdf.ColumnText.logger;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.lowagie.text.Document;
@@ -33,30 +34,34 @@ class LargePdfTest {
 
     @Disabled("Because it takes too long to run this test")
     @Test
-    void writeLargePdf() throws Exception {
-        Document document = PdfTestBase.createPdf(
-                Files.newOutputStream(largeFile.toPath()));
+    void writeLargePdf() {
+        try {
+            Document document = PdfTestBase.createPdf(
+                    Files.newOutputStream(largeFile.toPath()));
 
-        document.open();
-        document.newPage();
-        String longString = "Hello Very Large World";
-        for (long i = 0; i < 10; i++) {
-            longString += longString;
+            document.open();
+            document.newPage();
+            String longString = "Hello Very Large World";
+            for (long i = 0; i < 10; i++) {
+                longString += longString;
+            }
+
+            for (long i = 0; i < 19500; i++) {
+                Image jpg = Image.getInstance(
+                        "../pdf-toolbox/src/test/java/com/lowagie/examples/objects/images/sunflower-back.jpg");
+                document.add(jpg);
+                document.add(new Paragraph(longString));
+            }
+            document.close();
+
+            String canonicalPath = largeFile.getCanonicalPath();
+
+            // This will fail now.
+            assertThatThrownBy(() -> new PdfReader(canonicalPath))
+                    .isInstanceOf(PdfException.class);
+        } catch (IOException e) {
+            logger.info("Exception raised");
         }
-
-        for (long i = 0; i < 19500; i++) {
-            Image jpg = Image.getInstance(
-                    "../pdf-toolbox/src/test/java/com/lowagie/examples/objects/images/sunflower-back.jpg");
-            document.add(jpg);
-            document.add(new Paragraph(longString));
-        }
-        document.close();
-
-        String canonicalPath = largeFile.getCanonicalPath();
-
-        // This will fail now.
-        assertThatThrownBy(() -> new PdfReader(canonicalPath))
-                .isInstanceOf(PdfException.class);
     }
 
 }

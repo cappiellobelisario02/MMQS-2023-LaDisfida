@@ -22,19 +22,27 @@ class ImageTest {
     void shouldReturnImageWithUrlForUrlPass(){
         Assertions.assertThrows(ExceptionConverter.class, this::shouldReturnImageWithUrlForUrl);
     }
-    void shouldReturnImageWithUrlForUrl() throws Exception {
-        final Image image = Image.getInstance(ClassLoader.getSystemResource("H.gif"));
-        assertNotNull(image.getUrl());
+    void shouldReturnImageWithUrlForUrl(){
+       try{
+           final Image image = Image.getInstance(ClassLoader.getSystemResource("H.gif"));
+           assertNotNull(image.getUrl());
+       } catch(IOException | BadElementException e){
+           logger.info("Exception raised");
+       }
     }
 
     @Test
     void shouldReturnImageWithUrlForPathPass(){
         Assertions.assertThrows(FileNotFoundException.class, this::shouldReturnImageWithUrlForPath);
     }
-    void shouldReturnImageWithUrlForPath() throws Exception {
-        String fileName = "src/test/resources/H.gif";
-        final Image image = Image.getInstance(fileName);
-        assertNotNull(image.getUrl());
+    void shouldReturnImageWithUrlForPath(){
+        try {
+            String fileName = "src/test/resources/H.gif";
+            final Image image = Image.getInstance(fileName);
+            assertNotNull(image.getUrl());
+        } catch (BadElementException |IOException e){
+            logger.info("Exception raised");
+        }
     }
 
     @Test

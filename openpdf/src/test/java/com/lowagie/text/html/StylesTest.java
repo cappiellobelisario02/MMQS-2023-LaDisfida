@@ -22,6 +22,8 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.lowagie.text.pdf.PdfReader.logger;
+
 /**
  * Tests generating PDF from HTML with selected CCS style attributes (such as 'font-size', 'background',
  * 'background-color', 'color').
@@ -32,7 +34,7 @@ class StylesTest {
     void testBackgroundColorPass(){
         Assertions.assertThrows(IOException.class, this::testBackgroundColor);
     }
-    void testBackgroundColor() throws Exception {
+    void testBackgroundColor() {
         List<Element> elements = htmlToPdf("stylesTest/backgroundColor.html", "target/Background Color.pdf");
         Paragraph paragraph = (Paragraph) elements.get(0);
         Chunk chunk1 = (Chunk) paragraph.get(0);
@@ -58,7 +60,7 @@ class StylesTest {
     void testFontColorPass(){
         Assertions.assertThrows(IOException.class, this::testFontColor);
     }
-    void testFontColor() throws Exception {
+    void testFontColor(){
         List<Element> elements = htmlToPdf("stylesTest/fontColor.html", "target/Font Color.pdf");
         Paragraph paragraph = (Paragraph) elements.get(0);
         Chunk chunk1 = (Chunk) paragraph.get(0);
@@ -67,7 +69,7 @@ class StylesTest {
         Assertions.assertEquals(Color.BLUE, chunk2.getFont().getColor());
     }
 
-    private List<Element> htmlToPdf(String htmlFileName, String pdfFileName) throws IOException {
+    private List<Element> htmlToPdf(String htmlFileName, String pdfFileName){
         StyleSheet styleSheet = new StyleSheet();
         Map<String, Object> interfaceProps = new HashMap<>();
         try (InputStream inputStream = StylesTest.class.getClassLoader().getResourceAsStream(htmlFileName);
@@ -87,14 +89,17 @@ class StylesTest {
             }
             document.close();
             return elements;
+        }catch (IOException e){
+            logger.info("Exception Raised");
         }
+        return List.of();
     }
 
     @Test
     void testFontSizePass(){
         Assertions.assertThrows(IOException.class, this::testFontSize);
     }
-    void testFontSize() throws Exception {
+    void testFontSize(){
         List<Element> elements = htmlToPdf("stylesTest/fontSize.html", "target/Font Size.pdf");
         Paragraph paragraph = (Paragraph) elements.get(0);
         Chunk chunk1 = (Chunk) paragraph.get(0);

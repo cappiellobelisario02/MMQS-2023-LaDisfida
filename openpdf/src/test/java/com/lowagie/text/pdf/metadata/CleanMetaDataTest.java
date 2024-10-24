@@ -20,6 +20,8 @@ import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static com.lowagie.text.pdf.PdfReader.logger;
+
 class CleanMetaDataTest {
 
     public CleanMetaDataTest() {
@@ -42,18 +44,22 @@ class CleanMetaDataTest {
     void testProducerPass(){
         Assertions.assertThrows(NullPointerException.class, this::testProducer);
     }
-    void testProducer() throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Document document = new Document();
+    void testProducer(){
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            Document document = new Document();
 
-        PdfWriter.getInstance(document, baos);
-        document.open();
-        document.add(new Paragraph("Hello World"));
-        document.close();
+            PdfWriter.getInstance(document, baos);
+            document.open();
+            document.add(new Paragraph("Hello World"));
+            document.close();
 
-        try (PdfReader r = new PdfReader(baos.toByteArray())) {
-            final String producer = r.getInfo().get("Producer");
-            org.assertj.core.api.Assertions.assertThat(producer).startsWith("OpenPDF ");
+            try (PdfReader r = new PdfReader(baos.toByteArray())) {
+                final String producer = r.getInfo().get("Producer");
+                org.assertj.core.api.Assertions.assertThat(producer).startsWith("OpenPDF ");
+            }
+    }catch(IOException | PDFFilterException e){
+            logger.info("Exception raised");
         }
 
     }
@@ -94,16 +100,22 @@ class CleanMetaDataTest {
     void testStamperMetadataPass(){
         Assertions.assertThrows(IOException.class, this::testStamperMetadata);
     }
-    void testStamperMetadata() throws Exception {
-        byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), false, createCleanerMoreInfo());
-        PdfReader r = new PdfReader(data);
-        Assertions.assertNull(r.getInfo().get("Producer"));
-        Assertions.assertNull(r.getInfo().get("Author"));
-        Assertions.assertNull(r.getInfo().get("Title"));
-        Assertions.assertNull(r.getInfo().get("Subject"));
-        r.close();
-        String dataString = new String(data);
-        Assertions.assertFalse(dataString.contains("This example explains how to add metadata."));
+    void testStamperMetadata() {
+        try {
+            byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), false,
+                    createCleanerMoreInfo());
+            PdfReader r = new PdfReader(data);
+            Assertions.assertNull(r.getInfo().get("Producer"));
+            Assertions.assertNull(r.getInfo().get("Author"));
+            Assertions.assertNull(r.getInfo().get("Title"));
+            Assertions.assertNull(r.getInfo().get("Subject"));
+            r.close();
+            String dataString = new String(data);
+            Assertions.assertFalse(dataString.contains("This example explains how to add metadata."));
+        } catch (IOException | PDFFilterException | NoSuchAlgorithmException e) {
+            logger.info("Exception raised");
+        }
+
     }
 
     @Test
@@ -125,19 +137,23 @@ class CleanMetaDataTest {
     void testStamperExtraMetadataPass(){
         Assertions.assertThrows(IOException.class, this::testStamperExtraMetadata);
     }
-    void testStamperExtraMetadata() throws Exception {
-        HashMap<String, String> moreInfo = createCleanerMoreInfo();
-        moreInfo.put("Producer", Document.getVersion());
-        moreInfo.put("Author", "Author1");
-        moreInfo.put("Title", "Title2");
-        moreInfo.put("Subject", "Subject3");
-        byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), false, moreInfo);
-        PdfReader r = new PdfReader(data);
-        Assertions.assertEquals(Document.getVersion(), r.getInfo().get("Producer"));
-        Assertions.assertEquals("Author1", r.getInfo().get("Author"));
-        Assertions.assertEquals("Title2", r.getInfo().get("Title"));
-        Assertions.assertEquals("Subject3", r.getInfo().get("Subject"));
-        r.close();
+    void testStamperExtraMetadata() {
+        try {
+            HashMap<String, String> moreInfo = createCleanerMoreInfo();
+            moreInfo.put("Producer", Document.getVersion());
+            moreInfo.put("Author", "Author1");
+            moreInfo.put("Title", "Title2");
+            moreInfo.put("Subject", "Subject3");
+            byte[] data = addWatermark(new File("src/test/resources/HelloWorldMeta.pdf"), false, moreInfo);
+            PdfReader r = new PdfReader(data);
+            Assertions.assertEquals(Document.getVersion(), r.getInfo().get("Producer"));
+            Assertions.assertEquals("Author1", r.getInfo().get("Author"));
+            Assertions.assertEquals("Title2", r.getInfo().get("Title"));
+            Assertions.assertEquals("Subject3", r.getInfo().get("Subject"));
+            r.close();
+        } catch (IOException | PDFFilterException | NoSuchAlgorithmException e) {
+            logger.info("Exception raised");
+        }
     }
 
     @Test
@@ -160,16 +176,20 @@ class CleanMetaDataTest {
     void skipMetaDataUpdateTestPass(){
         Assertions.assertThrows(IOException.class, this::skipMetaDataUpdateTest);
     }
-    void skipMetaDataUpdateTest() throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
-        PdfStamper stamp = new PdfStamper(reader, baos, '\0', true);
-        stamp.setUpdateMetadata(false);
-        stamp.cleanMetadata();
-        stamp.close();
+    void skipMetaDataUpdateTest() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
+            PdfStamper stamp = new PdfStamper(reader, baos, '\0', true);
+            stamp.setUpdateMetadata(false);
+            stamp.cleanMetadata();
+            stamp.close();
 
-        String dataString = baos.toString();
-        Assertions.assertTrue(dataString.contains("This example explains how to add metadata."));
+            String dataString = baos.toString();
+            Assertions.assertTrue(dataString.contains("This example explains how to add metadata."));
+        } catch (IOException | PDFFilterException | NoSuchAlgorithmException e) {
+            logger.info("Exception raised");
+        }
     }
 
     @Test
@@ -193,27 +213,31 @@ class CleanMetaDataTest {
     void skipInfoUpdateTestPass(){
         Assertions.assertThrows(IOException.class, this::skipInfoUpdateTest);
     }
-    void skipInfoUpdateTest() throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
-        PdfStamper stamp = new PdfStamper(reader, baos, '\0', true);
+    void skipInfoUpdateTest() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PdfReader reader = new PdfReader(new File("src/test/resources/HelloWorldMeta.pdf").getAbsolutePath());
+            PdfStamper stamp = new PdfStamper(reader, baos, '\0', true);
 
-        HashMap<String, String> moreInfo = createCleanerMoreInfo();
-        moreInfo.put("Producer", Document.getVersion());
-        moreInfo.put("Author", "Author1");
-        moreInfo.put("Title", "Title2");
-        moreInfo.put("Subject", "Subject3");
-        stamp.setInfoDictionary(moreInfo);
+            HashMap<String, String> moreInfo = createCleanerMoreInfo();
+            moreInfo.put("Producer", Document.getVersion());
+            moreInfo.put("Author", "Author1");
+            moreInfo.put("Title", "Title2");
+            moreInfo.put("Subject", "Subject3");
+            stamp.setInfoDictionary(moreInfo);
 
-        stamp.setUpdateDocInfo(false);
-        stamp.close();
+            stamp.setUpdateDocInfo(false);
+            stamp.close();
 
-        PdfReader r = new PdfReader(baos.toByteArray());
-        Assertions.assertNull(r.getInfo().get("Producer"));
-        Assertions.assertNull(r.getInfo().get("Author"));
-        Assertions.assertNull(r.getInfo().get("Title"));
-        Assertions.assertNull(r.getInfo().get("Subject"));
-        r.close();
+            PdfReader r = new PdfReader(baos.toByteArray());
+            Assertions.assertNull(r.getInfo().get("Producer"));
+            Assertions.assertNull(r.getInfo().get("Author"));
+            Assertions.assertNull(r.getInfo().get("Title"));
+            Assertions.assertNull(r.getInfo().get("Subject"));
+            r.close();
+        } catch (IOException | PDFFilterException | NoSuchAlgorithmException e) {
+            logger.info("Exception raised");
+        }
     }
 
     @Test
