@@ -133,7 +133,7 @@ public class RemoveLaunchApplication
         try {
             validateFiles();
             processPdf();
-        } catch (Exception e) {
+        } catch (IOException | InstantiationException | PDFFilterException e) {
             logger.severe("Exception occured");
         }
     }

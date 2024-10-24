@@ -16,11 +16,13 @@ package com.lowagie.examples.objects.anchors;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfAction;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -43,10 +45,7 @@ public class OpenApplication {
         System.out.println("Open Application");
 
         // step 1: creation of a document-object
-        Document document = new Document(PageSize.A4, 50, 50, 50, 50);
-
-        try {
-
+        try (Document document = new Document(PageSize.A4, 50, 50, 50, 50)){
             // step 2: we create a writer that listens to the document
             PdfWriter.getInstance(document,
                     new FileOutputStream("OpenApplication.pdf"));
@@ -58,12 +57,9 @@ public class OpenApplication {
                     + application).setAction(new PdfAction(application, null,
                     null, null)));
             document.add(p);
-        } catch (Exception de) {
+        } catch (IOException | DocumentException | SecurityException de) {
             logger.severe("Exception occured");
         }
-
-        // step 5: we close the document
-        document.close();
 
     }
 }

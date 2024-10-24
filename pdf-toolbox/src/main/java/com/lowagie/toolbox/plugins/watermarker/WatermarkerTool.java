@@ -49,6 +49,7 @@ import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.FloatArgument;
 import com.lowagie.toolbox.arguments.IntegerArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
+import org.apache.fop.pdf.PDFFilterException;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -56,6 +57,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
@@ -217,7 +219,7 @@ public class WatermarkerTool extends AbstractTool {
 
             Writer writer = new Writer(reader, stamp, text, fontsize, opacity, color);
             writer.write();
-        } catch (Exception e) {
+        } catch (IOException | InstantiationException | PDFFilterException | NoSuchAlgorithmException e) {
             JOptionPane.showMessageDialog(internalFrame, e.getMessage(), e
                     .getClass().getName(), JOptionPane.ERROR_MESSAGE);
             logger.log(Level.SEVERE, "An error occurred during execution.", e);

@@ -15,13 +15,18 @@ package com.lowagie.examples.general.read;
 
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Reading an encrypted PDF file (you need the owner password to do this).
  */
 public class ReadEncrypted {
+
+    private static final Logger logger = Logger.getLogger(ReadEncrypted.class.getName());
 
     /**
      * Reads an encrypted PDF document.
@@ -55,9 +60,10 @@ public class ReadEncrypted {
             // Flush the BufferedWriter to ensure all data is written
             out.flush();
 
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             // Implement proper logging mechanism for error handling
-            System.err.println("Error: " + e.getMessage());
+            String s = "Error: " + e.getMessage();
+            logger.severe(s);
         }
     }
 

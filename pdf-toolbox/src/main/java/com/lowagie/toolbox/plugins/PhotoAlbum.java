@@ -38,6 +38,7 @@
 package com.lowagie.toolbox.plugins;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.BaseFont;
@@ -204,10 +205,12 @@ public class PhotoAlbum extends AbstractTool {
             }
             pageLabels.addPageLabel(writer.getPageNumber(), PdfPageLabels.EMPTY, label);
 
-            logger.info("Added image: " + image.getName());
-        } catch (Exception e) {
+            String msg = "Added image: " + image.getName();
+            logger.info(msg);
+        } catch (IOException | DocumentException e) {
             // Log a generic error without revealing specific details
-            logger.severe("An error occurred while processing the image: " + image.getName());
+            String msg = "An error occurred while processing the image: " + image.getName();
+            logger.severe(msg);
         }
     }
 

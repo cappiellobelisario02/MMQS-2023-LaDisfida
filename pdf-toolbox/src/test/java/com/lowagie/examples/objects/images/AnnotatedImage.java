@@ -15,10 +15,12 @@ package com.lowagie.examples.objects.images;
 
 import com.lowagie.text.Annotation;
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -54,7 +56,7 @@ public class AnnotatedImage {
             wmf.setAnnotation(new Annotation(0, 0, 0, 0, "http://www.lowagie.com/iText"));
             wmf.setAbsolutePosition(100f, 200f);
             document.add(wmf);
-        } catch (Exception de) {
+        } catch (IOException | DocumentException de) {
             logger.severe("Exception occured");
         }
 

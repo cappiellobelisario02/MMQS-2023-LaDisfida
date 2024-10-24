@@ -14,12 +14,14 @@
 package com.lowagie.examples.objects.tables;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -76,7 +78,7 @@ public class CellHeights {
             cell = new PdfPCell(new Paragraph("almost no content, but the row is extended"));
             table.addCell(cell);
             document.add(table);
-        } catch (Exception de) {
+        } catch (IOException | DocumentException de) {
             logger.severe("Exception occured");
         }
         // step5

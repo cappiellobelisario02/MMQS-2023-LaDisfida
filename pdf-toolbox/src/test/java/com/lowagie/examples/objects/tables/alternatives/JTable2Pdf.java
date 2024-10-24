@@ -14,6 +14,7 @@
 package com.lowagie.examples.objects.tables.alternatives;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
@@ -23,6 +24,8 @@ import java.awt.Shape;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Serial;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -37,6 +40,7 @@ import javax.swing.JToolBar;
 public class JTable2Pdf extends JFrame {
 
     private static final Logger logger = Logger.getLogger(JTable2Pdf.class.getName());
+    @Serial
     private static final long serialVersionUID = 8461166420041411734L;
     /**
      * The JTable we will show in a Swing app and print to PDF.
@@ -157,7 +161,7 @@ public class JTable2Pdf extends JFrame {
             g2.dispose();
             cb.restoreState();
 
-        } catch (Exception e) {
+        } catch (IOException | DocumentException | SecurityException e) {
             logger.severe("Exception occured");
             logger.log(Level.SEVERE, "An error occurred while printing.", e);
         }

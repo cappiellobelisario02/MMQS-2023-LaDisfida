@@ -14,6 +14,7 @@
 package com.lowagie.examples.objects.tables.pdfptable;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
@@ -23,6 +24,7 @@ import com.lowagie.text.pdf.PdfPCellEvent;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -65,7 +67,7 @@ public class CellEvents implements PdfPCellEvent {
             table.writeSelectedRows(0, -1, 50, 600, cb);
             table.setHeaderRows(3);
             document.add(table);
-        } catch (Exception de) {
+        } catch (IOException | DocumentException de) {
             logger.severe("Exception occured");
         }
         // step5

@@ -14,7 +14,9 @@ package com.lowagie.examples.general.copystamp;
 
 import com.lowagie.text.pdf.PdfCopyFields;
 import com.lowagie.text.pdf.PdfReader;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -37,7 +39,7 @@ public class ConcatenateForms {
             copy.addDocument(reader1);
             copy.addDocument(reader2);
             copy.close();
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException | SecurityException e) {
             logger.severe("Exception occured");
         }
     }

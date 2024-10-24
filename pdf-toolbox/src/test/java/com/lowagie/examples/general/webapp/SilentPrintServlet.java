@@ -75,7 +75,7 @@ public class SilentPrintServlet extends HttpServlet {
         try {
             action = Integer.parseInt(requ.getParameter("action"));
             sub = Integer.parseInt(requ.getParameter("sub"));
-        } catch (Exception ignored) {
+        } catch (NumberFormatException ignored) {
             String msg = "ERROR: Invalid action parameter: " + requ.getParameter("action");
             logger.severe(msg);
         }

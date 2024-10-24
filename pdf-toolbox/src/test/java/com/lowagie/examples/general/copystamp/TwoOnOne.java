@@ -20,7 +20,9 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -77,7 +79,7 @@ public class TwoOnOne {
             }
             // step 5: we close the document
             document.close();
-        } catch (Exception de) {
+        } catch (IOException | PDFFilterException de) {
             logger.severe("Exception occured");
         }
     }

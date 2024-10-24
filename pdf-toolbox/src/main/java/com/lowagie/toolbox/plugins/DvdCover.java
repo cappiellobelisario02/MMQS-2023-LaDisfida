@@ -55,6 +55,7 @@ import org.apache.commons.io.FilenameUtils;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
@@ -171,7 +172,7 @@ public class DvdCover extends AbstractTool {
             }
 
             // step 5: we close the document
-        } catch (Exception e) {
+        } catch (IOException | InstantiationException e) {
             JOptionPane.showMessageDialog(internalFrame,
                     e.getMessage(),
                     e.getClass().getName(),

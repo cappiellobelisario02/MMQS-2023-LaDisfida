@@ -14,7 +14,6 @@
 
 package com.lowagie.examples.fonts.getting;
 
-import com.lowagie.examples.general.faq.OpenPdfVersion;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.FontFactory;
@@ -64,23 +63,22 @@ public class UsingFontFactory {
             FontFactory.registerDirectories();
             TreeSet<String> families = new TreeSet<>(FontFactory.getRegisteredFamilies());
             int c = 0;
-            for (Iterator i = families.iterator(); i.hasNext() && c < 15; ) {
-                name = (String) i.next();
+            for (Iterator<String> i = families.iterator(); i.hasNext() && c < 15; ) {
+                name = i.next();
                 p = new Paragraph(name);
                 document.add(p);
                 c++;
             }
             document.newPage();
             String quick = "quick brown fox jumps over the lazy dog";
-            p = new Paragraph("Fonts", FontFactory.getFont(FontFactory.HELVETICA, 16f));
-            for (Iterator i = families.iterator(); i.hasNext() && c > 0; ) {
-                name = (String) i.next();
+            for (Iterator<String> i = families.iterator(); i.hasNext() && c > 0; ) {
+                name = i.next();
                 p = new Paragraph(name);
                 document.add(p);
                 try {
                     p = new Paragraph(quick, FontFactory.getFont(name, BaseFont.WINANSI, BaseFont.EMBEDDED));
                     document.add(p);
-                } catch (Exception e) {
+                } catch (DocumentException e) {
                     document.add(new Paragraph(e.getMessage()));
                 }
                 c--;

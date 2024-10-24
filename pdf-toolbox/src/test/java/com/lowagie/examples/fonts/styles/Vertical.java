@@ -24,6 +24,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.VerticalText;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -101,7 +102,7 @@ public class Vertical {
                 document.newPage();
             }
             document.close();
-        } catch (Exception de) {
+        } catch (IOException de) {
             logger.severe("Exception occured");
         }
     }

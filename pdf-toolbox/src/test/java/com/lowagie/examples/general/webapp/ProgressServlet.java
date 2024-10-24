@@ -85,7 +85,7 @@ public class ProgressServlet extends HttpServlet {
             ServletOutputStream out = response.getOutputStream();
             baos.writeTo(out);
             out.flush();
-        } catch (Exception e) {
+        } catch (IOException | NullPointerException e) {
             isError(response.getOutputStream());
         }
     }

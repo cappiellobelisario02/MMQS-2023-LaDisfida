@@ -14,11 +14,13 @@
 package com.lowagie.examples.objects;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -50,7 +52,7 @@ public class SpaceWordRatio {
             document.newPage();
             writer.setSpaceCharRatio(PdfWriter.NO_SPACE_CHAR_RATIO);
             document.add(p);
-        } catch (Exception de) {
+        } catch (IOException | DocumentException de) {
             logger.severe("Exception occured");
         }
         // step 5

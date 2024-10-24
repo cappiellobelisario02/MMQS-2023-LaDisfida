@@ -20,7 +20,10 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -84,7 +87,7 @@ public class AddWatermarkPageNumbers {
             under.addTemplate(stamp.getImportedPage(reader2, 3), 1, 0, 0, 1, 0, 0);
             // closing PdfStamper will generate the new PDF file
             stamp.close();
-        } catch (Exception de) {
+        } catch (IOException | PDFFilterException | NoSuchAlgorithmException de) {
             logger.severe("Exception occured");
         }
     }

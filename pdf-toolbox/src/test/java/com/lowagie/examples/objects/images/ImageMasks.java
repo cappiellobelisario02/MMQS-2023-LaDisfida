@@ -20,6 +20,7 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -88,7 +89,7 @@ public class ImageMasks {
             cb.setRGBColorFill(0, 0, 255);
             cb.addImage(mask, mask.getScaledWidth() * 8, 0, 0, mask.getScaledHeight() * 8, 100, 350);
             document.close();
-        } catch (Exception de) {
+        } catch (IOException de) {
             logger.severe("Exception occured");
         }
     }

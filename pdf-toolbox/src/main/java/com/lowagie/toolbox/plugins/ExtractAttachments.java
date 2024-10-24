@@ -63,6 +63,8 @@ import javax.swing.JInternalFrame;
  */
 public class ExtractAttachments extends AbstractTool {
 
+    public static final String EXCEPTION_OCCURED = "Exception occured";
+
     static {
         addVersion("$Id: ExtractAttachments.java 3712 2009-02-20 20:11:31Z xlv $");
     }
@@ -118,8 +120,8 @@ public class ExtractAttachments extends AbstractTool {
         byte[] b = PdfReader.getStreamBytes(prs);
         try (FileOutputStream fout = new FileOutputStream(fullPath)) {
             fout.write(b);
-        } catch (Exception e) {
-            logger.severe("Exception occured");
+        } catch (IOException e) {
+            logger.severe(EXCEPTION_OCCURED);
         }
     }
 
@@ -143,12 +145,18 @@ public class ExtractAttachments extends AbstractTool {
             File src = (File) getValue(SRCFILE_ARGUMENT_NAME);
             String outPath = getOutputPath(src);
 
-            try (PdfReader reader = new PdfReader(src.getAbsolutePath())) {
-                processEmbeddedFiles(reader, outPath);
-                processAnnotations(reader, outPath);
-            }
-        } catch (Exception e) {
-            // Handle the exception (log it or rethrow)
+            extractedTryCatch(src, outPath);
+        } catch (InstantiationException e) {
+            logger.severe(EXCEPTION_OCCURED);
+        }
+    }
+
+    private void extractedTryCatch(File src, String outPath) {
+        try (PdfReader reader = new PdfReader(src.getAbsolutePath())) {
+            processEmbeddedFiles(reader, outPath);
+            processAnnotations(reader, outPath);
+        } catch (PDFFilterException | IOException e) {
+            logger.severe(EXCEPTION_OCCURED);
         }
     }
 

@@ -20,6 +20,7 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.FontSelector;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -59,7 +60,7 @@ public class FontSelection {
             document.add(new Paragraph(ph));
             // step 5
             document.close();
-        } catch (Exception de) {
+        } catch (IOException de) {
             logger.severe("Exception occured");
         }
     }

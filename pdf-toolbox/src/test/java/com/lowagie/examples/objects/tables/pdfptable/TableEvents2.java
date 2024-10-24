@@ -14,6 +14,7 @@
 package com.lowagie.examples.objects.tables.pdfptable;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.PageSize;
@@ -26,6 +27,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPTableEvent;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.logging.Logger;
 
@@ -96,7 +98,7 @@ public class TableEvents2 implements PdfPTableEvent {
             table.setTableEvent(event);
             table.setHeaderRows(3);
             document.add(table);
-        } catch (Exception de) {
+        } catch (IOException | DocumentException de) {
             logger.severe("Exception occured");
         }
         // step5
@@ -126,10 +128,6 @@ public class TableEvents2 implements PdfPTableEvent {
 
         // border for the header rows
         if (headerRows > 0) {
-            float headerHeight = heights[0];
-            for (int k = 0; k < headerRows; ++k) {
-                headerHeight += heights[k];
-            }
             cb.setRGBColorStroke(0, 0, 255);
             cb.rectangle(widths[0], heights[headerRows], widths[widths.length - 1] - widths[0],
                     heights[0] - heights[headerRows]);

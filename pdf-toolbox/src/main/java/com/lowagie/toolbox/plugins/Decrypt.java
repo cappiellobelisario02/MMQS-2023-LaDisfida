@@ -42,7 +42,9 @@ import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -135,7 +137,7 @@ public class Decrypt extends AbstractTool {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(destFile);
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
             logger.info("Error2"+ e.getMessage());
         }
         return fos;
@@ -147,7 +149,7 @@ public class Decrypt extends AbstractTool {
         try {
             reader = new PdfReader(sourceFile.getAbsolutePath(), ownerpassword);
             // You can add more processing logic here if needed...
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             logger.info("Error3"+ e.getMessage());  // Handle the exception or log it as necessary
         }
         return reader;

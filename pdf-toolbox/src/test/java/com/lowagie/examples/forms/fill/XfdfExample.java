@@ -17,7 +17,10 @@ import com.lowagie.text.pdf.AcroFields;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 import com.lowagie.text.pdf.XfdfReader;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
 /**
@@ -41,7 +44,7 @@ public class XfdfExample {
             AcroFields form = stamp.getAcroFields();
             form.setFields(fdfreader);
             stamp.close();
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException | NoSuchAlgorithmException e) {
             logger.severe("Exception occured");
         }
 

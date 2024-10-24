@@ -35,11 +35,13 @@
 
 package com.lowagie.toolbox.arguments;
 
+import com.lowagie.text.BadElementException;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.filters.ImageFilter;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
@@ -93,7 +95,7 @@ public class ImageArgument extends AbstractArgument {
         }
         try {
             return Image.getInstance(value.toString());
-        } catch (Exception e) {
+        } catch (IOException | BadElementException e) {
             throw new InstantiationException(e.getMessage());
         }
     }

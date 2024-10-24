@@ -14,11 +14,13 @@
 package com.lowagie.examples.objects.tables.pdfptable;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -56,7 +58,7 @@ public class SplitTable {
             document.newPage();
             table.writeSelectedRows(5, -1, 0, -1, 50, 650, cb);
             document.close();
-        } catch (Exception de) {
+        } catch (IOException | DocumentException | SecurityException de) {
             logger.severe("Exception occured");
         }
         // step5

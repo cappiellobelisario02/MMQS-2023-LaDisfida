@@ -14,6 +14,7 @@
 package com.lowagie.examples.objects.tables;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPCell;
@@ -21,6 +22,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -47,23 +49,7 @@ public class TableSpacing {
             // step3
             document.open();
             // step4
-            PdfPTable table = new PdfPTable(3);
-            PdfPCell cell = new PdfPCell(new Paragraph("header with colspan 3"));
-            cell.setColspan(3);
-            table.addCell(cell);
-            table.addCell("1.1");
-            table.addCell("2.1");
-            table.addCell("3.1");
-            table.addCell("1.2");
-            table.addCell("2.2");
-            table.addCell("3.2");
-            cell = new PdfPCell(new Paragraph("cell test1"));
-            cell.setBorderColor(new Color(255, 0, 0));
-            table.addCell(cell);
-            cell = new PdfPCell(new Paragraph("cell test2"));
-            cell.setColspan(2);
-            cell.setBackgroundColor(new Color(0xC0, 0xC0, 0xC0));
-            table.addCell(cell);
+            PdfPTable table = getPdfPTable();
             table.setWidthPercentage(50);
             document.add(new Paragraph("We add 2 tables:"));
             document.add(table);
@@ -80,10 +66,31 @@ public class TableSpacing {
             table.setSpacingAfter(15f);
             document.add(table);
             document.add(new Paragraph("This is much better, don't you think so?"));
-        } catch (Exception de) {
+        } catch (IOException | DocumentException de) {
             logger.severe("Exception occured");
         }
         // step5
         document.close();
+    }
+
+    private static PdfPTable getPdfPTable() {
+        PdfPTable table = new PdfPTable(3);
+        PdfPCell cell = new PdfPCell(new Paragraph("header with colspan 3"));
+        cell.setColspan(3);
+        table.addCell(cell);
+        table.addCell("1.1");
+        table.addCell("2.1");
+        table.addCell("3.1");
+        table.addCell("1.2");
+        table.addCell("2.2");
+        table.addCell("3.2");
+        cell = new PdfPCell(new Paragraph("cell test1"));
+        cell.setBorderColor(new Color(255, 0, 0));
+        table.addCell(cell);
+        cell = new PdfPCell(new Paragraph("cell test2"));
+        cell.setColspan(2);
+        cell.setBackgroundColor(new Color(0xC0, 0xC0, 0xC0));
+        table.addCell(cell);
+        return table;
     }
 }

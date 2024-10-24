@@ -16,6 +16,7 @@ package com.lowagie.examples.objects.anchors;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
@@ -24,6 +25,7 @@ import com.lowagie.text.pdf.PdfAction;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -75,7 +77,7 @@ public class NamedActions {
                 document.add(p);
                 document.newPage();
             }
-        } catch (Exception de) {
+        } catch (IOException | DocumentException | SecurityException de) {
             logger.severe("Exception occured");
         }
 

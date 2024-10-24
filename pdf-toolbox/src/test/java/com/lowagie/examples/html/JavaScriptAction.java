@@ -21,6 +21,7 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.html.HtmlTags;
 import com.lowagie.text.html.HtmlWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import static com.lowagie.tools.SplitPdf.logger;
 
@@ -42,27 +43,25 @@ public class JavaScriptAction {
         System.out.println("Open Application");
 
         // step 1: creation of a document-object
-        Document document = new Document();
 
-        try {
+        try (Document document = new Document()) {
             // step 2:
             HtmlWriter.getInstance(document, new FileOutputStream("JavaScriptAction.html"));
 
             // step 3: we add Javascript as Metadata and we open the document
-            StringBuilder javaScriptSection = new StringBuilder();
-            javaScriptSection.append("\t\tfunction load() {\n");
-            javaScriptSection.append("\t\t  alert('Page has been loaded.');\n");
-            javaScriptSection.append("\t\t}\n");
 
-            javaScriptSection.append("\t\tfunction unload(){\n");
-            javaScriptSection.append("\t\t  alert('Page has been unloaded.');\n");
-            javaScriptSection.append("\t\t}\n");
+            String javaScriptSection = """
+                    \t\tfunction load() {
+                    \t\t  alert('Page has been loaded.');
+                    \t\t}
+                    \t\tfunction unload(){
+                    \t\t  alert('Page has been unloaded.');
+                    \t\t}
+                    \t\tfunction sayHi(){
+                    \t\t  alert('Hi !!!');
+                    \t\t}""";
 
-            javaScriptSection.append("\t\tfunction sayHi(){\n");
-            javaScriptSection.append("\t\t  alert('Hi !!!');\n");
-            javaScriptSection.append("\t\t}");
-
-            document.add(new Header(HtmlTags.JAVASCRIPT, javaScriptSection.toString()));
+            document.add(new Header(HtmlTags.JAVASCRIPT, javaScriptSection));
             document.setJavascriptOnload("load()");
             document.setJavascriptOnunload("unload()");
 
@@ -73,8 +72,7 @@ public class JavaScriptAction {
                     There are 3 JavaScript functions in the HTML page, load(), unload() and sayHi().
                         The first one will be called when the HTML page has been loaded by your browser.
                         The second one will be called when the HTML page is being unloaded,
-                        for example when you go to another page.
-                        """);
+                        for example when you go to another page.""");
             document.add(phrase1);
 
             // add a HTML link <A HREF="...">
@@ -82,14 +80,10 @@ public class JavaScriptAction {
             anchor.setReference("JavaScript:sayHi()");
             document.add(anchor);
 
-        } catch (Exception de) {
+        } catch (IOException de) {
             logger.severe("Error occurred while creating JavaScriptAction document: " + de.getMessage());
-        } finally {
-            // step 5: we close the document
-            if (document != null) {
-                document.close();
-            }
         }
+        // step 5: we close the document
     }
 }
 

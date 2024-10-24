@@ -36,6 +36,7 @@
 package com.lowagie.toolbox.plugins;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PRAcroForm;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfImportedPage;
@@ -47,6 +48,7 @@ import com.lowagie.toolbox.arguments.StringArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
 import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -63,6 +65,7 @@ public class SelectedPages extends AbstractTool {
     public static final String SRCFILE = "srcfile";
     public static final String DESTFILE = "destfile";
     public static final String EXCEPTION_OCCURED = "Exception occured";
+    public static final String ERROR_CREATING_DOCUMENT = "Error creating document";
 
     static {
         addVersion("$Id: SelectedPages.java 3271 2008-04-18 20:39:42Z xlv $");
@@ -167,8 +170,8 @@ public class SelectedPages extends AbstractTool {
         Document document = null;
         try {
             document = new Document(reader.getPageSizeWithRotation(1));
-        } catch (Exception e) {
-            // Log error
+        } catch (DocumentException e) {
+            logger.severe(ERROR_CREATING_DOCUMENT);
         }
         return document;
     }
@@ -177,8 +180,8 @@ public class SelectedPages extends AbstractTool {
         FileOutputStream fouts = null;
         try {
             fouts = new FileOutputStream(dest.getAbsolutePath());
-        } catch (Exception e) {
-            // Log error
+        } catch (FileNotFoundException e) {
+            logger.severe(ERROR_CREATING_DOCUMENT);
         }
         return fouts;
     }
@@ -187,8 +190,8 @@ public class SelectedPages extends AbstractTool {
         PdfCopy copy = null;
         try {
             copy = new PdfCopy(document, fouts);
-        } catch (Exception e) {
-            // Log error
+        } catch (DocumentException e) {
+            logger.severe(ERROR_CREATING_DOCUMENT);
         }
         return copy;
     }

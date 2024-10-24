@@ -14,12 +14,14 @@
 package com.lowagie.examples.objects.tables.pdfptable;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -74,7 +76,7 @@ public class WriteSelectedRows {
             document.newPage();
             document.add(new Paragraph("row 150 - 200"));
             table.writeSelectedRows(150, -1, 50, 820, writer.getDirectContent());
-        } catch (Exception de) {
+        } catch (IOException | DocumentException | SecurityException de) {
             logger.severe("Exception occured");
         }
         // step5

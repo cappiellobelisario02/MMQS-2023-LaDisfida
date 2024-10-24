@@ -57,6 +57,7 @@ import com.lowagie.toolbox.AbstractTool;
 import com.lowagie.toolbox.arguments.AbstractArgument;
 import com.lowagie.toolbox.arguments.FileArgument;
 import com.lowagie.rups.io.filters.PdfFilter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -147,7 +148,7 @@ public class XML2Bookmarks extends AbstractTool {
             JOptionPane.showMessageDialog(internalFrame, "Instantiation error: " + e.getMessage(),
                     e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
             logger.severe("Instantiation error: " + e.getMessage());
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             JOptionPane.showMessageDialog(internalFrame,
                     "Unexpected error: " + e.getMessage(),
                     e.getClass().getName(),

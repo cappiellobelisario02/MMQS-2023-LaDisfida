@@ -74,7 +74,6 @@ public class ImageXRefViewer extends AbstractTool {
 
     private static final Logger logger = Logger.getLogger(ImageXRefViewer.class.getName());
     public static final String SRCFILE = "srcfile";
-    private String stringToLog;
 
     static {
         addVersion("$Id: ImageXRefViewer.java 3271 2008-04-18 20:39:42Z xlv $");
@@ -113,27 +112,19 @@ public class ImageXRefViewer extends AbstractTool {
     public static void main(String[] args) {
         // Check if running in a development environment
         if (isDevelopmentEnvironment()) {
-            System.out.println("Running in development mode.");
+            logger.info("Running in development mode.");
         } else {
-            System.out.println("Running in production mode.");
+            logger.info("Running in production mode.");
         }
 
         ImageXRefViewer tool = new ImageXRefViewer();
         if (args.length < 1) {
             // Instead of logging an error, we can handle the missing argument gracefully.
-            System.err.println("Usage: " + tool.getUsage());
-            System.exit(1);  // Exit with an error code
+            logger.warning("Usage: " + tool.getUsage());
         }
 
-        try {
-            tool.setMainArguments(args);
-            tool.execute();
-        } catch (Exception e) {
-            // Handle exceptions that may arise during execution
-            System.err.println("An error occurred: " + e.getMessage());
-            e.printStackTrace();  // Print stack trace for debugging, if needed
-            System.exit(1);  // Exit with an error code
-        }
+        tool.setMainArguments(args);
+        tool.execute();
     }
 
     // Helper method to determine if the application is running in a development environment
@@ -243,10 +234,14 @@ public class ImageXRefViewer extends AbstractTool {
                                 }
 
                                 // Logging without revealing sensitive information
-                                logger.fine("Processing image " + totalNumberOfPictures);
-                                logger.fine("Height: " + pdfdict.get(PdfName.HEIGHT));
-                                logger.fine("Width: " + pdfdict.get(PdfName.WIDTH));
-                                logger.fine("Bits per component: " + pdfdict.get(PdfName.BITSPERCOMPONENT));
+                                String msg = "Processing image " + totalNumberOfPictures;
+                                logger.fine(msg);
+                                String msg1 = "Height: " + pdfdict.get(PdfName.HEIGHT);
+                                logger.fine(msg1);
+                                String msg2 = "Width: " + pdfdict.get(PdfName.WIDTH);
+                                logger.fine(msg2);
+                                String msg3 = "Bits per component: " + pdfdict.get(PdfName.BITSPERCOMPONENT);
+                                logger.fine(msg3);
 
                                 byte[] barr = PdfReader.getStreamBytesRaw((PRStream) pdfdict);
                                 java.awt.Image im = Toolkit.getDefaultToolkit().createImage(barr);
@@ -266,7 +261,7 @@ public class ImageXRefViewer extends AbstractTool {
             };
             internalFrame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             task.start();
-        } catch (Exception e) {
+        } catch (InstantiationException e) {
             // Use SEVERE level for exceptions and avoid exposing message details
             logger.severe("An error occurred during execution: " + e.getClass().getName());
             JOptionPane.showMessageDialog(internalFrame, "An error occurred. Please check logs for more details.",

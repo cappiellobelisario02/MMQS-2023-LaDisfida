@@ -20,6 +20,7 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -46,7 +47,7 @@ public class OpenTypeFont {
             BaseFont bf = BaseFont.createFont("liz.otf", BaseFont.CP1252, true);
             String text = "Some text with the otf font LIZ.";
             document.add(new Paragraph(text, new Font(bf, 14)));
-        } catch (Exception de) {
+        } catch (IOException de) {
             logger.severe("Exception occured");
         }
         // step 5

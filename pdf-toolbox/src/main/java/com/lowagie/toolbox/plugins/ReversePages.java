@@ -255,11 +255,7 @@ public class ReversePages
 
     private void closeDocument(Document document) {
         if (document != null) {
-            try {
-                document.close();
-            } catch (Exception e) {
-                logger.severe(EXCEPTION_OCCURED);
-            }
+            document.close();
         }
     }
 

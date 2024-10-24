@@ -17,6 +17,7 @@ import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 import org.librepdf.openpdf.examples.content.Constants;
 
@@ -82,7 +83,7 @@ public class ColumnTextAbsoluteBoxes {
                 // therefore the below statement loops as long as the text overflows
             } while (ct.go() == ColumnText.NO_MORE_COLUMN);
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.severe("Exception occured");
         }
 

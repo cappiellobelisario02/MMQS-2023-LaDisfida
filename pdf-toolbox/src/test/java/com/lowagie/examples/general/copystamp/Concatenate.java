@@ -11,11 +11,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-/**
- * This class demonstrates copying a PDF file using iText.
- *
- * @author Mark Thompson
- */
 package com.lowagie.examples.general.copystamp;
 
 import com.lowagie.text.Document;
@@ -25,7 +20,9 @@ import com.lowagie.text.pdf.PdfImportedPage;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.SimpleBookmark;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +89,7 @@ public class Concatenate {
             }
 
             document.close();
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             System.err.println("Error occurred: " + e.getMessage());
         }
     }

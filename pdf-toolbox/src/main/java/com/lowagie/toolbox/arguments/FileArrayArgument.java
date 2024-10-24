@@ -82,18 +82,6 @@ public class FileArrayArgument extends AbstractArgument {
         }
     }
 
-    @Override
-    public Object getArgument() throws InstantiationException {
-        if (value == null) {
-            return null;
-        }
-        try {
-            return value;
-        } catch (Exception e) {
-            throw new InstantiationException(e.getMessage());
-        }
-    }
-
     private void jbInit() throws FileListInitializationException {
         try{
             fileList1.addPropertyChangeListener(this);

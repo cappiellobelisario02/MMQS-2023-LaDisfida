@@ -16,7 +16,9 @@ package com.lowagie.examples.general.copystamp;
 import com.lowagie.text.pdf.PdfEncryptor;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.fop.pdf.PDFFilterException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -41,7 +43,7 @@ public class EncryptorExample {
                     "World".getBytes(),
                     PdfWriter.ALLOW_PRINTING | PdfWriter.ALLOW_COPY,
                     false);
-        } catch (Exception e) {
+        } catch (IOException | PDFFilterException e) {
             logger.severe("Exception occured");
         }
     }

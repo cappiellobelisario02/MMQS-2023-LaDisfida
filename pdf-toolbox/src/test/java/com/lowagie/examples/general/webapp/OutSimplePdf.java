@@ -14,7 +14,7 @@
 
 package com.lowagie.examples.general.webapp;
 
-import com.lowagie.examples.directcontent.graphics.Shapes;
+import com.lowagie.text.BadElementException;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
@@ -24,6 +24,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serial;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,6 +35,7 @@ import java.util.logging.Logger;
 public class OutSimplePdf extends HttpServlet {
 
     private static final Logger logger = Logger.getLogger(OutSimplePdf.class.getName());
+    @Serial
     private static final long serialVersionUID = 2788260006560387781L;
 
     @Override
@@ -57,7 +60,7 @@ public class OutSimplePdf extends HttpServlet {
 
             // take the message from the URL or create default message
             String msg = request.getParameter("msg");
-            if (msg == null || msg.trim().length() <= 0) {
+            if (msg == null || msg.trim().isEmpty()) {
                 msg = "[ specify a message in the 'msg' argument on the URL ]";
             }
 
@@ -84,7 +87,7 @@ public class OutSimplePdf extends HttpServlet {
             baos.writeTo(out);
             out.flush();
 
-        } catch (Exception e2) {
+        } catch (IOException | BadElementException e2) {
             String errorString = getClass().getName() + "\n" + e2.getMessage();
             logger.log(Level.SEVERE, "Error in \"{0}\"", errorString);
         }

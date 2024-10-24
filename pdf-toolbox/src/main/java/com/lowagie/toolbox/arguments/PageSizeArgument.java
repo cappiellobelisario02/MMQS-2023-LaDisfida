@@ -39,6 +39,7 @@ import com.lowagie.text.PageSize;
 import com.lowagie.toolbox.AbstractTool;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
@@ -90,7 +91,7 @@ public class PageSizeArgument extends OptionArgument {
      *
      * @return Returns the options.
      */
-    public TreeMap<String, String> getOptions() {
+    public SortedMap<String, String> getOptions() {
         return options;
     }
 
@@ -107,7 +108,7 @@ public class PageSizeArgument extends OptionArgument {
         }
         try {
             return options.get(value);
-        } catch (Exception e) {
+        } catch (ClassCastException | NullPointerException e) {
             throw new InstantiationException(e.getMessage());
         }
     }
@@ -160,16 +161,6 @@ public class PageSizeArgument extends OptionArgument {
         if (result == 0) {
             setValue(cb.getSelectedItem());
         }
-    }
-
-    /**
-     * Returns a string representation of the object.
-     *
-     * @return a string representation of the object.
-     */
-    @Override
-    public String toString() {
-        return super.getValue().toString();
     }
 
 }
