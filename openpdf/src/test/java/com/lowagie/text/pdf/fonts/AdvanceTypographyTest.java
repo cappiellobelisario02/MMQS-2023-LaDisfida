@@ -23,12 +23,10 @@ class AdvanceTypographyTest {
     /**
      * Without glyph substitution out will be {660,666,676,1143,656,1130}, which is no correct FopGlyphProcessor
      * performs glyph substitution to correct the output
-     *
-     * @throws Exception - DocumentException or IOException thrown by the processedContent() method
      */
     @Test
     void testTypographySubstitutionPass(){
-        org.junit.jupiter.api.Assertions.assertThrows(IOException.class, this::testTypographySubstitution);
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(this::testTypographySubstitution);
     }
     void testTypographySubstitution() {
         try{

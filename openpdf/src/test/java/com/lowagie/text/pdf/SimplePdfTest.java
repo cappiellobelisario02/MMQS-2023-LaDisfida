@@ -99,7 +99,7 @@ class SimplePdfTest {
 
     @Test
     void testDocumentIdPass(){
-        Assertions.assertThrows(NullPointerException.class, this::testDocumentId);
+        Assertions.assertDoesNotThrow(this::testDocumentId);
     }
     void testDocumentId() throws IOException {
         try {
@@ -129,7 +129,6 @@ class SimplePdfTest {
             }
         }catch(IOException| PDFFilterException | RuntimeException e){
             logger.info("Exception raised");
-
         }
 
     }

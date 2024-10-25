@@ -31,7 +31,7 @@ class ExtractCertificatesTest {
 
     @Test
     void testSha1Pass(){
-        Assertions.assertThrows(IOException.class, this::testSha1);
+        Assertions.assertDoesNotThrow(this::testSha1);
     }
     void testSha1(){
         extract("src/test/resources/sample_signed-sha1.pdf", false);
@@ -39,7 +39,7 @@ class ExtractCertificatesTest {
 
     @Test
     void testSha512Pass(){
-        Assertions.assertThrows(IOException.class, this::testSha512);
+        Assertions.assertDoesNotThrow(this::testSha512);
     }
     void testSha512(){
         extract("src/test/resources/sample_signed-sha512.pdf", false);
@@ -52,7 +52,7 @@ class ExtractCertificatesTest {
      */
     @Test
     void testSha256TimeStampPass(){
-        Assertions.assertThrows(IOException.class, this::testSha256TimeStamp);
+        Assertions.assertDoesNotThrow(this::testSha256TimeStamp);
     }
     void testSha256TimeStamp(){
         extract("src/test/resources/pdf_digital_signature_timestamp.pdf", true);

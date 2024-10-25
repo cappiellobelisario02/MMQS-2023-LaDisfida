@@ -148,7 +148,7 @@ public class XML2Bookmarks extends AbstractTool {
             JOptionPane.showMessageDialog(internalFrame, "Instantiation error: " + e.getMessage(),
                     e.getClass().getName(), JOptionPane.ERROR_MESSAGE);
             logger.severe("Instantiation error: " + e.getMessage());
-        } catch (IOException | PDFFilterException e) {
+        } catch (PDFFilterException e) {
             JOptionPane.showMessageDialog(internalFrame,
                     "Unexpected error: " + e.getMessage(),
                     e.getClass().getName(),

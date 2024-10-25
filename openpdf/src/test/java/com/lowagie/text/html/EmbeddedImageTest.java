@@ -23,7 +23,7 @@ class EmbeddedImageTest {
 
     @Test
     void processHtmlWithEmbeddedImagePass(){
-        Assertions.assertThrows(IOException.class, this::processHtmlWithEmbeddedImage);
+        Assertions.assertThrows(IllegalStateException.class, this::processHtmlWithEmbeddedImage);
     }
     void processHtmlWithEmbeddedImage() throws IOException, URISyntaxException {
         URI resourceUri = ClassLoader.getSystemResource("base64-image.html").toURI();

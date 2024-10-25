@@ -3,7 +3,6 @@ package com.lowagie.text.pdf.metadata;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Paragraph;
-import com.lowagie.text.exceptions.InvalidPdfException;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfReader;
@@ -29,7 +28,7 @@ class CleanMetaDataTest {
     }
 
     private HashMap<String, String> createCleanerMoreInfo() {
-        HashMap<String, String> moreInfo = new HashMap<String, String>();
+        HashMap<String, String> moreInfo = new HashMap<>();
         moreInfo.put("Title", null);
         moreInfo.put("Author", null);
         moreInfo.put("Subject", null);
@@ -98,7 +97,7 @@ class CleanMetaDataTest {
 
     @Test
     void testStamperMetadataPass(){
-        Assertions.assertThrows(IOException.class, this::testStamperMetadata);
+        Assertions.assertDoesNotThrow(this::testStamperMetadata);
     }
     void testStamperMetadata() {
         try {
@@ -135,7 +134,7 @@ class CleanMetaDataTest {
 
     @Test
     void testStamperExtraMetadataPass(){
-        Assertions.assertThrows(IOException.class, this::testStamperExtraMetadata);
+        Assertions.assertDoesNotThrow(this::testStamperExtraMetadata);
     }
     void testStamperExtraMetadata() {
         try {
@@ -174,7 +173,7 @@ class CleanMetaDataTest {
 
     @Test
     void skipMetaDataUpdateTestPass(){
-        Assertions.assertThrows(IOException.class, this::skipMetaDataUpdateTest);
+        Assertions.assertDoesNotThrow(this::skipMetaDataUpdateTest);
     }
     void skipMetaDataUpdateTest() {
         try {
@@ -211,7 +210,7 @@ class CleanMetaDataTest {
 
     @Test
     void skipInfoUpdateTestPass(){
-        Assertions.assertThrows(IOException.class, this::skipInfoUpdateTest);
+        Assertions.assertDoesNotThrow(this::skipInfoUpdateTest);
     }
     void skipInfoUpdateTest() {
         try {

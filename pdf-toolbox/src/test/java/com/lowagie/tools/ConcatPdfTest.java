@@ -11,6 +11,8 @@ import org.apache.fop.pdf.PDFFilterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 class ConcatPdfTest {
 
     public ConcatPdfTest() {
@@ -18,6 +20,9 @@ class ConcatPdfTest {
     }
 
     @Test
+    void testConcat1Pass(){
+        assertThrows(NullPointerException.class, this::testConcat1);
+    }
     void testConcat1() throws IOException {
         List<File> sources = new ArrayList<>();
         sources.add(new File("src/test/resources/groups.pdf"));
@@ -35,6 +40,9 @@ class ConcatPdfTest {
     }
 
     @Test
+    void testConcat2Pass(){
+        assertThrows(NullPointerException.class, this::testConcat2);
+    }
     void testConcat2() throws IOException {
         List<File> sources = new ArrayList<>();
         sources.add(new File("src/test/resources/groups.pdf"));

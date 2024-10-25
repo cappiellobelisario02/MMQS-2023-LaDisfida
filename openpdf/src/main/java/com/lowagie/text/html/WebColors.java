@@ -51,15 +51,16 @@ package com.lowagie.text.html;
 
 import com.lowagie.text.error_messages.MessageLocalization;
 import java.awt.Color;
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
 /**
  * This class is a HashMap that contains the names of colors as a key and the corresponding Color as value. (Source:
- * Wikipedia http://en.wikipedia.org/wiki/Web_colors )
+ * Wikipedia <a href="http://en.wikipedia.org/wiki/Web_colors">...</a> )
  * <p>
- * CSS4 Implementation based on: https://developer.mozilla.org/en-US/docs/Web/CSS/color_value
+ * CSS4 Implementation based on: <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value">...</a>
  *
  * @author blowagie
  */
@@ -69,6 +70,7 @@ public class WebColors extends HashMap<String, int[]> {
      * HashMap containing all the names and corresponding color values.
      */
     protected static final WebColors NAMES = new WebColors();
+    @Serial
     private static final long serialVersionUID = 3542523100813372896L;
 
     static {
@@ -239,7 +241,7 @@ public class WebColors extends HashMap<String, int[]> {
             throw new IllegalArgumentException("getName must not be null");
         }
         String colorName = name.trim().toLowerCase(Locale.ROOT);
-        if ("".equals(colorName)) {
+        if (colorName.isEmpty()) {
             throw new IllegalArgumentException("getName must not be empty");
         }
 
@@ -284,7 +286,7 @@ public class WebColors extends HashMap<String, int[]> {
     private static Color getRGBFromRGB(String colorName) {
         int[] c = {0, 0, 0, 0xff};
 
-        String rgb = "";
+        String rgb;
         if (colorName.startsWith("rgba")) {
             rgb = colorName.substring(4);
         } else {
@@ -335,7 +337,7 @@ public class WebColors extends HashMap<String, int[]> {
 
 
     private static Color getRGBFromHSL(String colorName) {
-        String hsl = "";
+        String hsl;
         if (colorName.startsWith("hsla")) {
             hsl = colorName.substring(4);
         } else {
@@ -362,10 +364,10 @@ public class WebColors extends HashMap<String, int[]> {
                 || !lightness.endsWith("%")) {
             throw new IllegalArgumentException("Not a valid hsl color:" + colorName);
         }
-        float hueDegrees = Double.valueOf(toDegrees(hue)).floatValue();
+        float hueDegrees = (float) toDegrees(hue);
         float sat = Float.parseFloat(saturation.substring(0, saturation.length() - 1));
         float light = Float.parseFloat(lightness.substring(0, lightness.length() - 1));
-        int alp = 255;
+        int alp;
         if (alpha.endsWith("%")) {
             alp = getFromPercent(alpha, 255);
         } else {
@@ -380,24 +382,22 @@ public class WebColors extends HashMap<String, int[]> {
 
     // H (hue) is an <angle> of the color circle given in degs, rads, grads, or turns
     private static double toDegrees(String hueString) {
+        double parsedDouble1 = Double.parseDouble(hueString.substring(0, hueString.length() - 3));
         if (hueString.endsWith("deg")) {
-            double degrees = Double.parseDouble(hueString.substring(0, hueString.length() - 3));
-            return degrees % 360;
+            return parsedDouble1 % 360;
         }
         if (hueString.endsWith("rad")) {
-            double radians = Double.parseDouble(hueString.substring(0, hueString.length() - 3));
-            double degrees = Math.toDegrees(radians);
+            double degrees = Math.toDegrees(parsedDouble1);
             return degrees % 360;
 
         }
+        double parsedDouble = Double.parseDouble(hueString.substring(0, hueString.length() - 4));
         if (hueString.endsWith("grad")) {
-            double gradians = Double.parseDouble(hueString.substring(0, hueString.length() - 4));
-            double degrees = gradians * 360 / 400;
+            double degrees = parsedDouble * 360 / 400;
             return degrees % 360;
         }
         if (hueString.endsWith("turn")) {
-            double turns = Double.parseDouble(hueString.substring(0, hueString.length() - 4));
-            double degrees = turns * 360;
+            double degrees = parsedDouble * 360;
             return degrees % 360;
         }
         double degrees = Double.parseDouble(hueString);
@@ -415,13 +415,15 @@ public class WebColors extends HashMap<String, int[]> {
      */
     private static int[] hsl2rgb(float hue, float saturation, float lightness) {
         int[] rgb = new int[3];
-        float r = 0, g = 0, b = 0;
+        float r;
+        float g;
+        float b;
 
         if (saturation == 0) {
             // gray values
             r = g = b = (lightness * 255);
         } else {
-            float h = (float) hue / 360;
+            float h = hue / 360;
 
             float q = (lightness < 0.5) ? (lightness * (1 + saturation))
                     : ((lightness + saturation) - (lightness * saturation));

@@ -760,13 +760,23 @@ public class BidiLine {
     }
 
     private int getUnicodeCharacter(PdfChunk ck, int currentChar) {
+        // Ensure currentChar is within bounds
+        if (currentChar < 0 || currentChar >= text.length) {
+            throw new ArrayIndexOutOfBoundsException("Index " + currentChar + " is out of bounds for the text array.");
+        }
+
         boolean surrogate = Utilities.isSurrogatePair(text, currentChar);
         if (surrogate) {
+            // Ensure we have enough characters for a surrogate pair
+            if (currentChar + 1 >= text.length) {
+                throw new ArrayIndexOutOfBoundsException("Surrogate pair out of bounds at index " + currentChar + ".");
+            }
             return ck.getUnicodeEquivalent(Utilities.convertToUtf32(text, currentChar));
         } else {
             return ck.getUnicodeEquivalent(text[currentChar]);
         }
     }
+
 
     private float getCharacterWidth(PdfChunk ck, int uniC) {
         if (Utilities.isSurrogatePair(text, currentChar)) {
@@ -890,7 +900,7 @@ public class BidiLine {
         boolean bidi = (runDirection == PdfWriter.RUN_DIRECTION_LTR || runDirection == PdfWriter.RUN_DIRECTION_RTL);
         StringBuilder buf = new StringBuilder();
         PdfChunk refCk = detailChunks[startIdx];
-        PdfChunk ck = null;
+        PdfChunk ck;
         char c;
         if (bidi) {
             reorder(startIdx, endIdx);

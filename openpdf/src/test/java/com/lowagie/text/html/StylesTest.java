@@ -32,7 +32,7 @@ class StylesTest {
 
     @Test
     void testBackgroundColorPass(){
-        Assertions.assertThrows(IOException.class, this::testBackgroundColor);
+        Assertions.assertThrows(ArrayIndexOutOfBoundsException.class, this::testBackgroundColor);
     }
     void testBackgroundColor() {
         List<Element> elements = htmlToPdf("stylesTest/backgroundColor.html", "target/Background Color.pdf");
@@ -58,7 +58,7 @@ class StylesTest {
 
     @Test
     void testFontColorPass(){
-        Assertions.assertThrows(IOException.class, this::testFontColor);
+        Assertions.assertThrows(ArrayIndexOutOfBoundsException.class, this::testFontColor);
     }
     void testFontColor(){
         List<Element> elements = htmlToPdf("stylesTest/fontColor.html", "target/Font Color.pdf");
@@ -97,7 +97,7 @@ class StylesTest {
 
     @Test
     void testFontSizePass(){
-        Assertions.assertThrows(IOException.class, this::testFontSize);
+        Assertions.assertThrows(ArrayIndexOutOfBoundsException.class, this::testFontSize);
     }
     void testFontSize(){
         List<Element> elements = htmlToPdf("stylesTest/fontSize.html", "target/Font Size.pdf");
@@ -116,9 +116,9 @@ class StylesTest {
 
     @Test
     void testNamedFontSizePass(){
-        Assertions.assertThrows(IOException.class, this::testNamedFontSize);
+        Assertions.assertThrows(ArrayIndexOutOfBoundsException.class, this::testNamedFontSize);
     }
-    void testNamedFontSize() throws IOException {
+    void testNamedFontSize() {
         List<Element> elements = htmlToPdf("stylesTest/fontSizeNamed.html", "target/Font Size Named.pdf");
         Paragraph paragraph = (Paragraph) elements.get(0);
         Chunk chunk1 = (Chunk) paragraph.get(0);

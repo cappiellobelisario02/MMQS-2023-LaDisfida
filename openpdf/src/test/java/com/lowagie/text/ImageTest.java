@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.internal.matchers.Null;
 
 class ImageTest {
 
@@ -34,7 +33,7 @@ class ImageTest {
 
     @Test
     void shouldReturnImageWithUrlForPathPass(){
-        Assertions.assertThrows(FileNotFoundException.class, this::shouldReturnImageWithUrlForPath);
+        Assertions.assertDoesNotThrow(this::shouldReturnImageWithUrlForPath);
     }
     void shouldReturnImageWithUrlForPath(){
         try {

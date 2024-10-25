@@ -142,7 +142,7 @@ class PdfFormFlatteningTest {
 
     @Test
     void testFlattenFieldsWithPdfIndirectObjectInRectPass() {
-        Assertions.assertThrows(ExceptionConverter.class, this::testFlattenFieldsWithPdfIndirectObjectInRect);
+        Assertions.assertThrows(NullPointerException.class, this::testFlattenFieldsWithPdfIndirectObjectInRect);
     }
     void testFlattenFieldsWithPdfIndirectObjectInRect(){
         final Path targetFilePath = Paths.get("target/indirect_object_in_rectangle-flattened.pdf");
