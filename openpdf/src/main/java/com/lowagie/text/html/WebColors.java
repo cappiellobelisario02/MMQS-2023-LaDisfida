@@ -68,7 +68,7 @@ public class WebColors extends HashMap<String, int[]> {
     /**
      * HashMap containing all the names and corresponding color values.
      */
-    public static final WebColors NAMES = new WebColors();
+    protected static final WebColors NAMES = new WebColors();
     private static final long serialVersionUID = 3542523100813372896L;
 
     static {
@@ -321,7 +321,7 @@ public class WebColors extends HashMap<String, int[]> {
     private static int getFromPercent(String v, int max) {
         double percent = Double.parseDouble(v.substring(0, v.length() - 1));
         double result = percent * max / 100;
-        return Double.valueOf(result).intValue();
+        return (int)result;
     }
 
 

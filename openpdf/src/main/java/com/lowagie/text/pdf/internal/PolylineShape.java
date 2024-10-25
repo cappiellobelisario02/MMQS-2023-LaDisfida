@@ -101,8 +101,12 @@ public class PolylineShape implements Shape {
      */
     public Rectangle2D getBounds2D() {
         int[] r = rect();
-        return r == null ? null : new Rectangle2D.Double(r[0], r[1], r[2], r[3]);
+        if (r == null || r.length < 4) {
+            return null;
+        }
+        return new Rectangle2D.Double(r[0], r[1], r[2], r[3]);
     }
+
 
     /**
      * Returns the bounding box of this polyline.

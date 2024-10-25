@@ -722,26 +722,26 @@ public class BidiLine {
         for (; currentChar < totalTextLength; ++currentChar) {
             PdfChunk ck = detailChunks[currentChar];
             int uniC = getUnicodeCharacter(ck, currentChar);
-            if (PdfChunk.noPrint(uniC)) {
-                continue;
-            }
-            charWidth = getCharacterWidth(ck, uniC);
-            lastSplit = updateSplitChar(ck, charWidth, uniC, lastSplit, width);
 
-            if (width - charWidth < 0) {
-                break;
-            }
+            if (!PdfChunk.noPrint(uniC)) {
+                charWidth = getCharacterWidth(ck, uniC);
+                lastSplit = updateSplitChar(ck, charWidth, uniC, lastSplit, width);
 
-            width -= charWidth;
-            lastValidChunk = ck;
+                if (width - charWidth >= 0) {
+                    width -= charWidth;
+                    lastValidChunk = ck;
 
-            float newWidth = handleTab(ck, leftX, originalWidth, width);
-            if (newWidth == -1) {
-                // La linea è stata creata, quindi restituire l'oggetto PdfLine
-                return createNewLine(originalWidth, width, alignment, isRTL);
+                    float newWidth = handleTab(ck, leftX, originalWidth, width);
+                    if (newWidth == -1) {
+                        return createNewLine(originalWidth, width, alignment, isRTL);
+                    }
+                    width = newWidth;
+                } else {
+                    break;
+                }
             }
-            width = newWidth;
         }
+
 
         return finalizeLine(lastValidChunk, originalWidth, width, alignment, isRTL, lastSplit);
     }

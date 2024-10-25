@@ -47,6 +47,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
@@ -92,7 +93,7 @@ public abstract class AbstractTool implements ActionListener {
     /**
      * The list of arguments needed by the tool.
      */
-    protected ArrayList<AbstractArgument> arguments = new ArrayList<>();
+    protected List<AbstractArgument> arguments = new ArrayList<>();
     /**
      * Execute menu options
      */
@@ -143,7 +144,7 @@ public abstract class AbstractTool implements ActionListener {
      *
      * @return Returns the arguments.
      */
-    public ArrayList<AbstractArgument> getArguments() {
+    public List<AbstractArgument> getArguments() {
         return arguments;
     }
 
@@ -152,7 +153,7 @@ public abstract class AbstractTool implements ActionListener {
      *
      * @param arguments The arguments to set.
      */
-    public void setArguments(ArrayList<AbstractArgument> arguments) {
+    public void setArguments(List<AbstractArgument> arguments) {
         this.arguments = arguments;
     }
 
@@ -316,7 +317,10 @@ public abstract class AbstractTool implements ActionListener {
                     this.execute();
                     try {
                         openDocument();
-                    } catch (IOException | InstantiationException | InterruptedException e) {
+                    } catch (IOException | InstantiationException e) {
+                        throw new DocumentException(e);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new DocumentException(e);
                     }
                 });
@@ -326,7 +330,10 @@ public abstract class AbstractTool implements ActionListener {
                     this.execute();
                     try {
                         printDocument();
-                    } catch (IOException | InstantiationException | InterruptedException e) {
+                    } catch (IOException | InstantiationException e) {
+                        throw new DocumentException(e);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new DocumentException(e);
                     }
                 });
@@ -335,7 +342,10 @@ public abstract class AbstractTool implements ActionListener {
                 executeAndHandleException(() -> {
                     try {
                         Executable.printDocumentSilent(getDestPathPDF());
-                    } catch (IOException | InstantiationException | InterruptedException e) {
+                    } catch (IOException | InstantiationException e) {
+                        throw new DocumentPrintingException(e);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new DocumentPrintingException(e);
                     }
                 });

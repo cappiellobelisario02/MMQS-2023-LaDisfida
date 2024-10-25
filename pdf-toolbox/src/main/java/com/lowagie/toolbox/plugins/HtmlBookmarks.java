@@ -202,7 +202,10 @@ public class HtmlBookmarks extends AbstractTool {
             document.open();
             addContent(document, reader, src);
             Executable.launchBrowser(html.getAbsolutePath());
-        } catch (InterruptedException | IOException | ReflectiveOperationException e) {
+        } catch (InterruptedException e) {
+            // Re-interrupt the current thread
+            Thread.currentThread().interrupt();
+        } catch (IOException | ReflectiveOperationException e) {
             handleException(e);
         } catch (PDFFilterException e) {
             throw new ExceptionConverter(e);
@@ -210,6 +213,7 @@ public class HtmlBookmarks extends AbstractTool {
             closeReader(reader);
         }
     }
+
 
     private void validateSourceFile() throws InstantiationException {
         if (getValue(SRCFILE) == null) {
